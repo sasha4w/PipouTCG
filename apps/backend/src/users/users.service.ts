@@ -22,10 +22,37 @@ export class UsersService {
   async findByEmail(email: string) {
     return this.userRepository.findOneBy({ email });
   }
-
+  async findByUsername(username: string) {
+    return this.userRepository.findOneBy({ username });
+  }
   // équivalent de User::create()
   create(data: Partial<User>) {
     const user = this.userRepository.create(data);
     return this.userRepository.save(user);
+  }
+  async getCardPortfolio(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: {
+        userCards: {
+          card: {
+            cardSet: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return [];
+    }
+
+    return user.userCards.map((uc) => ({
+      id: uc.card.id,
+      name: uc.card.name,
+      rarity: uc.card.rarity,
+      level: uc.card.level,
+      set: uc.card.cardSet?.name,
+      quantity: uc.quantity,
+    }));
   }
 }

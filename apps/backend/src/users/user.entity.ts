@@ -15,6 +15,8 @@ export class User {
   @Column()
   password: string;
 
+  @Column()
+  is_admin: boolean;
   @OneToMany(() => UserCard, (userCard) => userCard.user)
   userCards: UserCard[];
   @OneToMany(() => BoosterOpenHistory, (boh) => boh.user)
