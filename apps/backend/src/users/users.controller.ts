@@ -11,7 +11,13 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  // GET /users/1
+  // GET /users/:id/portfolio
+  @Get(':id/portfolio')
+  getCardPortfolio(@Param('id') id: string) {
+    return this.usersService.getCardPortfolio(Number(id));
+  }
+
+  // GET /users/:id
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(Number(id));

@@ -15,7 +15,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: false })
   is_admin: boolean;
   @OneToMany(() => UserCard, (userCard) => userCard.user)
   userCards: UserCard[];

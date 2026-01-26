@@ -25,6 +25,8 @@ export class Card {
   @Column({ name: 'level' })
   level: number;
 
+  @Column({ name: 'type' })
+  type: string;
   // cartes tirées dans des ouvertures de booster
   @OneToMany(() => BoosterOpenCard, (boc) => boc.card)
   boosterOpenCards: BoosterOpenCard[];
