@@ -7,7 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-import { CardSet } from './card-set.entity';
+import { CardSet } from '../card-sets/card-set.entity';
 import { BoosterOpenCard } from '../boosters/booster-open-card.entity';
 import { UserCard } from '../users/user-card.entity';
 
