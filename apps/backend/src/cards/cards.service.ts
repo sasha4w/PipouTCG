@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Card } from './card.entity';
-
+import { Rarity } from './enums/rarity.enum';
 @Injectable()
 export class CardsService {
   constructor(
@@ -36,15 +36,25 @@ export class CardsService {
   }
 
   // Créer une nouvelle carte
-  create(data: Partial<Card>) {
-    const card = this.cardRepository.create(data);
+  async create(data: Partial<Card>) {
+    const card = this.cardRepository.create({
+      ...data,
+      cardSet: { id: data.cardSetId } as any,
+    });
+
     return this.cardRepository.save(card);
   }
 
   // Mettre à jour une carte
   async update(id: number, data: Partial<Card>) {
     const card = await this.findOne(id);
+
+    if (data.cardSetId) {
+      card.cardSet = { id: data.cardSetId } as any;
+    }
+
     Object.assign(card, data);
+
     return this.cardRepository.save(card);
   }
 
@@ -58,7 +68,7 @@ export class CardsService {
   // Récupérer les cartes par set
   async findBySet(setId: number) {
     return this.cardRepository.find({
-      where: { cardSet: { id: setId } },
+      where: { cardSetId: setId },
       relations: {
         cardSet: true,
       },
@@ -66,7 +76,7 @@ export class CardsService {
   }
 
   // Récupérer les cartes par rareté
-  async findByRarity(rarity: string) {
+  async findByRarity(rarity: Rarity) {
     return this.cardRepository.find({
       where: { rarity },
       relations: {

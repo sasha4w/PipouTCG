@@ -1,20 +1,34 @@
-import { IsString, IsNumber, IsNotEmpty, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
+import { Type } from '../enums/type.enum';
+import { Rarity } from '../enums/rarity.enum';
 
 export class CreateCardDto {
+  @IsNumber()
+  @IsNotEmpty()
+  atk: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  hp: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  cardSetId: number;
+
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  rarity: string;
+  @IsEnum(Rarity)
+  rarity: Rarity;
 
-  @IsNumber()
-  @Min(1)
-  @Max(100)
-  level: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  cardSetId: number; // ID du set
+  @IsEnum(Type)
+  type: Type;
 }

@@ -7,7 +7,8 @@ import { AppService } from './app.service';
 
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-
+import { CardSetsModule } from './card-sets/card-sets.module';
+import { CardsModule } from './cards/cards.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,6 +28,8 @@ import { AuthModule } from './auth/auth.module';
 
     UsersModule,
     AuthModule,
+    CardSetsModule,
+    CardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
