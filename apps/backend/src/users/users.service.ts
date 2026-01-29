@@ -50,7 +50,9 @@ export class UsersService {
       id: uc.card.id,
       name: uc.card.name,
       rarity: uc.card.rarity,
-      level: uc.card.level,
+      atk: uc.card.atk,
+      hp: uc.card.hp,
+      type: uc.card.type,
       set: uc.card.cardSet?.name,
       quantity: uc.quantity,
     }));

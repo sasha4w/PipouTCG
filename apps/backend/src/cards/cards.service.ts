@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Card } from './card.entity';
 import { Rarity } from './enums/rarity.enum';
+
 @Injectable()
 export class CardsService {
   constructor(
@@ -36,17 +37,17 @@ export class CardsService {
   }
 
   // Créer une nouvelle carte
-  async create(data: Partial<Card>) {
+  async create(data: Partial<Card> & { cardSetId?: number }) {
     const card = this.cardRepository.create({
       ...data,
-      cardSet: { id: data.cardSetId } as any,
+      cardSet: data.cardSetId ? ({ id: data.cardSetId } as any) : undefined,
     });
 
     return this.cardRepository.save(card);
   }
 
   // Mettre à jour une carte
-  async update(id: number, data: Partial<Card>) {
+  async update(id: number, data: Partial<Card> & { cardSetId?: number }) {
     const card = await this.findOne(id);
 
     if (data.cardSetId) {
@@ -68,7 +69,9 @@ export class CardsService {
   // Récupérer les cartes par set
   async findBySet(setId: number) {
     return this.cardRepository.find({
-      where: { cardSetId: setId },
+      where: {
+        cardSet: { id: setId },
+      },
       relations: {
         cardSet: true,
       },

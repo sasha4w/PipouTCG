@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CardSetsModule } from './card-sets/card-sets.module';
 import { CardsModule } from './cards/cards.module';
+import { CustomNamingStrategy } from './database/naming.strategy';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +25,7 @@ import { CardsModule } from './cards/cards.module';
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
+      namingStrategy: new CustomNamingStrategy(),
     }),
 
     UsersModule,

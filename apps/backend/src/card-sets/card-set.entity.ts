@@ -3,10 +3,10 @@ import { Card } from '../cards/card.entity';
 
 @Entity('card_set')
 export class CardSet {
-  @PrimaryGeneratedColumn({ name: 'id' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'name' })
+  @Column()
   name: string;
 
   @OneToMany(() => Card, (card) => card.cardSet)

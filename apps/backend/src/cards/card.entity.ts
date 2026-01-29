@@ -14,44 +14,31 @@ import { Rarity } from './enums/rarity.enum';
 
 @Entity('card')
 export class Card {
-  @PrimaryGeneratedColumn({ name: 'id' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'name' })
+  @Column()
   name: string;
 
-  @Column({
-    type: 'enum',
-    enum: Rarity,
-    name: 'rarity',
-  })
+  @Column({ type: 'enum', enum: Rarity })
   rarity: Rarity;
 
-  @Column({
-    type: 'enum',
-    enum: Type,
-    name: 'type',
-  })
+  @Column({ type: 'enum', enum: Type })
   type: Type;
 
-  @Column({ name: 'atk' })
+  @Column()
   atk: number;
 
-  @Column({ name: 'hp' })
+  @Column()
   hp: number;
 
-  @Column({ name: 'id_set' })
-  cardSetId: number;
-  // cartes tirées dans des ouvertures de booster
+  @ManyToOne(() => CardSet, (cardSet) => cardSet.cards)
+  @JoinColumn({ name: 'card_set_id' })
+  cardSet: CardSet;
+
   @OneToMany(() => BoosterOpenCard, (boc) => boc.card)
   boosterOpenCards: BoosterOpenCard[];
 
-  // relation vers le set
-  @ManyToOne(() => CardSet, (cardSet) => cardSet.cards)
-  @JoinColumn({ name: 'id_set' }) // FK: card.id_set -> card_set.id
-  cardSet: CardSet;
-
-  // cartes possédées par les utilisateurs
   @OneToMany(() => UserCard, (userCard) => userCard.card)
   userCards: UserCard[];
 }
