@@ -16,8 +16,16 @@ export class UsersService {
   }
 
   // équivalent de User::find($id)
-  findOne(id: number) {
-    return this.userRepository.findOneBy({ id });
+  async findOne(id: number) {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) return null;
+
+    const levelData = this.calculateLevelData(user.experience);
+
+    return {
+      ...user,
+      ...levelData,
+    };
   }
   async findByEmail(email: string) {
     return this.userRepository.findOneBy({ email });
@@ -56,5 +64,71 @@ export class UsersService {
       set: uc.card.cardSet?.name,
       quantity: uc.quantity,
     }));
+  }
+
+  async addExperience(userId: number, amount: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) return null;
+
+    user.experience += amount;
+
+    return this.userRepository.save(user);
+  }
+  async incrementBoostersOpened(userId: number) {
+    await this.userRepository.increment({ id: userId }, 'boostersOpened', 1);
+  }
+
+  async incrementCardsSold(userId: number, amount: number, goldEarned: number) {
+    await this.userRepository.increment({ id: userId }, 'cardsSold', amount);
+    await this.userRepository.increment(
+      { id: userId },
+      'moneyEarned',
+      goldEarned,
+    );
+  }
+  calculateLevelData(experience: number) {
+    let level = 1;
+    let xpNeeded = 10;
+    let remainingXp = experience;
+
+    while (remainingXp >= xpNeeded) {
+      remainingXp -= xpNeeded;
+      level++;
+      xpNeeded = level * 10;
+    }
+
+    return {
+      level,
+      currentXp: remainingXp,
+      xpForNextLevel: xpNeeded,
+      progressPercent: Math.floor((remainingXp / xpNeeded) * 100),
+    };
+  }
+  async getProfile(userId: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) return null;
+
+    const levelData = this.calculateLevelData(user.experience);
+
+    return {
+      id: user.id,
+      username: user.username,
+
+      level: levelData.level,
+      experience: user.experience,
+      currentXp: levelData.currentXp,
+      xpForNextLevel: levelData.xpForNextLevel,
+      progressPercent: levelData.progressPercent,
+
+      gold: user.gold,
+
+      stats: {
+        boostersOpened: user.boostersOpened,
+        cardsBought: user.cardsBought,
+        cardsSold: user.cardsSold,
+        moneyEarned: user.moneyEarned,
+        setsCompleted: user.setsCompleted,
+      },
+    };
   }
 }
