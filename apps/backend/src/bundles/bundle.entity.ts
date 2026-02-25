@@ -9,6 +9,9 @@ export class Bundle {
   @Column()
   name: string;
 
+  @Column({ type: 'int' })
+  price: number;
+
   @OneToMany(() => BundleContent, (content) => content.bundle)
   contents: BundleContent[];
 }

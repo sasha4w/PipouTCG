@@ -24,6 +24,9 @@ export class Booster {
   @JoinColumn({ name: 'card_set_id' })
   cardSet: CardSet;
 
+  @Column({ type: 'int' })
+  price: number;
+
   @OneToMany(() => BoosterOpenHistory, (boh) => boh.booster)
   openHistories: BoosterOpenHistory[];
 }

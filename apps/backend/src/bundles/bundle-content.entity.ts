@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { Bundle } from './bundle.entity';
 import { Card } from '../cards/card.entity';
 import { Booster } from '../boosters/booster.entity';
@@ -13,6 +13,9 @@ export class BundleContent {
 
   @ManyToOne(() => Card, { nullable: true })
   card: Card;
+
+  @Column({ default: 1 })
+  quantity: number;
 
   @ManyToOne(() => Booster, { nullable: true })
   booster: Booster;

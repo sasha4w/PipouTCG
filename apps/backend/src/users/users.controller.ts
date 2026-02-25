@@ -5,29 +5,36 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // GET /users
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
-  // GET /users/:id/portfolio
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(Number(id));
+  }
+
+  @Get(':id/profile')
+  getProfile(@Param('id') id: string) {
+    return this.usersService.getProfile(Number(id));
+  }
+
   @Get(':id/portfolio')
   getCardPortfolio(@Param('id') id: string) {
     return this.usersService.getCardPortfolio(Number(id));
   }
 
-  // GET /users/:id
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(Number(id));
+  @Get(':id/boosters')
+  getUserBoosters(@Param('id') id: string) {
+    return this.usersService.getUserBoosters(Number(id));
   }
-  // GET /users/:id/profile
-  @Get(':id/profile')
-  getProfile(@Param('id') id: string) {
-    return this.usersService.getProfile(Number(id));
+
+  @Get(':id/bundles')
+  getUserBundles(@Param('id') id: string) {
+    return this.usersService.getUserBundles(Number(id));
   }
-  // POST /users
+
   @Post()
   create(@Body() body: any) {
     return this.usersService.create(body);
