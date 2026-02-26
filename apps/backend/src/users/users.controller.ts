@@ -1,40 +1,58 @@
-import { Controller, Get, Param, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../auth/jwt.authguard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  // PUBLIC //
+  @Get(':id/profile')
+  getProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getProfile(id);
+  }
+
+  @Get(':id/portfolio')
+  getCardPortfolio(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getCardPortfolio(id);
+  }
+
+  // CONNECTÉ //
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/boosters')
+  getUserBoosters(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUserBoosters(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/bundles')
+  getUserBundles(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUserBundles(id);
+  }
+
+  // ADMIN //
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(Number(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id);
   }
 
-  @Get(':id/profile')
-  getProfile(@Param('id') id: string) {
-    return this.usersService.getProfile(Number(id));
-  }
-
-  @Get(':id/portfolio')
-  getCardPortfolio(@Param('id') id: string) {
-    return this.usersService.getCardPortfolio(Number(id));
-  }
-
-  @Get(':id/boosters')
-  getUserBoosters(@Param('id') id: string) {
-    return this.usersService.getUserBoosters(Number(id));
-  }
-
-  @Get(':id/bundles')
-  getUserBundles(@Param('id') id: string) {
-    return this.usersService.getUserBundles(Number(id));
-  }
-
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post()
   create(@Body() body: any) {
     return this.usersService.create(body);

@@ -10,42 +10,46 @@ import {
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt.authguard';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  // GET /cards/set/:setId
+  // PUBLIC
   @Get('set/:setId')
   findBySet(@Param('setId') setId: string) {
     return this.cardsService.findBySet(Number(setId));
   }
 
-  // GET /cards
+  // PUBLIC //
   @Get()
   findAll() {
     return this.cardsService.findAll();
   }
 
-  // GET /cards/:id
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cardsService.findOne(Number(id));
   }
 
-  // POST /cards
+  // ADMIN //
+
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post()
   create(@Body() createCardDto: CreateCardDto) {
     return this.cardsService.create(createCardDto);
   }
 
-  // PUT /cards/:id
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Put(':id')
   update(@Param('id') id: string, @Body() updateCardDto: UpdateCardDto) {
     return this.cardsService.update(Number(id), updateCardDto);
   }
 
-  // DELETE /cards/:id
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.cardsService.remove(Number(id));

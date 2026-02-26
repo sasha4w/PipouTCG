@@ -1,24 +1,37 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Transaction } from './transaction.entity';
-import { User } from '../users/user.entity';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Get,
+  Req,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { TransactionController } from './transaction.controller';
-import { UserBundle } from '../users/user-bundle.entity';
-import { UserBooster } from '../users/user-booster.entity';
-import { UserCard } from '../users/user-card.entity';
+import { CreateListingDto } from './dto/create-listing.dto';
+import { JwtAuthGuard } from '../auth/jwt.authguard';
 
-@Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Transaction,
-      User,
-      UserCard,
-      UserBooster,
-      UserBundle,
-    ]),
-  ],
-  providers: [TransactionService],
-  controllers: [TransactionController],
-})
-export class TransactionModule {}
+@Controller('transactions')
+export class TransactionController {
+  constructor(private readonly transactionService: TransactionService) {}
+
+  // CONNECTÉ //
+  @UseGuards(JwtAuthGuard)
+  @Post('listing')
+  createListing(@Body() dto: CreateListingDto, @Req() req) {
+    return this.transactionService.createListing(dto, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/buy')
+  buyListing(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.transactionService.buyListing(id, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('history')
+  getHistory(@Req() req) {
+    return this.transactionService.getUserHistory(req.user.userId);
+  }
+}
