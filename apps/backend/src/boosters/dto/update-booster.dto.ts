@@ -26,4 +26,9 @@ export class UpdateBoosterDto {
   @IsInt()
   @Min(1)
   cardSetId?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  price?: number;
 }

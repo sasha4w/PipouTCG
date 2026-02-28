@@ -18,28 +18,16 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return {
-      access_token: this.jwtService.sign({ sub: user.id }),
+    const payload = {
+      sub: user.id,
+      is_admin: user.is_admin, // 👈 IMPORTANT
     };
-  }
-  async loginAdmin(email: string, password: string) {
-    const user = await this.usersService.findByEmail(email);
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (!user.is_admin) {
-      throw new UnauthorizedException('Not an admin');
-    }
 
     return {
-      access_token: this.jwtService.sign({
-        sub: user.id,
-        is_admin: user.is_admin,
-      }),
+      access_token: this.jwtService.sign(payload),
     };
   }
+
   async register(dto: RegisterDto) {
     const hash = await bcrypt.hash(dto.password, 10);
 

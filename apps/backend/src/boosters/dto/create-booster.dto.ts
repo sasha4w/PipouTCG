@@ -24,4 +24,8 @@ export class CreateBoosterDto {
   @IsInt()
   @Min(1)
   cardSetId: number;
+
+  @IsInt()
+  @Min(1)
+  price: number;
 }
