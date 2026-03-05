@@ -36,13 +36,13 @@ export class BundlesController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/buy')
   buyBundle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.bundlesService.buyBundle(id, req.user.id);
+    return this.bundlesService.buyBundle(id, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/open')
   openBundle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.bundlesService.openBundle(id, req.user.id);
+    return this.bundlesService.openBundle(id, req.user.userId);
   }
 
   // ADMIN //

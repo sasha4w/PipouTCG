@@ -1,49 +1,76 @@
 import {
   Controller,
   Get,
-  Post,
+  Patch,
   Param,
-  Body,
+  Query,
   UseGuards,
   ParseIntPipe,
+  Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // PUBLIC //
-  @Get(':id/profile')
-  getProfile(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getProfile(id);
-  }
+  /* ===================== CONNECTÉ (toujours visible) ===================== */
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id/portfolio')
   getCardPortfolio(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getCardPortfolio(id);
   }
 
-  // CONNECTÉ //
+  /* ===================== CONNECTÉ (respecte la privacy) ===================== */
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/profile')
+  async getProfile(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    await this.assertCanView(req, id);
+    return this.usersService.getProfile(id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/inventory')
+  async getInventory(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    await this.assertCanView(req, id);
+    return this.usersService.getInventory(id);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get(':id/boosters')
-  getUserBoosters(@Param('id', ParseIntPipe) id: number) {
+  async getUserBoosters(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    await this.assertCanView(req, id);
     return this.usersService.getUserBoosters(id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/bundles')
-  getUserBundles(@Param('id', ParseIntPipe) id: number) {
+  async getUserBundles(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    await this.assertCanView(req, id);
     return this.usersService.getUserBundles(id);
   }
 
-  // ADMIN //
+  /* ===================== OWNER ONLY ===================== */
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/privacy')
+  togglePrivacy(@Param('id', ParseIntPipe) id: number, @Request() req) {
+    this.assertOwner(req.user.userId, id);
+    return this.usersService.togglePrivacy(id);
+  }
+
+  /* ===================== ADMIN ===================== */
+
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.usersService.findAll(pagination);
   }
 
   @UseGuards(JwtAuthGuard, AdminGuard)
@@ -52,9 +79,23 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @UseGuards(JwtAuthGuard, AdminGuard)
-  @Post()
-  create(@Body() body: any) {
-    return this.usersService.create(body);
+  /* ===================== HELPERS ===================== */
+
+  private async assertCanView(req: any, targetId: number) {
+    const target = await this.usersService.findOne(targetId);
+    if (!target) throw new ForbiddenException('User not found');
+
+    const isOwner = req.user.userId === targetId;
+    const isAdmin = req.user.isAdmin;
+
+    if (target.isPrivate && !isOwner && !isAdmin) {
+      throw new ForbiddenException('This profile is private');
+    }
+  }
+
+  private assertOwner(requesterId: number, targetId: number) {
+    if (requesterId !== targetId) {
+      throw new ForbiddenException('You can only do this on your own account');
+    }
   }
 }

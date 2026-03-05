@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 
@@ -6,6 +6,7 @@ import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
 import { UserBooster } from './user-booster.entity';
 import { UserBundle } from './user-bundle.entity';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UsersService {
@@ -25,16 +26,54 @@ export class UsersService {
 
   /* ===================== BASIC ===================== */
 
-  findAll() {
-    return this.userRepository.find();
+  async findAll({ page = 1, limit = 20 }: PaginationDto) {
+    const [users, total] = await this.userRepository.findAndCount({
+      select: [
+        'id',
+        'username',
+        'email',
+        'is_admin',
+        'gold',
+        'experience',
+        'isPrivate',
+      ],
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
+    });
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: number) {
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'username',
+        'email',
+        'is_admin',
+        'gold',
+        'experience',
+        'isPrivate',
+        'boostersOpened',
+        'cardsBought',
+        'cardsSold',
+        'moneyEarned',
+        'setsCompleted',
+      ],
+    });
     if (!user) return null;
 
     const levelData = this.calculateLevelData(user.experience);
-
     return { ...user, ...levelData };
   }
 
@@ -51,7 +90,29 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
+  /* ===================== PRIVACY ===================== */
+
+  async togglePrivacy(userId: number) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) throw new NotFoundException('User not found');
+
+    user.isPrivate = !user.isPrivate;
+    await this.userRepository.save(user);
+
+    return { isPrivate: user.isPrivate };
+  }
+
   /* ===================== INVENTORY ===================== */
+
+  async getInventory(userId: number) {
+    const [cards, boosters, bundles] = await Promise.all([
+      this.getCardsOwned(userId),
+      this.getUserBoosters(userId),
+      this.getUserBundles(userId),
+    ]);
+
+    return { cards, boosters, bundles };
+  }
 
   async getCardPortfolio(userId: number) {
     const userCards = await this.userCardRepository.find({
@@ -67,15 +128,17 @@ export class UsersService {
       hp: uc.card.hp,
       type: uc.card.type,
       set: uc.card.cardSet?.name,
+      setId: uc.card.cardSet?.id,
       quantity: uc.quantity,
     }));
   }
-  // 🎒 Uniquement les cartes détenues
+
   async getCardsOwned(userId: number) {
     const userCards = await this.userCardRepository.find({
       where: { user: { id: userId }, quantity: MoreThan(0) },
       relations: { card: { cardSet: true } },
     });
+
     return userCards.map((uc) => ({
       id: uc.card.id,
       name: uc.card.name,
@@ -84,6 +147,7 @@ export class UsersService {
       hp: uc.card.hp,
       type: uc.card.type,
       set: uc.card.cardSet?.name,
+      setId: uc.card.cardSet?.id,
       quantity: uc.quantity,
     }));
   }
@@ -120,10 +184,7 @@ export class UsersService {
 
   async addBoosterToUser(userId: number, boosterId: number, quantity = 1) {
     const existing = await this.userBoosterRepository.findOne({
-      where: {
-        user: { id: userId },
-        booster: { id: boosterId },
-      },
+      where: { user: { id: userId }, booster: { id: boosterId } },
     });
 
     if (existing) {
@@ -142,13 +203,10 @@ export class UsersService {
 
   async removeBoosterFromUser(userId: number, boosterId: number) {
     const booster = await this.userBoosterRepository.findOne({
-      where: {
-        user: { id: userId },
-        booster: { id: boosterId },
-      },
+      where: { user: { id: userId }, booster: { id: boosterId } },
     });
 
-    if (!booster) return null;
+    if (!booster) throw new NotFoundException('Booster not found in inventory');
 
     booster.quantity--;
 
@@ -201,7 +259,21 @@ export class UsersService {
   }
 
   async getProfile(userId: number) {
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: [
+        'id',
+        'username',
+        'experience',
+        'gold',
+        'isPrivate',
+        'boostersOpened',
+        'cardsBought',
+        'cardsSold',
+        'moneyEarned',
+        'setsCompleted',
+      ],
+    });
     if (!user) return null;
 
     const levelData = this.calculateLevelData(user.experience);
@@ -209,17 +281,18 @@ export class UsersService {
     return {
       id: user.id,
       username: user.username,
+      isPrivate: user.isPrivate,
       level: levelData.level,
       experience: user.experience,
       currentXp: levelData.currentXp,
       xpForNextLevel: levelData.xpForNextLevel,
       progressPercent: levelData.progressPercent,
-      gold: user.gold,
+      gold: Number(user.gold),
       stats: {
         boostersOpened: user.boostersOpened,
         cardsBought: user.cardsBought,
         cardsSold: user.cardsSold,
-        moneyEarned: user.moneyEarned,
+        moneyEarned: Number(user.moneyEarned),
         setsCompleted: user.setsCompleted,
       },
     };

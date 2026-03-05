@@ -6,37 +6,32 @@ import {
   Get,
   Req,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { TransactionService } from './transaction.service';
 import { CreateListingDto } from './dto/create-listing.dto';
+import { JwtAuthGuard } from '../auth/jwt.authguard';
 
 @Controller('transactions')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
-  // Créer une annonce
-  @UseGuards(AuthGuard('jwt'))
+  // CONNECTÉ //
+  @UseGuards(JwtAuthGuard)
   @Post('listing')
-  createListing(@Body() dto: CreateListingDto, @Req() req) {
-    const sellerId = req.user.userId;
-    return this.transactionService.createListing(dto, sellerId);
+  createListing(@Body() dto: CreateListingDto, @Req() req: any) {
+    return this.transactionService.createListing(dto, req.user.userId);
   }
 
-  // Acheter une annonce
-  // Acheter une annonce
-  @UseGuards(AuthGuard('jwt'))
-  @Post(':id/buy') // ← on retire :buyerId de l'URL
-  buyListing(@Param('id') id: string, @Req() req) {
-    const buyerId = req.user.userId; // ← depuis le JWT
-    return this.transactionService.buyListing(Number(id), buyerId);
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/buy')
+  buyListing(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.transactionService.buyListing(id, req.user.userId);
   }
 
-  // Historique utilisateur
-  @UseGuards(AuthGuard('jwt'))
-  @Get('history') // ← plus besoin de :id dans l'URL
-  getHistory(@Req() req) {
-    const userId = req.user.userId; // ← depuis le JWT
-    return this.transactionService.getUserHistory(userId);
+  @UseGuards(JwtAuthGuard)
+  @Get('history')
+  getHistory(@Req() req: any) {
+    return this.transactionService.getUserHistory(req.user.userId);
   }
 }

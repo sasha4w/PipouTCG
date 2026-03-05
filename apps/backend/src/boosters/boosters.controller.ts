@@ -35,13 +35,13 @@ export class BoostersController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/buy')
   buyBooster(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.boostersService.buyBooster(id, req.user.id);
+    return this.boostersService.buyBooster(id, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/open')
   openBooster(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.boostersService.openBooster(id, req.user.id);
+    return this.boostersService.openBooster(id, req.user.userId);
   }
 
   // ADMIN //

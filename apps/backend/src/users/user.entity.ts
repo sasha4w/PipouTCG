@@ -23,9 +23,14 @@ export class User {
   is_admin: boolean;
 
   // =========================
+  // 🔒 PRIVACY
+  // =========================
+  @Column({ default: false })
+  isPrivate: boolean;
+
+  // =========================
   // 💰 ECONOMIE
   // =========================
-
   @Column({ type: 'bigint', default: 0 })
   gold: number;
 
@@ -38,7 +43,6 @@ export class User {
   // =========================
   // 📦 ACHATS
   // =========================
-
   @Column({ default: 0 })
   cardsBought: number;
 
@@ -51,7 +55,6 @@ export class User {
   // =========================
   // 🏪 VENTES
   // =========================
-
   @Column({ default: 0 })
   cardsSold: number;
 
@@ -64,7 +67,6 @@ export class User {
   // =========================
   // 🎮 PROGRESSION
   // =========================
-
   @Column({ default: 0 })
   experience: number;
 
@@ -77,7 +79,6 @@ export class User {
   // =========================
   // 🔗 RELATIONS
   // =========================
-
   @OneToMany(() => UserCard, (userCard) => userCard.user)
   userCards: UserCard[];
 
@@ -86,6 +87,7 @@ export class User {
 
   @OneToMany(() => UserBundle, (ub) => ub.user)
   userBundles: UserBundle[];
+
   @OneToMany(() => BoosterOpenHistory, (boh) => boh.user)
   boosterOpenHistories: BoosterOpenHistory[];
 
@@ -94,16 +96,4 @@ export class User {
 
   @OneToMany(() => Transaction, (transaction) => transaction.seller)
   sales: Transaction[];
-
-  // =========================
-  // 🧠 GETTERS CALCULÉS
-  // =========================
-
-  get totalItemsBought(): number {
-    return this.cardsBought + this.boostersBought + this.bundlesBought;
-  }
-
-  get totalItemsSold(): number {
-    return this.cardsSold + this.boostersSold + this.bundlesSold;
-  }
 }
