@@ -14,7 +14,7 @@ import { User } from '../users/user.entity';
 import { Card } from '../cards/card.entity';
 import { CardNumber } from './enums/cardnumber.enum';
 import { Rarity } from '../cards/enums/rarity.enum';
-
+import { UsersService } from '../users/users.service';
 // ============================================================
 // CONFIGURATION DES TAUX DE RARETÉ
 // Total = 100%, ajustable selon l'équilibrage souhaité
@@ -47,14 +47,11 @@ export class BoostersService {
     private openHistoryRepository: Repository<BoosterOpenHistory>,
     @InjectRepository(BoosterOpenCard)
     private openCardRepository: Repository<BoosterOpenCard>,
-    @InjectRepository(UserCard)
-    private userCardRepository: Repository<UserCard>,
-    @InjectRepository(UserBooster)
-    private userBoosterRepository: Repository<UserBooster>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
+
+    private readonly usersService: UsersService,
   ) {}
 
   // Retourne tous les boosters avec leur cardSet associé
@@ -173,49 +170,29 @@ export class BoostersService {
   // Débite le gold et ajoute le booster dans user_booster
   // ============================================================
   async buyBooster(boosterId: number, userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    // 1. On récupère le user via le UsersService
+    const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} not found`);
 
-    const booster = await this.boosterRepository.findOne({
-      where: { id: boosterId },
-    });
-    if (!booster) throw new NotFoundException(`Booster ${boosterId} not found`);
+    const booster = await this.findOne(boosterId);
 
-    // Vérification que l'utilisateur a suffisamment de gold
+    // 2. Vérification de l'or
     if (Number(user.gold) < booster.price) {
       throw new BadRequestException(
         `Not enough gold. Required: ${booster.price}, available: ${user.gold}`,
       );
     }
 
-    // Déduction du gold et mise à jour des stats
-    user.gold = Number(user.gold) - booster.price;
-    user.moneySpent = Number(user.moneySpent) + booster.price;
-    user.boostersBought += 1;
-    await this.userRepository.save(user);
+    // 3. Paiement et Stats (Il faudra ajouter cette petite méthode dans UsersService)
+    await this.usersService.spendGoldAndRecordPurchase(userId, booster.price);
 
-    // Ajout ou incrémentation du booster dans l'inventaire user_booster
-    const existing = await this.userBoosterRepository.findOne({
-      where: { user: { id: userId }, booster: { id: boosterId } },
-    });
-
-    if (existing) {
-      existing.quantity += 1;
-      await this.userBoosterRepository.save(existing);
-    } else {
-      await this.userBoosterRepository.save(
-        this.userBoosterRepository.create({
-          user: { id: userId } as any,
-          booster: { id: boosterId } as any,
-          quantity: 1,
-        }),
-      );
-    }
+    // 4. Ajout dans l'inventaire via le service délégué !
+    await this.usersService.addBoosterToUser(userId, boosterId, 1);
 
     return {
       message: `Booster "${booster.name}" acheté avec succès`,
       goldSpent: booster.price,
-      goldRemaining: user.gold,
+      goldRemaining: Number(user.gold) - booster.price,
     };
   }
 
@@ -224,34 +201,21 @@ export class BoostersService {
   // Vérifie l'inventaire → -1 user_booster → génère N cartes → +N user_card
   // ============================================================
   async openBooster(boosterId: number, userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException(`User ${userId} not found`);
+    // 1. Récupération des données de base
+    const booster = await this.findOne(boosterId); // Utilise ton findOne qui check déjà le NotFound
 
-    const booster = await this.boosterRepository.findOne({
-      where: { id: boosterId },
-      relations: { cardSet: true },
-    });
-    if (!booster) throw new NotFoundException(`Booster ${boosterId} not found`);
+    // 2. Vérification et retrait du booster (Délégué à UsersService)
+    // Cette méthode dans UsersService fait déjà le check de quantité et le remove/save
+    await this.usersService.removeBoosterFromUser(userId, boosterId);
 
-    // Vérification que le user possède au moins 1 exemplaire de ce booster
-    const userBooster = await this.userBoosterRepository.findOne({
-      where: { user: { id: userId }, booster: { id: boosterId } },
-    });
-    if (!userBooster || userBooster.quantity < 1) {
-      throw new BadRequestException(`You don't own this booster`);
-    }
-
-    // Récupération des cartes du cardSet du booster
+    // 3. Récupération des cartes du set
     const cards = await this.cardRepository.find({
       where: { cardSet: { id: booster.cardSet.id } },
     });
-    if (!cards.length) {
-      throw new BadRequestException(
-        `No cards found in set "${booster.cardSet.name}"`,
-      );
-    }
+    if (!cards.length)
+      throw new BadRequestException(`No cards in set ${booster.cardSet.name}`);
 
-    // Groupement des cartes par rareté pour le tirage pondéré
+    // 4. LOGIQUE DE TIRAGE (Ton algorithme reste ici)
     const cardsByRarity = cards.reduce(
       (acc, card) => {
         if (!acc[card.rarity]) acc[card.rarity] = [];
@@ -262,75 +226,42 @@ export class BoostersService {
     );
 
     const drawnCards: Card[] = [];
-
-    // Placement des cartes garanties selon le type de booster
     const guarantees = BOOSTER_GUARANTEES[booster.cardNumber] ?? [];
-    for (const guaranteedRarity of guarantees) {
-      drawnCards.push(this.drawCardOfRarity(guaranteedRarity, cardsByRarity));
+    for (const rarity of guarantees) {
+      drawnCards.push(this.drawCardOfRarity(rarity, cardsByRarity));
     }
-
-    // Complétion des slots restants avec un tirage aléatoire pondéré
     const remainingSlots = booster.cardNumber - drawnCards.length;
     for (let i = 0; i < remainingSlots; i++) {
       drawnCards.push(this.drawCard(cardsByRarity));
     }
-
-    // Mélange du tableau pour que les garanties ne soient pas toujours en premier
     drawnCards.sort(() => Math.random() - 0.5);
 
-    // Retrait de 1 booster dans l'inventaire user_booster
-    // Si c'était le dernier, on supprime l'entrée
-    if (userBooster.quantity === 1) {
-      await this.userBoosterRepository.remove(userBooster);
-    } else {
-      userBooster.quantity -= 1;
-      await this.userBoosterRepository.save(userBooster);
-    }
+    // 5. ENREGISTREMENT (Délégué aux services respectifs)
 
-    // Mise à jour des stats d'ouverture
-    user.boostersOpened += 1;
-    await this.userRepository.save(user);
-
-    // Création de l'historique d'ouverture
+    // Création de l'historique
     const history = await this.openHistoryRepository.save(
       this.openHistoryRepository.create({
-        user: { id: user.id } as any,
+        user: { id: userId } as any,
         booster: { id: booster.id } as any,
         openedAt: new Date(),
       }),
     );
 
-    // Enregistrement des cartes tirées dans booster_open_card
-    await this.openCardRepository.save(
-      drawnCards.map((card) =>
+    // Cartes de l'historique + Ajout dans l'inventaire User
+    for (const card of drawnCards) {
+      await this.usersService.addCardToUser(userId, card.id);
+
+      // Lien historique
+      await this.openCardRepository.save(
         this.openCardRepository.create({
           card: { id: card.id } as any,
           openHistory: { id: history.id } as any,
         }),
-      ),
-    );
-
-    // Ajout des cartes dans l'inventaire user_card
-    // Si la carte est déjà possédée → incrémente la quantité
-    // Sinon → crée une nouvelle entrée avec quantité = 1
-    for (const card of drawnCards) {
-      const existing = await this.userCardRepository.findOne({
-        where: { user: { id: user.id }, card: { id: card.id } },
-      });
-
-      if (existing) {
-        existing.quantity += 1;
-        await this.userCardRepository.save(existing);
-      } else {
-        await this.userCardRepository.save(
-          this.userCardRepository.create({
-            user: { id: user.id } as any,
-            card: { id: card.id } as any,
-            quantity: 1,
-          }),
-        );
-      }
+      );
     }
+
+    // Mise à jour des stats globales (XP + compteurs)
+    await this.usersService.updatePostOpeningStats(userId, 50);
 
     return {
       historyId: history.id,

@@ -5,7 +5,9 @@ import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
 import { BoostersService } from './boosters.service';
 import { BoostersController } from './boosters.controller';
-import { UserBooster } from 'src/users/user-booster.entity';
+import { Card } from '../cards/card.entity';
+import { UsersModule } from '../users/users.module';
+import { CardsModule } from '../cards/cards.module';
 
 @Module({
   imports: [
@@ -13,8 +15,10 @@ import { UserBooster } from 'src/users/user-booster.entity';
       Booster,
       BoosterOpenHistory,
       BoosterOpenCard,
-      UserBooster,
+      Card,
     ]),
+    UsersModule,
+    CardsModule,
   ],
   providers: [BoostersService],
   controllers: [BoostersController],

@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { UserCard } from './user-card.entity';
 import { UserBooster } from './user-booster.entity';
 import { UserBundle } from './user-bundle.entity';
+import { UserQuest } from './user-quest.entity';
 import { BoosterOpenHistory } from '../boosters/booster-open-history.entity';
 import { Transaction } from '../transactions/transaction.entity';
 
@@ -87,6 +88,9 @@ export class User {
 
   @OneToMany(() => UserBundle, (ub) => ub.user)
   userBundles: UserBundle[];
+
+  @OneToMany(() => UserQuest, (uq) => uq.user)
+  userQuests: UserQuest[];
 
   @OneToMany(() => BoosterOpenHistory, (boh) => boh.user)
   boosterOpenHistories: BoosterOpenHistory[];

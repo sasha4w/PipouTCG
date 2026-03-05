@@ -8,7 +8,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { TransactionService } from './transaction.service';
+import { TransactionService } from './transactions.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 

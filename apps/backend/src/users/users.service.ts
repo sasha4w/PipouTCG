@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
 
@@ -179,6 +183,95 @@ export class UsersService {
       quantity: ub.quantity,
     }));
   }
+  /* ===================== CARD MANAGEMENT ===================== */
+  async addCardToUser(userId: number, cardId: number, quantity = 1) {
+    const existing = await this.userCardRepository.findOne({
+      where: { user: { id: userId }, card: { id: cardId } },
+    });
+
+    if (existing) {
+      existing.quantity += quantity;
+      return this.userCardRepository.save(existing);
+    }
+
+    return this.userCardRepository.save(
+      this.userCardRepository.create({
+        user: { id: userId } as any,
+        card: { id: cardId } as any,
+        quantity,
+      }),
+    );
+  }
+
+  /* ===================== BUNDLE MANAGEMENT ===================== */
+
+  async addBundleToUser(userId: number, bundleId: number, quantity = 1) {
+    const existing = await this.userBundleRepository.findOne({
+      where: { user: { id: userId }, bundle: { id: bundleId } },
+    });
+
+    if (existing) {
+      existing.quantity += quantity;
+      return this.userBundleRepository.save(existing);
+    }
+
+    return this.userBundleRepository.save(
+      this.userBundleRepository.create({
+        user: { id: userId } as any,
+        bundle: { id: bundleId } as any,
+        quantity,
+      }),
+    );
+  }
+  async removeBundleFromUser(userId: number, bundleId: number) {
+    const ub = await this.userBundleRepository.findOne({
+      where: { user: { id: userId }, bundle: { id: bundleId } },
+    });
+
+    if (!ub || ub.quantity <= 0) {
+      throw new BadRequestException('Vous ne possédez pas ce bundle.');
+    }
+
+    ub.quantity--;
+
+    if (ub.quantity <= 0) {
+      await this.userBundleRepository.remove(ub);
+      return null;
+    }
+    return this.userBundleRepository.save(ub);
+  }
+  async distributeBundleContents(userId: number, contents: any[]) {
+    const summary = {
+      cards: [] as { name: string; quantity: number }[],
+      boosters: [] as { name: string; quantity: number }[],
+    };
+
+    for (const content of contents) {
+      if (content.card) {
+        // Ajout de la carte (gère déjà l'incrémentation si existante)
+        await this.addCardToUser(userId, content.card.id, content.quantity);
+        summary.cards.push({
+          name: content.card.name,
+          quantity: content.quantity,
+        });
+      }
+
+      if (content.booster) {
+        // Ajout du booster (gère déjà l'incrémentation si existante)
+        await this.addBoosterToUser(
+          userId,
+          content.booster.id,
+          content.quantity,
+        );
+        summary.boosters.push({
+          name: content.booster.name,
+          quantity: content.quantity,
+        });
+      }
+    }
+
+    return summary;
+  }
 
   /* ===================== BOOSTER MANAGEMENT ===================== */
 
@@ -192,30 +285,36 @@ export class UsersService {
       return this.userBoosterRepository.save(existing);
     }
 
-    const newBooster = this.userBoosterRepository.create({
-      user: { id: userId },
-      booster: { id: boosterId },
-      quantity,
-    });
-
-    return this.userBoosterRepository.save(newBooster);
+    return this.userBoosterRepository.save(
+      this.userBoosterRepository.create({
+        user: { id: userId } as any,
+        booster: { id: boosterId } as any,
+        quantity,
+      }),
+    );
   }
 
   async removeBoosterFromUser(userId: number, boosterId: number) {
-    const booster = await this.userBoosterRepository.findOne({
+    const ub = await this.userBoosterRepository.findOne({
       where: { user: { id: userId }, booster: { id: boosterId } },
     });
 
-    if (!booster) throw new NotFoundException('Booster not found in inventory');
-
-    booster.quantity--;
-
-    if (booster.quantity <= 0) {
-      await this.userBoosterRepository.remove(booster);
-      return null;
+    if (!ub || ub.quantity <= 0) {
+      throw new BadRequestException("L'utilisateur ne possède pas ce booster.");
     }
 
-    return this.userBoosterRepository.save(booster);
+    ub.quantity--;
+
+    if (ub.quantity <= 0) {
+      await this.userBoosterRepository.remove(ub);
+      return null;
+    }
+    return this.userBoosterRepository.save(ub);
+  }
+
+  async updatePostOpeningStats(userId: number, xpAmount: number) {
+    await this.userRepository.increment({ id: userId }, 'boostersOpened', 1);
+    await this.userRepository.increment({ id: userId }, 'experience', xpAmount);
   }
 
   /* ===================== STATS ===================== */
@@ -296,5 +395,35 @@ export class UsersService {
         setsCompleted: user.setsCompleted,
       },
     };
+  }
+  /* ===================== PURCHASES ===================== */
+
+  async spendGoldAndRecordPurchase(userId: number, goldAmount: number) {
+    // Utilisation du QueryBuilder pour faire les 3 actions en UNE seule requête SQL
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        // On retire l'or
+        gold: () => `gold - ${goldAmount}`,
+        // On ajoute aux statistiques de dépenses totales
+        moneySpent: () => `moneySpent + ${goldAmount}`,
+        // On incrémente le compteur de boosters achetés
+        boostersBought: () => `boostersBought + 1`,
+      })
+      .where('id = :id', { id: userId })
+      .execute();
+  }
+  async spendGoldAndRecordBundlePurchase(userId: number, goldAmount: number) {
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        gold: () => `gold - ${goldAmount}`,
+        moneySpent: () => `moneySpent + ${goldAmount}`,
+        bundlesBought: () => `bundlesBought + 1`, // Stat spécifique au bundle
+      })
+      .where('id = :id', { id: userId })
+      .execute();
   }
 }
