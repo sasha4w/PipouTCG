@@ -8,6 +8,7 @@ import {
   Body,
   ParseIntPipe,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { BundlesService } from './bundles.service';
 import { CreateBundleDto } from './dto/create-bundle.dto';
@@ -15,6 +16,7 @@ import { UpdateBundleDto } from './dto/update-bundle.dto';
 import { AddBundleContentDto } from './dto/add-bundle-content.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
+
 @Controller('bundles')
 export class BundlesController {
   constructor(private readonly bundlesService: BundlesService) {}
@@ -28,6 +30,19 @@ export class BundlesController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bundlesService.findOne(id);
+  }
+
+  // USER //
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/buy')
+  buyBundle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.bundlesService.buyBundle(id, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/open')
+  openBundle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.bundlesService.openBundle(id, req.user.id);
   }
 
   // ADMIN //
