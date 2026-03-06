@@ -32,6 +32,11 @@ export class Card {
   @Column()
   hp: number;
 
+  @Column({ nullable: true })
+  description: string;
+
+  @Column({ nullable: true })
+  imageUrl: string;
   @ManyToOne(() => CardSet, (cardSet) => cardSet.cards)
   @JoinColumn({ name: 'card_set_id' })
   cardSet: CardSet;

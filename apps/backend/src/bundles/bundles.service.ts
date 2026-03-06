@@ -11,7 +11,7 @@ import { CreateBundleDto } from './dto/create-bundle.dto';
 import { UpdateBundleDto } from './dto/update-bundle.dto';
 import { AddBundleContentDto } from './dto/add-bundle-content.dto';
 import { UsersService } from '../users/users.service';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Injectable()
 export class BundlesService {
   constructor(
@@ -24,15 +24,17 @@ export class BundlesService {
     private readonly usersService: UsersService,
   ) {}
 
-  findAll() {
-    return this.bundleRepository.find({
-      relations: {
-        contents: {
-          card: true,
-          booster: true,
-        },
-      },
+  async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
+    const [bundles, total] = await this.bundleRepository.findAndCount({
+      relations: { contents: { card: true, booster: true } },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
     });
+    return {
+      data: bundles,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number) {

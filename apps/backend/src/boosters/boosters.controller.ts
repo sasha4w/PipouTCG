@@ -9,21 +9,22 @@ import {
   ParseIntPipe,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { BoostersService } from './boosters.service';
 import { CreateBoosterDto } from './dto/create-booster.dto';
 import { UpdateBoosterDto } from './dto/update-booster.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Controller('boosters')
 export class BoostersController {
   constructor(private readonly boostersService: BoostersService) {}
 
   // PUBLIC //
   @Get()
-  findAll() {
-    return this.boostersService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.boostersService.findAll(pagination);
   }
 
   @Get(':id')

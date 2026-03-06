@@ -7,11 +7,12 @@ import {
   Req,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { TransactionService } from './transactions.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Controller('transactions')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
@@ -31,7 +32,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  getHistory(@Req() req: any) {
-    return this.transactionService.getUserHistory(req.user.userId);
+  getHistory(@Req() req: any, @Query() pagination: PaginationDto) {
+    return this.transactionService.getUserHistory(req.user.userId, pagination);
   }
 }

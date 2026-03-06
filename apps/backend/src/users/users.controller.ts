@@ -22,8 +22,11 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/portfolio')
-  getCardPortfolio(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.getCardPortfolio(id);
+  getCardPortfolio(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() pagination: PaginationDto,
+  ) {
+    return this.usersService.getCardPortfolio(id, pagination);
   }
 
   /* ===================== CONNECTÉ (respecte la privacy) ===================== */
@@ -44,16 +47,24 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/boosters')
-  async getUserBoosters(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  async getUserBoosters(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+    @Query() pagination: PaginationDto,
+  ) {
     await this.assertCanView(req, id);
-    return this.usersService.getUserBoosters(id);
+    return this.usersService.getUserBoosters(id, pagination);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/bundles')
-  async getUserBundles(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  async getUserBundles(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+    @Query() pagination: PaginationDto,
+  ) {
     await this.assertCanView(req, id);
-    return this.usersService.getUserBundles(id);
+    return this.usersService.getUserBundles(id, pagination);
   }
 
   /* ===================== OWNER ONLY ===================== */

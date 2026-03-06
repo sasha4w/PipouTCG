@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CardSet } from './card-set.entity';
 import { CreateCardSetDto } from './dto/create-card-set.dto';
 import { UpdateCardSetDto } from './dto/update-card-set.dto';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Injectable()
 export class CardSetsService {
   constructor(
@@ -12,8 +12,16 @@ export class CardSetsService {
     private cardSetRepository: Repository<CardSet>,
   ) {}
 
-  findAll() {
-    return this.cardSetRepository.find();
+  async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
+    const [cardSets, total] = await this.cardSetRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
+    });
+    return {
+      data: cardSets,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async findOne(id: number) {

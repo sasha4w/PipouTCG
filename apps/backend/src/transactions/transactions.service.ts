@@ -9,7 +9,7 @@ import { UserBundle } from '../users/user-bundle.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { TransactionStatus } from './enums/transaction-status.enum';
 import { ProductType } from './enums/product-type.enum';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Injectable()
 export class TransactionService {
   constructor(
@@ -214,11 +214,22 @@ export class TransactionService {
   }
 
   // 📜 Historique utilisateur
-  async getUserHistory(userId: number) {
-    return this.transactionRepository.find({
-      where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
-      order: { createdAt: 'DESC' },
-      relations: ['buyer', 'seller'],
-    });
+  async getUserHistory(
+    userId: number,
+    { page = 1, limit = 20 }: PaginationDto = {},
+  ) {
+    const [transactions, total] = await this.transactionRepository.findAndCount(
+      {
+        where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
+        order: { createdAt: 'DESC' },
+        relations: ['buyer', 'seller'],
+        skip: (page - 1) * limit,
+        take: limit,
+      },
+    );
+    return {
+      data: transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 }

@@ -3,6 +3,8 @@ import {
   IsNumber,
   IsNotEmpty,
   IsEnum,
+  IsOptional,
+  IsUrl,
   Min,
   MinLength,
   MaxLength,
@@ -17,6 +19,11 @@ export class CreateCardDto {
   @MaxLength(100)
   name: string;
 
+  @IsString()
+  @IsOptional()
+  @MaxLength(500)
+  description?: string; // optionnel, pas toutes les cartes en ont besoin
+
   @IsEnum(Rarity)
   @IsNotEmpty()
   rarity: Rarity;
@@ -26,17 +33,18 @@ export class CreateCardDto {
   type: Type;
 
   @IsNumber()
-  @IsNotEmpty()
   @Min(0)
   atk: number;
 
   @IsNumber()
-  @IsNotEmpty()
   @Min(1)
   hp: number;
 
   @IsNumber()
-  @IsNotEmpty()
   @Min(1)
   cardSetId: number;
+
+  @IsUrl()
+  @IsOptional()
+  imageUrl?: string;
 }

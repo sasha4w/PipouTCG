@@ -8,23 +8,23 @@ import {
   Body,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { CardSetsService } from './card-sets.service';
 import { CreateCardSetDto } from './dto/create-card-set.dto';
 import { UpdateCardSetDto } from './dto/update-card-set.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from 'src/auth/admin.guard';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Controller('card-sets')
 export class CardSetsController {
   constructor(private readonly cardSetsService: CardSetsService) {}
 
   // PUBLIC //
   @Get()
-  findAll() {
-    return this.cardSetsService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.cardSetsService.findAll(pagination);
   }
-
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.cardSetsService.findOne(id);

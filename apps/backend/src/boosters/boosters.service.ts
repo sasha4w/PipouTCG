@@ -8,13 +8,12 @@ import { Repository } from 'typeorm';
 import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
-import { UserCard } from '../users/user-card.entity';
-import { UserBooster } from '../users/user-booster.entity';
-import { User } from '../users/user.entity';
 import { Card } from '../cards/card.entity';
 import { CardNumber } from './enums/cardnumber.enum';
 import { Rarity } from '../cards/enums/rarity.enum';
 import { UsersService } from '../users/users.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+
 // ============================================================
 // CONFIGURATION DES TAUX DE RARETÉ
 // Total = 100%, ajustable selon l'équilibrage souhaité
@@ -55,10 +54,17 @@ export class BoostersService {
   ) {}
 
   // Retourne tous les boosters avec leur cardSet associé
-  findAll() {
-    return this.boosterRepository.find({
+  async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
+    const [boosters, total] = await this.boosterRepository.findAndCount({
       relations: { cardSet: true },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
     });
+    return {
+      data: boosters,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   // Retourne un booster par son ID avec son cardSet et ses historiques d'ouverture

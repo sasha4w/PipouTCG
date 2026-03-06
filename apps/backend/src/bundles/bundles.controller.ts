@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { BundlesService } from './bundles.service';
 import { CreateBundleDto } from './dto/create-bundle.dto';
@@ -16,15 +17,15 @@ import { UpdateBundleDto } from './dto/update-bundle.dto';
 import { AddBundleContentDto } from './dto/add-bundle-content.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
-
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 @Controller('bundles')
 export class BundlesController {
   constructor(private readonly bundlesService: BundlesService) {}
 
   // PUBLIC //
   @Get()
-  findAll() {
-    return this.bundlesService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.bundlesService.findAll(pagination);
   }
 
   @Get(':id')

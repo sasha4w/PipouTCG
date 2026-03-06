@@ -1,42 +1,4 @@
-import {
-  IsString,
-  IsNumber,
-  IsOptional,
-  IsEnum,
-  Min,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
-import { Type } from '../enums/type.enum';
-import { Rarity } from '../enums/rarity.enum';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateCardDto } from './create-card.dto';
 
-export class UpdateCardDto {
-  @IsString()
-  @IsOptional()
-  @MinLength(2)
-  @MaxLength(100)
-  name?: string;
-
-  @IsEnum(Rarity)
-  @IsOptional()
-  rarity?: Rarity;
-
-  @IsEnum(Type)
-  @IsOptional()
-  type?: Type;
-
-  @IsNumber()
-  @IsOptional()
-  @Min(0)
-  atk?: number;
-
-  @IsNumber()
-  @IsOptional()
-  @Min(1)
-  hp?: number;
-
-  @IsNumber()
-  @IsOptional()
-  @Min(1)
-  cardSetId?: number;
-}
+export class UpdateCardDto extends PartialType(CreateCardDto) {}

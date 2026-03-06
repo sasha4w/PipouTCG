@@ -109,79 +109,173 @@ export class UsersService {
   /* ===================== INVENTORY ===================== */
 
   async getInventory(userId: number) {
-    const [cards, boosters, bundles] = await Promise.all([
-      this.getCardsOwned(userId),
-      this.getUserBoosters(userId),
-      this.getUserBundles(userId),
+    const [
+      [userCards, totalCards],
+      [boosters, totalBoosters],
+      [bundles, totalBundles],
+    ] = await Promise.all([
+      this.userCardRepository.findAndCount({
+        where: { user: { id: userId }, quantity: MoreThan(0) },
+        relations: { card: { cardSet: true } },
+        take: 20,
+        order: { id: 'ASC' },
+      }),
+      this.userBoosterRepository.findAndCount({
+        where: { user: { id: userId } },
+        relations: { booster: true },
+        take: 20,
+      }),
+      this.userBundleRepository.findAndCount({
+        where: { user: { id: userId } },
+        relations: { bundle: true },
+        take: 20,
+      }),
     ]);
 
-    return { cards, boosters, bundles };
+    return {
+      cards: {
+        data: userCards.map((uc) => ({
+          id: uc.card.id,
+          name: uc.card.name,
+          rarity: uc.card.rarity,
+          atk: uc.card.atk,
+          hp: uc.card.hp,
+          type: uc.card.type,
+          set: uc.card.cardSet?.name,
+          setId: uc.card.cardSet?.id,
+          quantity: uc.quantity,
+        })),
+        meta: {
+          total: totalCards,
+          page: 1,
+          limit: 20,
+          totalPages: Math.ceil(totalCards / 20),
+        },
+      },
+      boosters: {
+        data: boosters.map((ub) => ({
+          id: ub.booster.id,
+          name: ub.booster.name,
+          price: ub.booster.price,
+          quantity: ub.quantity,
+        })),
+        meta: {
+          total: totalBoosters,
+          page: 1,
+          limit: 20,
+          totalPages: Math.ceil(totalBoosters / 20),
+        },
+      },
+      bundles: {
+        data: bundles.map((ub) => ({
+          id: ub.bundle.id,
+          name: ub.bundle.name,
+          price: ub.bundle.price,
+          quantity: ub.quantity,
+        })),
+        meta: {
+          total: totalBundles,
+          page: 1,
+          limit: 20,
+          totalPages: Math.ceil(totalBundles / 20),
+        },
+      },
+    };
   }
 
-  async getCardPortfolio(userId: number) {
-    const userCards = await this.userCardRepository.find({
+  async getCardPortfolio(
+    userId: number,
+    { page = 1, limit = 20 }: PaginationDto = {},
+  ) {
+    const [userCards, total] = await this.userCardRepository.findAndCount({
       where: { user: { id: userId } },
       relations: { card: { cardSet: true } },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
     });
-
-    return userCards.map((uc) => ({
-      id: uc.card.id,
-      name: uc.card.name,
-      rarity: uc.card.rarity,
-      atk: uc.card.atk,
-      hp: uc.card.hp,
-      type: uc.card.type,
-      set: uc.card.cardSet?.name,
-      setId: uc.card.cardSet?.id,
-      quantity: uc.quantity,
-    }));
+    return {
+      data: userCards.map((uc) => ({
+        id: uc.card.id,
+        name: uc.card.name,
+        rarity: uc.card.rarity,
+        atk: uc.card.atk,
+        hp: uc.card.hp,
+        type: uc.card.type,
+        set: uc.card.cardSet?.name,
+        setId: uc.card.cardSet?.id,
+        quantity: uc.quantity,
+      })),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
-  async getCardsOwned(userId: number) {
-    const userCards = await this.userCardRepository.find({
+  async getCardsOwned(
+    userId: number,
+    { page = 1, limit = 20 }: PaginationDto = {},
+  ) {
+    const [userCards, total] = await this.userCardRepository.findAndCount({
       where: { user: { id: userId }, quantity: MoreThan(0) },
       relations: { card: { cardSet: true } },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { id: 'ASC' },
     });
-
-    return userCards.map((uc) => ({
-      id: uc.card.id,
-      name: uc.card.name,
-      rarity: uc.card.rarity,
-      atk: uc.card.atk,
-      hp: uc.card.hp,
-      type: uc.card.type,
-      set: uc.card.cardSet?.name,
-      setId: uc.card.cardSet?.id,
-      quantity: uc.quantity,
-    }));
+    return {
+      data: userCards.map((uc) => ({
+        id: uc.card.id,
+        name: uc.card.name,
+        rarity: uc.card.rarity,
+        atk: uc.card.atk,
+        hp: uc.card.hp,
+        type: uc.card.type,
+        set: uc.card.cardSet?.name,
+        setId: uc.card.cardSet?.id,
+        quantity: uc.quantity,
+      })),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
-
-  async getUserBoosters(userId: number) {
-    const boosters = await this.userBoosterRepository.find({
+  async getUserBoosters(
+    userId: number,
+    { page = 1, limit = 20 }: PaginationDto = {},
+  ) {
+    const [boosters, total] = await this.userBoosterRepository.findAndCount({
       where: { user: { id: userId } },
       relations: { booster: true },
+      skip: (page - 1) * limit,
+      take: limit,
     });
-
-    return boosters.map((ub) => ({
-      id: ub.booster.id,
-      name: ub.booster.name,
-      price: ub.booster.price,
-      quantity: ub.quantity,
-    }));
+    return {
+      data: boosters.map((ub) => ({
+        id: ub.booster.id,
+        name: ub.booster.name,
+        price: ub.booster.price,
+        quantity: ub.quantity,
+      })),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
-  async getUserBundles(userId: number) {
-    const bundles = await this.userBundleRepository.find({
+  async getUserBundles(
+    userId: number,
+    { page = 1, limit = 20 }: PaginationDto = {},
+  ) {
+    const [bundles, total] = await this.userBundleRepository.findAndCount({
       where: { user: { id: userId } },
       relations: { bundle: true },
+      skip: (page - 1) * limit,
+      take: limit,
     });
-
-    return bundles.map((ub) => ({
-      id: ub.bundle.id,
-      name: ub.bundle.name,
-      price: ub.bundle.price,
-      quantity: ub.quantity,
-    }));
+    return {
+      data: bundles.map((ub) => ({
+        id: ub.bundle.id,
+        name: ub.bundle.name,
+        price: ub.bundle.price,
+        quantity: ub.quantity,
+      })),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
   /* ===================== CARD MANAGEMENT ===================== */
   async addCardToUser(userId: number, cardId: number, quantity = 1) {
