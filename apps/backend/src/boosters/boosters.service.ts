@@ -12,7 +12,7 @@ import { Card } from '../cards/card.entity';
 import { CardNumber } from './enums/cardnumber.enum';
 import { Rarity } from '../cards/enums/rarity.enum';
 import { UsersService } from '../users/users.service';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 // ============================================================
 // CONFIGURATION DES TAUX DE RARETÉ

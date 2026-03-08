@@ -12,7 +12,7 @@ import {
 import { TransactionService } from './transactions.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('transactions')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}

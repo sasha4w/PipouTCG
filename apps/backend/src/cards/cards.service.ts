@@ -6,7 +6,7 @@ import { Rarity } from './enums/rarity.enum';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { UploadService } from '../upload/upload.service';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Injectable()
 export class CardsService {
   constructor(

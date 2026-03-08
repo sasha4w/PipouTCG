@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { User } from '../users/user.entity';
 import { UserCard } from '../users/user-card.entity';
@@ -9,78 +9,30 @@ import { UserBundle } from '../users/user-bundle.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { TransactionStatus } from './enums/transaction-status.enum';
 import { ProductType } from './enums/product-type.enum';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
+import { UsersService } from '../users/users.service';
+
 @Injectable()
 export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-    @InjectRepository(UserCard)
-    private userCardRepository: Repository<UserCard>,
-    @InjectRepository(UserBooster)
-    private userBoosterRepository: Repository<UserBooster>,
-    @InjectRepository(UserBundle)
-    private userBundleRepository: Repository<UserBundle>,
+    private usersService: UsersService,
     private dataSource: DataSource,
   ) {}
 
-  // 🟡 Créer une annonce
+  // ============================================================
+  // 🟡 CRÉER UNE ANNONCE
+  // ============================================================
   async createListing(dto: CreateListingDto, sellerId: number) {
-    const seller = await this.userRepository.findOneBy({ id: sellerId });
+    const seller = await this.usersService.findOne(sellerId);
     if (!seller) throw new BadRequestException('Seller not found');
 
-    // Vérifier que le vendeur possède bien le produit en quantité suffisante
-    switch (dto.productType) {
-      case ProductType.CARD: {
-        const item = await this.userCardRepository.findOne({
-          where: { id: dto.productId, user: { id: sellerId } },
-        });
-        if (!item)
-          throw new BadRequestException(
-            'Card not found or not owned by seller',
-          );
-        if (item.quantity < dto.quantity)
-          throw new BadRequestException('Not enough card quantity');
-        // 🔒 Réserver la quantité pour éviter la double vente
-        item.quantity -= dto.quantity;
-        await this.userCardRepository.save(item);
-        break;
-      }
-      case ProductType.BOOSTER: {
-        const item = await this.userBoosterRepository.findOne({
-          where: { id: dto.productId, user: { id: sellerId } },
-        });
-        if (!item)
-          throw new BadRequestException(
-            'Booster not found or not owned by seller',
-          );
-        if (item.quantity < dto.quantity)
-          throw new BadRequestException('Not enough booster quantity');
-        item.quantity -= dto.quantity;
-        await this.userBoosterRepository.save(item);
-        break;
-      }
-      case ProductType.BUNDLE: {
-        const item = await this.userBundleRepository.findOne({
-          where: { id: dto.productId, user: { id: sellerId } },
-        });
-        if (!item)
-          throw new BadRequestException(
-            'Bundle not found or not owned by seller',
-          );
-        if (item.quantity < dto.quantity)
-          throw new BadRequestException('Not enough bundle quantity');
-        item.quantity -= dto.quantity;
-        await this.userBundleRepository.save(item);
-        break;
-      }
-    }
+    await this.reserveItem(dto, sellerId);
 
     const totalPrice = dto.unitPrice * dto.quantity;
     const listing = this.transactionRepository.create({
-      seller,
+      seller: { id: sellerId } as any,
       productType: dto.productType,
       productId: dto.productId,
       quantity: dto.quantity,
@@ -92,7 +44,9 @@ export class TransactionService {
     return this.transactionRepository.save(listing);
   }
 
-  // 🟢 Acheter une annonce
+  // ============================================================
+  // 🟢 ACHETER UNE ANNONCE
+  // ============================================================
   async buyListing(transactionId: number, buyerId: number) {
     return this.dataSource.transaction(async (manager) => {
       const listing = await manager.findOne(Transaction, {
@@ -116,91 +70,8 @@ export class TransactionService {
       listing.seller.gold += listing.totalPrice;
       listing.seller.moneyEarned += listing.totalPrice;
 
-      // 📦 Transfert de l'item au buyer
-      switch (listing.productType) {
-        case ProductType.CARD: {
-          const sellerItem = await manager.findOne(UserCard, {
-            where: { id: listing.productId },
-            relations: ['card'],
-          });
-          // ✅ Guard null
-          if (!sellerItem)
-            throw new BadRequestException('Seller card item not found');
-
-          let buyerItem = await manager.findOne(UserCard, {
-            where: { user: { id: buyer.id }, card: { id: sellerItem.card.id } },
-          });
-          if (buyerItem) {
-            buyerItem.quantity += listing.quantity;
-          } else {
-            buyerItem = manager.create(UserCard, {
-              user: buyer,
-              card: sellerItem.card,
-              quantity: listing.quantity,
-            });
-          }
-          await manager.save(buyerItem);
-          buyer.cardsBought += listing.quantity;
-          listing.seller.cardsSold += listing.quantity;
-          break;
-        }
-        case ProductType.BOOSTER: {
-          const sellerItem = await manager.findOne(UserBooster, {
-            where: { id: listing.productId },
-            relations: ['booster'],
-          });
-          if (!sellerItem)
-            throw new BadRequestException('Seller booster item not found');
-
-          let buyerItem = await manager.findOne(UserBooster, {
-            where: {
-              user: { id: buyer.id },
-              booster: { id: sellerItem.booster.id },
-            },
-          });
-          if (buyerItem) {
-            buyerItem.quantity += listing.quantity;
-          } else {
-            buyerItem = manager.create(UserBooster, {
-              user: buyer,
-              booster: sellerItem.booster,
-              quantity: listing.quantity,
-            });
-          }
-          await manager.save(buyerItem);
-          buyer.boostersBought += listing.quantity;
-          listing.seller.boostersSold += listing.quantity;
-          break;
-        }
-        case ProductType.BUNDLE: {
-          const sellerItem = await manager.findOne(UserBundle, {
-            where: { id: listing.productId },
-            relations: ['bundle'],
-          });
-          if (!sellerItem)
-            throw new BadRequestException('Seller bundle item not found');
-
-          let buyerItem = await manager.findOne(UserBundle, {
-            where: {
-              user: { id: buyer.id },
-              bundle: { id: sellerItem.bundle.id },
-            },
-          });
-          if (buyerItem) {
-            buyerItem.quantity += listing.quantity;
-          } else {
-            buyerItem = manager.create(UserBundle, {
-              user: buyer,
-              bundle: sellerItem.bundle,
-              quantity: listing.quantity,
-            });
-          }
-          await manager.save(buyerItem);
-          buyer.bundlesBought += listing.quantity;
-          listing.seller.bundlesSold += listing.quantity;
-          break;
-        }
-      }
+      // 📦 Transfert de l'item
+      await this.transferItem(manager, listing, buyer);
 
       listing.status = TransactionStatus.COMPLETED;
       listing.buyer = buyer;
@@ -213,7 +84,9 @@ export class TransactionService {
     });
   }
 
-  // 📜 Historique utilisateur
+  // ============================================================
+  // 📜 HISTORIQUE UTILISATEUR
+  // ============================================================
   async getUserHistory(
     userId: number,
     { page = 1, limit = 20 }: PaginationDto = {},
@@ -231,5 +104,150 @@ export class TransactionService {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  // ============================================================
+  // 🔒 PRIVATE — Réserver l'item lors de la mise en vente
+  // ============================================================
+  private async reserveItem(dto: CreateListingDto, sellerId: number) {
+    switch (dto.productType) {
+      case ProductType.CARD: {
+        const item = await this.dataSource.getRepository(UserCard).findOne({
+          where: { id: dto.productId, user: { id: sellerId } },
+        });
+        if (!item)
+          throw new BadRequestException(
+            'Card not found or not owned by seller',
+          );
+        if (item.quantity < dto.quantity)
+          throw new BadRequestException('Not enough card quantity');
+        item.quantity -= dto.quantity;
+        await this.dataSource.getRepository(UserCard).save(item);
+        break;
+      }
+      case ProductType.BOOSTER: {
+        const item = await this.dataSource.getRepository(UserBooster).findOne({
+          where: { id: dto.productId, user: { id: sellerId } },
+        });
+        if (!item)
+          throw new BadRequestException(
+            'Booster not found or not owned by seller',
+          );
+        if (item.quantity < dto.quantity)
+          throw new BadRequestException('Not enough booster quantity');
+        item.quantity -= dto.quantity;
+        await this.dataSource.getRepository(UserBooster).save(item);
+        break;
+      }
+      case ProductType.BUNDLE: {
+        const item = await this.dataSource.getRepository(UserBundle).findOne({
+          where: { id: dto.productId, user: { id: sellerId } },
+        });
+        if (!item)
+          throw new BadRequestException(
+            'Bundle not found or not owned by seller',
+          );
+        if (item.quantity < dto.quantity)
+          throw new BadRequestException('Not enough bundle quantity');
+        item.quantity -= dto.quantity;
+        await this.dataSource.getRepository(UserBundle).save(item);
+        break;
+      }
+    }
+  }
+
+  // ============================================================
+  // 📦 PRIVATE — Transférer l'item lors de l'achat
+  // ============================================================
+  private async transferItem(
+    manager: EntityManager,
+    listing: Transaction,
+    buyer: User,
+  ) {
+    switch (listing.productType) {
+      case ProductType.CARD: {
+        const sellerItem = await manager.findOne(UserCard, {
+          where: { id: listing.productId },
+          relations: ['card'],
+        });
+        if (!sellerItem)
+          throw new BadRequestException('Seller card item not found');
+
+        let buyerItem = await manager.findOne(UserCard, {
+          where: { user: { id: buyer.id }, card: { id: sellerItem.card.id } },
+        });
+        if (buyerItem) {
+          buyerItem.quantity += listing.quantity;
+        } else {
+          buyerItem = manager.create(UserCard, {
+            user: buyer,
+            card: sellerItem.card,
+            quantity: listing.quantity,
+          });
+        }
+        await manager.save(buyerItem);
+        buyer.cardsBought += listing.quantity;
+        listing.seller.cardsSold += listing.quantity;
+        break;
+      }
+
+      case ProductType.BOOSTER: {
+        const sellerItem = await manager.findOne(UserBooster, {
+          where: { id: listing.productId },
+          relations: ['booster'],
+        });
+        if (!sellerItem)
+          throw new BadRequestException('Seller booster item not found');
+
+        let buyerItem = await manager.findOne(UserBooster, {
+          where: {
+            user: { id: buyer.id },
+            booster: { id: sellerItem.booster.id },
+          },
+        });
+        if (buyerItem) {
+          buyerItem.quantity += listing.quantity;
+        } else {
+          buyerItem = manager.create(UserBooster, {
+            user: buyer,
+            booster: sellerItem.booster,
+            quantity: listing.quantity,
+          });
+        }
+        await manager.save(buyerItem);
+        buyer.boostersBought += listing.quantity;
+        listing.seller.boostersSold += listing.quantity;
+        break;
+      }
+
+      case ProductType.BUNDLE: {
+        const sellerItem = await manager.findOne(UserBundle, {
+          where: { id: listing.productId },
+          relations: ['bundle'],
+        });
+        if (!sellerItem)
+          throw new BadRequestException('Seller bundle item not found');
+
+        let buyerItem = await manager.findOne(UserBundle, {
+          where: {
+            user: { id: buyer.id },
+            bundle: { id: sellerItem.bundle.id },
+          },
+        });
+        if (buyerItem) {
+          buyerItem.quantity += listing.quantity;
+        } else {
+          buyerItem = manager.create(UserBundle, {
+            user: buyer,
+            bundle: sellerItem.bundle,
+            quantity: listing.quantity,
+          });
+        }
+        await manager.save(buyerItem);
+        buyer.bundlesBought += listing.quantity;
+        listing.seller.bundlesSold += listing.quantity;
+        break;
+      }
+    }
   }
 }

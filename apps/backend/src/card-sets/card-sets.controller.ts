@@ -14,8 +14,8 @@ import { CardSetsService } from './card-sets.service';
 import { CreateCardSetDto } from './dto/create-card-set.dto';
 import { UpdateCardSetDto } from './dto/update-card-set.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
-import { AdminGuard } from 'src/auth/admin.guard';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { AdminGuard } from '../auth/admin.guard';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('card-sets')
 export class CardSetsController {
   constructor(private readonly cardSetsService: CardSetsService) {}

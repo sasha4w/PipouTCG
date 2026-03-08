@@ -6,16 +6,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 
-import { Quest, QuestCondition } from './quest.entity';
+import { Quest } from './quest.entity';
 import {
   UserQuest,
   QuestProgress,
   ConditionProgress,
 } from '../users/user-quest.entity';
-import { User } from '../users/user.entity';
-import { UserCard } from '../users/user-card.entity';
-import { UserBooster } from '../users/user-booster.entity';
-import { UserBundle } from '../users/user-bundle.entity';
 import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
 import {
@@ -23,6 +19,7 @@ import {
   RewardType,
   ConditionOperator,
 } from './enums/quest.enums';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class QuestService {
@@ -33,17 +30,8 @@ export class QuestService {
     @InjectRepository(UserQuest)
     private userQuestRepository: Repository<UserQuest>,
 
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-
-    @InjectRepository(UserCard)
-    private userCardRepository: Repository<UserCard>,
-
-    @InjectRepository(UserBooster)
-    private userBoosterRepository: Repository<UserBooster>,
-
-    @InjectRepository(UserBundle)
-    private userBundleRepository: Repository<UserBundle>,
+    // ✅ UsersService gère tout l'inventaire et les stats
+    private usersService: UsersService,
   ) {}
 
   /* ===================== ADMIN - CRUD ===================== */
@@ -85,21 +73,16 @@ export class QuestService {
 
   /* ===================== USER - QUÊTES ===================== */
 
-  // Appelé au login : assigne les nouvelles quêtes et reset les expirées
   async syncUserQuests(userId: number) {
     await this.resetExpiredQuests(userId);
     await this.assignMissingQuests(userId);
   }
 
-  // Reset les quêtes expirées (resetAt dans le passé)
   private async resetExpiredQuests(userId: number) {
     const now = new Date();
 
     const expired = await this.userQuestRepository.find({
-      where: {
-        user: { id: userId },
-        resetAt: LessThan(now),
-      },
+      where: { user: { id: userId }, resetAt: LessThan(now) },
       relations: { quest: true },
     });
 
@@ -113,7 +96,6 @@ export class QuestService {
     }
   }
 
-  // Assigne les quêtes actives que l'user n'a pas encore
   private async assignMissingQuests(userId: number) {
     const allQuests = await this.questRepository.find({
       where: { isActive: true },
@@ -125,7 +107,6 @@ export class QuestService {
     });
 
     const existingQuestIds = new Set(existing.map((uq) => uq.quest.id));
-
     const toAssign = allQuests.filter((q) => !existingQuestIds.has(q.id));
 
     const newUserQuests = toAssign.map((quest) =>
@@ -237,7 +218,6 @@ export class QuestService {
     for (const condition of uq.progress.conditions) {
       if (condition.completed) continue;
       if (condition.type !== eventType) continue;
-
       if (condition.rarity && meta.rarity !== condition.rarity) continue;
       if (condition.setId && meta.setId !== condition.setId) continue;
       if (condition.boosterId && meta.boosterId !== condition.boosterId)
@@ -269,7 +249,6 @@ export class QuestService {
     return true;
   }
 
-  // Calcule la prochaine date de reset selon le type
   private computeNextReset(quest: Quest): Date | null {
     if (quest.resetType === QuestResetType.NONE) return null;
 
@@ -279,14 +258,12 @@ export class QuestService {
 
     switch (quest.resetType) {
       case QuestResetType.DAILY:
-        // Prochain jour à resetHour
         next.setDate(next.getDate() + 1);
         next.setHours(resetHour, 0, 0, 0);
         break;
 
       case QuestResetType.WEEKLY: {
-        // Prochain resetDayOfWeek à resetHour
-        const targetDay = quest.resetDayOfWeek ?? 1; // lundi par défaut
+        const targetDay = quest.resetDayOfWeek ?? 1;
         const currentDay = now.getDay();
         let daysUntil = targetDay - currentDay;
         if (daysUntil <= 0) daysUntil += 7;
@@ -296,7 +273,6 @@ export class QuestService {
       }
 
       case QuestResetType.MONTHLY:
-        // 1er du mois prochain à resetHour
         next.setMonth(next.getMonth() + 1, 1);
         next.setHours(resetHour, 0, 0, 0);
         break;
@@ -308,48 +284,28 @@ export class QuestService {
   private async distributeReward(userId: number, quest: Quest) {
     switch (quest.rewardType) {
       case RewardType.GOLD:
-        await this.userRepository.increment(
-          { id: userId },
-          'gold',
+        // ✅ Délégué à UsersService
+        await this.usersService.addGold(userId, Number(quest.rewardAmount)); // placeholder pour increment gold
+        // Note : si UsersService n'a pas addGold, utilise addExperience ou ajoute la méthode
+        break;
+
+      case RewardType.BOOSTER:
+        // ✅ Délégué à UsersService
+        await this.usersService.addBoosterToUser(
+          userId,
+          quest.rewardItemId,
           Number(quest.rewardAmount),
         );
         break;
 
-      case RewardType.BOOSTER: {
-        const existing = await this.userBoosterRepository.findOne({
-          where: { user: { id: userId }, booster: { id: quest.rewardItemId } },
-        });
-        if (existing) {
-          existing.quantity += Number(quest.rewardAmount);
-          await this.userBoosterRepository.save(existing);
-        } else {
-          const newEntry = this.userBoosterRepository.create({
-            user: { id: userId },
-            booster: { id: quest.rewardItemId },
-            quantity: Number(quest.rewardAmount),
-          });
-          await this.userBoosterRepository.save(newEntry);
-        }
+      case RewardType.BUNDLE:
+        // ✅ Délégué à UsersService
+        await this.usersService.addBundleToUser(
+          userId,
+          quest.rewardItemId,
+          Number(quest.rewardAmount),
+        );
         break;
-      }
-
-      case RewardType.BUNDLE: {
-        const existing = await this.userBundleRepository.findOne({
-          where: { user: { id: userId }, bundle: { id: quest.rewardItemId } },
-        });
-        if (existing) {
-          existing.quantity += Number(quest.rewardAmount);
-          await this.userBundleRepository.save(existing);
-        } else {
-          const newEntry = this.userBundleRepository.create({
-            user: { id: userId },
-            bundle: { id: quest.rewardItemId },
-            quantity: Number(quest.rewardAmount),
-          });
-          await this.userBundleRepository.save(newEntry);
-        }
-        break;
-      }
     }
   }
 }

@@ -16,7 +16,7 @@ import { CreateBoosterDto } from './dto/create-booster.dto';
 import { UpdateBoosterDto } from './dto/update-booster.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('boosters')
 export class BoostersController {
   constructor(private readonly boostersService: BoostersService) {}

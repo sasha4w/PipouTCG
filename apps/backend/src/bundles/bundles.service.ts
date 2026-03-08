@@ -11,7 +11,7 @@ import { CreateBundleDto } from './dto/create-bundle.dto';
 import { UpdateBundleDto } from './dto/update-bundle.dto';
 import { AddBundleContentDto } from './dto/add-bundle-content.dto';
 import { UsersService } from '../users/users.service';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Injectable()
 export class BundlesService {
   constructor(

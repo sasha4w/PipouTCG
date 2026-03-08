@@ -17,7 +17,7 @@ import { UpdateBundleDto } from './dto/update-bundle.dto';
 import { AddBundleContentDto } from './dto/add-bundle-content.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('bundles')
 export class BundlesController {
   constructor(private readonly bundlesService: BundlesService) {}

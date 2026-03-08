@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CardSet } from './card-set.entity';
 import { CreateCardSetDto } from './dto/create-card-set.dto';
 import { UpdateCardSetDto } from './dto/update-card-set.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 @Injectable()
 export class CardSetsService {
   constructor(
