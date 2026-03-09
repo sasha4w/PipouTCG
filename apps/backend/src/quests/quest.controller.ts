@@ -24,7 +24,8 @@ export class QuestController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMyQuests(@Request() req) {
+  async getMyQuests(@Request() req) {
+    await this.questService.syncUserQuests(req.user.userId);
     return this.questService.getUserQuests(req.user.userId);
   }
 

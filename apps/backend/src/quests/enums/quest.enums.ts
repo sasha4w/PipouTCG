@@ -8,6 +8,7 @@ export enum QuestResetType {
   DAILY = 'DAILY', // reset chaque jour à resetHour
   WEEKLY = 'WEEKLY', // reset un jour fixe de la semaine à resetHour
   MONTHLY = 'MONTHLY', // reset le 1er du mois à resetHour
+  EVENT = 'EVENT',
 }
 
 export enum RewardType {

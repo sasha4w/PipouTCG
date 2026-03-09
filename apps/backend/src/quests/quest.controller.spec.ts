@@ -11,6 +11,7 @@ import {
 } from './enums/quest.enums';
 
 const mockQuestService = {
+  syncUserQuests: jest.fn().mockResolvedValue([]),
   getUserQuests: jest.fn(),
   claimReward: jest.fn(),
   findAllQuests: jest.fn(),

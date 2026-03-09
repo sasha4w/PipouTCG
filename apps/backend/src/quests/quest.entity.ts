@@ -57,6 +57,9 @@ export class Quest {
   @Column({ nullable: true })
   rewardItemId: number; // boosterId ou bundleId
 
+  @Column({ type: 'timestamp', nullable: true })
+  endDate: Date | null;
+
   @Column({ default: true })
   isActive: boolean;
 

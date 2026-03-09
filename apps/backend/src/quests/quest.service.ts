@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
-
 import { Quest } from './quest.entity';
 import {
   UserQuest,
@@ -21,6 +20,12 @@ import {
 } from './enums/quest.enums';
 import { UsersService } from '../users/users.service';
 
+export interface AutoClaimedReward {
+  title: string;
+  rewardType: string;
+  rewardAmount: number;
+}
+
 @Injectable()
 export class QuestService {
   constructor(
@@ -30,7 +35,6 @@ export class QuestService {
     @InjectRepository(UserQuest)
     private userQuestRepository: Repository<UserQuest>,
 
-    // ✅ UsersService gère tout l'inventaire et les stats
     private usersService: UsersService,
   ) {}
 
@@ -73,13 +77,17 @@ export class QuestService {
 
   /* ===================== USER - QUÊTES ===================== */
 
-  async syncUserQuests(userId: number) {
-    await this.resetExpiredQuests(userId);
+  async syncUserQuests(userId: number): Promise<AutoClaimedReward[]> {
+    const autoClaimedRewards = await this.resetExpiredQuests(userId); // ← récupère les rewards
     await this.assignMissingQuests(userId);
+    return autoClaimedRewards;
   }
 
-  private async resetExpiredQuests(userId: number) {
+  private async resetExpiredQuests(
+    userId: number,
+  ): Promise<AutoClaimedReward[]> {
     const now = new Date();
+    const claimed: AutoClaimedReward[] = [];
 
     const expired = await this.userQuestRepository.find({
       where: { user: { id: userId }, resetAt: LessThan(now) },
@@ -87,6 +95,16 @@ export class QuestService {
     });
 
     for (const uq of expired) {
+      // ← auto-claim si complétée mais pas encore réclamée
+      if (uq.isCompleted && !uq.rewardClaimed) {
+        await this.distributeReward(userId, uq.quest);
+        claimed.push({
+          title: uq.quest.title,
+          rewardType: uq.quest.rewardType,
+          rewardAmount: Number(uq.quest.rewardAmount),
+        });
+      }
+
       uq.progress = this.initProgress(uq.quest);
       uq.isCompleted = false;
       uq.rewardClaimed = false;
@@ -94,6 +112,8 @@ export class QuestService {
       uq.resetAt = this.computeNextReset(uq.quest);
       await this.userQuestRepository.save(uq);
     }
+
+    return claimed;
   }
 
   private async assignMissingQuests(userId: number) {
@@ -132,7 +152,7 @@ export class QuestService {
       order: { assignedAt: 'DESC' },
     });
 
-    return userQuests.map((uq) => ({
+    const mapped = userQuests.map((uq) => ({
       id: uq.id,
       questId: uq.quest.id,
       title: uq.quest.title,
@@ -146,6 +166,15 @@ export class QuestService {
       rewardClaimed: uq.rewardClaimed,
       resetAt: uq.resetAt,
     }));
+
+    // ← groupé par type pour le dashboard front
+    return {
+      DAILY: mapped.filter((q) => q.resetType === QuestResetType.DAILY),
+      WEEKLY: mapped.filter((q) => q.resetType === QuestResetType.WEEKLY),
+      MONTHLY: mapped.filter((q) => q.resetType === QuestResetType.MONTHLY),
+      EVENT: mapped.filter((q) => q.resetType === QuestResetType.EVENT),
+      ACHIEVEMENT: mapped.filter((q) => q.resetType === QuestResetType.NONE),
+    };
   }
 
   async claimReward(userId: number, userQuestId: number) {
@@ -161,7 +190,6 @@ export class QuestService {
       throw new BadRequestException('Reward already claimed');
 
     await this.distributeReward(userId, uq.quest);
-
     uq.rewardClaimed = true;
     return this.userQuestRepository.save(uq);
   }
@@ -227,9 +255,7 @@ export class QuestService {
         condition.current + (meta.amount ?? 1),
         condition.target,
       );
-      if (condition.current >= condition.target) {
-        condition.completed = true;
-      }
+      if (condition.current >= condition.target) condition.completed = true;
       changed = true;
     }
 
@@ -251,6 +277,9 @@ export class QuestService {
 
   private computeNextReset(quest: Quest): Date | null {
     if (quest.resetType === QuestResetType.NONE) return null;
+    if (quest.resetType === QuestResetType.EVENT) {
+      return quest.endDate ? new Date(quest.endDate) : null; // ← expire à la date de fin
+    }
 
     const now = new Date();
     const resetHour = quest.resetHour ?? 4;
@@ -284,22 +313,16 @@ export class QuestService {
   private async distributeReward(userId: number, quest: Quest) {
     switch (quest.rewardType) {
       case RewardType.GOLD:
-        // ✅ Délégué à UsersService
-        await this.usersService.addGold(userId, Number(quest.rewardAmount)); // placeholder pour increment gold
-        // Note : si UsersService n'a pas addGold, utilise addExperience ou ajoute la méthode
+        await this.usersService.addGold(userId, Number(quest.rewardAmount));
         break;
-
       case RewardType.BOOSTER:
-        // ✅ Délégué à UsersService
         await this.usersService.addBoosterToUser(
           userId,
           quest.rewardItemId,
           Number(quest.rewardAmount),
         );
         break;
-
       case RewardType.BUNDLE:
-        // ✅ Délégué à UsersService
         await this.usersService.addBundleToUser(
           userId,
           quest.rewardItemId,

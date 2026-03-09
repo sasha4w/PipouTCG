@@ -185,22 +185,53 @@ describe('QuestService', () => {
 
   // ======= USER QUESTS =======
   describe('getUserQuests', () => {
-    it('should return formatted user quests', async () => {
-      mockUserQuestRepo.find.mockResolvedValue([fakeUserQuest]);
+    it('should return quests grouped by resetType', async () => {
+      mockUserQuestRepo.find.mockResolvedValue([fakeUserQuest]); // fakeQuest est DAILY
 
       const result = await service.getUserQuests(1);
-      expect(result).toHaveLength(1);
-      expect(result[0].questId).toBe(1);
-      expect(result[0].title).toBe('Ouvre 3 boosters');
-      expect(result[0].isCompleted).toBe(false);
+
+      expect(result).toHaveProperty('DAILY');
+      expect(result).toHaveProperty('WEEKLY');
+      expect(result).toHaveProperty('MONTHLY');
+      expect(result).toHaveProperty('EVENT');
+      expect(result).toHaveProperty('ACHIEVEMENT');
+      expect(result.DAILY).toHaveLength(1);
+      expect(result.DAILY[0].title).toBe('Ouvre 3 boosters');
     });
 
-    it('should return empty array if no quests', async () => {
+    it('should return empty groups if no quests', async () => {
       mockUserQuestRepo.find.mockResolvedValue([]);
 
       const result = await service.getUserQuests(1);
-      expect(result).toEqual([]);
+
+      expect(result.DAILY).toEqual([]);
+      expect(result.WEEKLY).toEqual([]);
+      expect(result.MONTHLY).toEqual([]);
+      expect(result.EVENT).toEqual([]);
+      expect(result.ACHIEVEMENT).toEqual([]);
     });
+  });
+
+  // ← ajouté dans computeNextReset
+  it('should return endDate for EVENT reset type', () => {
+    const endDate = new Date('2026-12-31');
+    const quest = {
+      ...fakeQuest,
+      resetType: QuestResetType.EVENT,
+      endDate,
+    } as Quest;
+    const result = (service as any).computeNextReset(quest);
+    expect(result).toEqual(endDate);
+  });
+
+  it('should return null for EVENT with no endDate', () => {
+    const quest = {
+      ...fakeQuest,
+      resetType: QuestResetType.EVENT,
+      endDate: null,
+    } as Quest;
+    const result = (service as any).computeNextReset(quest);
+    expect(result).toBeNull();
   });
 
   // ======= CLAIM REWARD =======

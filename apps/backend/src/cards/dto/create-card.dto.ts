@@ -9,7 +9,8 @@ import {
   MinLength,
   MaxLength,
 } from 'class-validator';
-import { Type } from '../enums/type.enum';
+import { Type } from 'class-transformer';
+import { Type as CardType } from '../enums/type.enum';
 import { Rarity } from '../enums/rarity.enum';
 
 export class CreateCardDto {
@@ -28,20 +29,23 @@ export class CreateCardDto {
   @IsNotEmpty()
   rarity: Rarity;
 
-  @IsEnum(Type)
+  @IsEnum(CardType)
   @IsNotEmpty()
-  type: Type;
+  type: CardType;
 
   @IsNumber()
   @Min(0)
+  @Type(() => Number)
   atk: number;
 
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   hp: number;
 
   @IsNumber()
   @Min(1)
+  @Type(() => Number)
   cardSetId: number;
 
   @IsUrl()
