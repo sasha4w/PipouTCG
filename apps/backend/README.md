@@ -16,9 +16,9 @@
 
 # 🇫🇷 Français
 
-## 🚧 Projet en cours de développement
+## Projet en cours de développement
 
-CardCollect est un projet personnel, en cours de développement. La majeure partie du backend est fonctionnel et testé. Le frontend Next.js et les fonctionnalités de combat sont en cours de réalisation.
+CardCollect est un projet personnel, en cours de développement. La majeure partie du backend est fonctionnel et testé. Le frontend et les fonctionnalités de combat sont en cours de réalisation.
 
 ## Présentation
 
@@ -37,17 +37,17 @@ CardCollect est une API backend pour un jeu de cartes à collectionner (TCG) en 
 
 ## Architecture
 
-L'application est découpée en **3 grandes directions** toutes en cours de développement :
+L'application est découpée en **3 grandes directions**, toutes en cours de développement :
 
-### 1. 📦 Collection & Contenu `✅ Backend terminé`
+### 1. Collection & Contenu
 
 Le cœur du jeu. Les joueurs dépensent leur gold pour acheter des boosters et des bundles, les ouvrent pour recevoir des cartes selon des taux de drop définis avec des garanties de rareté (ex : 1 carte RARE garantie à partir de 8 cartes). Des quêtes journalières, hebdomadaires, mensuelles et des achievements permanents récompensent la progression.
 
-### 2. 💹 Marketplace & Trading `✅ Backend terminé`
+### 2. Marketplace & Trading
 
 Les joueurs peuvent mettre en vente leurs cartes, boosters et bundles. Les transactions sont **atomiques** (gérées via `DataSource.transaction()` TypeORM) : le gold et les items sont transférés simultanément, garantissant l'intégrité des échanges même en cas d'erreur.
 
-### 3. ⚔️ Combat & Deck Building `🔜 À venir`
+### 3. Combat & Deck Building
 
 Un système de combat et de construction de decks sera développé une fois les deux premiers systèmes pleinement opérationnels côté frontend.
 
@@ -56,7 +56,7 @@ Un système de combat et de construction de decks sera développé une fois les 
 ```
 auth/           → Inscription, connexion, JWT
 users/          → Profil, inventaire, statistiques, vie privée
-cards/          → Cartes avec upload et optimisation d'image
+cards/          → Cartes avec référence vers une image
 card-sets/      → Sets de cartes à compléter
 boosters/       → Achat, ouverture, drop rates, garanties de rareté
 bundles/        → Packs contenant cartes et boosters
@@ -67,14 +67,15 @@ images/         → Upload et optimisation d'images (Sharp + ImgBB)
 
 ## Fonctionnalités par profil
 
-### 👑 Admin
+### Admin
 
 - Dashboard pour gérer l'intégralité du contenu de l'application
+- Gestion des images découplée du contenu (une image peut être réutilisée sur plusieurs cartes)
 - Création et gestion des cartes, sets, boosters, bundles, quêtes
 - Activation/désactivation de contenu sans suppression
 - Accès à la liste complète des utilisateurs
 
-### 👤 Utilisateur
+### Utilisateur
 
 **Espace Collection**
 
@@ -95,17 +96,18 @@ images/         → Upload et optimisation d'images (Sharp + ImgBB)
 - Achat des annonces des autres joueurs
 - Historique paginé des transactions
 
-## Tests
+## Tests unitaires
 
 ```
-✅ auth        → service + controller
-✅ users       → service + controller
-✅ cards       → service + controller
-✅ card-sets   → service + controller
-✅ boosters    → service + controller
-✅ bundles     → service + controller
-✅ quests      → service + controller
+✅ auth         → service + controller
+✅ users        → service + controller
+✅ cards        → service + controller
+✅ card-sets    → service + controller
+✅ boosters     → service + controller
+✅ bundles      → service + controller
+✅ quests       → service + controller
 ✅ transactions → service + controller
+en cours   images      → service + controller
 ```
 
 ```bash
@@ -115,18 +117,33 @@ npm run test auth       # Tester un module spécifique
 npm run test:cov        # Couverture de code
 ```
 
+## Tests d'intégration (Postman)
+
+```
+✅ auth
+✅ card-sets
+en cours   cards
+en cours   images
+en cours   boosters
+en cours   bundles
+en cours   quests
+en cours   transactions
+en cours   users
+```
+
 ## Roadmap
 
 - [x] Architecture NestJS modulaire
 - [x] Authentification JWT
-- [x] Gestion des cartes avec upload d'image
+- [x] Gestion des images découplée (Sharp + ImgBB)
+- [x] Gestion des cartes
 - [x] Système de boosters avec drop rates
 - [x] Système de bundles
 - [x] Quêtes et achievements
 - [x] Marketplace avec transactions atomiques
 - [x] Tests unitaires Jest : tous les modules
 - [ ] Tests d'intégration Postman : en cours
-- [ ] Frontend Next.js
+- [ ] Frontend
 - [ ] Système de combat
 - [ ] Deck building
 - [ ] Tests E2E
@@ -144,7 +161,7 @@ npm install
 
 # Configurer les variables d'environnement
 cp .env.example .env
-# → Remplir les valeurs dans .env
+# Remplir les valeurs dans .env
 
 # Lancer en développement
 npm run start:dev
@@ -167,9 +184,9 @@ IMGBB_API_KEY=  # Clé API ImgBB pour l'upload d'images
 
 # 🇬🇧 English
 
-## 🚧 Work in Progress
+## Work in Progress
 
-CardCollect is an personal project, currently in development. The backend is mostly functional and tested. the Next.js frontend and battle features are being built.
+CardCollect is a personal project, currently in development. The backend is mostly functional and tested. The frontend and battle features are being built.
 
 ## Overview
 
@@ -190,15 +207,15 @@ CardCollect is a backend API for an online Trading Card Game (TCG). It handles a
 
 The application is built around **3 main directions**, all currently in development:
 
-### 1. 📦 Collection & Content `✅ Backend complete`
+### 1. Collection & Content
 
 The core of the game. Players spend gold to buy boosters and bundles, open them to receive cards based on defined drop rates with rarity guarantees (e.g. 1 guaranteed RARE card from 8 cards). Daily, weekly, monthly quests and permanent one-shot achievements reward progression.
 
-### 2. 💹 Marketplace & Trading `✅ Backend complete`
+### 2. Marketplace & Trading
 
 Players can list their cards, boosters and bundles for sale. Transactions are **atomic** (handled via TypeORM `DataSource.transaction()`): gold and items are transferred simultaneously, guaranteeing trade integrity even if an error occurs mid-transaction.
 
-### 3. ⚔️ Battle & Deck Building `🔜 Coming soon`
+### 3. Battle & Deck Building
 
 A battle and deck-building system will be developed once the first two systems are fully operational on the frontend.
 
@@ -207,7 +224,7 @@ A battle and deck-building system will be developed once the first two systems a
 ```
 auth/           → Register, login, JWT
 users/          → Profile, inventory, statistics, privacy
-cards/          → Cards with image upload and optimization
+cards/          → Cards with image reference
 card-sets/      → Card sets to complete
 boosters/       → Purchase, opening, drop rates, rarity guarantees
 bundles/        → Packs containing cards and boosters
@@ -218,14 +235,15 @@ images/         → Image upload and optimization (Sharp + ImgBB)
 
 ## Features by Role
 
-### 👑 Admin
+### Admin
 
 - Full dashboard to manage all application content
+- Image management decoupled from content (one image can be reused across multiple cards)
 - Create and manage cards, sets, boosters, bundles, quests
 - Enable/disable content without deletion
 - Access the full user list
 
-### 👤 User
+### User
 
 **Collection Space**
 
@@ -246,7 +264,7 @@ images/         → Image upload and optimization (Sharp + ImgBB)
 - Purchase listings from other players
 - Paginated transaction history
 
-## Tests
+## Unit Tests
 
 ```
 ✅ auth         → service + controller
@@ -257,6 +275,7 @@ images/         → Image upload and optimization (Sharp + ImgBB)
 ✅ bundles      → service + controller
 ✅ quests       → service + controller
 ✅ transactions → service + controller
+in progress   images    → service + controller
 ```
 
 ```bash
@@ -266,18 +285,33 @@ npm run test auth       # Test a specific module
 npm run test:cov        # Code coverage
 ```
 
+## Integration Tests (Postman)
+
+```
+✅ auth
+✅ card-sets
+in progress   cards
+in progress   images
+in progress   boosters
+in progress   bundles
+in progress   quests
+in progress   transactions
+in progress   users
+```
+
 ## Roadmap
 
 - [x] Modular NestJS architecture
 - [x] JWT authentication
-- [x] Card management with image upload
+- [x] Decoupled image management (Sharp + ImgBB)
+- [x] Card management
 - [x] Booster system with drop rates
 - [x] Bundle system
 - [x] Quests and achievements
 - [x] Marketplace with atomic transactions
 - [x] Jest unit tests : all modules
 - [ ] Postman integration tests : in progress
-- [ ] Next.js frontend
+- [ ] Frontend
 - [ ] Battle system
 - [ ] Deck building
 - [ ] E2E tests
@@ -295,7 +329,7 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# → Fill in the values in .env
+# Fill in the values in .env
 
 # Run in development
 npm run start:dev

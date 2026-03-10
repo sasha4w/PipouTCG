@@ -19,7 +19,7 @@ export class Image {
   url: string;
 
   @Column()
-  deleteHash: string;
+  deleteUrl: string;
 
   @CreateDateColumn()
   createdAt: Date;

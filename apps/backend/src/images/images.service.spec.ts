@@ -25,7 +25,7 @@ const fakeImage: Partial<Image> = {
   id: 1,
   name: 'dragon-inferno',
   url: 'https://i.ibb.co/xxx/dragon-inferno.webp',
-  deleteHash: 'abc123',
+  deleteUrl: 'https://ibb.co/2ndCYJK/670a7e48ddcb85ac340c717a41047e5c', // ← deleteHash → deleteUrl
 };
 
 const fakeFile = {
@@ -95,7 +95,8 @@ describe('ImagesService', () => {
         json: jest.fn().mockResolvedValue({
           data: {
             url: 'https://i.ibb.co/xxx/dragon-inferno.webp',
-            delete_url: 'https://ibb.co/delete/abc123',
+            delete_url:
+              'https://ibb.co/2ndCYJK/670a7e48ddcb85ac340c717a41047e5c', // ← URL complète
           },
         }),
       });
@@ -110,9 +111,9 @@ describe('ImagesService', () => {
         expect.objectContaining({ method: 'POST' }),
       );
       expect(mockImageRepo.create).toHaveBeenCalledWith({
-        name: 'dragon-inferno', // ← slug
+        name: 'dragon-inferno',
         url: 'https://i.ibb.co/xxx/dragon-inferno.webp',
-        deleteHash: 'abc123',
+        deleteUrl: 'https://ibb.co/2ndCYJK/670a7e48ddcb85ac340c717a41047e5c', // ← deleteHash → deleteUrl
       });
       expect(result).toEqual(fakeImage);
     });
@@ -122,7 +123,7 @@ describe('ImagesService', () => {
         json: jest.fn().mockResolvedValue({
           data: {
             url: 'https://i.ibb.co/xxx/elfe-gardien.webp',
-            delete_url: 'https://ibb.co/delete/xyz789',
+            delete_url: 'https://ibb.co/xxx/elfe-gardien-hash',
           },
         }),
       });
@@ -146,7 +147,7 @@ describe('ImagesService', () => {
 
   // ======= REMOVE =======
   describe('remove', () => {
-    it('should delete on ImgBB and remove from DB', async () => {
+    it('should delete on ImgBB via deleteUrl and remove from DB', async () => {
       mockImageRepo.findOneBy.mockResolvedValue(fakeImage);
       (global.fetch as jest.Mock).mockResolvedValue({});
       mockImageRepo.remove.mockResolvedValue(undefined);
@@ -154,8 +155,8 @@ describe('ImagesService', () => {
       const result = await service.remove(1);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `https://api.imgbb.com/1/image/${fakeImage.deleteHash}`,
-        { method: 'DELETE' },
+        fakeImage.deleteUrl, // ← URL complète directement
+        { method: 'GET' },
       );
       expect(mockImageRepo.remove).toHaveBeenCalledWith(fakeImage);
       expect(result).toEqual({ message: 'Image 1 deleted' });

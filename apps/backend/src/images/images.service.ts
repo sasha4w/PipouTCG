@@ -46,20 +46,17 @@ export class ImagesService {
 
     const data = await response.json();
     const url: string = data.data.url;
-    const deleteHash: string = data.data.delete_url.split('/').pop();
-
+    const deleteUrl: string = data.data.delete_url;
     // Sauvegarde en DB
-    const image = this.imageRepository.create({ name: slug, url, deleteHash });
+    const image = this.imageRepository.create({ name: slug, url, deleteUrl });
     return this.imageRepository.save(image);
   }
 
   async remove(id: number) {
     const image = await this.findOne(id);
 
-    // Supprime sur ImgBB
-    await fetch(`https://api.imgbb.com/1/image/${image.deleteHash}`, {
-      method: 'DELETE',
-    });
+    // delete_url complète stockée, ou reconstruite depuis le hash
+    await fetch(image.deleteUrl, { method: 'GET' }); // ← GET sur la delete_url
 
     await this.imageRepository.remove(image);
     return { message: `Image ${id} deleted` };
