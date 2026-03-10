@@ -8,8 +8,9 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CardSetsModule } from './card-sets/card-sets.module';
+import { ImagesModule } from './images/images.module';
 import { CardsModule } from './cards/cards.module';
-import { QuestModule } from './quests/quest.module';
+import { QuestModule } from './quests/quests.module';
 import { BoostersModule } from './boosters/boosters.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BundlesModule } from './bundles/bundles.module';
@@ -40,6 +41,7 @@ import { CustomNamingStrategy } from './database/naming.strategy';
     BoostersModule,
     TransactionsModule,
     BundlesModule,
+    ImagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

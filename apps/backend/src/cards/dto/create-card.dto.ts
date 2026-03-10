@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   IsEnum,
   IsOptional,
-  IsUrl,
   Min,
   MinLength,
   MaxLength,
@@ -23,7 +22,7 @@ export class CreateCardDto {
   @IsString()
   @IsOptional()
   @MaxLength(500)
-  description?: string; // optionnel, pas toutes les cartes en ont besoin
+  description?: string;
 
   @IsEnum(Rarity)
   @IsNotEmpty()
@@ -48,7 +47,8 @@ export class CreateCardDto {
   @Type(() => Number)
   cardSetId: number;
 
-  @IsUrl()
+  @IsNumber()
   @IsOptional()
-  imageUrl?: string;
+  @Type(() => Number)
+  imageId?: number;
 }

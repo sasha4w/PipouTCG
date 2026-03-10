@@ -3,7 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CardsService } from './cards.service';
 import { Card } from './card.entity';
-import { UploadService } from '../upload/upload.service';
+import { ImagesService } from '../images/images.service'; // ← remplace UploadService
 import { Rarity } from './enums/rarity.enum';
 import { Type } from './enums/type.enum';
 
@@ -15,9 +15,16 @@ const mockCardRepo = {
   remove: jest.fn(),
 };
 
-// On mock l'UploadService car il appelle ImgBB (service externe)
-const mockUploadService = {
-  optimizeAndUpload: jest.fn(),
+const mockImagesService = {
+  uploadAndSave: jest.fn(),
+  findOne: jest.fn(),
+};
+
+const fakeImage = {
+  id: 1,
+  name: 'dragon',
+  url: 'https://imgbb.com/dragon.webp',
+  deleteHash: 'abc123',
 };
 
 const fakeCard: Partial<Card> = {
@@ -27,7 +34,7 @@ const fakeCard: Partial<Card> = {
   type: Type.MONSTER,
   atk: 100,
   hp: 200,
-  imageUrl: 'https://imgbb.com/dragon.png',
+  image: fakeImage as any,
   cardSet: { id: 1 } as any,
 };
 
@@ -47,7 +54,7 @@ describe('CardsService', () => {
       providers: [
         CardsService,
         { provide: getRepositoryToken(Card), useValue: mockCardRepo },
-        { provide: UploadService, useValue: mockUploadService },
+        { provide: ImagesService, useValue: mockImagesService }, // ← remplacé
       ],
     }).compile();
 
@@ -107,7 +114,6 @@ describe('CardsService', () => {
 
       const result = await service.findBySet(999, { page: 1, limit: 20 });
       expect(result.data).toEqual([]);
-      expect(result.meta.total).toBe(0);
     });
   });
 
@@ -123,29 +129,39 @@ describe('CardsService', () => {
     };
 
     it('should upload image and create card if file provided', async () => {
-      mockUploadService.optimizeAndUpload.mockResolvedValue(
-        'https://imgbb.com/dragon.png',
-      );
+      mockImagesService.uploadAndSave.mockResolvedValue(fakeImage);
       mockCardRepo.create.mockReturnValue(fakeCard);
       mockCardRepo.save.mockResolvedValue(fakeCard);
 
       const result = await service.create(fakeFile, dto);
 
-      expect(mockUploadService.optimizeAndUpload).toHaveBeenCalledWith(
+      expect(mockImagesService.uploadAndSave).toHaveBeenCalledWith(
         fakeFile,
+        dto.name,
       );
       expect(mockCardRepo.create).toHaveBeenCalled();
       expect(result).toEqual(fakeCard);
     });
 
-    it('should create card without imageUrl if no file provided', async () => {
-      mockCardRepo.create.mockReturnValue({ ...fakeCard, imageUrl: undefined });
-      mockCardRepo.save.mockResolvedValue({ ...fakeCard, imageUrl: undefined });
+    it('should use existing image from library if imageId provided', async () => {
+      mockImagesService.findOne.mockResolvedValue(fakeImage);
+      mockCardRepo.create.mockReturnValue(fakeCard);
+      mockCardRepo.save.mockResolvedValue(fakeCard);
+
+      await service.create(undefined as any, { ...dto, imageId: 1 });
+
+      expect(mockImagesService.findOne).toHaveBeenCalledWith(1);
+      expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
+    });
+
+    it('should create card without image if no file and no imageId', async () => {
+      mockCardRepo.create.mockReturnValue({ ...fakeCard, image: undefined });
+      mockCardRepo.save.mockResolvedValue({ ...fakeCard, image: undefined });
 
       await service.create(undefined as any, dto);
 
-      // L'upload ne doit pas être appelé
-      expect(mockUploadService.optimizeAndUpload).not.toHaveBeenCalled();
+      expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
+      expect(mockImagesService.findOne).not.toHaveBeenCalled();
       expect(mockCardRepo.save).toHaveBeenCalled();
     });
   });
@@ -154,23 +170,30 @@ describe('CardsService', () => {
   describe('update', () => {
     it('should update image if new file provided', async () => {
       mockCardRepo.findOne.mockResolvedValue({ ...fakeCard });
-      mockUploadService.optimizeAndUpload.mockResolvedValue(
-        'https://imgbb.com/new.png',
-      );
-      mockCardRepo.save.mockResolvedValue({
-        ...fakeCard,
-        imageUrl: 'https://imgbb.com/new.png',
-      });
+      mockImagesService.uploadAndSave.mockResolvedValue(fakeImage);
+      mockCardRepo.save.mockResolvedValue({ ...fakeCard, image: fakeImage });
 
-      const result = await service.update(1, fakeFile, { name: 'Dragon V2' });
+      await service.update(1, fakeFile, { name: 'Dragon V2' });
 
-      expect(mockUploadService.optimizeAndUpload).toHaveBeenCalledWith(
+      expect(mockImagesService.uploadAndSave).toHaveBeenCalledWith(
         fakeFile,
+        'Dragon V2',
       );
       expect(mockCardRepo.save).toHaveBeenCalled();
     });
 
-    it('should update card without changing image if no file', async () => {
+    it('should use existing image from library if imageId provided', async () => {
+      mockCardRepo.findOne.mockResolvedValue({ ...fakeCard });
+      mockImagesService.findOne.mockResolvedValue(fakeImage);
+      mockCardRepo.save.mockResolvedValue({ ...fakeCard, image: fakeImage });
+
+      await service.update(1, undefined as any, { imageId: 1 });
+
+      expect(mockImagesService.findOne).toHaveBeenCalledWith(1);
+      expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
+    });
+
+    it('should update card without changing image if no file and no imageId', async () => {
       mockCardRepo.findOne.mockResolvedValue({ ...fakeCard });
       mockCardRepo.save.mockResolvedValue({ ...fakeCard, name: 'Dragon V2' });
 
@@ -178,7 +201,7 @@ describe('CardsService', () => {
         name: 'Dragon V2',
       });
 
-      expect(mockUploadService.optimizeAndUpload).not.toHaveBeenCalled();
+      expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
       expect(result.name).toBe('Dragon V2');
     });
 

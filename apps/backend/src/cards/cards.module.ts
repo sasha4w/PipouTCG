@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CardsController } from './cards.controller';
 import { CardsService } from './cards.service';
 import { Card } from './card.entity';
-import { UploadModule } from '../upload/upload.module';
+import { ImagesModule } from 'src/images/images.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([Card]), UploadModule],
+  imports: [TypeOrmModule.forFeature([Card]), ImagesModule],
   controllers: [CardsController],
   providers: [CardsService],
   exports: [CardsService],

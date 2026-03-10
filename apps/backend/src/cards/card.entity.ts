@@ -9,6 +9,7 @@ import {
 import { CardSet } from '../card-sets/card-set.entity';
 import { BoosterOpenCard } from '../boosters/booster-open-card.entity';
 import { UserCard } from '../users/user-card.entity';
+import { Image } from '../images/image.entity';
 import { Type } from './enums/type.enum';
 import { Rarity } from './enums/rarity.enum';
 
@@ -35,8 +36,13 @@ export class Card {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ nullable: true })
-  imageUrl: string;
+  @ManyToOne(() => Image, (image) => image.cards, {
+    nullable: true,
+    eager: true,
+  })
+  @JoinColumn({ name: 'image_id' })
+  image: Image; // ← relation au lieu de imageUrl string
+
   @ManyToOne(() => CardSet, (cardSet) => cardSet.cards)
   @JoinColumn({ name: 'card_set_id' })
   cardSet: CardSet;

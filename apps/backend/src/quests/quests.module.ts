@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { QuestController } from './quest.controller';
-import { QuestService } from './quest.service';
+import { QuestController } from './quests.controller';
+import { QuestService } from './quests.service';
 import { Quest } from './quest.entity';
 import { UserQuest } from '../users/user-quest.entity';
 import { UsersModule } from '../users/users.module'; // ← ajouté

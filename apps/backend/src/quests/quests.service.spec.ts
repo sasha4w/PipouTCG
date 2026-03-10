@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { QuestService } from './quest.service';
+import { QuestService } from './quests.service';
 import { Quest } from './quest.entity';
 import { UserQuest } from '../users/user-quest.entity';
 import { UsersService } from '../users/users.service';

@@ -10,7 +10,7 @@ import {
   ParseIntPipe,
   Request,
 } from '@nestjs/common';
-import { QuestService } from './quest.service';
+import { QuestService } from './quests.service';
 import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';

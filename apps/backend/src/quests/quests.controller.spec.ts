@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { QuestController } from './quest.controller';
-import { QuestService } from './quest.service';
+import { QuestController } from './quests.controller';
+import { QuestService } from './quests.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import {

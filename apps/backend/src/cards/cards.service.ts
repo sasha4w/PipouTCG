@@ -5,20 +5,20 @@ import { Card } from './card.entity';
 import { Rarity } from './enums/rarity.enum';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { UploadService } from '../upload/upload.service';
+import { ImagesService } from '../images/images.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { Image } from '../images/image.entity';
 @Injectable()
 export class CardsService {
   constructor(
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
-    private uploadService: UploadService,
+    private imagesService: ImagesService,
   ) {}
 
-  // Récupérer toutes les cartes
   async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
     const [cards, total] = await this.cardRepository.findAndCount({
-      relations: { cardSet: true },
+      relations: { cardSet: true, image: true },
       skip: (page - 1) * limit,
       take: limit,
       order: { id: 'ASC' },
@@ -29,66 +29,61 @@ export class CardsService {
     };
   }
 
-  // Récupérer une carte par ID
   async findOne(id: number) {
     const card = await this.cardRepository.findOne({
       where: { id },
-      relations: {
-        cardSet: true,
-      },
+      relations: { cardSet: true, image: true },
     });
-
-    if (!card) {
-      throw new NotFoundException(`Card with ID ${id} not found`);
-    }
-
+    if (!card) throw new NotFoundException(`Card with ID ${id} not found`);
     return card;
   }
 
-  // Créer une nouvelle carte
   async create(file: Express.Multer.File, dto: CreateCardDto) {
-    // Upload image si présente
-    const imageUrl = file
-      ? await this.uploadService.optimizeAndUpload(file)
-      : undefined;
+    const { cardSetId, imageId, ...cardData } = dto; // ← destructure les ids
+
+    let image: Image | undefined = undefined;
+    if (file) {
+      image = await this.imagesService.uploadAndSave(file, dto.name);
+    } else if (imageId) {
+      image = await this.imagesService.findOne(imageId);
+    }
 
     const card = this.cardRepository.create({
-      ...dto,
-      cardSet: { id: dto.cardSetId } as any,
-      imageUrl, // ← URL retournée par ImgBB
+      ...cardData,
+      cardSet: { id: cardSetId } as any,
+      image,
     });
     return this.cardRepository.save(card);
   }
 
-  // Mettre à jour une carte
   async update(id: number, file: Express.Multer.File, dto: UpdateCardDto) {
     const card = await this.findOne(id);
+    const { cardSetId, imageId, ...cardData } = dto; // ← destructure les ids
 
-    // Nouvelle image uploadée si présente
     if (file) {
-      card.imageUrl = await this.uploadService.optimizeAndUpload(file);
+      card.image = await this.imagesService.uploadAndSave(
+        file,
+        dto.name ?? card.name,
+      );
+    } else if (imageId) {
+      card.image = await this.imagesService.findOne(imageId);
     }
 
-    if (dto.cardSetId) {
-      card.cardSet = { id: dto.cardSetId } as any;
-    }
-
-    Object.assign(card, dto);
+    if (cardSetId) card.cardSet = { id: cardSetId } as any;
+    Object.assign(card, cardData); // ← plus d'imageId ni cardSetId dans le spread
     return this.cardRepository.save(card);
   }
 
-  // Supprimer une carte
   async remove(id: number) {
     const card = await this.findOne(id);
     await this.cardRepository.remove(card);
     return { message: `Card with ID ${id} has been deleted` };
   }
 
-  // Récupérer les cartes par set
   async findBySet(setId: number, { page = 1, limit = 20 }: PaginationDto = {}) {
     const [cards, total] = await this.cardRepository.findAndCount({
       where: { cardSet: { id: setId } },
-      relations: { cardSet: true },
+      relations: { cardSet: true, image: true },
       skip: (page - 1) * limit,
       take: limit,
       order: { id: 'ASC' },
@@ -99,14 +94,13 @@ export class CardsService {
     };
   }
 
-  // Récupérer les cartes par rareté
   async findByRarity(
     rarity: Rarity,
     { page = 1, limit = 20 }: PaginationDto = {},
   ) {
     const [cards, total] = await this.cardRepository.findAndCount({
       where: { rarity },
-      relations: { cardSet: true },
+      relations: { cardSet: true, image: true },
       skip: (page - 1) * limit,
       take: limit,
       order: { id: 'ASC' },

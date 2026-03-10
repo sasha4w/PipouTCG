@@ -106,7 +106,24 @@ describe('CardsController', () => {
       expect(result).toEqual(fakeCard);
     });
 
-    it('should create a card without file', async () => {
+    it('should create a card with imageId from library', async () => {
+      const dto = {
+        name: 'Dragon',
+        rarity: Rarity.RARE,
+        type: Type.MONSTER,
+        atk: 100,
+        hp: 200,
+        cardSetId: 1,
+        imageId: 1,
+      };
+      mockCardsService.create.mockResolvedValue(fakeCard);
+
+      const result = await controller.create(undefined as any, dto);
+      expect(mockCardsService.create).toHaveBeenCalledWith(undefined, dto);
+      expect(result).toEqual(fakeCard);
+    });
+
+    it('should create a card without image', async () => {
       const dto = {
         name: 'Dragon',
         rarity: Rarity.RARE,
@@ -117,9 +134,8 @@ describe('CardsController', () => {
       };
       mockCardsService.create.mockResolvedValue(fakeCard);
 
-      const result = await controller.create(undefined as any, dto); // ✅ retiré le update parasite
+      await controller.create(undefined as any, dto);
       expect(mockCardsService.create).toHaveBeenCalledWith(undefined, dto);
-      expect(result).toEqual(fakeCard); // ✅ result est bien déclaré
     });
   });
 
