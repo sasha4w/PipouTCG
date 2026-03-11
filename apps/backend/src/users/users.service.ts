@@ -93,7 +93,24 @@ export class UsersService {
     const user = this.userRepository.create(data);
     return this.userRepository.save(user);
   }
+  async saveResetToken(userId: number, token: string, expiry: Date) {
+    await this.userRepository.update(userId, {
+      resetToken: token,
+      resetTokenExpiry: expiry,
+    });
+  }
 
+  async findByResetToken(token: string) {
+    return this.userRepository.findOneBy({ resetToken: token });
+  }
+
+  async updatePassword(userId: number, hashedPassword: string) {
+    await this.userRepository.update(userId, {
+      password: hashedPassword,
+      resetToken: null,
+      resetTokenExpiry: null,
+    });
+  }
   /* ===================== PRIVACY ===================== */
 
   async togglePrivacy(userId: number) {

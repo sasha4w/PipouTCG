@@ -14,6 +14,7 @@ const mockUserRepo = {
   findOneBy: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  update: jest.fn(),
   increment: jest.fn(),
   createQueryBuilder: jest.fn(),
 };
@@ -133,7 +134,7 @@ describe('UsersService', () => {
     });
 
     it('should return correct progressPercent', () => {
-      const result = service.calculateLevelData(5); // 5/10 xp = 50%
+      const result = service.calculateLevelData(5);
       expect(result.progressPercent).toBe(50);
     });
   });
@@ -212,6 +213,54 @@ describe('UsersService', () => {
 
       const result = await service.removeBundleFromUser(1, 5);
       expect(result).toBeNull();
+    });
+  });
+
+  // ======= SAVE RESET TOKEN =======
+  describe('saveResetToken', () => {
+    it('should update user with token and expiry', async () => {
+      mockUserRepo.update.mockResolvedValue(undefined);
+      const expiry = new Date();
+
+      await service.saveResetToken(1, 'uuid-token', expiry);
+
+      expect(mockUserRepo.update).toHaveBeenCalledWith(1, {
+        resetToken: 'uuid-token',
+        resetTokenExpiry: expiry,
+      });
+    });
+  });
+
+  // ======= FIND BY RESET TOKEN =======
+  describe('findByResetToken', () => {
+    it('should return user if token matches', async () => {
+      const fakeUser = { id: 1, resetToken: 'uuid-token' };
+      mockUserRepo.findOneBy.mockResolvedValue(fakeUser);
+
+      const result = await service.findByResetToken('uuid-token');
+      expect(result).toEqual(fakeUser);
+    });
+
+    it('should return null if token not found', async () => {
+      mockUserRepo.findOneBy.mockResolvedValue(null);
+
+      const result = await service.findByResetToken('invalid-token');
+      expect(result).toBeNull();
+    });
+  });
+
+  // ======= UPDATE PASSWORD =======
+  describe('updatePassword', () => {
+    it('should update password and clear reset token', async () => {
+      mockUserRepo.update.mockResolvedValue(undefined);
+
+      await service.updatePassword(1, 'hashed_newpass');
+
+      expect(mockUserRepo.update).toHaveBeenCalledWith(1, {
+        password: 'hashed_newpass',
+        resetToken: null,
+        resetTokenExpiry: null,
+      });
     });
   });
 });
