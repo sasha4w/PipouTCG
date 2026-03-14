@@ -21,7 +21,12 @@ import { CustomNamingStrategy } from './database/naming.strategy';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: process.env.NODE_ENV === 'test' ? 0 : 60000,
+        limit: process.env.NODE_ENV === 'test' ? 999999 : 100,
+      },
+    ]),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -32,6 +37,12 @@ import { CustomNamingStrategy } from './database/naming.strategy';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
       namingStrategy: new CustomNamingStrategy(),
+      extra: {
+        connectionLimit: 20,
+        connectTimeout: 60000,
+        queueLimit: 0,
+        waitForConnections: true,
+      },
     }),
 
     UsersModule,

@@ -37,7 +37,21 @@ export class UsersController {
     await this.assertCanView(req, id);
     return this.usersService.getProfile(id);
   }
-
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Request() req) {
+    return this.usersService.findOne(req.user.userId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('me/inventory')
+  getMyInventory(@Request() req) {
+    return this.usersService.getInventory(req.user.userId);
+  }
+  @UseGuards(JwtAuthGuard)
+  @Get('me/stats')
+  getMyStats(@Request() req) {
+    return this.usersService.getProfile(req.user.userId);
+  }
   @UseGuards(JwtAuthGuard)
   @Get(':id/inventory')
   async getInventory(@Param('id', ParseIntPipe) id: number, @Request() req) {

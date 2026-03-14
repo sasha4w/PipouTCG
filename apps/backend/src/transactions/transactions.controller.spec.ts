@@ -6,6 +6,7 @@ import { ProductType } from './enums/product-type.enum';
 import { TransactionStatus } from './enums/transaction-status.enum';
 
 const mockTransactionService = {
+  findAll: jest.fn(),
   createListing: jest.fn(),
   buyListing: jest.fn(),
   getUserHistory: jest.fn(),
@@ -41,6 +42,18 @@ describe('TransactionController', () => {
   });
 
   afterEach(() => jest.clearAllMocks());
+
+  // ======= FIND ALL =======
+  describe('findAll', () => {
+    it('should return paginated listings', async () => {
+      const fake = { data: [fakeListing], meta: { total: 1 } };
+      mockTransactionService.findAll.mockResolvedValue(fake);
+
+      const result = await controller.findAll(pagination);
+      expect(mockTransactionService.findAll).toHaveBeenCalledWith(pagination);
+      expect(result).toEqual(fake);
+    });
+  });
 
   // ======= CREATE LISTING =======
   describe('createListing', () => {

@@ -37,7 +37,7 @@ describe('UsersController', () => {
 
   afterEach(() => jest.clearAllMocks());
 
-  // ======= PORTFOLIO (toujours visible) =======
+  // ======= PORTFOLIO =======
   describe('getCardPortfolio', () => {
     it('should return portfolio', async () => {
       const fakePortfolio = { data: [], meta: { total: 0 } };
@@ -53,7 +53,48 @@ describe('UsersController', () => {
     });
   });
 
-  // ======= PROFILE (privacy) =======
+  // ======= ME =======
+  describe('getMe', () => {
+    it('should return current user', async () => {
+      const req = { user: { userId: 1 } };
+      mockUsersService.findOne.mockResolvedValue({ id: 1, username: 'john' });
+
+      const result = await controller.getMe(req);
+
+      expect(mockUsersService.findOne).toHaveBeenCalledWith(1);
+      expect(result).toEqual({ id: 1, username: 'john' });
+    });
+  });
+
+  describe('getMyInventory', () => {
+    it('should return current user inventory', async () => {
+      const req = { user: { userId: 1 } };
+      mockUsersService.getInventory.mockResolvedValue({
+        cards: [],
+        boosters: [],
+        bundles: [],
+      });
+
+      const result = await controller.getMyInventory(req);
+
+      expect(mockUsersService.getInventory).toHaveBeenCalledWith(1);
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('getMyStats', () => {
+    it('should return current user stats', async () => {
+      const req = { user: { userId: 1 } };
+      mockUsersService.getProfile.mockResolvedValue({ id: 1, level: 5 });
+
+      const result = await controller.getMyStats(req);
+
+      expect(mockUsersService.getProfile).toHaveBeenCalledWith(1);
+      expect(result).toBeDefined();
+    });
+  });
+
+  // ======= PROFILE =======
   describe('getProfile', () => {
     it('should return profile if public', async () => {
       const req = { user: { userId: 2, isAdmin: false } };
@@ -137,7 +178,7 @@ describe('UsersController', () => {
 
   // ======= BOOSTERS =======
   describe('getUserBoosters', () => {
-    it('should return boosters if owner', async () => {
+    it('should return boosters if can view', async () => {
       const req = { user: { userId: 1, isAdmin: false } };
       mockUsersService.findOne.mockResolvedValue({ id: 1, isPrivate: false });
       mockUsersService.getUserBoosters.mockResolvedValue({
@@ -146,38 +187,60 @@ describe('UsersController', () => {
       });
 
       const result = await controller.getUserBoosters(1, req, pagination);
+
       expect(mockUsersService.getUserBoosters).toHaveBeenCalledWith(
         1,
         pagination,
       );
       expect(result).toBeDefined();
     });
+
+    it('should throw ForbiddenException if private and stranger', async () => {
+      const req = { user: { userId: 2, isAdmin: false } };
+      mockUsersService.findOne.mockResolvedValue({ id: 1, isPrivate: true });
+
+      await expect(
+        controller.getUserBoosters(1, req, pagination),
+      ).rejects.toThrow(ForbiddenException);
+    });
   });
 
   // ======= BUNDLES =======
   describe('getUserBundles', () => {
-    it('should return bundles if owner', async () => {
+    it('should return bundles if can view', async () => {
       const req = { user: { userId: 1, isAdmin: false } };
       mockUsersService.findOne.mockResolvedValue({ id: 1, isPrivate: false });
       mockUsersService.getUserBundles.mockResolvedValue({ data: [], meta: {} });
 
       const result = await controller.getUserBundles(1, req, pagination);
+
       expect(mockUsersService.getUserBundles).toHaveBeenCalledWith(
         1,
         pagination,
       );
       expect(result).toBeDefined();
     });
+
+    it('should throw ForbiddenException if private and stranger', async () => {
+      const req = { user: { userId: 2, isAdmin: false } };
+      mockUsersService.findOne.mockResolvedValue({ id: 1, isPrivate: true });
+
+      await expect(
+        controller.getUserBundles(1, req, pagination),
+      ).rejects.toThrow(ForbiddenException);
+    });
   });
 
-  // ======= TOGGLE PRIVACY (owner only) =======
+  // ======= TOGGLE PRIVACY =======
   describe('togglePrivacy', () => {
     it('should toggle privacy if owner', async () => {
       const req = { user: { userId: 1 } };
       mockUsersService.togglePrivacy.mockResolvedValue({ isPrivate: false });
 
       const result = await controller.togglePrivacy(1, req);
+
       expect(mockUsersService.togglePrivacy).toHaveBeenCalledWith(1);
+      expect(result).toEqual({ isPrivate: false });
     });
 
     it('should throw ForbiddenException if not owner', () => {
@@ -196,6 +259,7 @@ describe('UsersController', () => {
       mockUsersService.findAll.mockResolvedValue(fakeUsers);
 
       const result = await controller.findAll(pagination);
+
       expect(mockUsersService.findAll).toHaveBeenCalledWith(pagination);
       expect(result).toEqual(fakeUsers);
     });
@@ -207,6 +271,7 @@ describe('UsersController', () => {
       mockUsersService.findOne.mockResolvedValue(fakeUser);
 
       const result = await controller.findOne(1);
+
       expect(mockUsersService.findOne).toHaveBeenCalledWith(1);
       expect(result).toEqual(fakeUser);
     });

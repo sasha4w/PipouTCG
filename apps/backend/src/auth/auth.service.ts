@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -32,21 +33,33 @@ export class AuthService {
     if (!user || !isValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const autoClaimedRewards = await this.questService.syncUserQuests(user.id);
+
+    // Fire and forget — pas d'await, le token est retourné immédiatement
+    this.questService
+      .syncUserQuests(user.id)
+      .catch((err) => console.error('syncUserQuests failed:', err));
+
     const payload = { sub: user.id, is_admin: user.is_admin };
     return {
       access_token: this.jwtService.sign(payload),
-      autoClaimedRewards,
+      autoClaimedRewards: [], // plus de récompenses auto-claimed au login
     };
   }
 
   async register(dto: RegisterDto) {
-    const hash = await bcrypt.hash(dto.password, 10);
-    return this.usersService.create({
+    const existing = await this.usersService.findByEmail(dto.email);
+    if (existing) throw new ConflictException('Email déjà utilisé');
+
+    const rounds = process.env.NODE_ENV === 'test' ? 1 : 10;
+    const hash = await bcrypt.hash(dto.password, rounds);
+
+    const user = await this.usersService.create({
       username: dto.username,
       email: dto.email,
       password: hash,
     });
+    const { password, resetToken, resetTokenExpiry, ...result } = user;
+    return result;
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {

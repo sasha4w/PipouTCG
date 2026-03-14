@@ -19,12 +19,12 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 // Total = 100%, ajustable selon l'équilibrage souhaité
 // ============================================================
 const RARITY_WEIGHTS: Record<Rarity, number> = {
-  [Rarity.COMMON]: 60, // 60%
-  [Rarity.UNCOMMON]: 25, // 25%
-  [Rarity.RARE]: 10, // 10%
-  [Rarity.EPIC]: 4, //  4%
-  [Rarity.LEGENDARY]: 0.8, //  0.8%
-  [Rarity.SECRET]: 0.2, //  0.2%
+  [Rarity.COMMON]: 60,
+  [Rarity.UNCOMMON]: 25,
+  [Rarity.RARE]: 10,
+  [Rarity.EPIC]: 4,
+  [Rarity.LEGENDARY]: 0.8,
+  [Rarity.SECRET]: 0.2,
 };
 
 // ============================================================
@@ -53,7 +53,6 @@ export class BoostersService {
     private readonly usersService: UsersService,
   ) {}
 
-  // Retourne tous les boosters avec leur cardSet associé
   async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
     const [boosters, total] = await this.boosterRepository.findAndCount({
       relations: { cardSet: true },
@@ -67,7 +66,6 @@ export class BoostersService {
     };
   }
 
-  // Retourne un booster par son ID avec son cardSet et ses historiques d'ouverture
   async findOne(id: number) {
     const booster = await this.boosterRepository.findOne({
       where: { id },
@@ -78,7 +76,6 @@ export class BoostersService {
     return booster;
   }
 
-  // Crée un nouveau booster et l'associe à un cardSet
   async create(data: {
     name: string;
     cardNumber: CardNumber;
@@ -94,7 +91,6 @@ export class BoostersService {
     return this.boosterRepository.save(booster);
   }
 
-  // Met à jour les informations d'un booster existant
   async update(
     id: number,
     data: Partial<{
@@ -112,7 +108,6 @@ export class BoostersService {
     return this.boosterRepository.save(booster);
   }
 
-  // Supprime un booster par son ID
   async remove(id: number) {
     const booster = await this.findOne(id);
     await this.boosterRepository.remove(booster);
@@ -123,7 +118,6 @@ export class BoostersService {
   // MÉTHODES PRIVÉES DE TIRAGE
   // ============================================================
 
-  // Tire une rareté aléatoire en fonction des poids définis dans RARITY_WEIGHTS
   private drawRarity(): Rarity {
     const totalWeight = Object.values(RARITY_WEIGHTS).reduce(
       (sum, w) => sum + w,
@@ -136,11 +130,9 @@ export class BoostersService {
       if (roll <= 0) return rarity as Rarity;
     }
 
-    return Rarity.COMMON; // Fallback de sécurité
+    return Rarity.COMMON;
   }
 
-  // Tire une carte d'une rareté précise
-  // Si le pool est vide, descend vers la rareté inférieure suivante
   private drawCardOfRarity(
     rarity: Rarity,
     cardsByRarity: Record<Rarity, Card[]>,
@@ -165,34 +157,45 @@ export class BoostersService {
     throw new BadRequestException('No card available in any rarity pool');
   }
 
-  // Tire une carte aléatoirement selon les taux de rareté
   private drawCard(cardsByRarity: Record<Rarity, Card[]>): Card {
-    const rarity = this.drawRarity();
-    return this.drawCardOfRarity(rarity, cardsByRarity);
+    const availableWeights = Object.fromEntries(
+      Object.entries(RARITY_WEIGHTS).filter(
+        ([rarity]) => cardsByRarity[rarity as Rarity]?.length > 0,
+      ),
+    );
+
+    const totalWeight = Object.values(availableWeights).reduce(
+      (sum, w) => sum + w,
+      0,
+    );
+    let roll = Math.random() * totalWeight;
+
+    for (const [rarity, weight] of Object.entries(availableWeights)) {
+      roll -= weight;
+      if (roll <= 0)
+        return this.drawCardOfRarity(rarity as Rarity, cardsByRarity);
+    }
+
+    const anyRarity = Object.keys(availableWeights)[0] as Rarity;
+    return this.drawCardOfRarity(anyRarity, cardsByRarity);
   }
 
   // ============================================================
   // ACHAT D'UN BOOSTER
-  // Débite le gold et ajoute le booster dans user_booster
   // ============================================================
   async buyBooster(boosterId: number, userId: number) {
-    // 1. On récupère le user via le UsersService
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} not found`);
 
     const booster = await this.findOne(boosterId);
 
-    // 2. Vérification de l'or
     if (Number(user.gold) < booster.price) {
       throw new BadRequestException(
         `Not enough gold. Required: ${booster.price}, available: ${user.gold}`,
       );
     }
 
-    // 3. Paiement et Stats (Il faudra ajouter cette petite méthode dans UsersService)
     await this.usersService.spendGoldAndRecordPurchase(userId, booster.price);
-
-    // 4. Ajout dans l'inventaire via le service délégué !
     await this.usersService.addBoosterToUser(userId, boosterId, 1);
 
     return {
@@ -207,21 +210,14 @@ export class BoostersService {
   // Vérifie l'inventaire → -1 user_booster → génère N cartes → +N user_card
   // ============================================================
   async openBooster(boosterId: number, userId: number) {
-    // 1. Récupération des données de base
-    const booster = await this.findOne(boosterId); // Utilise ton findOne qui check déjà le NotFound
+    const booster = await this.findOne(boosterId);
 
-    // 2. Vérification et retrait du booster (Délégué à UsersService)
-    // Cette méthode dans UsersService fait déjà le check de quantité et le remove/save
-    await this.usersService.removeBoosterFromUser(userId, boosterId);
-
-    // 3. Récupération des cartes du set
     const cards = await this.cardRepository.find({
       where: { cardSet: { id: booster.cardSet.id } },
     });
     if (!cards.length)
       throw new BadRequestException(`No cards in set ${booster.cardSet.name}`);
 
-    // 4. LOGIQUE DE TIRAGE (Ton algorithme reste ici)
     const cardsByRarity = cards.reduce(
       (acc, card) => {
         if (!acc[card.rarity]) acc[card.rarity] = [];
@@ -236,41 +232,56 @@ export class BoostersService {
     for (const rarity of guarantees) {
       drawnCards.push(this.drawCardOfRarity(rarity, cardsByRarity));
     }
-    const remainingSlots = booster.cardNumber - drawnCards.length;
-    for (let i = 0; i < remainingSlots; i++) {
+    for (let i = 0; i < booster.cardNumber - drawnCards.length; i++) {
       drawnCards.push(this.drawCard(cardsByRarity));
     }
     drawnCards.sort(() => Math.random() - 0.5);
 
-    // 5. ENREGISTREMENT (Délégué aux services respectifs)
-
-    // Création de l'historique
-    const history = await this.openHistoryRepository.save(
-      this.openHistoryRepository.create({
-        user: { id: userId } as any,
-        booster: { id: booster.id } as any,
-        openedAt: new Date(),
-      }),
+    const cardGroups = drawnCards.reduce(
+      (acc, card) => {
+        acc[card.id] = (acc[card.id] || 0) + 1;
+        return acc;
+      },
+      {} as Record<number, number>,
     );
 
-    // Cartes de l'historique + Ajout dans l'inventaire User
-    for (const card of drawnCards) {
-      await this.usersService.addCardToUser(userId, card.id);
+    let historyId: number;
 
-      // Lien historique
-      await this.openCardRepository.save(
-        this.openCardRepository.create({
-          card: { id: card.id } as any,
-          openHistory: { id: history.id } as any,
+    await this.openCardRepository.manager.transaction(async (manager) => {
+      await this.usersService.removeBoosterFromUser(userId, boosterId, manager);
+
+      const history = await manager.save(
+        manager.create(BoosterOpenHistory, {
+          user: { id: userId } as any,
+          booster: { id: booster.id } as any,
+          openedAt: new Date(),
         }),
       );
-    }
+      historyId = history.id;
 
-    // Mise à jour des stats globales (XP + compteurs)
+      // Une seule ligne par carte unique avec quantity — plus de boucle
+      for (const [cardId, quantity] of Object.entries(cardGroups)) {
+        await this.usersService.addCardToUser(
+          userId,
+          Number(cardId),
+          quantity,
+          manager,
+        );
+
+        await manager.save(
+          manager.create(BoosterOpenCard, {
+            card: { id: Number(cardId) } as any,
+            openHistory: { id: history.id } as any,
+            quantity,
+          }),
+        );
+      }
+    });
+
     await this.usersService.updatePostOpeningStats(userId, 50);
 
     return {
-      historyId: history.id,
+      historyId: historyId!,
       booster: booster.name,
       cards: drawnCards,
     };

@@ -4,7 +4,11 @@ import { UsersService } from '../users/users.service';
 import { QuestService } from '../quests/quests.service';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from './mail.service';
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt', () => ({
@@ -12,7 +16,6 @@ jest.mock('bcrypt', () => ({
   compare: jest.fn(),
 }));
 
-// ← mock uuid pour avoir un token prévisible
 jest.mock('uuid', () => ({ v4: jest.fn().mockReturnValue('mock-uuid-token') }));
 
 const mockUsersService = {
@@ -65,7 +68,6 @@ describe('AuthService', () => {
       };
       mockUsersService.findByEmail.mockResolvedValue(fakeUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      mockQuestService.syncUserQuests.mockResolvedValue([]);
 
       const result = await service.login('john@test.com', '123456');
 
@@ -77,10 +79,9 @@ describe('AuthService', () => {
         sub: 1,
         is_admin: false,
       });
-      expect(mockQuestService.syncUserQuests).toHaveBeenCalledWith(1);
     });
 
-    it('should return autoClaimedRewards when quests were auto-claimed', async () => {
+    it('should call syncUserQuests fire and forget (not awaited)', async () => {
       const fakeUser = {
         id: 1,
         email: 'john@test.com',
@@ -89,14 +90,11 @@ describe('AuthService', () => {
       };
       mockUsersService.findByEmail.mockResolvedValue(fakeUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      mockQuestService.syncUserQuests.mockResolvedValue([
-        { title: 'Ouvre 3 boosters', rewardType: 'GOLD', rewardAmount: 500 },
-      ]);
 
-      const result = await service.login('john@test.com', '123456');
+      await service.login('john@test.com', '123456');
 
-      expect(result.autoClaimedRewards).toHaveLength(1);
-      expect(result.autoClaimedRewards[0].title).toBe('Ouvre 3 boosters');
+      // syncUserQuests est appelé mais pas attendu — on vérifie juste qu'il est déclenché
+      expect(mockQuestService.syncUserQuests).toHaveBeenCalledWith(1);
     });
 
     it('should throw UnauthorizedException if user not found', async () => {
@@ -124,24 +122,48 @@ describe('AuthService', () => {
 
   // ======= REGISTER =======
   describe('register', () => {
-    it('should hash password and call usersService.create', async () => {
+    it('should hash password and return user without sensitive fields', async () => {
       const dto = {
         username: 'john',
         email: 'john@test.com',
         password: '123456',
       };
-      const fakeUser = { id: 1, username: 'john', email: 'john@test.com' };
+      const fakeUser = {
+        id: 1,
+        username: 'john',
+        email: 'john@test.com',
+        password: 'hashed_password',
+        resetToken: null,
+        resetTokenExpiry: null,
+      };
+      mockUsersService.findByEmail.mockResolvedValue(null);
       mockUsersService.create.mockResolvedValue(fakeUser);
 
       const result = await service.register(dto);
 
-      expect(bcrypt.hash).toHaveBeenCalledWith('123456', 10);
+      expect(bcrypt.hash).toHaveBeenCalledWith('123456', expect.any(Number));
       expect(mockUsersService.create).toHaveBeenCalledWith({
         username: dto.username,
         email: dto.email,
         password: 'hashed_password',
       });
-      expect(result).toEqual(fakeUser);
+      // Les champs sensibles sont retirés
+      expect(result).not.toHaveProperty('password');
+      expect(result).not.toHaveProperty('resetToken');
+      expect(result).not.toHaveProperty('resetTokenExpiry');
+      expect(result).toMatchObject({ id: 1, username: 'john' });
+    });
+
+    it('should throw ConflictException if email already exists', async () => {
+      mockUsersService.findByEmail.mockResolvedValue({ id: 1 });
+
+      await expect(
+        service.register({
+          username: 'john',
+          email: 'john@test.com',
+          password: '123456',
+        }),
+      ).rejects.toThrow(ConflictException);
     });
   });
 
@@ -191,7 +213,7 @@ describe('AuthService', () => {
       const fakeUser = {
         id: 1,
         resetToken: 'mock-uuid-token',
-        resetTokenExpiry: new Date(Date.now() + 10 * 60 * 1000), // pas expiré
+        resetTokenExpiry: new Date(Date.now() + 10 * 60 * 1000),
       };
       mockUsersService.findByResetToken.mockResolvedValue(fakeUser);
       mockUsersService.updatePassword.mockResolvedValue(undefined);
@@ -225,7 +247,7 @@ describe('AuthService', () => {
       const fakeUser = {
         id: 1,
         resetToken: 'mock-uuid-token',
-        resetTokenExpiry: new Date(Date.now() - 1000), // ← expiré
+        resetTokenExpiry: new Date(Date.now() - 1000),
       };
       mockUsersService.findByResetToken.mockResolvedValue(fakeUser);
 

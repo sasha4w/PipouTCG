@@ -4,11 +4,13 @@ import {
   ManyToOne,
   Column,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Booster } from '../boosters/booster.entity';
 
 @Entity('user_booster')
+@Index(['user', 'booster'], { unique: true })
 export class UserBooster {
   @PrimaryGeneratedColumn()
   id: number;

@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Quest } from '../quests/quest.entity';
@@ -26,6 +27,7 @@ export interface QuestProgress {
 }
 
 @Entity('user_quest')
+@Index(['user', 'quest'], { unique: true })
 export class UserQuest {
   @PrimaryGeneratedColumn()
   id: number;
@@ -38,7 +40,6 @@ export class UserQuest {
   @JoinColumn({ name: 'quest_id' })
   quest: Quest;
 
-  // Progression détaillée par condition
   @Column({ type: 'json' })
   progress: QuestProgress;
 

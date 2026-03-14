@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { Repository, MoreThan, EntityManager } from 'typeorm';
 
 import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
@@ -295,18 +295,27 @@ export class UsersService {
     };
   }
   /* ===================== CARD MANAGEMENT ===================== */
-  async addCardToUser(userId: number, cardId: number, quantity = 1) {
-    const existing = await this.userCardRepository.findOne({
+  async addCardToUser(
+    userId: number,
+    cardId: number,
+    quantity = 1,
+    manager?: EntityManager, // ← optionnel pour les transactions
+  ) {
+    const repo = manager
+      ? manager.getRepository(UserCard)
+      : this.userCardRepository;
+
+    const existing = await repo.findOne({
       where: { user: { id: userId }, card: { id: cardId } },
     });
 
     if (existing) {
       existing.quantity += quantity;
-      return this.userCardRepository.save(existing);
+      return repo.save(existing);
     }
 
-    return this.userCardRepository.save(
-      this.userCardRepository.create({
+    return repo.save(
+      repo.create({
         user: { id: userId } as any,
         card: { id: cardId } as any,
         quantity,
@@ -334,8 +343,16 @@ export class UsersService {
       }),
     );
   }
-  async removeBundleFromUser(userId: number, bundleId: number) {
-    const ub = await this.userBundleRepository.findOne({
+  async removeBundleFromUser(
+    userId: number,
+    bundleId: number,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(UserBundle)
+      : this.userBundleRepository;
+
+    const ub = await repo.findOne({
       where: { user: { id: userId }, bundle: { id: bundleId } },
     });
 
@@ -346,10 +363,10 @@ export class UsersService {
     ub.quantity--;
 
     if (ub.quantity <= 0) {
-      await this.userBundleRepository.remove(ub);
+      await repo.remove(ub);
       return null;
     }
-    return this.userBundleRepository.save(ub);
+    return repo.save(ub);
   }
   async distributeBundleContents(userId: number, contents: any[]) {
     const summary = {
@@ -386,18 +403,27 @@ export class UsersService {
 
   /* ===================== BOOSTER MANAGEMENT ===================== */
 
-  async addBoosterToUser(userId: number, boosterId: number, quantity = 1) {
-    const existing = await this.userBoosterRepository.findOne({
+  async addBoosterToUser(
+    userId: number,
+    boosterId: number,
+    quantity = 1,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(UserBooster)
+      : this.userBoosterRepository;
+
+    const existing = await repo.findOne({
       where: { user: { id: userId }, booster: { id: boosterId } },
     });
 
     if (existing) {
       existing.quantity += quantity;
-      return this.userBoosterRepository.save(existing);
+      return repo.save(existing);
     }
 
-    return this.userBoosterRepository.save(
-      this.userBoosterRepository.create({
+    return repo.save(
+      repo.create({
         user: { id: userId } as any,
         booster: { id: boosterId } as any,
         quantity,
@@ -405,8 +431,16 @@ export class UsersService {
     );
   }
 
-  async removeBoosterFromUser(userId: number, boosterId: number) {
-    const ub = await this.userBoosterRepository.findOne({
+  async removeBoosterFromUser(
+    userId: number,
+    boosterId: number,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(UserBooster)
+      : this.userBoosterRepository;
+
+    const ub = await repo.findOne({
       where: { user: { id: userId }, booster: { id: boosterId } },
     });
 
@@ -417,10 +451,10 @@ export class UsersService {
     ub.quantity--;
 
     if (ub.quantity <= 0) {
-      await this.userBoosterRepository.remove(ub);
+      await repo.remove(ub);
       return null;
     }
-    return this.userBoosterRepository.save(ub);
+    return repo.save(ub);
   }
 
   async updatePostOpeningStats(userId: number, xpAmount: number) {

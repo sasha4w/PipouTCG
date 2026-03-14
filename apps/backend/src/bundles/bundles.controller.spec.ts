@@ -125,16 +125,13 @@ describe('BundlesController', () => {
   });
 
   describe('addContent', () => {
-    it('should add a card to bundle', async () => {
-      const dto = { cardId: 5 };
-      mockBundlesService.addContent.mockResolvedValue({ id: 1 });
-
-      await controller.addContent(1, dto);
-      expect(mockBundlesService.addContent).toHaveBeenCalledWith(1, dto);
-    });
-
-    it('should add a booster to bundle', async () => {
-      const dto = { boosterId: 3 };
+    it('should add cards to bundle', async () => {
+      const dto = {
+        items: [
+          { cardId: 5, quantity: 2 },
+          { boosterId: 3, quantity: 1 },
+        ],
+      };
       mockBundlesService.addContent.mockResolvedValue({ id: 1 });
 
       await controller.addContent(1, dto);

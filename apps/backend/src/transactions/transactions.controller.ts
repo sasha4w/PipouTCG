@@ -19,6 +19,11 @@ export class TransactionController {
 
   // CONNECTÉ //
   @UseGuards(JwtAuthGuard)
+  @Get()
+  findAll(@Query() pagination: PaginationDto) {
+    return this.transactionService.findAll(pagination);
+  }
+  @UseGuards(JwtAuthGuard)
   @Post('listing')
   createListing(@Body() dto: CreateListingDto, @Req() req: any) {
     return this.transactionService.createListing(dto, req.user.userId);

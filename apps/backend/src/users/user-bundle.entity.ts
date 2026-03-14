@@ -4,11 +4,13 @@ import {
   ManyToOne,
   Column,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Bundle } from '../bundles/bundle.entity';
 
 @Entity('user_bundle')
+@Index(['user', 'bundle'], { unique: true })
 export class UserBundle {
   @PrimaryGeneratedColumn()
   id: number;

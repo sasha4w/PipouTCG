@@ -20,7 +20,21 @@ export class TransactionService {
     private usersService: UsersService,
     private dataSource: DataSource,
   ) {}
-
+  async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
+    const [transactions, total] = await this.transactionRepository.findAndCount(
+      {
+        where: { status: TransactionStatus.PENDING },
+        order: { createdAt: 'DESC' },
+        relations: ['seller'],
+        skip: (page - 1) * limit,
+        take: limit,
+      },
+    );
+    return {
+      data: transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
   // ============================================================
   // 🟡 CRÉER UNE ANNONCE
   // ============================================================

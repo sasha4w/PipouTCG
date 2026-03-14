@@ -129,6 +129,8 @@ export class QuestService {
     const existingQuestIds = new Set(existing.map((uq) => uq.quest.id));
     const toAssign = allQuests.filter((q) => !existingQuestIds.has(q.id));
 
+    if (toAssign.length === 0) return; // ← rien à faire
+
     const newUserQuests = toAssign.map((quest) =>
       this.userQuestRepository.create({
         user: { id: userId },
@@ -140,9 +142,14 @@ export class QuestService {
       }),
     );
 
-    if (newUserQuests.length > 0) {
-      await this.userQuestRepository.save(newUserQuests);
-    }
+    // ← orIgnore évite le crash si doublon (race condition ou retry)
+    await this.userQuestRepository
+      .createQueryBuilder()
+      .insert()
+      .into(UserQuest)
+      .values(newUserQuests)
+      .orIgnore()
+      .execute();
   }
 
   async getUserQuests(userId: number) {

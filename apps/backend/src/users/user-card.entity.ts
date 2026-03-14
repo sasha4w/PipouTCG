@@ -4,11 +4,13 @@ import {
   ManyToOne,
   Column,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Card } from '../cards/card.entity';
 
 @Entity('user_card')
+@Index(['user', 'card'], { unique: true })
 export class UserCard {
   @PrimaryGeneratedColumn()
   id: number;

@@ -12,6 +12,7 @@ import { UpdateBundleDto } from './dto/update-bundle.dto';
 import { AddBundleContentDto } from './dto/add-bundle-content.dto';
 import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
+
 @Injectable()
 export class BundlesService {
   constructor(
@@ -19,8 +20,6 @@ export class BundlesService {
     private bundleRepository: Repository<Bundle>,
     @InjectRepository(BundleContent)
     private bundleContentRepository: Repository<BundleContent>,
-
-    // On centralise toute la manipulation de l'inventaire ici
     private readonly usersService: UsersService,
   ) {}
 
@@ -73,41 +72,51 @@ export class BundlesService {
   }
 
   async addContent(bundleId: number, dto: AddBundleContentDto) {
-    if (!!dto.cardId === !!dto.boosterId) {
+    const bundle = await this.findOne(bundleId);
+
+    const totalQuantity = dto.items.reduce(
+      (sum, item) => sum + (item.quantity ?? 1),
+      0,
+    );
+
+    if (totalQuantity < 2) {
       throw new BadRequestException(
-        'You must provide either cardId or boosterId (not both)',
+        'Un bundle doit contenir au moins 2 items au total',
       );
     }
 
-    const bundle = await this.findOne(bundleId);
+    for (const item of dto.items) {
+      if (!!item.cardId === !!item.boosterId) {
+        throw new BadRequestException(
+          'Chaque item doit avoir soit un cardId soit un boosterId',
+        );
+      }
+      const content = this.bundleContentRepository.create({
+        bundle,
+        card: item.cardId ? ({ id: item.cardId } as any) : null,
+        booster: item.boosterId ? ({ id: item.boosterId } as any) : null,
+        quantity: item.quantity ?? 1,
+      });
+      await this.bundleContentRepository.save(content);
+    }
 
-    const content = this.bundleContentRepository.create({
-      bundle,
-      card: dto.cardId ? ({ id: dto.cardId } as any) : null,
-      booster: dto.boosterId ? ({ id: dto.boosterId } as any) : null,
-    });
-
-    return this.bundleContentRepository.save(content);
+    return this.findOne(bundleId);
   }
+
   async buyBundle(bundleId: number, userId: number) {
-    // 1. Récupération des infos (via UsersService pour le user)
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} not found`);
 
     const bundle = await this.findOne(bundleId);
 
-    // 2. Vérification Gold
     if (Number(user.gold) < bundle.price) {
       throw new BadRequestException(`Not enough gold.`);
     }
 
-    // 3. Paiement et Stats via UsersService
     await this.usersService.spendGoldAndRecordBundlePurchase(
       userId,
       bundle.price,
     );
-
-    // 4. Ajout à l'inventaire via UsersService
     await this.usersService.addBundleToUser(userId, bundleId, 1);
 
     return {
@@ -116,32 +125,43 @@ export class BundlesService {
       goldRemaining: Number(user.gold) - bundle.price,
     };
   }
-  // ============================================================
-  // OUVERTURE D'UN BUNDLE
-  // Vérifie l'inventaire → -1 user_bundle → distribue les contenus
-  // cartes → user_card | boosters → user_booster (selon quantity)
-  // ============================================================
+
   async openBundle(bundleId: number, userId: number) {
-    // 1. Récupérer la définition du bundle
     const bundle = await this.findOne(bundleId);
 
-    // 2. Retirer le bundle de l'inventaire via UsersService
-    // (C'est ICI que tes erreurs disparaissent car on n'appelle plus "this.userBundleRepository")
-    await this.usersService.removeBundleFromUser(userId, bundleId);
+    await this.bundleContentRepository.manager.transaction(async (manager) => {
+      await this.usersService.removeBundleFromUser(userId, bundleId, manager);
 
-    // 3. Distribuer le contenu (Cartes + Boosters) via UsersService
-    const summary = await this.usersService.distributeBundleContents(
-      userId,
-      bundle.contents,
-    );
+      for (const content of bundle.contents) {
+        if (content.card) {
+          await this.usersService.addCardToUser(
+            userId,
+            content.card.id,
+            content.quantity,
+            manager,
+          );
+        }
+        if (content.booster) {
+          await this.usersService.addBoosterToUser(
+            userId,
+            content.booster.id,
+            content.quantity,
+            manager,
+          );
+        }
+      }
+    });
 
-    // 4. Bonus XP
     await this.usersService.addExperience(userId, 100);
 
     return {
       message: `Bundle "${bundle.name}" ouvert avec succès`,
-      cards: summary.cards,
-      boosters: summary.boosters,
+      cards: bundle.contents
+        .filter((c) => c.card)
+        .map((c) => ({ name: c.card.name, quantity: c.quantity })),
+      boosters: bundle.contents
+        .filter((c) => c.booster)
+        .map((c) => ({ name: c.booster.name, quantity: c.quantity })),
     };
   }
 }

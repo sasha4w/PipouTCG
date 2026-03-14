@@ -17,9 +17,17 @@ const mockBundleRepo = {
 const mockBundleContentRepo = {
   create: jest.fn(),
   save: jest.fn(),
+  manager: {
+    transaction: jest.fn().mockImplementation(async (cb: any) => {
+      const fakeManager = {
+        save: jest.fn().mockResolvedValue({ id: 1 }),
+        create: jest.fn().mockReturnValue({}),
+      };
+      return cb(fakeManager);
+    }),
+  },
 };
 
-// On mock UsersService car BundlesService en dépend
 const mockUsersService = {
   findOne: jest.fn(),
   spendGoldAndRecordBundlePurchase: jest.fn(),
@@ -27,6 +35,8 @@ const mockUsersService = {
   removeBundleFromUser: jest.fn(),
   distributeBundleContents: jest.fn(),
   addExperience: jest.fn(),
+  addCardToUser: jest.fn(),
+  addBoosterToUser: jest.fn(),
 };
 
 describe('BundlesService', () => {
@@ -119,26 +129,54 @@ describe('BundlesService', () => {
 
   // ======= ADD CONTENT =======
   describe('addContent', () => {
-    it('should throw if both cardId and boosterId provided', async () => {
+    it('should throw if totalQuantity < 2', async () => {
+      const fakeBundle = { id: 1, name: 'Bundle XP' };
+      mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
+
       await expect(
-        service.addContent(1, { cardId: 1, boosterId: 1 }),
+        service.addContent(1, { items: [{ cardId: 1, quantity: 1 }] }),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw if neither cardId nor boosterId provided', async () => {
-      await expect(service.addContent(1, {})).rejects.toThrow(
-        BadRequestException,
-      );
+    it('should throw if item has both cardId and boosterId', async () => {
+      const fakeBundle = { id: 1, name: 'Bundle XP' };
+      mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
+
+      await expect(
+        service.addContent(1, {
+          items: [
+            { cardId: 1, boosterId: 1, quantity: 1 },
+            { cardId: 2, quantity: 1 },
+          ],
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('should add card content to bundle', async () => {
+    it('should throw if item has neither cardId nor boosterId', async () => {
+      const fakeBundle = { id: 1, name: 'Bundle XP' };
+      mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
+
+      await expect(
+        service.addContent(1, {
+          items: [{ quantity: 1 }, { cardId: 2, quantity: 1 }],
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should add items to bundle', async () => {
       const fakeBundle = { id: 1, name: 'Bundle XP' };
       mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
       mockBundleContentRepo.create.mockReturnValue({ id: 1 });
       mockBundleContentRepo.save.mockResolvedValue({ id: 1 });
 
-      const result = await service.addContent(1, { cardId: 5 });
-      expect(mockBundleContentRepo.save).toHaveBeenCalled();
+      await service.addContent(1, {
+        items: [
+          { cardId: 5, quantity: 2 },
+          { boosterId: 3, quantity: 1 },
+        ],
+      });
+
+      expect(mockBundleContentRepo.save).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -173,9 +211,7 @@ describe('BundlesService', () => {
     it('should throw NotFoundException if user not found', async () => {
       mockUsersService.findOne.mockResolvedValue(null);
 
-      await expect(service.buyBundle(1, 999)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.buyBundle(1, 1)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -185,19 +221,39 @@ describe('BundlesService', () => {
       const fakeBundle = {
         id: 1,
         name: 'Bundle XP',
-        contents: [{ card: { id: 1, name: 'Dragon' }, quantity: 1 }],
+        contents: [
+          { card: { id: 1, name: 'Dragon' }, booster: null, quantity: 1 },
+        ],
       };
       mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
       mockUsersService.removeBundleFromUser.mockResolvedValue(null);
-      mockUsersService.distributeBundleContents.mockResolvedValue({
-        cards: [{ name: 'Dragon', quantity: 1 }],
-        boosters: [],
-      });
+      mockUsersService.addCardToUser.mockResolvedValue(undefined);
       mockUsersService.addExperience.mockResolvedValue(undefined);
 
       const result = await service.openBundle(1, 1);
+
       expect(result.cards).toEqual([{ name: 'Dragon', quantity: 1 }]);
+      expect(result.boosters).toEqual([]);
       expect(mockUsersService.addExperience).toHaveBeenCalledWith(1, 100);
+    });
+
+    it('should distribute boosters if bundle contains boosters', async () => {
+      const fakeBundle = {
+        id: 1,
+        name: 'Bundle XP',
+        contents: [
+          { card: null, booster: { id: 2, name: 'Fire Pack' }, quantity: 3 },
+        ],
+      };
+      mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
+      mockUsersService.removeBundleFromUser.mockResolvedValue(null);
+      mockUsersService.addBoosterToUser.mockResolvedValue(undefined);
+      mockUsersService.addExperience.mockResolvedValue(undefined);
+
+      const result = await service.openBundle(1, 1);
+
+      expect(result.boosters).toEqual([{ name: 'Fire Pack', quantity: 3 }]);
+      expect(result.cards).toEqual([]);
     });
   });
 });

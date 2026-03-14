@@ -24,14 +24,12 @@ const mockUsersService = {
   findOne: jest.fn(),
 };
 
-// Mock manager pour dataSource.transaction()
 const mockManager = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
 };
 
-// Mock dataSource — getRepository retourne un faux repo selon l'entité
 const mockCardRepo = { findOne: jest.fn(), save: jest.fn() };
 const mockBoosterRepo = { findOne: jest.fn(), save: jest.fn() };
 const mockBundleRepo = { findOne: jest.fn(), save: jest.fn() };
@@ -98,6 +96,20 @@ describe('TransactionService', () => {
   afterEach(() => jest.clearAllMocks());
 
   // ============================================================
+  // FIND ALL
+  // ============================================================
+  describe('findAll', () => {
+    it('should return paginated pending listings', async () => {
+      mockTransactionRepo.findAndCount.mockResolvedValue([[fakeListing], 1]);
+
+      const result = await service.findAll({ page: 1, limit: 20 });
+      expect(result.data).toEqual([fakeListing]);
+      expect(result.meta.total).toBe(1);
+      expect(result.meta.totalPages).toBe(1);
+    });
+  });
+
+  // ============================================================
   // CREATE LISTING
   // ============================================================
   describe('createListing', () => {
@@ -127,7 +139,7 @@ describe('TransactionService', () => {
           { ...baseDto, productType: ProductType.CARD },
           1,
         );
-        expect(mockCardRepo.save).toHaveBeenCalled(); // quantité réservée
+        expect(mockCardRepo.save).toHaveBeenCalled();
         expect(result).toEqual(fakeListing);
       });
 
@@ -274,10 +286,10 @@ describe('TransactionService', () => {
       const fakeSellerCard = { id: 1, card: { id: 10 }, quantity: 1 };
 
       mockManager.findOne
-        .mockResolvedValueOnce({ ...fakeListing }) // listing
-        .mockResolvedValueOnce({ ...fakeBuyer }) // buyer
-        .mockResolvedValueOnce(fakeSellerCard) // sellerItem
-        .mockResolvedValueOnce(null); // buyerItem inexistant
+        .mockResolvedValueOnce({ ...fakeListing })
+        .mockResolvedValueOnce({ ...fakeBuyer })
+        .mockResolvedValueOnce(fakeSellerCard)
+        .mockResolvedValueOnce(null);
 
       mockManager.create.mockReturnValue({ quantity: 1 });
       mockManager.save.mockResolvedValue(undefined);
@@ -294,12 +306,12 @@ describe('TransactionService', () => {
         .mockResolvedValueOnce({ ...fakeListing })
         .mockResolvedValueOnce({ ...fakeBuyer })
         .mockResolvedValueOnce(fakeSellerCard)
-        .mockResolvedValueOnce(existingBuyerCard); // buyer possède déjà la carte
+        .mockResolvedValueOnce(existingBuyerCard);
 
       mockManager.save.mockResolvedValue(undefined);
 
       await service.buyListing(1, 2);
-      expect(existingBuyerCard.quantity).toBe(4); // 3 + 1
+      expect(existingBuyerCard.quantity).toBe(4);
     });
 
     it('should complete a BOOSTER transaction', async () => {
