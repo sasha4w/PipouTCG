@@ -21,15 +21,17 @@ export class CardSetsController {
   constructor(private readonly cardSetsService: CardSetsService) {}
 
   // PUBLIC //
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.cardSetsService.findAll(pagination);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.cardSetsService.findOne(id);
   }
-
   // ADMIN //
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Post()

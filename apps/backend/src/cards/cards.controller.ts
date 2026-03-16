@@ -23,18 +23,19 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  // PUBLIC
+  @UseGuards(JwtAuthGuard)
   @Get('set/:setId')
   findBySet(@Param('setId') setId: string, @Query() pagination: PaginationDto) {
     return this.cardsService.findBySet(Number(setId), pagination);
   }
 
-  // PUBLIC //
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.cardsService.findAll(pagination);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.cardsService.findOne(Number(id));

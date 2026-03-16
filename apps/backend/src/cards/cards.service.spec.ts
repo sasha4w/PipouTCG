@@ -5,7 +5,7 @@ import { CardsService } from './cards.service';
 import { Card } from './card.entity';
 import { ImagesService } from '../images/images.service'; // ← remplace UploadService
 import { Rarity } from './enums/rarity.enum';
-import { Type } from './enums/type.enum';
+import { Type } from './enums/cardtype.enum';
 
 const mockCardRepo = {
   findAndCount: jest.fn(),

@@ -75,7 +75,7 @@ export class UsersService {
         'setsCompleted',
       ],
     });
-    if (!user) return null;
+    if (!user) throw new NotFoundException('User not found');
 
     const levelData = this.calculateLevelData(user.experience);
     return { ...user, ...levelData };

@@ -4,7 +4,7 @@ import { CardsService } from './cards.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { Rarity } from './enums/rarity.enum';
-import { Type } from './enums/type.enum';
+import { Type } from './enums/cardtype.enum';
 
 const mockCardsService = {
   findAll: jest.fn(),

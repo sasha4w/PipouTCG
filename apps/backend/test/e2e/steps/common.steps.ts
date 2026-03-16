@@ -236,7 +236,16 @@ When(
     this.responseBody = await this.response.json().catch(() => null);
   },
 );
-
+When(
+  "j'envoie une requête POST non authentifiée sur {string} avec le body:",
+  async function (this: ApiWorld, path: string, body: string) {
+    const { request } = await import('@playwright/test');
+    const ctx = await request.newContext({ baseURL: this.baseUrl });
+    this.response = await ctx.post(path, { data: JSON.parse(body) });
+    this.responseBody = await this.response.json().catch(() => null);
+    await ctx.dispose();
+  },
+);
 // ─────────────────────────────────────────────
 // THEN — Assertions
 // ─────────────────────────────────────────────

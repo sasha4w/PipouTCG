@@ -22,11 +22,13 @@ export class BoostersController {
   constructor(private readonly boostersService: BoostersService) {}
 
   // PUBLIC //
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.boostersService.findAll(pagination);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.boostersService.findOne(id);

@@ -23,11 +23,13 @@ export class BundlesController {
   constructor(private readonly bundlesService: BundlesService) {}
 
   // PUBLIC //
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.bundlesService.findAll(pagination);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bundlesService.findOne(id);
