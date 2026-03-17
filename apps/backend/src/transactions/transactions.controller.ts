@@ -36,6 +36,12 @@ export class TransactionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Post(':id/cancel')
+  cancelListing(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.transactionService.cancelListing(id, req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('history')
   getHistory(@Req() req: any, @Query() pagination: PaginationDto) {
     return this.transactionService.getUserHistory(req.user.userId, pagination);

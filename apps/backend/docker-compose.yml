@@ -1,0 +1,40 @@
+services:
+  api:
+    build: .
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      CORS_ORIGIN: "http://localhost:5173"
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: cardcollect
+      JWT_SECRET: "CHANGE_ME_SUPER_SECRET_32_CHARS_MIN"
+      IMGBB_API_KEY: ""
+      RESEND_API_KEY: ""
+      FRONTEND_URL: "http://localhost:5173"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: cardcollect
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
+

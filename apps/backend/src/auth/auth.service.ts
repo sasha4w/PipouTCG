@@ -58,7 +58,8 @@ export class AuthService {
       email: dto.email,
       password: hash,
     });
-    const { password, resetToken, resetTokenExpiry, ...result } = user;
+    const { password, resetTokenHash, resetTokenExpiry, ...result } =
+      user;
     return result;
   }
 

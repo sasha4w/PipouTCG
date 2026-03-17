@@ -23,8 +23,8 @@ export class User {
   @Column({ default: false })
   is_admin: boolean;
 
-  @Column({ type: 'varchar', nullable: true, default: null })
-  resetToken: string | null;
+  @Column({ type: 'varchar', length: 64, nullable: true, default: null })
+  resetTokenHash: string | null;
 
   @Column({ type: 'timestamp', nullable: true, default: null })
   resetTokenExpiry: Date | null;

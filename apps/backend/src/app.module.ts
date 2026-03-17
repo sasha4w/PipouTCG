@@ -16,10 +16,13 @@ import { BoostersModule } from './boosters/boosters.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BundlesModule } from './bundles/bundles.module';
 import { CustomNamingStrategy } from './database/naming.strategy';
+import { validateEnv } from './config/env.validation';
+import { Buffer } from 'buffer';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     ThrottlerModule.forRoot([
       {
@@ -30,13 +33,19 @@ import { CustomNamingStrategy } from './database/naming.strategy';
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
-      port: 3306,
+      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
       namingStrategy: new CustomNamingStrategy(),
+      ssl: process.env.DB_SSL_CA_BASE64
+        ? {
+            ca: Buffer.from(process.env.DB_SSL_CA_BASE64, 'base64'),
+            rejectUnauthorized: true,
+          }
+        : undefined,
       extra: {
         connectionLimit: 20,
         connectTimeout: 60000,

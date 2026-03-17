@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Image } from './image.entity';
@@ -22,6 +22,15 @@ export class ImagesService {
   }
 
   async uploadAndSave(file: Express.Multer.File, name: string): Promise<Image> {
+    if (!process.env.IMGBB_API_KEY) {
+      throw new BadRequestException('IMGBB_API_KEY is not configured');
+    }
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Missing image file');
+    }
+    if (!name?.trim()) {
+      throw new BadRequestException('Missing image name');
+    }
     const slug = this.toSlug(name);
 
     // Sharp — resize + webp
@@ -44,9 +53,16 @@ export class ImagesService {
       { method: 'POST', body: formData },
     );
 
-    const data = await response.json();
-    const url: string = data.data.url;
-    const deleteUrl: string = data.data.delete_url;
+    if (!response.ok) {
+      throw new BadRequestException('ImgBB upload failed');
+    }
+
+    const data = await response.json().catch(() => null);
+    const url: string | undefined = data?.data?.url;
+    const deleteUrl: string | undefined = data?.data?.delete_url;
+    if (!url || !deleteUrl) {
+      throw new BadRequestException('ImgBB response is invalid');
+    }
     // Sauvegarde en DB
     const image = this.imageRepository.create({ name: slug, url, deleteUrl });
     return this.imageRepository.save(image);
@@ -56,7 +72,10 @@ export class ImagesService {
     const image = await this.findOne(id);
 
     // delete_url complète stockée, ou reconstruite depuis le hash
-    await fetch(image.deleteUrl, { method: 'GET' }); // ← GET sur la delete_url
+    const res = await fetch(image.deleteUrl, { method: 'GET' }); // ← GET sur la delete_url
+    if (!res.ok) {
+      throw new BadRequestException('ImgBB delete failed');
+    }
 
     await this.imageRepository.remove(image);
     return { message: `Image ${id} deleted` };

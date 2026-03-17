@@ -9,6 +9,7 @@ import {
   UseGuards,
   ParseIntPipe,
   Body,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -28,7 +29,22 @@ export class ImagesController {
 
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+      fileFilter: (_req, file, cb) => {
+        const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+        if (!allowed.includes(file.mimetype)) {
+          return cb(
+            new BadRequestException('Unsupported file type'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
   upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,

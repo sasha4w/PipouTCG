@@ -39,23 +39,25 @@ export class TransactionService {
   // 🟡 CRÉER UNE ANNONCE
   // ============================================================
   async createListing(dto: CreateListingDto, sellerId: number) {
-    const seller = await this.usersService.findOne(sellerId);
-    if (!seller) throw new BadRequestException('Seller not found');
+    return this.dataSource.transaction(async (manager) => {
+      const seller = await manager.findOne(User, { where: { id: sellerId } });
+      if (!seller) throw new BadRequestException('Seller not found');
 
-    await this.reserveItem(dto, sellerId);
+      await this.reserveItem(manager, dto, sellerId);
 
-    const totalPrice = dto.unitPrice * dto.quantity;
-    const listing = this.transactionRepository.create({
-      seller: { id: sellerId } as any,
-      productType: dto.productType,
-      productId: dto.productId,
-      quantity: dto.quantity,
-      unitPrice: dto.unitPrice,
-      totalPrice,
-      status: TransactionStatus.PENDING,
+      const totalPrice = dto.unitPrice * dto.quantity;
+      const listing = manager.getRepository(Transaction).create({
+        seller: { id: sellerId } as any,
+        productType: dto.productType,
+        productId: dto.productId,
+        quantity: dto.quantity,
+        unitPrice: dto.unitPrice,
+        totalPrice,
+        status: TransactionStatus.PENDING,
+      });
+
+      return manager.getRepository(Transaction).save(listing);
     });
-
-    return this.transactionRepository.save(listing);
   }
 
   // ============================================================
@@ -66,35 +68,68 @@ export class TransactionService {
       const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
         relations: ['seller'],
+        lock: { mode: 'pessimistic_write' },
       });
       if (!listing) throw new BadRequestException('Listing not found');
       if (listing.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Already sold or cancelled');
 
-      const buyer = await manager.findOne(User, { where: { id: buyerId } });
+      const buyer = await manager.findOne(User, {
+        where: { id: buyerId },
+        lock: { mode: 'pessimistic_write' },
+      });
       if (!buyer) throw new BadRequestException('Buyer not found');
       if (buyer.id === listing.seller.id)
         throw new BadRequestException("Can't buy your own listing");
       if (buyer.gold < listing.totalPrice)
         throw new BadRequestException('Not enough gold');
 
+      const seller = await manager.findOne(User, {
+        where: { id: listing.seller.id },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!seller) throw new BadRequestException('Seller not found');
+
       // 💰 Transfert d'argent
       buyer.gold -= listing.totalPrice;
       buyer.moneySpent += listing.totalPrice;
-      listing.seller.gold += listing.totalPrice;
-      listing.seller.moneyEarned += listing.totalPrice;
+      seller.gold += listing.totalPrice;
+      seller.moneyEarned += listing.totalPrice;
 
       // 📦 Transfert de l'item
-      await this.transferItem(manager, listing, buyer);
+      await this.transferItem(manager, listing, buyer, seller);
 
       listing.status = TransactionStatus.COMPLETED;
       listing.buyer = buyer;
+      listing.seller = seller;
 
       await manager.save(buyer);
-      await manager.save(listing.seller);
+      await manager.save(seller);
       await manager.save(listing);
 
       return listing;
+    });
+  }
+
+  // ============================================================
+  // 🔴 ANNULER UNE ANNONCE (vendeur)
+  // ============================================================
+  async cancelListing(transactionId: number, sellerId: number) {
+    return this.dataSource.transaction(async (manager) => {
+      const listing = await manager.findOne(Transaction, {
+        where: { id: transactionId },
+        relations: ['seller'],
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!listing) throw new BadRequestException('Listing not found');
+      if (listing.status !== TransactionStatus.PENDING)
+        throw new BadRequestException('Already sold or cancelled');
+      if (listing.seller.id !== sellerId)
+        throw new BadRequestException("Can't cancel someone else's listing");
+
+      await this.restoreReservedItem(manager, listing, sellerId);
+      listing.status = TransactionStatus.CANCELLED;
+      return manager.save(listing);
     });
   }
 
@@ -123,11 +158,16 @@ export class TransactionService {
   // ============================================================
   // 🔒 PRIVATE — Réserver l'item lors de la mise en vente
   // ============================================================
-  private async reserveItem(dto: CreateListingDto, sellerId: number) {
+  private async reserveItem(
+    manager: EntityManager,
+    dto: CreateListingDto,
+    sellerId: number,
+  ) {
     switch (dto.productType) {
       case ProductType.CARD: {
-        const item = await this.dataSource.getRepository(UserCard).findOne({
+        const item = await manager.findOne(UserCard, {
           where: { id: dto.productId, user: { id: sellerId } },
+          lock: { mode: 'pessimistic_write' },
         });
         if (!item)
           throw new BadRequestException(
@@ -136,12 +176,13 @@ export class TransactionService {
         if (item.quantity < dto.quantity)
           throw new BadRequestException('Not enough card quantity');
         item.quantity -= dto.quantity;
-        await this.dataSource.getRepository(UserCard).save(item);
+        await manager.save(item);
         break;
       }
       case ProductType.BOOSTER: {
-        const item = await this.dataSource.getRepository(UserBooster).findOne({
+        const item = await manager.findOne(UserBooster, {
           where: { id: dto.productId, user: { id: sellerId } },
+          lock: { mode: 'pessimistic_write' },
         });
         if (!item)
           throw new BadRequestException(
@@ -150,12 +191,13 @@ export class TransactionService {
         if (item.quantity < dto.quantity)
           throw new BadRequestException('Not enough booster quantity');
         item.quantity -= dto.quantity;
-        await this.dataSource.getRepository(UserBooster).save(item);
+        await manager.save(item);
         break;
       }
       case ProductType.BUNDLE: {
-        const item = await this.dataSource.getRepository(UserBundle).findOne({
+        const item = await manager.findOne(UserBundle, {
           where: { id: dto.productId, user: { id: sellerId } },
+          lock: { mode: 'pessimistic_write' },
         });
         if (!item)
           throw new BadRequestException(
@@ -164,7 +206,52 @@ export class TransactionService {
         if (item.quantity < dto.quantity)
           throw new BadRequestException('Not enough bundle quantity');
         item.quantity -= dto.quantity;
-        await this.dataSource.getRepository(UserBundle).save(item);
+        await manager.save(item);
+        break;
+      }
+    }
+  }
+
+  // ============================================================
+  // 🔒 PRIVATE — Restituer l'item réservé lors d'une annulation
+  // ============================================================
+  private async restoreReservedItem(
+    manager: EntityManager,
+    listing: Transaction,
+    sellerId: number,
+  ) {
+    switch (listing.productType) {
+      case ProductType.CARD: {
+        const item = await manager.findOne(UserCard, {
+          where: { id: listing.productId, user: { id: sellerId } },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!item)
+          throw new BadRequestException('Seller card item not found');
+        item.quantity += listing.quantity;
+        await manager.save(item);
+        break;
+      }
+      case ProductType.BOOSTER: {
+        const item = await manager.findOne(UserBooster, {
+          where: { id: listing.productId, user: { id: sellerId } },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!item)
+          throw new BadRequestException('Seller booster item not found');
+        item.quantity += listing.quantity;
+        await manager.save(item);
+        break;
+      }
+      case ProductType.BUNDLE: {
+        const item = await manager.findOne(UserBundle, {
+          where: { id: listing.productId, user: { id: sellerId } },
+          lock: { mode: 'pessimistic_write' },
+        });
+        if (!item)
+          throw new BadRequestException('Seller bundle item not found');
+        item.quantity += listing.quantity;
+        await manager.save(item);
         break;
       }
     }
@@ -177,18 +264,21 @@ export class TransactionService {
     manager: EntityManager,
     listing: Transaction,
     buyer: User,
+    seller: User,
   ) {
     switch (listing.productType) {
       case ProductType.CARD: {
         const sellerItem = await manager.findOne(UserCard, {
-          where: { id: listing.productId },
+          where: { id: listing.productId, user: { id: seller.id } },
           relations: ['card'],
+          lock: { mode: 'pessimistic_write' },
         });
         if (!sellerItem)
           throw new BadRequestException('Seller card item not found');
 
         let buyerItem = await manager.findOne(UserCard, {
           where: { user: { id: buyer.id }, card: { id: sellerItem.card.id } },
+          lock: { mode: 'pessimistic_write' },
         });
         if (buyerItem) {
           buyerItem.quantity += listing.quantity;
@@ -201,14 +291,15 @@ export class TransactionService {
         }
         await manager.save(buyerItem);
         buyer.cardsBought += listing.quantity;
-        listing.seller.cardsSold += listing.quantity;
+        seller.cardsSold += listing.quantity;
         break;
       }
 
       case ProductType.BOOSTER: {
         const sellerItem = await manager.findOne(UserBooster, {
-          where: { id: listing.productId },
+          where: { id: listing.productId, user: { id: seller.id } },
           relations: ['booster'],
+          lock: { mode: 'pessimistic_write' },
         });
         if (!sellerItem)
           throw new BadRequestException('Seller booster item not found');
@@ -218,6 +309,7 @@ export class TransactionService {
             user: { id: buyer.id },
             booster: { id: sellerItem.booster.id },
           },
+          lock: { mode: 'pessimistic_write' },
         });
         if (buyerItem) {
           buyerItem.quantity += listing.quantity;
@@ -230,14 +322,15 @@ export class TransactionService {
         }
         await manager.save(buyerItem);
         buyer.boostersBought += listing.quantity;
-        listing.seller.boostersSold += listing.quantity;
+        seller.boostersSold += listing.quantity;
         break;
       }
 
       case ProductType.BUNDLE: {
         const sellerItem = await manager.findOne(UserBundle, {
-          where: { id: listing.productId },
+          where: { id: listing.productId, user: { id: seller.id } },
           relations: ['bundle'],
+          lock: { mode: 'pessimistic_write' },
         });
         if (!sellerItem)
           throw new BadRequestException('Seller bundle item not found');
@@ -247,6 +340,7 @@ export class TransactionService {
             user: { id: buyer.id },
             bundle: { id: sellerItem.bundle.id },
           },
+          lock: { mode: 'pessimistic_write' },
         });
         if (buyerItem) {
           buyerItem.quantity += listing.quantity;
@@ -259,7 +353,7 @@ export class TransactionService {
         }
         await manager.save(buyerItem);
         buyer.bundlesBought += listing.quantity;
-        listing.seller.bundlesSold += listing.quantity;
+        seller.bundlesSold += listing.quantity;
         break;
       }
     }

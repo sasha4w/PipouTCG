@@ -167,6 +167,17 @@ cp .env.example .env
 npm run start:dev
 ```
 
+## Lancer via Docker (recommandé pour une V1 en ligne)
+
+Prérequis : Docker Desktop installé.
+
+```bash
+docker compose up --build
+```
+
+- API : `http://localhost:3000`
+- MySQL : `localhost:3306` (user `root`, password `password`, db `cardcollect`)
+
 ## Variables d'environnement
 
 ```env
@@ -177,6 +188,11 @@ DB_NAME=        # Nom de la base de données
 JWT_SECRET=     # Clé secrète pour signer les tokens JWT
 IMGBB_API_KEY=  # Clé API ImgBB pour l'upload d'images
 ```
+
+### Notes déploiement (prod)
+
+- **TypeORM `synchronize`** est automatiquement désactivé en `NODE_ENV=production`.
+- **CORS** : configure `CORS_ORIGIN` (plusieurs origins possibles via liste séparée par des virgules).
 
 ---
 

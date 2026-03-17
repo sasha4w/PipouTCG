@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, EntityManager } from 'typeorm';
+import { createHash } from 'crypto';
 
 import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
@@ -93,21 +94,27 @@ export class UsersService {
     const user = this.userRepository.create(data);
     return this.userRepository.save(user);
   }
+  private hashResetToken(token: string) {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
   async saveResetToken(userId: number, token: string, expiry: Date) {
     await this.userRepository.update(userId, {
-      resetToken: token,
+      resetTokenHash: this.hashResetToken(token),
       resetTokenExpiry: expiry,
     });
   }
 
   async findByResetToken(token: string) {
-    return this.userRepository.findOneBy({ resetToken: token });
+    return this.userRepository.findOneBy({
+      resetTokenHash: this.hashResetToken(token),
+    });
   }
 
   async updatePassword(userId: number, hashedPassword: string) {
     await this.userRepository.update(userId, {
       password: hashedPassword,
-      resetToken: null,
+      resetTokenHash: null,
       resetTokenExpiry: null,
     });
   }
@@ -547,7 +554,7 @@ export class UsersService {
 
   async spendGoldAndRecordPurchase(userId: number, goldAmount: number) {
     // Utilisation du QueryBuilder pour faire les 3 actions en UNE seule requête SQL
-    await this.userRepository
+    const res = await this.userRepository
       .createQueryBuilder()
       .update(User)
       .set({
@@ -559,10 +566,14 @@ export class UsersService {
         boostersBought: () => `boostersBought + 1`,
       })
       .where('id = :id', { id: userId })
+      .andWhere('gold >= :amount', { amount: goldAmount })
       .execute();
+    if (!res.affected) {
+      throw new BadRequestException('Not enough gold');
+    }
   }
   async spendGoldAndRecordBundlePurchase(userId: number, goldAmount: number) {
-    await this.userRepository
+    const res = await this.userRepository
       .createQueryBuilder()
       .update(User)
       .set({
@@ -571,6 +582,10 @@ export class UsersService {
         bundlesBought: () => `bundlesBought + 1`, // Stat spécifique au bundle
       })
       .where('id = :id', { id: userId })
+      .andWhere('gold >= :amount', { amount: goldAmount })
       .execute();
+    if (!res.affected) {
+      throw new BadRequestException('Not enough gold');
+    }
   }
 }
