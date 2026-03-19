@@ -1,0 +1,131 @@
+@import url("https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Lilita+One&family=Nunito:wght@700&display=swap");
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Variables globales ── */
+:root {
+  font-family: "Comfortaa", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+  color: #491021;
+  background-color: #ede8dc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Liens ── */
+a {
+  font-weight: 500;
+  color: #f27aaa;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #d74881;
+}
+
+/* ── Typographie ── */
+h1 {
+  font-size: 2em;
+  line-height: 1.1;
+}
+
+/* ── Boutons globaux ── */
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #eebc77;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #f27aaa;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* ── Body — centrage mobile ── */
+body {
+  margin: 0;
+  min-height: 100dvh;
+  min-width: 320px;
+  background: #ede8dc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ── #root — conteneur mobile-first ── */
+#root {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  background: #f5efe0;
+  display: flex;
+  flex-direction: column;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Layout Header + main + Footer ── */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 28, 59, 0.18) transparent;
+}
+.app-main::-webkit-scrollbar {
+  width: 4px;
+}
+.app-main::-webkit-scrollbar-thumb {
+  background: rgba(122, 28, 59, 0.18);
+  border-radius: 4px;
+}
+
+/* ── Utilitaires ── */
+.card {
+  padding: 1.5em;
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+}
+
+/* ── Desktop : effet "téléphone posé sur table" ── */
+@media (min-width: 480px) {
+  body {
+    align-items: center;
+    padding: 2rem 0;
+  }
+  #root {
+    min-height: auto;
+    height: 90dvh;
+    max-height: 900px;
+    border-radius: 32px;
+    box-shadow: 0 24px 64px rgba(61, 16, 32, 0.18);
+    overflow: hidden;
+  }
+}
