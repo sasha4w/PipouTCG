@@ -91,26 +91,30 @@ export default function CardManager() {
     if (!form.name || !form.cardSetId) return;
     setSaving(true);
     try {
-      let imageId: number | undefined;
+      // 1. On prépare l'objet data de base
+      const data: CreateCardData = { ...form };
 
-      // Upload nouvelle image si besoin
+      // 2. Gestion de l'image selon le mode choisi
       if (uploadMode === "new" && imageFile && imageName) {
+        // Option A : Tu uploades d'abord l'image via imageService
         const uploaded = await imageService.upload(imageFile, imageName);
-        imageId = uploaded.id;
+        data.imageId = uploaded.id; // On utilise l'ID de l'image fraîchement créée
       } else if (uploadMode === "existing" && selectedImageId) {
-        imageId = selectedImageId;
+        // Option B : Tu utilises une image déjà présente en base
+        data.imageId = selectedImageId;
       }
 
-      // Pour les cartes, l'image est passée en tant que fichier dans le FormData
-      const data: CreateCardData = { ...form };
-      if (uploadMode === "new" && imageFile) data.image = imageFile;
-
-      if (editing) await cardService.update(editing.id, data);
-      else await cardService.create(data);
+      // 3. Envoi au cardService
+      if (editing) {
+        await cardService.update(editing.id, data);
+      } else {
+        await cardService.create(data);
+      }
 
       cancel();
       load();
-    } catch {
+    } catch (err) {
+      console.error(err);
       setError("Erreur lors de la sauvegarde");
     } finally {
       setSaving(false);

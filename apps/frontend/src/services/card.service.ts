@@ -69,6 +69,7 @@ export interface CreateCardData {
   archetype?: Archetype;
   effects?: any[];
   image?: File; // upload fichier
+  imageId?: number; // utiliser image déjà uploadée
 }
 
 export const cardService = {
