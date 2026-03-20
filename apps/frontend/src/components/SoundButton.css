@@ -1,0 +1,21 @@
+.sound-btn {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7a1c3b;
+  transition: background 0.18s;
+  flex-shrink: 0;
+}
+.sound-btn:hover {
+  background: rgba(122, 28, 59, 0.08);
+  border-color: transparent;
+  box-shadow: none;
+}
+.sound-btn:active {
+  transform: scale(0.92);
+}

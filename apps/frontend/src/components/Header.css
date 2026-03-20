@@ -1,0 +1,49 @@
+.cc-header {
+  background: #f5efe0;
+  padding: 16px 24px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1.5px solid rgba(61, 16, 32, 0.09);
+  min-height: 68px;
+}
+
+.cc-header__title-row {
+  display: inline-flex;
+  align-items: center;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.cc-header__title-row--hidden {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.cc-header__title-row--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cc-header__title {
+  font-family: "Lilita One", cursive;
+  font-size: 27px;
+  color: #7a1c3b;
+  letter-spacing: 0.4px;
+  text-shadow: 0 2px 0 rgba(122, 28, 59, 0.1);
+  margin: 0;
+}
+
+@keyframes starFloat {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(10deg);
+  }
+}
+/* .star {
+  animation: starFloat 3s ease-in-out infinite;
+} */

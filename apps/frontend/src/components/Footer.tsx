@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-
+import { soundService } from "../services/sound.service";
 const NAV_ITEMS = [
   {
     id: "home",
@@ -30,7 +30,9 @@ const NAV_ITEMS = [
     icon: (active: boolean) => (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
         <circle
-          cx="12" cy="8" r="4"
+          cx="12"
+          cy="8"
+          r="4"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           fill={active ? "rgba(122,28,59,0.13)" : "none"}
@@ -50,12 +52,19 @@ const NAV_ITEMS = [
     path: "/marketplace",
     icon: (active: boolean) => (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-        {([
-          [8, 8], [16, 8], [8, 16], [16, 16],
-        ] as [number, number][]).map(([cx, cy]) => (
+        {(
+          [
+            [8, 8],
+            [16, 8],
+            [8, 16],
+            [16, 16],
+          ] as [number, number][]
+        ).map(([cx, cy]) => (
           <circle
             key={`${cx}-${cy}`}
-            cx={cx} cy={cy} r="2.5"
+            cx={cx}
+            cy={cy}
+            r="2.5"
             stroke={active ? "#7A1C3B" : "#A08070"}
             strokeWidth="2"
             fill={active ? "rgba(122,28,59,0.13)" : "none"}
@@ -71,7 +80,9 @@ const NAV_ITEMS = [
     icon: (active: boolean) => (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
         <circle
-          cx="12" cy="12" r="3"
+          cx="12"
+          cy="12"
+          r="3"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           fill={active ? "rgba(122,28,59,0.13)" : "none"}
@@ -96,7 +107,7 @@ export default function Footer() {
     NAV_ITEMS.find((item) =>
       item.path === "/"
         ? location.pathname === "/"
-        : location.pathname.startsWith(item.path)
+        : location.pathname.startsWith(item.path),
     )?.id ?? "home";
 
   return (
@@ -180,7 +191,10 @@ export default function Footer() {
             <button
               key={item.id}
               className={`cc-footer__item${isActive ? " cc-footer__item--active" : ""}`}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                soundService.play("select");
+                navigate(item.path);
+              }}
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
             >

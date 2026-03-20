@@ -14,7 +14,7 @@ import Home from "./pages/Home";
 import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
-
+import { SoundProvider } from "./contexts/SoundContext";
 function AppLayout() {
   return (
     <div className="app-layout">
@@ -29,29 +29,31 @@ function AppLayout() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Pages publiques — sans Header/Footer */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+    <SoundProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Pages publiques — sans Header/Footer */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Pages protégées — avec Header/Footer */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <AppLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<Home />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
+          {/* Pages protégées — avec Header/Footer */}
+          <Route
+            element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<Home />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </SoundProvider>
   );
 }
 

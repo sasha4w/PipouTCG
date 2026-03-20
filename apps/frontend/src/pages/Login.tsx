@@ -12,6 +12,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false); // ← ajout
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -22,6 +23,7 @@ const Login = () => {
     setUsername("");
     setEmail("");
     setPassword("");
+    setRememberMe(false); // ← reset aussi
   };
 
   const handleSubmit = async () => {
@@ -33,7 +35,7 @@ const Login = () => {
         setSuccess("Compte créé ! Tu peux te connecter 🎉");
         reset("login");
       } else if (mode === "login") {
-        await authService.login(email, password);
+        await authService.login(email, password, rememberMe); // ← ajout
         navigate("/");
       } else if (mode === "forgot") {
         await api.post("/auth/forgot-password", { email });
@@ -71,13 +73,11 @@ const Login = () => {
       <div className="login-bubble login-bubble--3" />
 
       <div className="login-card">
-        {/* Logo */}
         <div className="login-header">
           <h1 className="login-logo">Card &amp; Collect</h1>
           <p className="login-subtitle">{titles[mode]}</p>
         </div>
 
-        {/* Messages */}
         {error && (
           <div className="login-message login-message--error">
             <span>⚠</span> {error}
@@ -89,7 +89,6 @@ const Login = () => {
           </div>
         )}
 
-        {/* Formulaire */}
         <div className="login-form">
           {mode === "register" && (
             <div className="login-field">
@@ -139,12 +138,26 @@ const Login = () => {
             </div>
           )}
 
+          {/* ← Checkbox rester connecté, visible uniquement en mode login */}
+          {mode === "login" && (
+            <div className="login-field login-field--checkbox">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="rememberMe" className="login-label">
+                Rester connecté
+              </label>
+            </div>
+          )}
+
           <button className="login-btn" onClick={handleSubmit}>
             {btnLabels[mode]}
           </button>
         </div>
 
-        {/* Switch bas de page */}
         <div className="login-switch">
           {mode === "forgot" ? (
             <>

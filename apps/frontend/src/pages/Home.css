@@ -1,0 +1,26 @@
+.home-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.home-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-page__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1.4rem;
+  color: #7a1c3b;
+  margin: 0;
+  text-shadow: 0 2px 0 rgba(122, 28, 59, 0.08);
+}
+
+.home-page__subtitle {
+  font-size: 0.82rem;
+  color: #a08070;
+  font-weight: 600;
+  margin: 0;
+}
