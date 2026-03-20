@@ -1,0 +1,302 @@
+/* CSS partagé par tous les managers admin */
+
+.manager {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: managerFadeUp 0.3s ease both;
+}
+
+@keyframes managerFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.manager__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.manager__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+/* Bouton ajout */
+.manager__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: #7a1c3b;
+  color: #fff;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+}
+.manager__add-btn:hover {
+  background: #9b2349;
+}
+.manager__add-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Formulaire ── */
+.manager-form {
+  background: rgba(238, 188, 119, 0.08);
+  border: 1.5px solid rgba(238, 188, 119, 0.3);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.manager-form__title {
+  font-family: "Lilita One", cursive;
+  font-size: 0.9rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+.manager-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manager-form__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7a1c3b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.manager-form__input,
+.manager-form__select,
+.manager-form__textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.manager-form__input:focus,
+.manager-form__select:focus,
+.manager-form__textarea:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+.manager-form__textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.manager-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.manager-form__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.manager-form__submit {
+  flex: 1;
+  padding: 0.65rem;
+  border-radius: 12px;
+  border: none;
+  background: #7a1c3b;
+  color: #fff;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+}
+.manager-form__submit:hover {
+  background: #9b2349;
+}
+.manager-form__submit:active {
+  transform: scale(0.97);
+}
+.manager-form__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.manager-form__cancel {
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: transparent;
+  color: #a08070;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.manager-form__cancel:hover {
+  background: rgba(61, 16, 32, 0.05);
+}
+
+/* ── Liste items ── */
+.manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.manager-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: rgba(238, 188, 119, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(61, 16, 32, 0.06);
+  gap: 8px;
+}
+
+.manager-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-item__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #491021;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manager-item__meta {
+  font-size: 0.72rem;
+  color: #a08070;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.manager-item__actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.manager-item__edit-btn,
+.manager-item__delete-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.manager-item__edit-btn {
+  background: rgba(122, 28, 59, 0.08);
+  color: #7a1c3b;
+}
+.manager-item__edit-btn:hover {
+  background: rgba(122, 28, 59, 0.16);
+}
+.manager-item__delete-btn {
+  background: rgba(242, 122, 170, 0.1);
+  color: #b03060;
+}
+.manager-item__delete-btn:hover {
+  background: rgba(242, 122, 170, 0.22);
+}
+.manager-item__edit-btn:active,
+.manager-item__delete-btn:active {
+  transform: scale(0.9);
+}
+
+/* ── États ── */
+.manager-empty {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #a08070;
+  font-weight: 600;
+  padding: 1rem 0;
+}
+
+.manager-error {
+  font-size: 0.82rem;
+  color: #b03060;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Pagination */
+.manager-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.manager-pagination__btn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: transparent;
+  color: #7a1c3b;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.manager-pagination__btn:hover {
+  background: rgba(122, 28, 59, 0.06);
+}
+.manager-pagination__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.manager-pagination__info {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a08070;
+}

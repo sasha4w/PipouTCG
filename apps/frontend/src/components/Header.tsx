@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SoundButton from "./SoundButton";
+import { isAdmin } from "../utils/authUtils";
 import "./Header.css";
 
 // ── Étoile jaune (Figma node 4008-56) ──────────────────────────────────────
@@ -243,9 +245,25 @@ function TitleStars() {
   );
 }
 
+// ── Icône couronne ────────────────────────────────────────────────────────────
+function IconCrown() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M2 19h20M3 9l4 4 5-7 5 7 4-4v10H3V9z"
+        stroke="#7A1C3B"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 // ── Header ──────────────────────────────────────────────────────────────────
 export default function Header() {
   const [mounted, setMounted] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => setMounted(true), []);
 
   return (
@@ -256,7 +274,20 @@ export default function Header() {
         <h1 className="cc-header__title">PipouTCG</h1>
         <TitleStars />
       </div>
-      <SoundButton />
+
+      <div className="cc-header__actions">
+        {isAdmin() && (
+          <button
+            className="cc-header__admin-btn"
+            onClick={() => navigate("/admin")}
+            aria-label="Dashboard admin"
+          >
+            <IconCrown />
+            <span>Admin</span>
+          </button>
+        )}
+        <SoundButton />
+      </div>
     </header>
   );
 }

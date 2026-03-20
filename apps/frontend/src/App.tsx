@@ -15,6 +15,7 @@ import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import { SoundProvider } from "./contexts/SoundContext";
+import Admin from "./pages/Admin";
 function AppLayout() {
   return (
     <div className="app-layout">
@@ -48,6 +49,7 @@ function App() {
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/admin" element={<Admin />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

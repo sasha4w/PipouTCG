@@ -35,6 +35,40 @@
   margin: 0;
 }
 
+/* ── Actions (admin + son) ── */
+.cc-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Bouton admin ── */
+.cc-header__admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(122, 28, 59, 0.25);
+  background: rgba(238, 188, 119, 0.2);
+  color: #7a1c3b;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    transform 0.12s;
+}
+.cc-header__admin-btn:hover {
+  background: rgba(238, 188, 119, 0.35);
+  border-color: rgba(122, 28, 59, 0.4);
+}
+.cc-header__admin-btn:active {
+  transform: scale(0.95);
+}
+
 @keyframes starFloat {
   0%,
   100% {
@@ -44,6 +78,3 @@
     transform: translateY(-4px) rotate(10deg);
   }
 }
-/* .star {
-  animation: starFloat 3s ease-in-out infinite;
-} */
