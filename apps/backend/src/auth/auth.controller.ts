@@ -22,7 +22,7 @@ export class AuthController {
   @HttpCode(200)
   @Post('login')
   login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+    return this.authService.login(dto.email, dto.password, dto.rememberMe); // ← ajout
   }
 
   @Throttle({ default: { ttl: 60000, limit: isTest ? 999999 : 3 } })

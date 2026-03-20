@@ -26,7 +26,7 @@ export class AuthService {
   private readonly DUMMY_HASH =
     '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012334';
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string, rememberMe = false) {
     const user = await this.usersService.findByEmail(email);
     const passwordToCompare = user?.password ?? this.DUMMY_HASH;
     const isValid = await bcrypt.compare(password, passwordToCompare);
@@ -40,9 +40,11 @@ export class AuthService {
       .catch((err) => console.error('syncUserQuests failed:', err));
 
     const payload = { sub: user.id, is_admin: user.is_admin };
+    const expiresIn = rememberMe ? '30d' : '1d';
+
     return {
-      access_token: this.jwtService.sign(payload),
-      autoClaimedRewards: [], // plus de récompenses auto-claimed au login
+      access_token: this.jwtService.sign(payload, { expiresIn }),
+      autoClaimedRewards: [],
     };
   }
 
@@ -58,8 +60,7 @@ export class AuthService {
       email: dto.email,
       password: hash,
     });
-    const { password, resetTokenHash, resetTokenExpiry, ...result } =
-      user;
+    const { password, resetTokenHash, resetTokenExpiry, ...result } = user;
     return result;
   }
 
