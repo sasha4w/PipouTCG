@@ -164,9 +164,14 @@ export class UsersService {
           rarity: uc.card.rarity,
           atk: uc.card.atk,
           hp: uc.card.hp,
+          cost: uc.card.cost,
+          description: uc.card.description ?? undefined,
           type: uc.card.type,
           set: uc.card.cardSet?.name,
           setId: uc.card.cardSet?.id,
+          image: uc.card.image
+            ? { id: uc.card.image.id, url: uc.card.image.url }
+            : null,
           quantity: uc.quantity,
         })),
         meta: {
