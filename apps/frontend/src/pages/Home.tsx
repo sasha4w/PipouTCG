@@ -1,6 +1,6 @@
 import { useState } from "react";
-import CardSetList from "../components/CardSetList";
-import CardList from "../components/CardList";
+import CardSetList from "../features/cards/CardSetList";
+import CardList from "../features/cards/CardList";
 import "./Home.css";
 
 interface SelectedSet {

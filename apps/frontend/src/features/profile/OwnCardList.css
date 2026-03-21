@@ -1,0 +1,153 @@
+.own-cardlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+/* ── Barre de recherche ── */
+.own-cardlist__search {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.own-cardlist__search:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+.own-cardlist__search::placeholder {
+  color: #c0a090;
+}
+
+/* ── Filtres ── */
+.own-cardlist__filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.own-cardlist__filter-group {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.own-cardlist__filter-btn {
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: transparent;
+  color: #a08070;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+  white-space: nowrap;
+}
+.own-cardlist__filter-btn:hover {
+  background: rgba(122, 28, 59, 0.05);
+  border-color: rgba(122, 28, 59, 0.2);
+}
+.own-cardlist__filter-btn--active {
+  background: #7a1c3b;
+  border-color: #7a1c3b;
+  color: #fff;
+}
+.own-cardlist__filter-btn--active:hover {
+  color: black;
+}
+/* Séparateur entre groupes de filtres */
+.own-cardlist__filter-sep {
+  width: 1px;
+  background: rgba(61, 16, 32, 0.12);
+  align-self: stretch;
+  margin: 0 2px;
+}
+
+/* ── Résultat count ── */
+.own-cardlist__result-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+  text-align: right;
+}
+
+/* ── Grille ── */
+.own-cardlist__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* ── Badge quantité ── */
+.own-cardlist__qty-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(122, 28, 59, 1);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-family: "Comfortaa", sans-serif;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ── Pagination ── */
+.own-cardlist__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.own-cardlist__pagination-btn {
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fff;
+  color: #7a1c3b;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.own-cardlist__pagination-btn:hover {
+  background: rgba(122, 28, 59, 0.06);
+}
+.own-cardlist__pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.own-cardlist__pagination-info {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a08070;
+}
+
+/* ── Empty state ── */
+.own-cardlist__empty {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.82rem;
+  color: #a08070;
+  font-weight: 600;
+}

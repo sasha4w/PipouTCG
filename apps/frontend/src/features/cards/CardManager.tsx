@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { cardService, Rarity, CardType } from "../services/card.service";
-import { cardSetService } from "../services/card-set.service";
-import { imageService } from "../services/image.service";
-import type { Card, CreateCardData } from "../services/card.service";
-import type { CardSet } from "../services/card-set.service";
-import type { Image } from "../services/image.service";
-import "./manager.css";
+import { cardService, Rarity, CardType } from "../../services/card.service";
+import { cardSetService } from "../../services/card-set.service";
+import { imageService } from "../../services/image.service";
+import type { Card, CreateCardData } from "../../services/card.service";
+import type { CardSet } from "../../services/card-set.service";
+import type { Image } from "../../services/image.service";
+import "../../components/manager.css";
 
 const emptyForm: CreateCardData = {
   name: "",

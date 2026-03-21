@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { cardSetService } from "../services/card-set.service";
-import type { CardSet } from "../services/card-set.service";
-import { soundService } from "../services/sound.service";
-import Loading from "./Loading";
+import { cardSetService } from "../../services/card-set.service";
+import type { CardSet } from "../../services/card-set.service";
+import { soundService } from "../../services/sound.service";
+import Loading from "../../components/Loading";
 import "./CardSetList.css";
 
 function colorFromId(id: number): string {

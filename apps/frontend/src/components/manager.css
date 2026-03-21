@@ -26,6 +26,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 }
 
 .manager__title {
@@ -33,6 +34,10 @@
   font-size: 1rem;
   color: #7a1c3b;
   margin: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Bouton ajout */
@@ -52,6 +57,7 @@
   transition:
     background 0.18s,
     transform 0.12s;
+  flex-shrink: 0;
 }
 .manager__add-btn:hover {
   background: #9b2349;
@@ -107,6 +113,7 @@
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
+  box-sizing: border-box;
 }
 .manager-form__input:focus,
 .manager-form__select:focus,
@@ -172,6 +179,75 @@
   background: rgba(61, 16, 32, 0.05);
 }
 
+/* ── Ligne de contenu bundle (type + item + quantité + suppr) ── */
+.manager-content-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.manager-content-row__type {
+  flex: 0 0 90px;
+}
+
+.manager-content-row__item {
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-content-row__qty {
+  flex: 0 0 64px;
+}
+
+.manager-content-row__remove {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(242, 122, 170, 0.1);
+  color: #b03060;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.manager-content-row__remove:hover {
+  background: rgba(242, 122, 170, 0.22);
+}
+.manager-content-row__remove:active {
+  transform: scale(0.9);
+}
+
+/* ── Bouton "Ajouter une ligne" (tirets) ── */
+.manager-form__add-row {
+  background: none;
+  border: 1.5px dashed rgba(61, 16, 32, 0.2);
+  border-radius: 10px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #a08070;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: 100%;
+  text-align: center;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+.manager-form__add-row:hover {
+  border-color: rgba(122, 28, 59, 0.35);
+  color: #7a1c3b;
+  background: rgba(122, 28, 59, 0.03);
+}
+
 /* ── Liste items ── */
 .manager-list {
   display: flex;
@@ -215,6 +291,7 @@
   display: flex;
   gap: 5px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .manager-item__edit-btn,
@@ -251,6 +328,33 @@
   transform: scale(0.9);
 }
 
+/* Bouton content (largeur auto) */
+.manager-item__content-btn {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+  background: rgba(238, 188, 119, 0.25);
+  color: #7a4a00;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+  white-space: nowrap;
+}
+.manager-item__content-btn:hover {
+  background: rgba(238, 188, 119, 0.45);
+}
+.manager-item__content-btn:active {
+  transform: scale(0.9);
+}
+
 /* ── États ── */
 .manager-empty {
   text-align: center;
@@ -267,7 +371,7 @@
   text-align: center;
 }
 
-/* Pagination */
+/* ── Pagination ── */
 .manager-pagination {
   display: flex;
   align-items: center;

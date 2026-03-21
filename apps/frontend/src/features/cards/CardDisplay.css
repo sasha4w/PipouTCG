@@ -11,7 +11,6 @@
   --posy: 50%;
   --hyp: 0;
 
-  /* Rarity defaults (common) */
   --card-color: #7caa6a;
   --card-border: #4a7a3a;
   --card-bg: #c8e0b0;
@@ -65,14 +64,12 @@
   transition: box-shadow 0.4s ease;
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4);
 }
-
 .pipou-card.active .pipou-card__rotator {
   box-shadow:
     0 0 10px 0 var(--card-shadow),
     0 0 20px 0 var(--card-shadow),
     0 0 40px 0 var(--card-shadow);
 }
-
 .pipou-card__rotator > * {
   grid-area: card;
   width: 100%;
@@ -80,9 +77,7 @@
   transform-style: preserve-3d;
 }
 
-/* ══════════════════════════════════════════
-   FACE AVANT (RECTO)
-══════════════════════════════════════════ */
+/* ══ FACE AVANT ══ */
 .pipou-card__front {
   backface-visibility: hidden;
   display: flex;
@@ -95,7 +90,7 @@
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
-/* ── Nom + Cost ── */
+/* ── Header : nom + cost ── */
 .pipou-card__header {
   position: relative;
   padding: 6% 18% 4% 6%;
@@ -119,21 +114,21 @@
   word-break: break-word;
 }
 
-/* Cost — cercle en haut à droite */
+/* Cost — légèrement réduit (16% au lieu de 20%) */
 .pipou-card__cost {
   position: absolute;
   top: 6%;
   right: 4%;
-  width: 20%;
+  width: 16%; /* ← réduit */
   aspect-ratio: 1;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
-  border: 2px solid var(--card-border);
+  border: 1.5px solid var(--card-border); /* ← plus fin */
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: "Lilita One", cursive;
-  font-size: clamp(0.45rem, 2.2cqi, 0.85rem);
+  font-size: clamp(0.4rem, 1.9cqi, 0.78rem); /* ← légèrement réduit */
   color: var(--card-text);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.2),
@@ -171,7 +166,7 @@
   opacity: 0.35;
 }
 
-/* ATK / HP — badges en bas des coins de l'illustration */
+/* ── ATK/HP (monster uniquement) ── */
 .pipou-card__stats-overlay {
   position: absolute;
   bottom: 0;
@@ -212,6 +207,27 @@
   line-height: 1;
 }
 
+/* ── Badge type support ── */
+.pipou-card__support-badge {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1.5px solid var(--card-border);
+  border-radius: 20px;
+  padding: 1.5% 8%;
+  font-family: "Lilita One", cursive;
+  font-size: clamp(0.28rem, 1.5cqi, 0.55rem);
+  color: var(--card-text);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* ── Footer : description + ID ── */
 .pipou-card__footer {
   background: var(--card-footer);
@@ -231,7 +247,6 @@
   flex: 1;
 }
 
-/* ID en bas à droite — là où était le sac à dos */
 .pipou-card__id-row {
   display: flex;
   justify-content: flex-end;
@@ -246,9 +261,7 @@
   opacity: 0.45;
 }
 
-/* ══════════════════════════════════════════
-   FACE ARRIÈRE (VERSO)
-══════════════════════════════════════════ */
+/* ══ FACE ARRIÈRE ══ */
 .pipou-card__back {
   transform: rotateY(180deg);
   backface-visibility: hidden;
@@ -267,8 +280,6 @@
   justify-content: center;
   position: relative;
 }
-
-/* Motif de fond (petites étoiles répétées) */
 .pipou-card__back::before {
   content: "";
   position: absolute;
@@ -282,7 +293,6 @@
     )
     0 0 / 12px 12px;
 }
-
 .pipou-card__back-svg {
   width: 65%;
   height: 65%;
@@ -291,9 +301,7 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
 }
 
-/* ══════════════════════════════════════════
-   SHINE (effet holographique)
-══════════════════════════════════════════ */
+/* ══ SHINE ══ */
 .pipou-card__shine {
   position: absolute;
   inset: 0;
@@ -303,13 +311,10 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
-/* Visible seulement si --o = 1 (via JS) */
 .pipou-card.active .pipou-card__shine {
   opacity: var(--o, 0);
 }
 
-/* Commun : rare+ */
 .pipou-card[data-rarity="rare"] .pipou-card__shine,
 .pipou-card[data-rarity="epic"] .pipou-card__shine,
 .pipou-card[data-rarity="legendary"] .pipou-card__shine,
@@ -352,7 +357,6 @@
   filter: brightness(0.8) contrast(2.95) saturate(0.5);
 }
 
-/* Legendary : effet doré */
 .pipou-card[data-rarity="legendary"] .pipou-card__shine {
   background-image:
     repeating-linear-gradient(
@@ -389,10 +393,9 @@
     0% var(--posy),
     var(--posx) var(--posy),
     var(--posx) var(--posy);
-  filter: brightness(calc((var(--hyp) * 0.3) + 0.5)) contrast(2.5) saturate(0.6);
+  filter: brightness(calc((var(--hyp) * 0.3)+0.5)) contrast(2.5) saturate(0.6);
 }
 
-/* Secret : rainbow */
 .pipou-card[data-rarity="secret"] .pipou-card__shine {
   background-image:
     repeating-linear-gradient(
@@ -421,11 +424,9 @@
   background-position:
     0% calc(var(--posy) * 1.5),
     var(--posx) var(--posy);
-  filter: brightness(calc((var(--hyp) * 0.25) + 0.66)) contrast(2)
-    saturate(0.95);
+  filter: brightness(calc((var(--hyp) * 0.25)+0.66)) contrast(2) saturate(0.95);
 }
 
-/* Common et uncommon : pas de shine */
 .pipou-card[data-rarity="common"] .pipou-card__shine,
 .pipou-card[data-rarity="uncommon"] .pipou-card__shine {
   display: none;
@@ -447,14 +448,11 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
-
 .pipou-card.active .pipou-card__glare {
   opacity: calc(var(--o) * 0.22);
 }
 
-/* ══════════════════════════════════════════
-   RARITY PALETTES
-══════════════════════════════════════════ */
+/* ══ RARITY PALETTES ══ */
 .pipou-card[data-rarity="common"] {
   --card-color: #b0b8b0;
   --card-border: #707870;
@@ -464,7 +462,6 @@
   --card-shadow: rgba(120, 130, 120, 0.5);
   --card-text: #2a302a;
 }
-
 .pipou-card[data-rarity="uncommon"] {
   --card-color: #70b870;
   --card-border: #3a783a;
@@ -474,7 +471,6 @@
   --card-shadow: rgba(60, 160, 60, 0.5);
   --card-text: #1a301a;
 }
-
 .pipou-card[data-rarity="rare"] {
   --card-color: #6898d8;
   --card-border: #2858a8;
@@ -484,7 +480,6 @@
   --card-shadow: rgba(40, 100, 220, 0.6);
   --card-text: #0a1a3a;
 }
-
 .pipou-card[data-rarity="epic"] {
   --card-color: #9860c8;
   --card-border: #581888;
@@ -494,7 +489,6 @@
   --card-shadow: rgba(120, 40, 200, 0.6);
   --card-text: #1a0830;
 }
-
 .pipou-card[data-rarity="legendary"] {
   --card-color: #d8a030;
   --card-border: #885800;
@@ -504,7 +498,6 @@
   --card-shadow: rgba(220, 160, 40, 0.7);
   --card-text: #2a1800;
 }
-
 .pipou-card[data-rarity="secret"] {
   --card-color: #c850a0;
   --card-border: #780860;

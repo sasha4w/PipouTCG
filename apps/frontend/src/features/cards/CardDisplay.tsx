@@ -1,6 +1,13 @@
 import { useRef, useState, useCallback } from "react";
-import type { Card } from "../services/card.service";
+import type { Card } from "../../services/card.service";
 import "./CardDisplay.css";
+
+// ── Labels support type ───────────────────────────────────────────────────────
+const SUPPORT_TYPE_LABELS: Record<string, string> = {
+  EPHEMERAL: "Éphémère",
+  EQUIPMENT: "Équipement",
+  TERRAIN: "Terrain",
+};
 
 // ── Verso : cardicon SVG inline ───────────────────────────────────────────────
 function CardBack() {
@@ -11,7 +18,6 @@ function CardBack() {
         viewBox="0 0 384 383.999986"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Carte inclinée gauche */}
         <path
           d="M329.402344 73.835938 L296.46875 343.015625
              C295.890625 347.753906 293.449219 352.070312 289.691406 355.011719
@@ -30,7 +36,6 @@ function CardBack() {
           strokeWidth="5"
           opacity="0.45"
         />
-        {/* Carte inclinée droite */}
         <path
           d="M289.84375 44.066406 L306.164062 314.761719
              C306.453125 319.527344 304.835938 324.210938 301.667969 327.78125
@@ -49,7 +54,6 @@ function CardBack() {
           strokeWidth="5"
           opacity="0.72"
         />
-        {/* Carte principale */}
         <path
           d="M312.5 57.898438 L312.5 329.085938
              C312.5 333.859375 310.601562 338.4375 307.226562 341.8125
@@ -67,7 +71,6 @@ function CardBack() {
           stroke="#3d1020"
           strokeWidth="5"
         />
-        {/* Lettre C centrale */}
         <g fill="#3d1020">
           <path
             transform="translate(101.684492, 237.590621)"
@@ -120,7 +123,11 @@ export default function CardDisplay({
   const [active, setActive] = useState(false);
   const rafRef = useRef<number>(0);
 
-  // ── Effet 3D au survol ────────────────────────────────────────────────────
+  const isSupport = card.type?.toLowerCase() === "support";
+  const supportLabel = card.supportType
+    ? (SUPPORT_TYPE_LABELS[card.supportType] ?? card.supportType)
+    : null;
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (!interactive || !cardRef.current) return;
@@ -201,7 +208,7 @@ export default function CardDisplay({
               <div className="pipou-card__cost">{card.cost}</div>
             </div>
 
-            {/* Illustration + ATK/HP */}
+            {/* Illustration */}
             <div className="pipou-card__image-wrap">
               {card.image?.url ? (
                 <img
@@ -214,17 +221,24 @@ export default function CardDisplay({
                 <div className="pipou-card__image-placeholder">✦</div>
               )}
 
-              {/* ATK coin bas-gauche, HP coin bas-droit */}
-              <div className="pipou-card__stats-overlay">
-                <div className="pipou-card__stat-badge">
-                  <span className="pipou-card__stat-label">ATK</span>
-                  <span className="pipou-card__stat-value">{card.atk}</span>
+              {/* ATK/HP uniquement pour les monstres */}
+              {!isSupport && (
+                <div className="pipou-card__stats-overlay">
+                  <div className="pipou-card__stat-badge">
+                    <span className="pipou-card__stat-label">ATK</span>
+                    <span className="pipou-card__stat-value">{card.atk}</span>
+                  </div>
+                  <div className="pipou-card__stat-badge">
+                    <span className="pipou-card__stat-label">HP</span>
+                    <span className="pipou-card__stat-value">{card.hp}</span>
+                  </div>
                 </div>
-                <div className="pipou-card__stat-badge">
-                  <span className="pipou-card__stat-label">HP</span>
-                  <span className="pipou-card__stat-value">{card.hp}</span>
-                </div>
-              </div>
+              )}
+
+              {/* Badge type support */}
+              {isSupport && supportLabel && (
+                <div className="pipou-card__support-badge">{supportLabel}</div>
+              )}
             </div>
 
             {/* Description + ID */}

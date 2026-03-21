@@ -1,0 +1,245 @@
+.collection-panel {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: panelFadeUp 0.3s ease both;
+}
+
+@keyframes panelFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.collection-panel__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+.collection-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.collection-panel__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  background: rgba(238, 188, 119, 0.1);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #491021;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  border: 1.5px solid transparent;
+  user-select: none;
+}
+
+.collection-panel__item:hover {
+  background: rgba(238, 188, 119, 0.2);
+}
+
+.collection-panel__item--active {
+  background: rgba(122, 28, 59, 0.07);
+  border-color: rgba(122, 28, 59, 0.2);
+}
+
+.collection-panel__item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collection-panel__item-icon {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.collection-panel__badge {
+  background: #7a1c3b;
+  color: #fff;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ── Chevron ── */
+.collection-panel__chevron {
+  color: #a08070;
+  transition: transform 0.2s ease;
+  margin-left: 4px;
+}
+
+.collection-panel__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* ── Zone de contenu étendue ── */
+.collection-panel__content {
+  margin-top: 6px;
+  animation: contentSlideDown 0.22s ease both;
+}
+
+@keyframes contentSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Grille cartes ── */
+.collection-panel__cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* ── Mini carte inventaire ── */
+.inv-card {
+  background: #fdfbf6;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  animation: invCardIn 0.3s ease both;
+}
+
+@keyframes invCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.inv-card__rarity-bar {
+  height: 3px;
+  border-radius: 2px;
+  width: 100%;
+}
+
+.inv-card__name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.6rem;
+  color: #491021;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inv-card__set {
+  font-size: 0.55rem;
+  color: #a08070;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inv-card__stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #7a1c3b;
+}
+
+.inv-card__qty {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #7a1c3b;
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 6px;
+  font-family: "Comfortaa", sans-serif;
+}
+
+/* ── Liste boosters / bundles ── */
+.collection-panel__item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  background: #fdfbf6;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.08);
+  animation: invCardIn 0.25s ease both;
+  gap: 8px;
+}
+
+.inv-row__name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #491021;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inv-row__meta {
+  font-size: 0.68rem;
+  color: #a08070;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.inv-row__qty {
+  background: #7a1c3b;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-family: "Comfortaa", sans-serif;
+  flex-shrink: 0;
+}
+
+/* ── Empty state ── */
+.collection-panel__empty {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.82rem;
+  color: #a08070;
+  font-weight: 600;
+}

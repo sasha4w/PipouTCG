@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { boosterService } from "../services/booster.service";
-import { cardSetService } from "../services/card-set.service";
-import type { Booster, CardNumber } from "../services/booster.service";
-import type { CardSet } from "../services/card-set.service";
-import "./manager.css";
+import { boosterService } from "../../services/booster.service";
+import { cardSetService } from "../../services/card-set.service";
+import type { Booster, CardNumber } from "../../services/booster.service";
+import type { CardSet } from "../../services/card-set.service";
+import "../../components/manager.css";
 
 const CARD_NUMBERS: CardNumber[] = [1, 5, 8, 10];
 

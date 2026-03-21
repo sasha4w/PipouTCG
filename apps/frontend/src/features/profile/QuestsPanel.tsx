@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
-import { questService } from "../services/quest.service";
-import type { UserQuest, UserQuestsGrouped } from "../services/quest.service";
+import { questService } from "../../services/quest.service";
+import type {
+  UserQuest,
+  UserQuestsGrouped,
+} from "../../services/quest.service";
 import {
   IconGold,
   IconBooster,
   IconBundle,
   IconBell,
   IconCheck,
-} from "./Icons";
+} from "../../components/Icons";
 import "./QuestsPanel.css";
 
 // ── Onglets ───────────────────────────────────────────────────────────────────

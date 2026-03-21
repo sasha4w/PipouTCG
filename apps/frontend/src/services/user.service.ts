@@ -41,9 +41,13 @@ export interface UserInventory {
       rarity: string;
       atk: number;
       hp: number;
+      cost: number;
+      supportType?: string | null;
+      description?: string;
       type: string;
       set: string;
       setId: number;
+      image?: { id: number; url: string } | null;
       quantity: number;
     }[];
     meta: { total: number; page: number; limit: number; totalPages: number };

@@ -1,26 +1,24 @@
 import { useEffect, useState } from "react";
-import { bundleService } from "../services/bundle.service";
-import type { Bundle } from "../services/bundle.service";
-import "./manager.css";
+import { cardSetService } from "../../services/card-set.service";
+import type { CardSet } from "../../services/card-set.service";
+import "../../components/manager.css";
 
-const emptyForm = { name: "", price: 0 };
-
-export default function BundleManager() {
-  const [bundles, setBundles] = useState<Bundle[]>([]);
+export default function CardSetManager() {
+  const [sets, setSets] = useState<CardSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [showForm, setShowForm] = useState(false);
-  const [editing, setEditing] = useState<Bundle | null>(null);
-  const [form, setForm] = useState(emptyForm);
+  const [editing, setEditing] = useState<CardSet | null>(null);
+  const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
 
   const load = async (p = page) => {
     setLoading(true);
     try {
-      const res = await bundleService.findAll(p, 10);
-      setBundles(res.data);
+      const res = await cardSetService.findAll(p, 10);
+      setSets(res.data);
       setTotal(res.meta.totalPages);
     } catch {
       setError("Erreur de chargement");
@@ -35,25 +33,26 @@ export default function BundleManager() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setName("");
     setShowForm(true);
   };
-  const openEdit = (b: Bundle) => {
-    setEditing(b);
-    setForm({ name: b.name, price: b.price });
+  const openEdit = (s: CardSet) => {
+    setEditing(s);
+    setName(s.name);
     setShowForm(true);
   };
   const cancel = () => {
     setShowForm(false);
     setEditing(null);
+    setName("");
   };
 
   const handleSubmit = async () => {
-    if (!form.name.trim()) return;
+    if (!name.trim()) return;
     setSaving(true);
     try {
-      if (editing) await bundleService.update(editing.id, form);
-      else await bundleService.create(form);
+      if (editing) await cardSetService.update(editing.id, name);
+      else await cardSetService.create(name);
       cancel();
       load();
     } catch {
@@ -64,22 +63,19 @@ export default function BundleManager() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Supprimer ce bundle ?")) return;
+    if (!confirm("Supprimer ce set ?")) return;
     try {
-      await bundleService.remove(id);
+      await cardSetService.remove(id);
       load();
     } catch {
       setError("Erreur lors de la suppression");
     }
   };
 
-  const set = (k: keyof typeof emptyForm, v: any) =>
-    setForm((f) => ({ ...f, [k]: v }));
-
   return (
     <div className="manager">
       <div className="manager__header">
-        <h2 className="manager__title">Bundles</h2>
+        <h2 className="manager__title">Card Sets</h2>
         <button className="manager__add-btn" onClick={openCreate}>
           + Nouveau
         </button>
@@ -90,29 +86,18 @@ export default function BundleManager() {
       {showForm && (
         <div className="manager-form">
           <p className="manager-form__title">
-            {editing ? "Modifier" : "Nouveau"} bundle
+            {editing ? "Modifier" : "Nouveau"} card set
           </p>
-
           <div className="manager-form__row">
             <label className="manager-form__label">Nom</label>
             <input
               className="manager-form__input"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              placeholder="Nom du bundle"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Nom du set"
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
           </div>
-
-          <div className="manager-form__row">
-            <label className="manager-form__label">Prix (gold)</label>
-            <input
-              className="manager-form__input"
-              type="number"
-              value={form.price}
-              onChange={(e) => set("price", Number(e.target.value))}
-            />
-          </div>
-
           <div className="manager-form__actions">
             <button
               className="manager-form__submit"
@@ -130,28 +115,26 @@ export default function BundleManager() {
 
       {loading ? (
         <p className="manager-empty">Chargement...</p>
-      ) : bundles.length === 0 ? (
-        <p className="manager-empty">Aucun bundle.</p>
+      ) : sets.length === 0 ? (
+        <p className="manager-empty">Aucun card set.</p>
       ) : (
         <div className="manager-list">
-          {bundles.map((b) => (
-            <div key={b.id} className="manager-item">
+          {sets.map((s) => (
+            <div key={s.id} className="manager-item">
               <div className="manager-item__info">
-                <div className="manager-item__name">{b.name}</div>
-                <div className="manager-item__meta">
-                  {b.price} gold · {b.contents?.length ?? 0} contenus
-                </div>
+                <div className="manager-item__name">{s.name}</div>
+                <div className="manager-item__meta">#{s.id}</div>
               </div>
               <div className="manager-item__actions">
                 <button
                   className="manager-item__edit-btn"
-                  onClick={() => openEdit(b)}
+                  onClick={() => openEdit(s)}
                 >
                   ✏
                 </button>
                 <button
                   className="manager-item__delete-btn"
-                  onClick={() => handleDelete(b.id)}
+                  onClick={() => handleDelete(s.id)}
                 >
                   🗑
                 </button>

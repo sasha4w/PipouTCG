@@ -1,4 +1,4 @@
-import type { UserProfile } from "../services/user.service";
+import type { UserProfile } from "../../services/user.service";
 import "./StatsPanel.css";
 
 interface StatsPanelProps {

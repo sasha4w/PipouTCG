@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { cardService } from "../services/card.service";
-import type { Card } from "../services/card.service";
+import { cardService } from "../../services/card.service";
+import type { Card } from "../../services/card.service";
 import CardDisplay from "./CardDisplay";
-import Loading from "./Loading";
-import { soundService } from "../services/sound.service";
+import Loading from "../../components/Loading";
+import { soundService } from "../../services/sound.service";
 import "./CardList.css";
 
 const LIMIT = 9;

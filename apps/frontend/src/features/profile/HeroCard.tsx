@@ -1,6 +1,6 @@
-import type { UserProfile } from "../services/user.service";
+import type { UserProfile } from "../../services/user.service";
 import "./HeroCard.css";
-import { IconGold } from "../components/Icons";
+import { IconGold } from "../../components/Icons";
 
 // ── Étoile jaune Figma ──────────────────────────────────────────────────────
 function StarYellow({ width, height }: { width: number; height: number }) {

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { isAdmin } from "../utils/authUtils";
-import CardSetManager from "../components/CardSetManager";
-import CardManager from "../components/CardManager";
-import BoosterManager from "../components/BoosterManager";
-import BundleManager from "../components/BundleManager";
+import CardSetManager from "../features/cards/CardSetManager";
+import CardManager from "../features/cards/CardManager";
+import BoosterManager from "../features/boosters/BoosterManager";
+import BundleManager from "../features/bundles/BundleManager";
 import "./Admin.css";
 
 type AdminTab = "cardsets" | "cards" | "boosters" | "bundles";

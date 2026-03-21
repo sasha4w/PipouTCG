@@ -71,4 +71,15 @@ export const bundleService = {
     const res = await api.post(`/bundles/${id}/contents`, { items });
     return res.data;
   },
+  async updateContent(bundleId: number, contentId: number, quantity: number) {
+    const res = await api.patch(`/bundles/${bundleId}/contents/${contentId}`, {
+      quantity,
+    });
+    return res.data;
+  },
+
+  async removeContent(bundleId: number, contentId: number) {
+    const res = await api.delete(`/bundles/${bundleId}/contents/${contentId}`);
+    return res.data;
+  },
 };
