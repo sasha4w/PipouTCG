@@ -1,14 +1,16 @@
+import { useTranslation } from "react-i18next";
 import { useSoundStore } from "../contexts/SoundContext";
 import "./SoundButton.css";
 
 export default function SoundButton() {
   const { muted, toggleMute } = useSoundStore();
+  const { t } = useTranslation();
 
   return (
     <button
       className="sound-btn"
       onClick={toggleMute}
-      aria-label={muted ? "Activer le son" : "Couper le son"}
+      aria-label={muted ? t("sound.enable") : t("sound.disable")}
     >
       {muted ? (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">

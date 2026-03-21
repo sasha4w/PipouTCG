@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import type { UserInventory } from "../../services/user.service";
-import "./OwnBoosterList.css";
+import SearchBar from "../../components/Searchbar";
+import "./OwnerBoosterList.css";
 
 interface OwnBoosterListProps {
   boosters: UserInventory["boosters"]["data"];
@@ -18,12 +19,10 @@ export default function OwnBoosterList({ boosters }: OwnBoosterListProps) {
 
   return (
     <div className="own-boosterlist">
-      <input
-        className="own-boosterlist__search"
-        type="text"
-        placeholder="🔍 Rechercher un booster..."
+      <SearchBar
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={setSearch}
+        placeholder="Rechercher un booster..."
       />
 
       <span className="own-boosterlist__result-count">

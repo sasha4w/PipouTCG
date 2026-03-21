@@ -1,7 +1,12 @@
 import { useState } from "react";
-import type { UserInventory } from "../../services/user.service";
+import type {
+  UserInventory,
+  UserCollection,
+} from "../../services/user.service";
 import { IconCards, IconBooster, IconBundle } from "../../components/Icons";
 import OwnCardList from "./OwnCardList";
+import OwnBoosterList from "../boosters/OwnerBoosterList";
+import OwnBundleList from "../bundles/OwnerBundleList";
 import "./CollectionPanel.css";
 
 // ── Chevron ───────────────────────────────────────────────────────────────────
@@ -25,57 +30,48 @@ function Chevron({ open }: { open: boolean }) {
   );
 }
 
-// ── Ligne booster / bundle ────────────────────────────────────────────────────
-function InvRow({
-  name,
-  price,
-  quantity,
-}: {
-  name: string;
-  price: number;
-  quantity: number;
-}) {
-  return (
-    <div className="inv-row">
-      <span className="inv-row__name">{name}</span>
-      <span className="inv-row__meta">{price} gold</span>
-      <span className="inv-row__qty">×{quantity}</span>
-    </div>
-  );
-}
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 interface CollectionPanelProps {
   inventory: UserInventory;
+  collection: UserCollection | null;
 }
 
 type ActiveSection = "cards" | "boosters" | "bundles" | null;
 
 // ══════════════════════════════════════════════════════════════════════════════
-export default function CollectionPanel({ inventory }: CollectionPanelProps) {
+export default function CollectionPanel({
+  inventory,
+  collection,
+}: CollectionPanelProps) {
   const [active, setActive] = useState<ActiveSection>(null);
 
   const toggle = (section: ActiveSection) =>
     setActive((prev) => (prev === section ? null : section));
+
+  // Compteur cartes : total de toutes les quantities possédées
+  const totalCards = inventory.cards.data.reduce(
+    (sum, c) => sum + c.quantity,
+    0,
+  );
 
   const sections = [
     {
       key: "cards" as const,
       icon: <IconCards size={18} color="#7a1c3b" />,
       label: "Cartes",
-      total: inventory.cards.data.reduce((sum, c) => sum + c.quantity, 0),
+      total: totalCards,
     },
     {
       key: "boosters" as const,
       icon: <IconBooster size={18} color="#7a1c3b" />,
       label: "Boosters",
-      total: inventory.boosters.meta.total,
+      total: inventory.boosters.data.reduce((sum, b) => sum + b.quantity, 0),
     },
     {
       key: "bundles" as const,
       icon: <IconBundle size={18} color="#7a1c3b" />,
       label: "Bundles",
-      total: inventory.bundles.meta.total,
+      total: inventory.bundles.data.reduce((sum, b) => sum + b.quantity, 0),
     },
   ];
 
@@ -104,12 +100,14 @@ export default function CollectionPanel({ inventory }: CollectionPanelProps) {
             {/* ── Contenu étendu ── */}
             {active === s.key && (
               <div className="collection-panel__content">
-                {/* CARTES — utilise OwnCardList avec CardDisplay */}
+                {/* CARTES — utilise OwnCardList avec UserCollection */}
                 {s.key === "cards" &&
-                  (inventory.cards.data.length === 0 ? (
+                  (!collection ? (
+                    <p className="collection-panel__empty">Chargement...</p>
+                  ) : collection.sets.length === 0 ? (
                     <p className="collection-panel__empty">Aucune carte.</p>
                   ) : (
-                    <OwnCardList cards={inventory.cards.data} />
+                    <OwnCardList collection={collection} />
                   ))}
 
                 {/* BOOSTERS */}
@@ -117,16 +115,7 @@ export default function CollectionPanel({ inventory }: CollectionPanelProps) {
                   (inventory.boosters.data.length === 0 ? (
                     <p className="collection-panel__empty">Aucun booster.</p>
                   ) : (
-                    <div className="collection-panel__item-list">
-                      {inventory.boosters.data.map((b) => (
-                        <InvRow
-                          key={b.id}
-                          name={b.name}
-                          price={b.price}
-                          quantity={b.quantity}
-                        />
-                      ))}
-                    </div>
+                    <OwnBoosterList boosters={inventory.boosters.data} />
                   ))}
 
                 {/* BUNDLES */}
@@ -134,16 +123,7 @@ export default function CollectionPanel({ inventory }: CollectionPanelProps) {
                   (inventory.bundles.data.length === 0 ? (
                     <p className="collection-panel__empty">Aucun bundle.</p>
                   ) : (
-                    <div className="collection-panel__item-list">
-                      {inventory.bundles.data.map((b) => (
-                        <InvRow
-                          key={b.id}
-                          name={b.name}
-                          price={b.price}
-                          quantity={b.quantity}
-                        />
-                      ))}
-                    </div>
+                    <OwnBundleList bundles={inventory.bundles.data} />
                   ))}
               </div>
             )}

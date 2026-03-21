@@ -1,0 +1,118 @@
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Ligne principale : icône search + champ + icône filtre ── */
+.search-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bouton icône (search ou filter) */
+.search-bar__icon-btn {
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fff;
+  color: #7a1c3b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.12s;
+}
+.search-bar__icon-btn:hover {
+  background: rgba(122, 28, 59, 0.06);
+  border-color: rgba(122, 28, 59, 0.25);
+}
+.search-bar__icon-btn:active {
+  transform: scale(0.92);
+}
+.search-bar__icon-btn--active {
+  background: #7a1c3b;
+  border-color: #7a1c3b;
+  color: #fff;
+}
+.search-bar__icon-btn--active:hover {
+  color: black;
+}
+/* Champ texte (s'anime depuis 0) */
+.search-bar__input-wrap {
+  flex: 1;
+  overflow: hidden;
+  transition:
+    max-width 0.25s ease,
+    opacity 0.2s ease;
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.search-bar__input-wrap--open {
+  max-width: 400px;
+  opacity: 1;
+  pointer-events: all;
+}
+
+.search-bar__input {
+  width: 100%;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+.search-bar__input:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+.search-bar__input::placeholder {
+  color: #c0a090;
+}
+
+/* Badge filtre actif */
+.search-bar__filter-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f27aaa;
+  border: 1.5px solid #fff;
+}
+
+/* ── Zone filtres ── */
+.search-bar__filters {
+  animation: filterSlideDown 0.2s ease both;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+@keyframes filterSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

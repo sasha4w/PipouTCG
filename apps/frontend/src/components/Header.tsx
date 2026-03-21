@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SoundButton from "./SoundButton";
 import { isAdmin } from "../utils/authUtils";
 import "./Header.css";
 
-// ── Étoile jaune (Figma node 4008-56) ──────────────────────────────────────
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
     <svg
@@ -99,7 +99,6 @@ function StarYellow({ width, height }: { width: number; height: number }) {
   );
 }
 
-// ── Étoile rose (Figma node 4008-101) ──────────────────────────────────────
 function StarPink({ width, height }: { width: number; height: number }) {
   return (
     <svg
@@ -194,7 +193,6 @@ function StarPink({ width, height }: { width: number; height: number }) {
   );
 }
 
-// ── Groupe des 3 étoiles ────────────────────────────────────────────────────
 function TitleStars() {
   return (
     <span
@@ -245,7 +243,6 @@ function TitleStars() {
   );
 }
 
-// ── Icône couronne ────────────────────────────────────────────────────────────
 function IconCrown() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -260,10 +257,11 @@ function IconCrown() {
   );
 }
 
-// ── Header ──────────────────────────────────────────────────────────────────
 export default function Header() {
   const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   useEffect(() => setMounted(true), []);
 
   return (
@@ -274,7 +272,6 @@ export default function Header() {
         <h1 className="cc-header__title">PipouTCG</h1>
         <TitleStars />
       </div>
-
       <div className="cc-header__actions">
         {isAdmin() && (
           <button
@@ -283,7 +280,7 @@ export default function Header() {
             aria-label="Dashboard admin"
           >
             <IconCrown />
-            <span>Admin</span>
+            <span>{t("header.admin")}</span>
           </button>
         )}
         <SoundButton />

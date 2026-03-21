@@ -1,0 +1,80 @@
+{
+  "login": {
+    "title": "Card & Collect",
+    "subtitle_login": "Welcome back!",
+    "subtitle_register": "Create your account and start collecting!",
+    "subtitle_forgot": "Reset your password",
+    "email": "Email",
+    "email_placeholder": "your@email.com",
+    "password": "Password",
+    "password_placeholder": "6 characters minimum",
+    "username": "Username",
+    "username_placeholder": "Your player name",
+    "remember": "Stay logged in",
+    "forgot_link": "Forgot password?",
+    "btn_login": "Log in",
+    "btn_register": "Create account",
+    "btn_forgot": "Send link",
+    "no_account": "No account yet?",
+    "has_account": "Already have an account?",
+    "remember_it": "Remember it?",
+    "sign_up": "Sign up",
+    "sign_in": "Log in",
+    "err_used": "Email already in use",
+    "err_credentials": "Invalid email or password",
+    "err_generic": "An error occurred",
+    "success_created": "Account created! You can now log in 🎉",
+    "success_reset": "If this email exists, a reset link has been sent 📬",
+    "new_password": "New password",
+    "confirm_password": "Confirm",
+    "confirm_placeholder": "Repeat your password",
+    "btn_reset": "Reset password",
+    "err_too_short": "Password must be at least 6 characters",
+    "err_mismatch": "Passwords do not match",
+    "err_invalid_token": "Invalid or expired link. Please request a new one.",
+    "success_updated": "Password updated! Redirecting...",
+    "subtitle_reset": "Choose a new password"
+  },
+  "nav": {
+    "home": "Home",
+    "profile": "Profile",
+    "marketplace": "Market",
+    "settings": "Settings"
+  },
+  "header": {
+    "admin": "Admin"
+  },
+  "settings": {
+    "title": "Settings",
+    "audio": "Audio",
+    "notifications": "Notifications",
+    "language": "Language",
+    "logout": "Log out",
+    "notif_trades": "Trades Status",
+    "notif_boosters": "Booster stock Status",
+    "notif_news": "News"
+  },
+  "privacy": {
+    "private": "Private profile",
+    "public": "Public profile",
+    "make_private": "Make profile private",
+    "make_public": "Make profile public"
+  },
+  "sound": {
+    "enable": "Enable sound",
+    "disable": "Mute sound",
+    "label": "Sound",
+    "mute_all": "Mute all",
+    "master": "Master",
+    "music": "Music",
+    "sfx": "SFX",
+    "mute": "Mute",
+    "decrease": "Decrease",
+    "increase": "Increase"
+  },
+  "search": {
+    "placeholder": "Search...",
+    "aria_search": "Search",
+    "aria_filter": "Filters"
+  }
+}

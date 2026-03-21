@@ -1,0 +1,80 @@
+{
+  "login": {
+    "title": "Card & Collect",
+    "subtitle_login": "다시 오셨군요!",
+    "subtitle_register": "계정을 만들고 카드를 수집하세요!",
+    "subtitle_forgot": "비밀번호 재설정",
+    "email": "이메일",
+    "email_placeholder": "이메일을 입력하세요",
+    "password": "비밀번호",
+    "password_placeholder": "6자 이상",
+    "username": "닉네임",
+    "username_placeholder": "플레이어 닉네임",
+    "remember": "로그인 유지",
+    "forgot_link": "비밀번호를 잊으셨나요?",
+    "btn_login": "로그인",
+    "btn_register": "계정 만들기",
+    "btn_forgot": "링크 전송",
+    "no_account": "계정이 없으신가요?",
+    "has_account": "이미 계정이 있으신가요?",
+    "remember_it": "기억하셨나요?",
+    "sign_up": "회원가입",
+    "sign_in": "로그인",
+    "err_used": "이미 사용 중인 이메일",
+    "err_credentials": "이메일 또는 비밀번호가 올바르지 않습니다",
+    "err_generic": "오류가 발생했습니다",
+    "success_created": "계정이 생성되었습니다! 로그인하세요 🎉",
+    "success_reset": "이메일이 존재하면 재설정 링크가 전송되었습니다 📬",
+    "new_password": "새 비밀번호",
+    "confirm_password": "확인",
+    "confirm_placeholder": "비밀번호를 다시 입력하세요",
+    "btn_reset": "비밀번호 재설정",
+    "err_too_short": "비밀번호는 6자 이상이어야 합니다",
+    "err_mismatch": "비밀번호가 일치하지 않습니다",
+    "err_invalid_token": "링크가 유효하지 않거나 만료되었습니다.",
+    "success_updated": "비밀번호가 업데이트되었습니다! 리디렉션 중...",
+    "subtitle_reset": "새 비밀번호를 선택하세요"
+  },
+  "nav": {
+    "home": "홈",
+    "profile": "프로필",
+    "marketplace": "마켓",
+    "settings": "설정"
+  },
+  "header": {
+    "admin": "관리자"
+  },
+  "settings": {
+    "title": "설정",
+    "audio": "오디오",
+    "notifications": "알림",
+    "language": "언어",
+    "logout": "로그아웃",
+    "notif_trades": "거래 상태",
+    "notif_boosters": "부스터 재고 상태",
+    "notif_news": "뉴스"
+  },
+  "privacy": {
+    "private": "비공개 프로필",
+    "public": "공개 프로필",
+    "make_private": "프로필 비공개로 설정",
+    "make_public": "프로필 공개로 설정"
+  },
+  "sound": {
+    "enable": "소리 켜기",
+    "disable": "소리 끄기",
+    "label": "소리",
+    "mute_all": "전체 음소거",
+    "master": "전체",
+    "music": "음악",
+    "sfx": "효과음",
+    "mute": "음소거",
+    "decrease": "줄이기",
+    "increase": "늘리기"
+  },
+  "search": {
+    "placeholder": "검색...",
+    "aria_search": "검색",
+    "aria_filter": "필터"
+  }
+}

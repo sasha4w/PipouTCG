@@ -248,3 +248,30 @@
   align-items: center;
   gap: 8px;
 }
+
+.login-lang-select {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.login-lang-btn {
+  background: transparent;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.login-lang-btn:hover {
+  background: rgba(122, 28, 59, 0.06);
+  border-color: rgba(122, 28, 59, 0.25);
+}
+.login-lang-btn--active {
+  border-color: #7a1c3b;
+  background: rgba(122, 28, 59, 0.08);
+}

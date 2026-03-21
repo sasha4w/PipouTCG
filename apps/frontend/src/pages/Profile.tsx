@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { questService } from "../services/quest.service";
-import type { UserProfile, UserInventory } from "../services/user.service";
-import type { UserQuestsGrouped } from "../services/quest.service";
 import Loading from "../components/Loading";
 import HeroCard from "../features/profile/HeroCard";
 import StatsPanel from "../features/profile/StatsPanel";
@@ -15,31 +14,38 @@ import "./Profile.css";
 type Tab = "collection" | "stats";
 
 export default function Profile() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [inventory, setInventory] = useState<UserInventory | null>(null);
-  const [quests, setQuests] = useState<UserQuestsGrouped | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [tab, setTab] = useState<Tab>("collection");
   const [isPrivate, setIsPrivate] = useState(false);
 
+  const {
+    data: profile,
+    isLoading: l1,
+    isError,
+  } = useQuery({
+    queryKey: ["myStats"],
+    queryFn: () => userService.getMyStats(),
+  });
+
+  const { data: inventory, isLoading: l2 } = useQuery({
+    queryKey: ["myInventory"],
+    queryFn: () => userService.getMyInventory(),
+  });
+
+  const { data: quests, isLoading: l3 } = useQuery({
+    queryKey: ["myQuests"],
+    queryFn: () => questService.getMyQuests(),
+  });
+
+  const { data: collection, isLoading: l4 } = useQuery({
+    queryKey: ["myCollection"],
+    queryFn: () => userService.getMyCollection(),
+  });
+  const queryClient = useQueryClient();
+  const loading = l1 || l2 || l3 || l4;
+
   useEffect(() => {
-    const minDelay = new Promise((resolve) => setTimeout(resolve, 1500));
-    Promise.all([
-      userService.getMyStats(),
-      userService.getMyInventory(),
-      questService.getMyQuests(),
-      minDelay,
-    ])
-      .then(([profileData, inventoryData, questsData]) => {
-        setProfile(profileData);
-        setInventory(inventoryData);
-        setQuests(questsData);
-        setIsPrivate(profileData.isPrivate);
-      })
-      .catch(() => setError("Impossible de charger le profil"))
-      .finally(() => setLoading(false));
-  }, []);
+    if (profile) setIsPrivate(profile.isPrivate);
+  }, [profile]);
 
   const handleTogglePrivacy = async () => {
     if (!profile) return;
@@ -48,16 +54,18 @@ export default function Profile() {
   };
 
   if (loading) return <Loading message="Chargement du profil..." />;
-  if (error)
-    return <div className="profile-state profile-state--error">{error}</div>;
+  if (isError)
+    return (
+      <div className="profile-state profile-state--error">
+        Impossible de charger le profil
+      </div>
+    );
   if (!profile || !inventory || !quests) return null;
 
   return (
     <div className="profile-page">
       <HeroCard profile={profile} />
-
       <PrivacyButton isPrivate={isPrivate} onToggle={handleTogglePrivacy} />
-
       <div className="profile-tabs">
         <button
           className={`profile-tab-btn${tab === "collection" ? " profile-tab-btn--active" : ""}`}
@@ -84,11 +92,19 @@ export default function Profile() {
           Statistiques
         </button>
       </div>
-
-      {tab === "collection" && <CollectionPanel inventory={inventory} />}
+      {tab === "collection" && (
+        <CollectionPanel
+          inventory={inventory}
+          collection={collection ?? null}
+        />
+      )}
       {tab === "stats" && <StatsPanel stats={profile.stats} />}
-
-      <QuestsPanel quests={quests} onQuestsUpdate={setQuests} />
+      <QuestsPanel
+        quests={quests}
+        onQuestsUpdate={() =>
+          queryClient.invalidateQueries({ queryKey: ["myQuests"] })
+        }
+      />
     </div>
   );
 }

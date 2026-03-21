@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useSoundStore } from "../contexts/SoundContext";
 import "./SoundSettings.css";
 
@@ -19,12 +20,12 @@ function VolumeRow({
   muted,
   onToggleMute,
 }: VolumeRowProps) {
+  const { t } = useTranslation();
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const step = (delta: number) => {
+  const step = (delta: number) =>
     onChange(Math.min(1, Math.max(0, Math.round((value + delta) * 100) / 100)));
-  };
 
   const startHold = (delta: number) => {
     step(delta);
@@ -63,11 +64,10 @@ function VolumeRow({
               onChange={onToggleMute}
               disabled={disabled}
             />
-            <span className="sound-mute-check__text">Mute</span>
+            <span className="sound-mute-check__text">{t("sound.mute")}</span>
           </label>
         </div>
       </div>
-
       <div className="sound-row__controls">
         <button
           className="sound-row__btn"
@@ -77,11 +77,10 @@ function VolumeRow({
           onTouchStart={() => startHold(-0.05)}
           onTouchEnd={stopHold}
           disabled={isDisabled || value <= 0}
-          aria-label="Diminuer"
+          aria-label={t("sound.decrease")}
         >
           −
         </button>
-
         <div
           className={`sound-row__bar-wrap${isDisabled ? " sound-row__bar-wrap--disabled" : ""}`}
           onClick={handleBarClick}
@@ -91,7 +90,6 @@ function VolumeRow({
             style={{ width: `${value * 100}%` }}
           />
         </div>
-
         <button
           className="sound-row__btn"
           onMouseDown={() => startHold(0.05)}
@@ -100,7 +98,7 @@ function VolumeRow({
           onTouchStart={() => startHold(0.05)}
           onTouchEnd={stopHold}
           disabled={isDisabled || value >= 1}
-          aria-label="Augmenter"
+          aria-label={t("sound.increase")}
         >
           +
         </button>
@@ -110,6 +108,7 @@ function VolumeRow({
 }
 
 export default function SoundSettings() {
+  const { t } = useTranslation();
   const {
     masterVolume,
     bgmVolume,
@@ -127,19 +126,17 @@ export default function SoundSettings() {
 
   return (
     <div className="sound-volume">
-      {/* Mute général */}
       <div className="sound-mute-row">
-        <span className="sound-mute-label">Son</span>
+        <span className="sound-mute-label">{t("sound.label")}</span>
         <label className="sound-mute-check">
           <input type="checkbox" checked={muted} onChange={toggleMute} />
-          <span className="sound-mute-check__text">Tout couper</span>
+          <span className="sound-mute-check__text">{t("sound.mute_all")}</span>
         </label>
       </div>
 
-      {/* Volume général */}
       <div className="sound-row">
         <div className="sound-row__header">
-          <span className="sound-row__label">Général</span>
+          <span className="sound-row__label">{t("sound.master")}</span>
           <span className="sound-row__value">
             {Math.round(masterVolume * 100)}%
           </span>
@@ -153,7 +150,7 @@ export default function SoundSettings() {
                 Math.max(0, Math.round((masterVolume - 0.05) * 100) / 100),
               )
             }
-            aria-label="Diminuer"
+            aria-label={t("sound.decrease")}
           >
             −
           </button>
@@ -173,26 +170,23 @@ export default function SoundSettings() {
                 Math.min(1, Math.round((masterVolume + 0.05) * 100) / 100),
               )
             }
-            aria-label="Augmenter"
+            aria-label={t("sound.increase")}
           >
             +
           </button>
         </div>
       </div>
 
-      {/* Musique avec mute propre */}
       <VolumeRow
-        label="Musique"
+        label={t("sound.music")}
         value={bgmVolume}
         onChange={setBgmVolume}
         disabled={muted}
         muted={bgmMuted}
         onToggleMute={toggleBgmMute}
       />
-
-      {/* SFX avec mute propre */}
       <VolumeRow
-        label="SFX"
+        label={t("sound.sfx")}
         value={sfxVolume}
         onChange={setSfxVolume}
         disabled={muted}

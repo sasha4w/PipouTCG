@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import "./PrivacyButton.css";
 
 interface PrivacyButtonProps {
@@ -5,7 +6,6 @@ interface PrivacyButtonProps {
   onToggle: () => void;
 }
 
-// ── Icône cadenas ─────────────────────────────────────────────────────────────
 function IconLock({ color = "currentColor" }: { color?: string }) {
   return (
     <svg
@@ -36,7 +36,6 @@ function IconLock({ color = "currentColor" }: { color?: string }) {
   );
 }
 
-// ── Icône globe ───────────────────────────────────────────────────────────────
 function IconGlobe({ color = "currentColor" }: { color?: string }) {
   return (
     <svg
@@ -61,21 +60,22 @@ export default function PrivacyButton({
   isPrivate,
   onToggle,
 }: PrivacyButtonProps) {
+  const { t } = useTranslation();
   return (
     <button
       className={`privacy-btn${isPrivate ? " privacy-btn--private" : ""}`}
       onClick={onToggle}
       aria-label={
-        isPrivate ? "Rendre le profil public" : "Rendre le profil privé"
+        isPrivate ? t("privacy.make_public") : t("privacy.make_private")
       }
     >
       {isPrivate ? (
         <>
-          <IconLock color="#7a1c3b" /> Profil privé
+          <IconLock color="#7a1c3b" /> {t("privacy.private")}
         </>
       ) : (
         <>
-          <IconGlobe color="#7a1c3b" /> Profil public
+          <IconGlobe color="#7a1c3b" /> {t("privacy.public")}
         </>
       )}
     </button>

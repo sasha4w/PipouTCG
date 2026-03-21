@@ -61,7 +61,28 @@ export interface UserInventory {
     meta: { total: number; page: number; limit: number; totalPages: number };
   };
 }
-
+export interface UserCollection {
+  sets: {
+    id: number;
+    name: string;
+    owned: number;
+    total: number;
+    cards: {
+      id: number;
+      name: string;
+      rarity: string;
+      type: string;
+      supportType: string | null;
+      atk: number;
+      hp: number;
+      cost: number;
+      description: string | null;
+      image: { id: number; url: string } | null;
+      owned: boolean;
+      quantity: number;
+    }[];
+  }[];
+}
 export interface PaginatedResponse<T> {
   data: T[];
   meta: { total: number; page: number; limit: number; totalPages: number };
@@ -119,7 +140,10 @@ export const userService = {
     });
     return res.data;
   },
-
+  async getMyCollection(): Promise<UserCollection> {
+    const res = await api.get("/users/me/collection");
+    return res.data;
+  },
   // Privacy
   async togglePrivacy(id: number): Promise<{ isPrivate: boolean }> {
     const res = await api.patch(`/users/${id}/privacy`);

@@ -1,0 +1,80 @@
+{
+  "login": {
+    "title": "Card & Collect",
+    "subtitle_login": "Content de te revoir !",
+    "subtitle_register": "Crée ton compte et commence à collectionner !",
+    "subtitle_forgot": "Réinitialise ton mot de passe",
+    "email": "Email",
+    "email_placeholder": "ton@email.com",
+    "password": "Mot de passe",
+    "password_placeholder": "6 caractères minimum",
+    "username": "Pseudo",
+    "username_placeholder": "Ton pseudo de joueur",
+    "remember": "Rester connecté",
+    "forgot_link": "Mot de passe oublié ?",
+    "btn_login": "Se connecter",
+    "btn_register": "Créer mon compte",
+    "btn_forgot": "Envoyer le lien",
+    "no_account": "Pas encore de compte ?",
+    "has_account": "Déjà un compte ?",
+    "remember_it": "Tu t'en souviens ?",
+    "sign_up": "S'inscrire",
+    "sign_in": "Se connecter",
+    "err_used": "Email déjà utilisé",
+    "err_credentials": "Email ou mot de passe incorrect",
+    "err_generic": "Une erreur est survenue",
+    "success_created": "Compte créé ! Tu peux te connecter 🎉",
+    "success_reset": "Si cet email existe, un lien de réinitialisation a été envoyé 📬",
+    "new_password": "Nouveau mot de passe",
+    "confirm_password": "Confirmer",
+    "confirm_placeholder": "Répète ton mot de passe",
+    "btn_reset": "Réinitialiser",
+    "err_too_short": "Le mot de passe doit faire au moins 6 caractères",
+    "err_mismatch": "Les mots de passe ne correspondent pas",
+    "err_invalid_token": "Lien invalide ou expiré. Refais une demande.",
+    "success_updated": "Mot de passe mis à jour ! Redirection...",
+    "subtitle_reset": "Choisis un nouveau mot de passe"
+  },
+  "nav": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "marketplace": "Marché",
+    "settings": "Réglages"
+  },
+  "header": {
+    "admin": "Admin"
+  },
+  "settings": {
+    "title": "Réglages",
+    "audio": "Audio",
+    "notifications": "Notifications",
+    "language": "Langue",
+    "logout": "Se déconnecter",
+    "notif_trades": "Trades Status",
+    "notif_boosters": "Booster stock Status",
+    "notif_news": "News"
+  },
+  "privacy": {
+    "private": "Profil privé",
+    "public": "Profil public",
+    "make_private": "Rendre le profil privé",
+    "make_public": "Rendre le profil public"
+  },
+  "sound": {
+    "enable": "Activer le son",
+    "disable": "Couper le son",
+    "label": "Son",
+    "mute_all": "Tout couper",
+    "master": "Général",
+    "music": "Musique",
+    "sfx": "SFX",
+    "mute": "Mute",
+    "decrease": "Diminuer",
+    "increase": "Augmenter"
+  },
+  "search": {
+    "placeholder": "Rechercher...",
+    "aria_search": "Rechercher",
+    "aria_filter": "Filtres"
+  }
+}

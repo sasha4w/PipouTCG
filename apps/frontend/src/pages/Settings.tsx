@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import SoundSettings from "../components/SoundSettings";
+import i18n from "../i18n";
 import "./Settings.css";
+
+const LANGS = [
+  { code: "fr", label: "🇫🇷 Français" },
+  { code: "en", label: "🇬🇧 English" },
+  { code: "ko", label: "🇰🇷 한국어" },
+];
 
 interface SectionProps {
   label: string;
@@ -47,42 +55,47 @@ function NotifItem({ label }: { label: string }) {
 
 const Settings = () => {
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    authService.logout();
-    navigate("/login");
-  };
+  const { t } = useTranslation();
 
   return (
     <div className="settings-page">
-      <h1 className="settings-page__title">Settings</h1>
+      <h1 className="settings-page__title">{t("settings.title")}</h1>
 
-      {/* Audio */}
-      <Section label="Audio" defaultOpen>
+      <Section label={t("settings.audio")} defaultOpen>
         <SoundSettings />
       </Section>
 
-      {/* Notifications */}
-      <Section label="Notifications">
-        <NotifItem label="Trades Status" />
-        <NotifItem label="Booster stock Status" />
-        <NotifItem label="News" />
+      <Section label={t("settings.notifications")}>
+        <NotifItem label={t("settings.notif_trades")} />
+        <NotifItem label={t("settings.notif_boosters")} />
+        <NotifItem label={t("settings.notif_news")} />
       </Section>
 
-      {/* Langue */}
       <div className="settings-section">
         <div className="settings-lang">
-          <span className="settings-lang__label">Langue</span>
-          <select className="settings-lang__select">
-            <option value="fr">🇫🇷 Français</option>
-            <option value="en">🇬🇧 English</option>
+          <span className="settings-lang__label">{t("settings.language")}</span>
+          <select
+            className="settings-lang__select"
+            value={i18n.language.split("-")[0]}
+            onChange={(e) => i18n.changeLanguage(e.target.value)}
+          >
+            {LANGS.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
-      {/* Déconnexion */}
-      <button className="settings-logout-btn" onClick={handleLogout}>
-        Se déconnecter
+      <button
+        className="settings-logout-btn"
+        onClick={() => {
+          authService.logout();
+          navigate("/login");
+        }}
+      >
+        {t("settings.logout")}
       </button>
     </div>
   );

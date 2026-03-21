@@ -1,40 +1,39 @@
 import { useState, useMemo } from "react";
 import type { UserInventory } from "../../services/user.service";
-import "./OwnBoosterList.css";
+import SearchBar from "../../components/Searchbar";
+import "./OwnerBundleList.css";
 
-interface OwnBoosterListProps {
-  boosters: UserInventory["boosters"]["data"];
+interface OwnBundleListProps {
+  bundles: UserInventory["bundles"]["data"];
 }
 
-export default function OwnBoosterList({ boosters }: OwnBoosterListProps) {
+export default function OwnBundleList({ bundles }: OwnBundleListProps) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    if (!search) return boosters;
-    return boosters.filter((b) =>
+    if (!search) return bundles;
+    return bundles.filter((b) =>
       b.name.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [boosters, search]);
+  }, [bundles, search]);
 
   return (
-    <div className="own-boosterlist">
-      <input
-        className="own-boosterlist__search"
-        type="text"
-        placeholder="🔍 Rechercher un booster..."
+    <div className="own-bundlelist">
+      <SearchBar
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={setSearch}
+        placeholder="Rechercher un bundle..."
       />
 
-      <span className="own-boosterlist__result-count">
-        {filtered.length} booster{filtered.length > 1 ? "s" : ""}
-        {filtered.length !== boosters.length && ` sur ${boosters.length}`}
+      <span className="own-bundlelist__result-count">
+        {filtered.length} bundle{filtered.length > 1 ? "s" : ""}
+        {filtered.length !== bundles.length && ` sur ${bundles.length}`}
       </span>
 
       {filtered.length === 0 ? (
-        <p className="own-boosterlist__empty">Aucun booster trouvé.</p>
+        <p className="own-bundlelist__empty">Aucun bundle trouvé.</p>
       ) : (
-        <div className="own-boosterlist__list">
+        <div className="own-bundlelist__list">
           {filtered.map((b) => (
             <div key={b.id} className="inv-row">
               <span className="inv-row__name">{b.name}</span>

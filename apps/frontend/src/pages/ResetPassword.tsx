@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { api } from "../api/api";
-import "./Login.css"; // réutilise les mêmes styles
+import "./Login.css";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
-
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
@@ -17,19 +18,19 @@ const ResetPassword = () => {
     setError("");
     setSuccess("");
     if (password.length < 6) {
-      setError("Le mot de passe doit faire au moins 6 caractères");
+      setError(t("login.err_too_short"));
       return;
     }
     if (password !== confirm) {
-      setError("Les mots de passe ne correspondent pas");
+      setError(t("login.err_mismatch"));
       return;
     }
     try {
       await api.post("/auth/reset-password", { token, newPassword: password });
-      setSuccess("Mot de passe mis à jour ! Redirection...");
+      setSuccess(t("login.success_updated"));
       setTimeout(() => navigate("/login"), 2000);
     } catch {
-      setError("Lien invalide ou expiré. Refais une demande.");
+      setError(t("login.err_invalid_token"));
     }
   };
 
@@ -38,13 +39,11 @@ const ResetPassword = () => {
       <div className="login-bubble login-bubble--1" />
       <div className="login-bubble login-bubble--2" />
       <div className="login-bubble login-bubble--3" />
-
       <div className="login-card">
         <div className="login-header">
-          <h1 className="login-logo">Card &amp; Collect</h1>
-          <p className="login-subtitle">Choisis un nouveau mot de passe</p>
+          <h1 className="login-logo">{t("login.title")}</h1>
+          <p className="login-subtitle">{t("login.subtitle_reset")}</p>
         </div>
-
         {error && (
           <div className="login-message login-message--error">
             <span>⚠</span> {error}
@@ -55,41 +54,39 @@ const ResetPassword = () => {
             <span>✓</span> {success}
           </div>
         )}
-
         <div className="login-form">
           <div className="login-field">
-            <label className="login-label">Nouveau mot de passe</label>
+            <label className="login-label">{t("login.new_password")}</label>
             <input
               className="login-input"
               type="password"
-              placeholder="6 caractères minimum"
+              placeholder={t("login.password_placeholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
           <div className="login-field">
-            <label className="login-label">Confirmer</label>
+            <label className="login-label">{t("login.confirm_password")}</label>
             <input
               className="login-input"
               type="password"
-              placeholder="Répète ton mot de passe"
+              placeholder={t("login.confirm_placeholder")}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
           </div>
           <button className="login-btn" onClick={handleSubmit}>
-            Réinitialiser
+            {t("login.btn_reset")}
           </button>
         </div>
-
         <div className="login-switch">
-          <span className="login-switch__text">Tu t'en souviens ?</span>
+          <span className="login-switch__text">{t("login.remember_it")}</span>
           <span
             className="login-switch__link"
             onClick={() => navigate("/login")}
           >
-            Se connecter
+            {t("login.sign_in")}
           </span>
         </div>
       </div>

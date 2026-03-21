@@ -1,18 +1,27 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import { api } from "../api/api";
+import i18n from "../i18n";
 import "./Login.css";
 
 type Mode = "login" | "register" | "forgot";
 
+const LANGS = [
+  { code: "fr", flag: "🇫🇷" },
+  { code: "en", flag: "🇬🇧" },
+  { code: "ko", flag: "🇰🇷" },
+];
+
 const Login = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>("login");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false); // ← ajout
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -23,7 +32,7 @@ const Login = () => {
     setUsername("");
     setEmail("");
     setPassword("");
-    setRememberMe(false); // ← reset aussi
+    setRememberMe(false);
   };
 
   const handleSubmit = async () => {
@@ -32,38 +41,32 @@ const Login = () => {
     try {
       if (mode === "register") {
         await authService.register(username, email, password);
-        setSuccess("Compte créé ! Tu peux te connecter 🎉");
+        setSuccess(t("login.success_created"));
         reset("login");
       } else if (mode === "login") {
-        await authService.login(email, password, rememberMe); // ← ajout
+        await authService.login(email, password, rememberMe);
         navigate("/");
       } else if (mode === "forgot") {
         await api.post("/auth/forgot-password", { email });
-        setSuccess(
-          "Si cet email existe, un lien de réinitialisation a été envoyé 📬",
-        );
+        setSuccess(t("login.success_reset"));
       }
     } catch (e: any) {
-      if (e.response?.status === 409) {
-        setError("Email déjà utilisé");
-      } else if (e.response?.status === 401) {
-        setError("Email ou mot de passe incorrect");
-      } else {
-        setError("Une erreur est survenue");
-      }
+      if (e.response?.status === 409) setError(t("login.err_used"));
+      else if (e.response?.status === 401) setError(t("login.err_credentials"));
+      else setError(t("login.err_generic"));
     }
   };
 
-  const titles: Record<Mode, string> = {
-    login: "Content de te revoir !",
-    register: "Crée ton compte et commence à collectionner !",
-    forgot: "Réinitialise ton mot de passe",
+  const subtitles: Record<Mode, string> = {
+    login: t("login.subtitle_login"),
+    register: t("login.subtitle_register"),
+    forgot: t("login.subtitle_forgot"),
   };
 
   const btnLabels: Record<Mode, string> = {
-    login: "Se connecter",
-    register: "Créer mon compte",
-    forgot: "Envoyer le lien",
+    login: t("login.btn_login"),
+    register: t("login.btn_register"),
+    forgot: t("login.btn_forgot"),
   };
 
   return (
@@ -73,9 +76,22 @@ const Login = () => {
       <div className="login-bubble login-bubble--3" />
 
       <div className="login-card">
+        {/* ── Sélecteur de langue ── */}
+        <div className="login-lang-select">
+          {LANGS.map((lang) => (
+            <button
+              key={lang.code}
+              className={`login-lang-btn${i18n.language.startsWith(lang.code) ? " login-lang-btn--active" : ""}`}
+              onClick={() => i18n.changeLanguage(lang.code)}
+            >
+              {lang.flag}
+            </button>
+          ))}
+        </div>
+
         <div className="login-header">
-          <h1 className="login-logo">Card &amp; Collect</h1>
-          <p className="login-subtitle">{titles[mode]}</p>
+          <h1 className="login-logo">{t("login.title")}</h1>
+          <p className="login-subtitle">{subtitles[mode]}</p>
         </div>
 
         {error && (
@@ -92,11 +108,11 @@ const Login = () => {
         <div className="login-form">
           {mode === "register" && (
             <div className="login-field">
-              <label className="login-label">Pseudo</label>
+              <label className="login-label">{t("login.username")}</label>
               <input
                 className="login-input"
                 type="text"
-                placeholder="Ton pseudo de joueur"
+                placeholder={t("login.username_placeholder")}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -104,11 +120,11 @@ const Login = () => {
           )}
 
           <div className="login-field">
-            <label className="login-label">Email</label>
+            <label className="login-label">{t("login.email")}</label>
             <input
               className="login-input"
               type="email"
-              placeholder="ton@email.com"
+              placeholder={t("login.email_placeholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -117,20 +133,20 @@ const Login = () => {
           {mode !== "forgot" && (
             <div className="login-field">
               <div className="login-label-row">
-                <label className="login-label">Mot de passe</label>
+                <label className="login-label">{t("login.password")}</label>
                 {mode === "login" && (
                   <span
                     className="login-forgot-link"
                     onClick={() => reset("forgot")}
                   >
-                    Mot de passe oublié ?
+                    {t("login.forgot_link")}
                   </span>
                 )}
               </div>
               <input
                 className="login-input"
                 type="password"
-                placeholder="6 caractères minimum"
+                placeholder={t("login.password_placeholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -138,7 +154,6 @@ const Login = () => {
             </div>
           )}
 
-          {/* ← Checkbox rester connecté, visible uniquement en mode login */}
           {mode === "login" && (
             <div className="login-field login-field--checkbox">
               <input
@@ -148,7 +163,7 @@ const Login = () => {
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
               <label htmlFor="rememberMe" className="login-label">
-                Rester connecté
+                {t("login.remember")}
               </label>
             </div>
           )}
@@ -161,32 +176,38 @@ const Login = () => {
         <div className="login-switch">
           {mode === "forgot" ? (
             <>
-              <span className="login-switch__text">Tu t'en souviens ?</span>
+              <span className="login-switch__text">
+                {t("login.remember_it")}
+              </span>
               <span
                 className="login-switch__link"
                 onClick={() => reset("login")}
               >
-                Se connecter
+                {t("login.sign_in")}
               </span>
             </>
           ) : mode === "login" ? (
             <>
-              <span className="login-switch__text">Pas encore de compte ?</span>
+              <span className="login-switch__text">
+                {t("login.no_account")}
+              </span>
               <span
                 className="login-switch__link"
                 onClick={() => reset("register")}
               >
-                S'inscrire
+                {t("login.sign_up")}
               </span>
             </>
           ) : (
             <>
-              <span className="login-switch__text">Déjà un compte ?</span>
+              <span className="login-switch__text">
+                {t("login.has_account")}
+              </span>
               <span
                 className="login-switch__link"
                 onClick={() => reset("login")}
               >
-                Se connecter
+                {t("login.sign_in")}
               </span>
             </>
           )}
