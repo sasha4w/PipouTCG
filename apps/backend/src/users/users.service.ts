@@ -307,6 +307,76 @@ export class UsersService {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
+  /* ===================== COLLECTION ===================== */
+
+  async getCollection(userId: number) {
+    // 1. Toutes les cartes de tous les sets, avec ce que l'user possède
+    const allCards = await this.userCardRepository.manager
+      .getRepository('Card')
+      .createQueryBuilder('card')
+      .leftJoinAndSelect('card.cardSet', 'cardSet')
+      .leftJoinAndSelect('card.image', 'image')
+      .leftJoin(
+        'user_card',
+        'uc',
+        'uc.card_id = card.id AND uc.user_id = :userId',
+        { userId },
+      )
+      .addSelect('COALESCE(uc.quantity, 0)', 'quantity')
+      .orderBy('cardSet.id', 'ASC')
+      .addOrderBy('card.id', 'ASC')
+      .getRawAndEntities();
+
+    // 2. Groupe par set
+    const setsMap = new Map<
+      number,
+      {
+        id: number;
+        name: string;
+        owned: number;
+        total: number;
+        cards: any[];
+      }
+    >();
+
+    allCards.entities.forEach((card, i) => {
+      const quantity = Number(allCards.raw[i].quantity ?? 0);
+      const setId = card.cardSet.id;
+
+      if (!setsMap.has(setId)) {
+        setsMap.set(setId, {
+          id: setId,
+          name: card.cardSet.name,
+          owned: 0,
+          total: 0,
+          cards: [],
+        });
+      }
+
+      const set = setsMap.get(setId)!;
+      set.total++;
+      if (quantity > 0) set.owned++;
+
+      set.cards.push({
+        id: card.id,
+        name: card.name,
+        rarity: card.rarity,
+        type: card.type,
+        supportType: card.supportType ?? null,
+        atk: card.atk,
+        hp: card.hp,
+        cost: card.cost,
+        description: card.description ?? null,
+        image: card.image ? { id: card.image.id, url: card.image.url } : null,
+        owned: quantity > 0,
+        quantity,
+      });
+    });
+
+    return {
+      sets: Array.from(setsMap.values()),
+    };
+  }
   /* ===================== CARD MANAGEMENT ===================== */
   async addCardToUser(
     userId: number,

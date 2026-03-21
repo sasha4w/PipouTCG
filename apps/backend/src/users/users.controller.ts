@@ -80,7 +80,11 @@ export class UsersController {
     await this.assertCanView(req, id);
     return this.usersService.getUserBundles(id, pagination);
   }
-
+  @UseGuards(JwtAuthGuard)
+  @Get('me/collection')
+  getMyCollection(@Request() req) {
+    return this.usersService.getCollection(req.user.userId);
+  }
   /* ===================== OWNER ONLY ===================== */
 
   @UseGuards(JwtAuthGuard)
