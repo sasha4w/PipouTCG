@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import "./SearchBar.css";
+import "./Searchbar.css";
 
 function IconSearch({ size = 16 }: { size?: number }) {
   return (
