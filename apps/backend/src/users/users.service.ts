@@ -169,6 +169,7 @@ export class UsersService {
           type: uc.card.type,
           set: uc.card.cardSet?.name,
           setId: uc.card.cardSet?.id,
+          supportType: uc.card.supportType ?? null,
           image: uc.card.image
             ? { id: uc.card.image.id, url: uc.card.image.url }
             : null,
