@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { soundService } from "../services/sound.service";
-
+import "./Footer.css";
 const NAV_ITEMS = [
   {
     id: "home",
@@ -114,19 +114,6 @@ export default function Footer() {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700&display=swap');
-        .cc-footer { background: #F5EFE0; border-top: 1.5px solid rgba(61,16,32,0.10); display: flex; justify-content: space-around; align-items: center; padding: 8px 0 14px; }
-        .cc-footer__item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; background: none; border: none; padding: 6px 12px; border-radius: 14px; transition: background 0.18s ease, transform 0.12s ease; position: relative; }
-        .cc-footer__item:hover { background: rgba(122,28,59,0.07); }
-        .cc-footer__item--active { background: rgba(122,28,59,0.11); }
-        .cc-footer__item--active::after { content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #7A1C3B; }
-        .cc-footer__item:active { transform: scale(0.90); }
-        .cc-footer__label { font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 700; color: #A08070; transition: color 0.18s; letter-spacing: 0.15px; }
-        .cc-footer__item--active .cc-footer__label { color: #7A1C3B; }
-        .cc-footer__icon { transition: transform 0.18s ease; }
-        .cc-footer__item--active .cc-footer__icon { transform: translateY(-2px); }
-      `}</style>
       <footer className="cc-footer">
         {NAV_ITEMS.map((item) => {
           const isActive = activeId === item.id;

@@ -10,13 +10,14 @@ import QuestsPanel from "../features/profile/QuestsPanel";
 import PrivacyButton from "../components/PrivacyButton";
 import { IconCollection, IconStats } from "../components/Icons";
 import "./Profile.css";
+import { useTranslation } from "react-i18next";
 
 type Tab = "collection" | "stats";
 
 export default function Profile() {
   const [tab, setTab] = useState<Tab>("collection");
   const [isPrivate, setIsPrivate] = useState(false);
-
+  const { t } = useTranslation();
   const {
     data: profile,
     isLoading: l1,
@@ -53,11 +54,11 @@ export default function Profile() {
     setIsPrivate(res.isPrivate);
   };
 
-  if (loading) return <Loading message="Chargement du profil..." />;
+  if (loading) return <Loading message={t("profile.loading")} />;
   if (isError)
     return (
       <div className="profile-state profile-state--error">
-        Impossible de charger le profil
+        {t("profile.error")}
       </div>
     );
   if (!profile || !inventory || !quests) return null;
@@ -77,7 +78,7 @@ export default function Profile() {
               color={tab === "collection" ? "#7a1c3b" : "#a08070"}
             />
           </span>
-          Collection
+          {t("profile.collection_tab")}
         </button>
         <button
           className={`profile-tab-btn${tab === "stats" ? " profile-tab-btn--active" : ""}`}
@@ -89,7 +90,7 @@ export default function Profile() {
               color={tab === "stats" ? "#7a1c3b" : "#a08070"}
             />
           </span>
-          Statistiques
+          {t("profile.stats_tab")}
         </button>
       </div>
       {tab === "collection" && (

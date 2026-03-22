@@ -1,8 +1,8 @@
+import { useTranslation } from "react-i18next";
 import type { UserProfile } from "../../services/user.service";
-import "./HeroCard.css";
 import { IconGold } from "../../components/Icons";
+import "./HeroCard.css";
 
-// ── Étoile jaune Figma ──────────────────────────────────────────────────────
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
     <svg
@@ -91,35 +91,29 @@ function StarYellow({ width, height }: { width: number; height: number }) {
   );
 }
 
-interface HeroCardProps {
-  profile: UserProfile;
-}
-
-export default function HeroCard({ profile }: HeroCardProps) {
+export default function HeroCard({ profile }: { profile: UserProfile }) {
+  const { t } = useTranslation();
   return (
     <div className="hero-card">
-      {/* Username + Level */}
       <div className="hero-card__top">
         <h1 className="hero-card__username">{profile.username}</h1>
         <div className="hero-card__level">
           <StarYellow width={18} height={20} />
-          <span className="hero-card__level-badge">lvl {profile.level}</span>
+          <span className="hero-card__level-badge">
+            {t("profile.level")} {profile.level}
+          </span>
           <StarYellow width={13} height={15} />
         </div>
       </div>
-
-      {/* Gold */}
       <div className="hero-card__gold">
         <IconGold size={18} color="#fff" />
         <span className="hero-card__gold-value">
-          {profile.gold.toLocaleString()} Gold
+          {profile.gold.toLocaleString()} {t("profile.gold")}
         </span>
       </div>
-
-      {/* XP */}
       <div className="hero-card__xp">
         <div className="hero-card__xp-labels">
-          <span>XP</span>
+          <span>{t("profile.xp")}</span>
           <span>
             {profile.currentXp} / {profile.xpForNextLevel}
           </span>

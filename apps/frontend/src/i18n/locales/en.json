@@ -76,5 +76,67 @@
     "placeholder": "Search...",
     "aria_search": "Search",
     "aria_filter": "Filters"
+  },
+  "collection": {
+    "title": "My inventory",
+    "cards": "Cards",
+    "boosters": "Boosters",
+    "bundles": "Bundles",
+    "loading": "Loading...",
+    "no_cards": "No cards.",
+    "no_boosters": "No boosters.",
+    "no_bundles": "No bundles.",
+    "all_sets": "All sets",
+    "show_missing": "Show unowned cards",
+    "not_owned": "Not owned",
+    "owned_count": "{{owned}} / {{total}} card{{plural}} owned"
+  },
+  "quests": {
+    "title": "Quests",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "achievement": "Achievements",
+    "event": "Events",
+    "empty": "No quests in this category.",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "permanent": "Permanent",
+    "expired": "Expired",
+    "remaining_days": "{{d}}d {{h}}h left",
+    "remaining_hours": "{{h}}h {{m}}min left",
+    "remaining_mins": "{{m}}min {{s}}s left",
+    "remaining_secs": "{{s}}s left"
+  },
+  "profile": {
+    "gold": "Gold",
+    "xp": "XP",
+    "level": "lvl",
+    "loading": "Loading profile...",
+    "error": "Failed to load profile",
+    "collection_tab": "Collection",
+    "stats_tab": "Statistics"
+  },
+  "stats": {
+    "title": "Statistics",
+    "boosters_opened": "Boosters opened",
+    "cards_bought": "Cards bought",
+    "cards_sold": "Cards sold",
+    "money_earned": "Gold earned",
+    "sets_completed": "Sets completed"
+  },
+  "rarity": {
+    "common": "Common",
+    "uncommon": "Uncommon",
+    "rare": "Rare",
+    "epic": "Epic",
+    "legendary": "Legendary",
+    "secret": "Secret"
+  },
+  "filter": {
+    "all": "All",
+    "monster": "Monster",
+    "support": "Support",
+    "all_rarities": "All rarities"
   }
 }

@@ -20,12 +20,14 @@
   --card-text: #2a3a1a;
 
   position: relative;
-  z-index: calc(var(--s) * 100);
-  transform: translate3d(0, 0, 0.1px);
-  will-change: transform, visibility;
+  z-index: 1;
   transform-style: preserve-3d;
   cursor: pointer;
   user-select: none;
+}
+
+.pipou-card.active {
+  z-index: 2;
 }
 
 /* ── Sizes ── */
@@ -42,13 +44,10 @@
   max-width: 300px;
 }
 
-/* ── Translater ── */
+/* ── Translater ── simple, pas de will-change ni de transform dynamique ── */
 .pipou-card__translater {
   width: 100%;
   position: relative;
-  transform: translate3d(0, 0, 0) scale(var(--s));
-  transform-origin: center;
-  will-change: transform;
   perspective: 600px;
 }
 
@@ -63,13 +62,16 @@
   outline: none;
   transition: box-shadow 0.4s ease;
   box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.4);
+  contain: layout style;
 }
+
 .pipou-card.active .pipou-card__rotator {
   box-shadow:
     0 0 10px 0 var(--card-shadow),
     0 0 20px 0 var(--card-shadow),
     0 0 40px 0 var(--card-shadow);
 }
+
 .pipou-card__rotator > * {
   grid-area: card;
   width: 100%;
@@ -80,6 +82,7 @@
 /* ══ FACE AVANT ══ */
 .pipou-card__front {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
   border-radius: 6%;
@@ -88,6 +91,7 @@
   background: var(--card-color);
   aspect-ratio: 2 / 3;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+  isolation: isolate;
 }
 
 /* ── Header : nom + cost ── */
@@ -114,21 +118,20 @@
   word-break: break-word;
 }
 
-/* Cost — légèrement réduit (16% au lieu de 20%) */
 .pipou-card__cost {
   position: absolute;
   top: 6%;
   right: 4%;
-  width: 16%; /* ← réduit */
+  width: 16%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
-  border: 1.5px solid var(--card-border); /* ← plus fin */
+  border: 1.5px solid var(--card-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: "Lilita One", cursive;
-  font-size: clamp(0.4rem, 1.9cqi, 0.78rem); /* ← légèrement réduit */
+  font-size: clamp(0.4rem, 1.9cqi, 0.78rem);
   color: var(--card-text);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.2),
@@ -166,7 +169,7 @@
   opacity: 0.35;
 }
 
-/* ── ATK/HP (monster uniquement) ── */
+/* ── ATK/HP ── */
 .pipou-card__stats-overlay {
   position: absolute;
   bottom: 0;
@@ -182,12 +185,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   border: 1.5px solid var(--card-border);
   border-radius: 6px;
   padding: 1% 4%;
   min-width: 28%;
-  backdrop-filter: blur(2px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
@@ -213,7 +215,7 @@
   bottom: 5%;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.92);
   border: 1.5px solid var(--card-border);
   border-radius: 20px;
   padding: 1.5% 8%;
@@ -222,13 +224,12 @@
   color: var(--card-text);
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  backdrop-filter: blur(2px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   white-space: nowrap;
   pointer-events: none;
 }
 
-/* ── Footer : description + ID ── */
+/* ── Footer ── */
 .pipou-card__footer {
   background: var(--card-footer);
   border-top: 2px solid var(--card-border);
@@ -265,6 +266,7 @@
 .pipou-card__back {
   transform: rotateY(180deg);
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   border-radius: 6%;
   overflow: hidden;
   border: 3px solid #3d1020;
@@ -280,6 +282,7 @@
   justify-content: center;
   position: relative;
 }
+
 .pipou-card__back::before {
   content: "";
   position: absolute;
@@ -293,6 +296,7 @@
     )
     0 0 / 12px 12px;
 }
+
 .pipou-card__back-svg {
   width: 65%;
   height: 65%;
@@ -311,6 +315,7 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
+
 .pipou-card.active .pipou-card__shine {
   opacity: var(--o, 0);
 }
@@ -448,6 +453,7 @@
   opacity: 0;
   transition: opacity 0.3s ease;
 }
+
 .pipou-card.active .pipou-card__glare {
   opacity: calc(var(--o) * 0.22);
 }
@@ -506,4 +512,43 @@
   --card-footer: #f8d0ec;
   --card-shadow: rgba(200, 50, 160, 0.7);
   --card-text: #280010;
+}
+
+/* ── Hint long press mobile ── */
+.pipou-card__mobile-hint {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+@media (hover: none) {
+  .pipou-card__mobile-hint-dot {
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    animation: hintPulse 2s ease-in-out infinite;
+  }
+}
+
+@media (hover: hover) {
+  .pipou-card__mobile-hint {
+    display: none;
+  }
+}
+
+@keyframes hintPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.4);
+  }
 }

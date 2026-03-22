@@ -76,5 +76,67 @@
     "placeholder": "검색...",
     "aria_search": "검색",
     "aria_filter": "필터"
+  },
+  "collection": {
+    "title": "내 인벤토리",
+    "cards": "카드",
+    "boosters": "부스터",
+    "bundles": "번들",
+    "loading": "로딩 중...",
+    "no_cards": "카드가 없습니다.",
+    "no_boosters": "부스터가 없습니다.",
+    "no_bundles": "번들이 없습니다.",
+    "all_sets": "모든 세트",
+    "show_missing": "미획득 카드 표시",
+    "not_owned": "미획득",
+    "owned_count": "{{owned}} / {{total}} 카드 획득"
+  },
+  "quests": {
+    "title": "퀘스트",
+    "daily": "일일",
+    "weekly": "주간",
+    "monthly": "월간",
+    "achievement": "업적",
+    "event": "이벤트",
+    "empty": "이 카테고리에 퀘스트가 없습니다.",
+    "claim": "수령",
+    "claimed": "수령 완료",
+    "permanent": "영구",
+    "expired": "만료됨",
+    "remaining_days": "{{d}}일 {{h}}시간 남음",
+    "remaining_hours": "{{h}}시간 {{m}}분 남음",
+    "remaining_mins": "{{m}}분 {{s}}초 남음",
+    "remaining_secs": "{{s}}초 남음"
+  },
+  "profile": {
+    "gold": "골드",
+    "xp": "경험치",
+    "level": "레벨",
+    "loading": "프로필 로딩 중...",
+    "error": "프로필을 불러올 수 없습니다",
+    "collection_tab": "컬렉션",
+    "stats_tab": "통계"
+  },
+  "stats": {
+    "title": "통계",
+    "boosters_opened": "오픈한 부스터",
+    "cards_bought": "구매한 카드",
+    "cards_sold": "판매한 카드",
+    "money_earned": "획득한 골드",
+    "sets_completed": "완성한 세트"
+  },
+  "rarity": {
+    "common": "일반",
+    "uncommon": "비일반",
+    "rare": "레어",
+    "epic": "에픽",
+    "legendary": "전설",
+    "secret": "시크릿"
+  },
+  "filter": {
+    "all": "전체",
+    "monster": "몬스터",
+    "support": "서포트",
+    "all_rarities": "모든 등급"
   }
 }

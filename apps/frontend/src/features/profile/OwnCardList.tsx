@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { UserCollection } from "../../services/user.service";
 import type { Card } from "../../services/card.service";
 import CardDisplay from "../cards/CardDisplay";
@@ -6,7 +7,6 @@ import { soundService } from "../../services/sound.service";
 import SearchBar from "../../components/Searchbar";
 import "./OwnCardList.css";
 
-// ── Mappe une carte de collection vers le type Card ───────────────────────────
 function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {
   return {
     id: item.id,
@@ -19,12 +19,11 @@ function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {
     cost: item.cost,
     description: item.description ?? undefined,
     image: item.image ?? null,
-    cardSet: { id: 0, name: "" }, // non utilisé dans l'affichage
+    cardSet: { id: 0, name: "" },
   };
 }
 
 const PAGE_SIZE = 6;
-
 const RARITIES = [
   "common",
   "uncommon",
@@ -33,20 +32,23 @@ const RARITIES = [
   "legendary",
   "secret",
 ] as const;
-const RARITY_LABELS: Record<string, string> = {
-  common: "Commune",
-  uncommon: "Peu commune",
-  rare: "Rare",
-  epic: "Épique",
-  legendary: "Légendaire",
-  secret: "Secrète",
-};
 
 interface OwnCardListProps {
   collection: UserCollection;
 }
 
 export default function OwnCardList({ collection }: OwnCardListProps) {
+  const { t } = useTranslation();
+
+  const RARITY_LABELS: Record<string, string> = {
+    common: t("rarity.common"),
+    uncommon: t("rarity.uncommon"),
+    rare: t("rarity.rare"),
+    epic: t("rarity.epic"),
+    legendary: t("rarity.legendary"),
+    secret: t("rarity.secret"),
+  };
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "monster" | "support">(
@@ -56,7 +58,6 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
   const [showMissing, setShowMissing] = useState(true);
   const [filterSet, setFilterSet] = useState<number | "all">("all");
 
-  // ── Aplatit toutes les cartes (filtrées par set si besoin) ──────────────
   const allCards = useMemo(() => {
     const sets =
       filterSet === "all"
@@ -67,7 +68,6 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
     );
   }, [collection, filterSet]);
 
-  // ── Filtre ────────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return allCards.filter((c) => {
       if (!showMissing && !c.owned) return false;
@@ -89,7 +89,6 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const slice = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // ── Groupe le slice courant par set ───────────────────────────────────────
   const sliceBySet = useMemo(() => {
     const groups = new Map<number, { setName: string; items: typeof slice }>();
     slice.forEach((item) => {
@@ -100,11 +99,9 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
     return Array.from(groups.entries());
   }, [slice]);
 
-  // ── Stats globales ────────────────────────────────────────────────────────
   const totalOwned = allCards.filter((c) => c.owned).length;
   const totalCards = allCards.length;
 
-  // ── Helpers filtres ───────────────────────────────────────────────────────
   const typeBtn = (val: typeof filterType, label: string) => (
     <button
       key={val}
@@ -138,7 +135,7 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
         }}
         style={{ cursor: "pointer" }}
       >
-        <option value="all">Tous les sets</option>
+        <option value="all">{t("collection.all_sets")}</option>
         {collection.sets.map((s) => (
           <option key={s.id} value={s.id}>
             {s.name} ({s.owned}/{s.total})
@@ -146,28 +143,25 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
         ))}
       </select>
 
-      {/* Recherche */}
+      {/* Recherche + Filtres */}
       <SearchBar
         value={search}
         onChange={(val) => applyFilter(() => setSearch(val))}
-        placeholder="Rechercher une carte..."
+        placeholder={t("search.placeholder")}
         hasActiveFilters={filterType !== "all" || filterRarity !== "all"}
         filters={
-          <>
-            {/* Filtres */}
-            <div className="own-cardlist__filters">
-              <div className="own-cardlist__filter-group">
-                {typeBtn("all", "Tous")}
-                {typeBtn("monster", "Monstre")}
-                {typeBtn("support", "Support")}
-              </div>
-              <div className="own-cardlist__filter-sep" />
-              <div className="own-cardlist__filter-group">
-                {rarityBtn("all", "Toutes")}
-                {RARITIES.map((r) => rarityBtn(r, RARITY_LABELS[r]))}
-              </div>
+          <div className="own-cardlist__filters">
+            <div className="own-cardlist__filter-group">
+              {typeBtn("all", t("filter.all"))}
+              {typeBtn("monster", t("filter.monster"))}
+              {typeBtn("support", t("filter.support"))}
             </div>
-          </>
+            <div className="own-cardlist__filter-sep" />
+            <div className="own-cardlist__filter-group">
+              {rarityBtn("all", t("filter.all_rarities"))}
+              {RARITIES.map((r) => rarityBtn(r, RARITY_LABELS[r]))}
+            </div>
+          </div>
         }
       />
 
@@ -181,25 +175,24 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
             setPage(1);
           }}
         />
-        Afficher les cartes non obtenues
+        {t("collection.show_missing")}
       </label>
 
-      {/* Compteur global */}
+      {/* Compteur */}
       <span className="own-cardlist__result-count">
-        {totalOwned} / {totalCards} carte{totalCards > 1 ? "s" : ""} obtenue
-        {totalOwned > 1 ? "s" : ""}
+        {totalOwned} / {totalCards} {t("collection.cards").toLowerCase()}
+        {totalCards > 1 ? "s" : ""}
       </span>
 
-      {/* Grille groupée par set */}
+      {/* Grille */}
       {slice.length === 0 ? (
-        <p className="own-cardlist__empty">Aucune carte trouvée.</p>
+        <p className="own-cardlist__empty">{t("collection.no_cards")}</p>
       ) : (
         sliceBySet.map(([setId, { setName, items }]) => {
           const setData = collection.sets.find((s) => s.id === setId);
           const isComplete = setData ? setData.owned === setData.total : false;
           return (
             <div key={setId}>
-              {/* Header set avec compteur */}
               <div className="own-cardlist__set-header">
                 <span className="own-cardlist__set-name">{setName}</span>
                 {setData && (
@@ -211,7 +204,6 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
                   </span>
                 )}
               </div>
-
               <div className="own-cardlist__grid" style={{ marginTop: 8 }}>
                 {items.map((item) => (
                   <div key={item.id} style={{ position: "relative" }}>
@@ -232,7 +224,7 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
                     )}
                     {!item.owned && (
                       <span className="own-cardlist__card-missing-label">
-                        Non obtenue
+                        {t("collection.not_owned")}
                       </span>
                     )}
                   </div>
