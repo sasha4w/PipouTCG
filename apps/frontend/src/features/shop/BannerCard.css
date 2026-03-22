@@ -1,0 +1,123 @@
+.banner-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(238, 188, 119, 0.4);
+  background: linear-gradient(135deg, #3d1020 0%, #5a1830 60%, #7a1c3b 100%);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex-shrink: 0;
+  width: 260px;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.banner-card:active {
+  transform: scale(0.97);
+}
+
+/* Image de fond */
+.banner-card__bg {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.banner-card__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.banner-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #eebc77;
+  color: #3d1020;
+  font-family: "Lilita One", cursive;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.banner-card__title {
+  font-family: "Lilita One", cursive;
+  font-size: 0.95rem;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.banner-card__desc {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: "Comfortaa", sans-serif;
+  line-height: 1.4;
+}
+
+/* Prix */
+.banner-card__prices {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.banner-card__price-original {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-decoration: line-through;
+  font-family: "Comfortaa", sans-serif;
+}
+
+.banner-card__price-banner {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #eebc77;
+}
+
+/* Bouton */
+.banner-card__btn {
+  background: #eebc77;
+  color: #3d1020;
+  border: none;
+  border-radius: 10px;
+  padding: 0.55rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    transform 0.12s;
+  width: 100%;
+}
+.banner-card__btn:hover {
+  opacity: 0.85;
+}
+.banner-card__btn:active {
+  transform: scale(0.97);
+}
+.banner-card__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Compte à rebours */
+.banner-card__timer {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: "Comfortaa", sans-serif;
+  text-align: center;
+}

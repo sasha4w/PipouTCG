@@ -1,0 +1,146 @@
+.shop-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.shop-section__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shop-section__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+.shop-section__gold {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "Lilita One", cursive;
+  font-size: 0.88rem;
+  color: #7a4a00;
+  background: rgba(238, 188, 119, 0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Bannières — scroll horizontal */
+.shop-section__banners {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.shop-section__banners::-webkit-scrollbar {
+  display: none;
+}
+
+/* Grille items permanents */
+.shop-section__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.shop-section__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+/* Shop item */
+.shop-item {
+  background: #fff;
+  border-radius: 14px;
+  border: 1.5px solid rgba(61, 16, 32, 0.08);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.12s;
+}
+.shop-item:active {
+  transform: scale(0.97);
+}
+.shop-item:hover {
+  border-color: rgba(122, 28, 59, 0.2);
+}
+
+.shop-item__icon {
+  font-size: 1.4rem;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.shop-item__name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.78rem;
+  color: #491021;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.shop-item__meta {
+  font-size: 0.65rem;
+  color: #a08070;
+  font-weight: 600;
+  text-align: center;
+}
+
+.shop-item__price {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: "Lilita One", cursive;
+  font-size: 0.85rem;
+  color: #7a4a00;
+  margin-top: 2px;
+}
+
+.shop-item__btn {
+  background: #7a1c3b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  width: 100%;
+}
+.shop-item__btn:hover {
+  opacity: 0.85;
+}
+.shop-item__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.shop-item__error {
+  font-size: 0.65rem;
+  color: #b03060;
+  text-align: center;
+  font-weight: 700;
+}
+
+.shop-section__empty {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #a08070;
+  font-weight: 600;
+  padding: 1rem 0;
+}

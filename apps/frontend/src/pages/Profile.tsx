@@ -8,6 +8,9 @@ import StatsPanel from "../features/profile/StatsPanel";
 import CollectionPanel from "../features/profile/CollectionPanel";
 import QuestsPanel from "../features/profile/QuestsPanel";
 import PrivacyButton from "../components/PrivacyButton";
+import OpeningModal, {
+  type OpeningTarget,
+} from "../features/opening/OpeningModal";
 import { IconCollection, IconStats } from "../components/Icons";
 import "./Profile.css";
 import { useTranslation } from "react-i18next";
@@ -16,8 +19,13 @@ type Tab = "collection" | "stats";
 
 export default function Profile() {
   const [tab, setTab] = useState<Tab>("collection");
+  const [openingTarget, setOpeningTarget] = useState<OpeningTarget | null>(
+    null,
+  );
   const [isPrivate, setIsPrivate] = useState(false);
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+
   const {
     data: profile,
     isLoading: l1,
@@ -41,7 +49,7 @@ export default function Profile() {
     queryKey: ["myCollection"],
     queryFn: () => userService.getMyCollection(),
   });
-  const queryClient = useQueryClient();
+
   const loading = l1 || l2 || l3 || l4;
 
   useEffect(() => {
@@ -52,6 +60,12 @@ export default function Profile() {
     if (!profile) return;
     const res = await userService.togglePrivacy(profile.id);
     setIsPrivate(res.isPrivate);
+  };
+
+  const handleOpeningDone = () => {
+    queryClient.invalidateQueries({ queryKey: ["myInventory"] });
+    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    queryClient.invalidateQueries({ queryKey: ["myQuests"] });
   };
 
   if (loading) return <Loading message={t("profile.loading")} />;
@@ -67,6 +81,7 @@ export default function Profile() {
     <div className="profile-page">
       <HeroCard profile={profile} />
       <PrivacyButton isPrivate={isPrivate} onToggle={handleTogglePrivacy} />
+
       <div className="profile-tabs">
         <button
           className={`profile-tab-btn${tab === "collection" ? " profile-tab-btn--active" : ""}`}
@@ -93,19 +108,31 @@ export default function Profile() {
           {t("profile.stats_tab")}
         </button>
       </div>
+
       {tab === "collection" && (
         <CollectionPanel
           inventory={inventory}
           collection={collection ?? null}
+          onOpenBooster={setOpeningTarget}
         />
       )}
+
       {tab === "stats" && <StatsPanel stats={profile.stats} />}
+
       <QuestsPanel
         quests={quests}
         onQuestsUpdate={() =>
           queryClient.invalidateQueries({ queryKey: ["myQuests"] })
         }
       />
+
+      {openingTarget && (
+        <OpeningModal
+          target={openingTarget}
+          onClose={() => setOpeningTarget(null)}
+          onDone={handleOpeningDone}
+        />
+      )}
     </div>
   );
 }

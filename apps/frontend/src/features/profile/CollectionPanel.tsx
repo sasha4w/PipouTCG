@@ -8,6 +8,7 @@ import { IconCards, IconBooster, IconBundle } from "../../components/Icons";
 import OwnCardList from "./OwnCardList";
 import OwnBoosterList from "../boosters/OwnerBoosterList";
 import OwnBundleList from "../bundles/OwnerBundleList";
+import type { OpeningTarget } from "../opening/OpeningModal";
 import "./CollectionPanel.css";
 
 function Chevron({ open }: { open: boolean }) {
@@ -33,6 +34,7 @@ function Chevron({ open }: { open: boolean }) {
 interface CollectionPanelProps {
   inventory: UserInventory;
   collection: UserCollection | null;
+  onOpenBooster?: (target: OpeningTarget) => void;
 }
 
 type ActiveSection = "cards" | "boosters" | "bundles" | null;
@@ -40,6 +42,7 @@ type ActiveSection = "cards" | "boosters" | "bundles" | null;
 export default function CollectionPanel({
   inventory,
   collection,
+  onOpenBooster,
 }: CollectionPanelProps) {
   const { t } = useTranslation();
   const [active, setActive] = useState<ActiveSection>(null);
@@ -109,7 +112,10 @@ export default function CollectionPanel({
                       {t("collection.no_boosters")}
                     </p>
                   ) : (
-                    <OwnBoosterList boosters={inventory.boosters.data} />
+                    <OwnBoosterList
+                      boosters={inventory.boosters.data}
+                      onOpen={onOpenBooster}
+                    />
                   ))}
                 {s.key === "bundles" &&
                   (inventory.bundles.data.length === 0 ? (
@@ -117,7 +123,10 @@ export default function CollectionPanel({
                       {t("collection.no_bundles")}
                     </p>
                   ) : (
-                    <OwnBundleList bundles={inventory.bundles.data} />
+                    <OwnBundleList
+                      bundles={inventory.bundles.data}
+                      onOpen={onOpenBooster}
+                    />
                   ))}
               </div>
             )}

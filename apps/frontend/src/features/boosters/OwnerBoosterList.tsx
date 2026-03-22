@@ -1,13 +1,18 @@
 import { useState, useMemo } from "react";
 import type { UserInventory } from "../../services/user.service";
+import type { OpeningTarget } from "../opening/OpeningModal";
 import SearchBar from "../../components/Searchbar";
 import "./OwnerBoosterList.css";
 
 interface OwnBoosterListProps {
   boosters: UserInventory["boosters"]["data"];
+  onOpen?: (target: OpeningTarget) => void;
 }
 
-export default function OwnBoosterList({ boosters }: OwnBoosterListProps) {
+export default function OwnBoosterList({
+  boosters,
+  onOpen,
+}: OwnBoosterListProps) {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
@@ -24,12 +29,10 @@ export default function OwnBoosterList({ boosters }: OwnBoosterListProps) {
         onChange={setSearch}
         placeholder="Rechercher un booster..."
       />
-
       <span className="own-boosterlist__result-count">
         {filtered.length} booster{filtered.length > 1 ? "s" : ""}
         {filtered.length !== boosters.length && ` sur ${boosters.length}`}
       </span>
-
       {filtered.length === 0 ? (
         <p className="own-boosterlist__empty">Aucun booster trouvé.</p>
       ) : (
@@ -39,6 +42,16 @@ export default function OwnBoosterList({ boosters }: OwnBoosterListProps) {
               <span className="inv-row__name">{b.name}</span>
               <span className="inv-row__meta">{b.price} gold</span>
               <span className="inv-row__qty">×{b.quantity}</span>
+              {onOpen && b.quantity > 0 && (
+                <button
+                  className="inv-row__open-btn"
+                  onClick={() =>
+                    onOpen({ type: "booster", id: b.id, name: b.name })
+                  }
+                >
+                  Ouvrir
+                </button>
+              )}
             </div>
           ))}
         </div>

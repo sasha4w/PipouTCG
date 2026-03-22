@@ -48,3 +48,18 @@
   color: #a08070;
   font-weight: 600;
 }
+.inv-row__open-btn {
+  background: #eebc77;
+  color: #3d1020;
+  border: none;
+  border-radius: 8px;
+  padding: 3px 12px;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.inv-row__open-btn:hover {
+  opacity: 0.8;
+}
