@@ -14,11 +14,19 @@
   text-shadow: 0 2px 0 rgba(122, 28, 59, 0.1);
 }
 
-/* ── Tabs navigation ── */
+/* ── Tabs — 3 colonnes sur la première ligne, 2 sur la seconde ── */
 .admin-tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.6rem;
+}
+
+/* Le 4e et 5e bouton se partagent les 3 colonnes sur 2 */
+.admin-tab-btn:nth-child(4) {
+  grid-column: span 1;
+}
+.admin-tab-btn:nth-child(5) {
+  grid-column: span 2;
 }
 
 .admin-tab-btn {
@@ -41,18 +49,22 @@
     color 0.18s,
     transform 0.12s;
 }
+
 .admin-tab-btn:hover {
   background: rgba(122, 28, 59, 0.04);
   border-color: rgba(122, 28, 59, 0.2);
 }
+
 .admin-tab-btn:active {
   transform: scale(0.96);
 }
+
 .admin-tab-btn--active {
   background: rgba(122, 28, 59, 0.08);
   border-color: rgba(122, 28, 59, 0.3);
   color: #7a1c3b;
 }
+
 .admin-tab-btn__icon {
   font-size: 1.2rem;
 }

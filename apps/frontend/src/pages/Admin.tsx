@@ -5,21 +5,22 @@ import CardSetManager from "../features/cards/CardSetManager";
 import CardManager from "../features/cards/CardManager";
 import BoosterManager from "../features/boosters/BoosterManager";
 import BundleManager from "../features/bundles/BundleManager";
+import QuestManager from "../features/quests/QuestManager";
 import "./Admin.css";
 
-type AdminTab = "cardsets" | "cards" | "boosters" | "bundles";
+type AdminTab = "cardsets" | "cards" | "boosters" | "bundles" | "quests";
 
 const TABS: { key: AdminTab; label: string; icon: string }[] = [
   { key: "cardsets", label: "Card Sets", icon: "🗂" },
   { key: "cards", label: "Cartes", icon: "🃏" },
   { key: "boosters", label: "Boosters", icon: "📦" },
   { key: "bundles", label: "Bundles", icon: "🎁" },
+  { key: "quests", label: "Quêtes", icon: "📋" },
 ];
 
 export default function Admin() {
   const [tab, setTab] = useState<AdminTab>("cardsets");
 
-  // Redirection si pas admin
   if (!isAdmin()) return <Navigate to="/" replace />;
 
   return (
@@ -43,6 +44,7 @@ export default function Admin() {
       {tab === "cards" && <CardManager />}
       {tab === "boosters" && <BoosterManager />}
       {tab === "bundles" && <BundleManager />}
+      {tab === "quests" && <QuestManager />}
     </div>
   );
 }
