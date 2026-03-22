@@ -14,10 +14,6 @@ import { Rarity } from '../cards/enums/rarity.enum';
 import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
-// ============================================================
-// CONFIGURATION DES TAUX DE RARETÉ
-// Total = 100%, ajustable selon l'équilibrage souhaité
-// ============================================================
 const RARITY_WEIGHTS: Record<Rarity, number> = {
   [Rarity.COMMON]: 60,
   [Rarity.UNCOMMON]: 25,
@@ -27,31 +23,32 @@ const RARITY_WEIGHTS: Record<Rarity, number> = {
   [Rarity.SECRET]: 0.2,
 };
 
-// ============================================================
-// GARANTIES PAR TYPE DE BOOSTER
-// Booster 8  → 1 rare garantie
-// Booster 10 → 1 rare + 1 epic garanties
-// ============================================================
-const BOOSTER_GUARANTEES: Partial<Record<CardNumber, Rarity[]>> = {
-  [CardNumber.EIGHT]: [Rarity.RARE],
-  [CardNumber.TEN]: [Rarity.RARE, Rarity.EPIC],
+const BOOSTER_GUARANTEES: Record<number, Rarity[]> = {
+  8: [Rarity.RARE], // ← clé number, pas enum
+  10: [Rarity.RARE, Rarity.EPIC],
 };
+
+// ── Résout "EIGHT" | "8" | 8  →  8
+function resolveCardNumber(value: any): number {
+  const n = Number(value);
+  if (!isNaN(n) && n > 0) return n;
+  // MySQL a retourné la clé string de l'enum ("EIGHT", "TEN"…)
+  const fromKey = CardNumber[value as keyof typeof CardNumber];
+  if (fromKey !== undefined) return Number(fromKey);
+  throw new Error(`Impossible de résoudre cardNumber: "${value}"`);
+}
 
 @Injectable()
 export class BoostersService {
   constructor(
     @InjectRepository(Booster)
     private boosterRepository: Repository<Booster>,
-
     @InjectRepository(BoosterOpenHistory)
     private openHistoryRepository: Repository<BoosterOpenHistory>,
-
     @InjectRepository(BoosterOpenCard)
     private openCardRepository: Repository<BoosterOpenCard>,
-
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
-
     private readonly usersService: UsersService,
   ) {}
 
@@ -165,7 +162,7 @@ export class BoostersService {
     );
   }
 
-  // ── ACHAT ────────────────────────────────────────────────────────────────
+  // ── ACHAT ─────────────────────────────────────────────────────────────────
 
   async buyBooster(boosterId: number, userId: number) {
     const user = await this.usersService.findOne(userId);
@@ -190,16 +187,13 @@ export class BoostersService {
   }
 
   // ── OUVERTURE ─────────────────────────────────────────────────────────────
-  // Vérifie l'inventaire → -1 user_booster → génère N cartes → +N user_card
 
   async openBooster(boosterId: number, userId: number) {
     const booster = await this.findOne(boosterId);
 
-    // ← Force number — TypeORM retourne les enums comme strings depuis MySQL
-    const totalCards = Number(booster.cardNumber);
-    const guarantees = BOOSTER_GUARANTEES[totalCards as CardNumber] ?? [];
+    const totalCards = resolveCardNumber(booster.cardNumber);
+    const guarantees = BOOSTER_GUARANTEES[totalCards] ?? [];
 
-    // ← Charge les images pour que le front puisse les afficher
     const cards = await this.cardRepository.find({
       where: { cardSet: { id: booster.cardSet.id } },
       relations: { image: true },
@@ -207,7 +201,6 @@ export class BoostersService {
     if (!cards.length)
       throw new BadRequestException(`No cards in set ${booster.cardSet.name}`);
 
-    // Groupe les cartes par rareté
     const cardsByRarity = cards.reduce(
       (acc, card) => {
         if (!acc[card.rarity]) acc[card.rarity] = [];
@@ -217,20 +210,17 @@ export class BoostersService {
       {} as Record<Rarity, Card[]>,
     );
 
-    // Tirage : garanties d'abord, puis aléatoire pour compléter
     const drawnCards: Card[] = [];
 
     for (const rarity of guarantees) {
       drawnCards.push(this.drawCardOfRarity(rarity, cardsByRarity));
     }
-    for (let i = 0; i < totalCards - drawnCards.length; i++) {
+    for (let i = drawnCards.length; i < totalCards; i++) {
       drawnCards.push(this.drawCard(cardsByRarity));
     }
 
-    // Mélange final
     drawnCards.sort(() => Math.random() - 0.5);
 
-    // Groupe pour la DB (évite les doublons en ligne)
     const cardGroups = drawnCards.reduce(
       (acc, card) => {
         acc[card.id] = (acc[card.id] || 0) + 1;
