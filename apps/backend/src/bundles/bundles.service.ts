@@ -52,7 +52,12 @@ export class BundlesService {
   async findOne(id: number) {
     const bundle = await this.bundleRepository.findOne({
       where: { id },
-      relations: { contents: { card: true, booster: true } },
+      relations: {
+        contents: {
+          card: { image: true }, // ← ajoute image
+          booster: true,
+        },
+      },
     });
     if (!bundle) throw new NotFoundException(`Bundle ${id} introuvable`);
     return bundle;
@@ -214,7 +219,7 @@ export class BundlesService {
       message: `Bundle "${bundle.name}" ouvert avec succès`,
       cards: bundle.contents
         .filter((c) => c.card)
-        .map((c) => ({ name: c.card.name, quantity: c.quantity })),
+        .flatMap((c) => Array(c.quantity).fill(c.card)),
       boosters: bundle.contents
         .filter((c) => c.booster)
         .map((c) => ({ name: c.booster.name, quantity: c.quantity })),

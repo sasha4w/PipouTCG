@@ -42,8 +42,10 @@ export class BoostersService {
   constructor(
     @InjectRepository(Booster)
     private boosterRepository: Repository<Booster>,
+
     @InjectRepository(BoosterOpenHistory)
     private openHistoryRepository: Repository<BoosterOpenHistory>,
+
     @InjectRepository(BoosterOpenCard)
     private openCardRepository: Repository<BoosterOpenCard>,
 
@@ -52,6 +54,8 @@ export class BoostersService {
 
     private readonly usersService: UsersService,
   ) {}
+
+  // ── CRUD ──────────────────────────────────────────────────────────────────
 
   async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
     const [boosters, total] = await this.boosterRepository.findAndCount({
@@ -101,9 +105,7 @@ export class BoostersService {
     }>,
   ) {
     const booster = await this.findOne(id);
-    if (data.cardSetId) {
-      booster.cardSet = { id: data.cardSetId } as any;
-    }
+    if (data.cardSetId) booster.cardSet = { id: data.cardSetId } as any;
     Object.assign(booster, data);
     return this.boosterRepository.save(booster);
   }
@@ -114,24 +116,7 @@ export class BoostersService {
     return { message: `Booster with ID ${id} deleted` };
   }
 
-  // ============================================================
-  // MÉTHODES PRIVÉES DE TIRAGE
-  // ============================================================
-
-  private drawRarity(): Rarity {
-    const totalWeight = Object.values(RARITY_WEIGHTS).reduce(
-      (sum, w) => sum + w,
-      0,
-    );
-    let roll = Math.random() * totalWeight;
-
-    for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
-      roll -= weight;
-      if (roll <= 0) return rarity as Rarity;
-    }
-
-    return Rarity.COMMON;
-  }
+  // ── MÉTHODES PRIVÉES DE TIRAGE ────────────────────────────────────────────
 
   private drawCardOfRarity(
     rarity: Rarity,
@@ -149,9 +134,7 @@ export class BoostersService {
     const startIndex = rarityOrder.indexOf(rarity);
     for (let i = startIndex; i < rarityOrder.length; i++) {
       const pool = cardsByRarity[rarityOrder[i]];
-      if (pool?.length) {
-        return pool[Math.floor(Math.random() * pool.length)];
-      }
+      if (pool?.length) return pool[Math.floor(Math.random() * pool.length)];
     }
 
     throw new BadRequestException('No card available in any rarity pool');
@@ -176,13 +159,14 @@ export class BoostersService {
         return this.drawCardOfRarity(rarity as Rarity, cardsByRarity);
     }
 
-    const anyRarity = Object.keys(availableWeights)[0] as Rarity;
-    return this.drawCardOfRarity(anyRarity, cardsByRarity);
+    return this.drawCardOfRarity(
+      Object.keys(availableWeights)[0] as Rarity,
+      cardsByRarity,
+    );
   }
 
-  // ============================================================
-  // ACHAT D'UN BOOSTER
-  // ============================================================
+  // ── ACHAT ────────────────────────────────────────────────────────────────
+
   async buyBooster(boosterId: number, userId: number) {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} not found`);
@@ -205,19 +189,25 @@ export class BoostersService {
     };
   }
 
-  // ============================================================
-  // OUVERTURE D'UN BOOSTER
+  // ── OUVERTURE ─────────────────────────────────────────────────────────────
   // Vérifie l'inventaire → -1 user_booster → génère N cartes → +N user_card
-  // ============================================================
+
   async openBooster(boosterId: number, userId: number) {
     const booster = await this.findOne(boosterId);
 
+    // ← Force number — TypeORM retourne les enums comme strings depuis MySQL
+    const totalCards = Number(booster.cardNumber);
+    const guarantees = BOOSTER_GUARANTEES[totalCards as CardNumber] ?? [];
+
+    // ← Charge les images pour que le front puisse les afficher
     const cards = await this.cardRepository.find({
       where: { cardSet: { id: booster.cardSet.id } },
+      relations: { image: true },
     });
     if (!cards.length)
       throw new BadRequestException(`No cards in set ${booster.cardSet.name}`);
 
+    // Groupe les cartes par rareté
     const cardsByRarity = cards.reduce(
       (acc, card) => {
         if (!acc[card.rarity]) acc[card.rarity] = [];
@@ -227,16 +217,20 @@ export class BoostersService {
       {} as Record<Rarity, Card[]>,
     );
 
+    // Tirage : garanties d'abord, puis aléatoire pour compléter
     const drawnCards: Card[] = [];
-    const guarantees = BOOSTER_GUARANTEES[booster.cardNumber] ?? [];
+
     for (const rarity of guarantees) {
       drawnCards.push(this.drawCardOfRarity(rarity, cardsByRarity));
     }
-    for (let i = 0; i < booster.cardNumber - drawnCards.length; i++) {
+    for (let i = 0; i < totalCards - drawnCards.length; i++) {
       drawnCards.push(this.drawCard(cardsByRarity));
     }
+
+    // Mélange final
     drawnCards.sort(() => Math.random() - 0.5);
 
+    // Groupe pour la DB (évite les doublons en ligne)
     const cardGroups = drawnCards.reduce(
       (acc, card) => {
         acc[card.id] = (acc[card.id] || 0) + 1;
@@ -259,7 +253,6 @@ export class BoostersService {
       );
       historyId = history.id;
 
-      // Une seule ligne par carte unique avec quantity — plus de boucle
       for (const [cardId, quantity] of Object.entries(cardGroups)) {
         await this.usersService.addCardToUser(
           userId,

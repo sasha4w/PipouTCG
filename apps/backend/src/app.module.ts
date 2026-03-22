@@ -15,6 +15,8 @@ import { QuestModule } from './quests/quests.module';
 import { BoostersModule } from './boosters/boosters.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BundlesModule } from './bundles/bundles.module';
+import { BannersModule } from './banners/banners.module';
+import { ShopModule } from './shop/shop.module';
 import { CustomNamingStrategy } from './database/naming.strategy';
 import { validateEnv } from './config/env.validation';
 import { Buffer } from 'buffer';
@@ -63,6 +65,8 @@ import { Buffer } from 'buffer';
     TransactionsModule,
     BundlesModule,
     ImagesModule,
+    BannersModule,
+    ShopModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
