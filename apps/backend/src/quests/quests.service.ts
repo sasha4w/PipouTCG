@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository, LessThan, In } from 'typeorm';
 import { Quest } from './quest.entity';
 import {
   UserQuest,
@@ -78,9 +78,36 @@ export class QuestService {
   /* ===================== USER - QUÊTES ===================== */
 
   async syncUserQuests(userId: number): Promise<AutoClaimedReward[]> {
-    const autoClaimedRewards = await this.resetExpiredQuests(userId); // ← récupère les rewards
+    const autoClaimedRewards = await this.resetExpiredQuests(userId);
+    await this.removeInactiveUserQuests(userId); // ← nettoyage des inactives
     await this.assignMissingQuests(userId);
     return autoClaimedRewards;
+  }
+
+  /* ── Supprime les UserQuest dont la quête est désactivée ── */
+  private async removeInactiveUserQuests(userId: number): Promise<void> {
+    // Récupère les IDs des quêtes inactives
+    const inactiveQuests = await this.questRepository.find({
+      where: { isActive: false },
+      select: ['id'],
+    });
+
+    if (inactiveQuests.length === 0) return;
+
+    const inactiveQuestIds = inactiveQuests.map((q) => q.id);
+
+    // Supprime tous les UserQuest de cet user liés à ces quêtes
+    const toDelete = await this.userQuestRepository.find({
+      where: {
+        user: { id: userId },
+        quest: { id: In(inactiveQuestIds) },
+      },
+      relations: { quest: true },
+    });
+
+    if (toDelete.length === 0) return;
+
+    await this.userQuestRepository.remove(toDelete);
   }
 
   private async resetExpiredQuests(
@@ -95,7 +122,6 @@ export class QuestService {
     });
 
     for (const uq of expired) {
-      // ← auto-claim si complétée mais pas encore réclamée
       if (uq.isCompleted && !uq.rewardClaimed) {
         await this.distributeReward(userId, uq.quest);
         claimed.push({
@@ -129,7 +155,7 @@ export class QuestService {
     const existingQuestIds = new Set(existing.map((uq) => uq.quest.id));
     const toAssign = allQuests.filter((q) => !existingQuestIds.has(q.id));
 
-    if (toAssign.length === 0) return; // ← rien à faire
+    if (toAssign.length === 0) return;
 
     const newUserQuests = toAssign.map((quest) =>
       this.userQuestRepository.create({
@@ -142,7 +168,6 @@ export class QuestService {
       }),
     );
 
-    // ← orIgnore évite le crash si doublon (race condition ou retry)
     await this.userQuestRepository
       .createQueryBuilder()
       .insert()
@@ -174,7 +199,6 @@ export class QuestService {
       resetAt: uq.resetAt,
     }));
 
-    // ← groupé par type pour le dashboard front
     return {
       DAILY: mapped.filter((q) => q.resetType === QuestResetType.DAILY),
       WEEKLY: mapped.filter((q) => q.resetType === QuestResetType.WEEKLY),
@@ -285,7 +309,7 @@ export class QuestService {
   private computeNextReset(quest: Quest): Date | null {
     if (quest.resetType === QuestResetType.NONE) return null;
     if (quest.resetType === QuestResetType.EVENT) {
-      return quest.endDate ? new Date(quest.endDate) : null; // ← expire à la date de fin
+      return quest.endDate ? new Date(quest.endDate) : null;
     }
 
     const now = new Date();
