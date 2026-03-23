@@ -137,6 +137,8 @@
     "all": "Tous",
     "monster": "Monstre",
     "support": "Support",
-    "all_rarities": "Toutes"
+    "all_rarities": "Toutes",
+    "type": "Type",
+    "rarity": "Rareté"
   }
 }

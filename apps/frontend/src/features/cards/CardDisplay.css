@@ -361,7 +361,10 @@
     var(--posx) var(--posy);
   filter: brightness(0.8) contrast(2.95) saturate(0.5);
 }
-
+.pipou-card[data-rarity="rare"] .pipou-card__shine,
+.pipou-card[data-rarity="epic"] .pipou-card__shine {
+  filter: brightness(0.5) contrast(1.5) saturate(0.3);
+}
 .pipou-card[data-rarity="legendary"] .pipou-card__shine {
   background-image:
     repeating-linear-gradient(
@@ -496,24 +499,58 @@
   --card-text: #1a0830;
 }
 .pipou-card[data-rarity="legendary"] {
-  --card-color: #d8a030;
-  --card-border: #885800;
-  --card-bg: #f0d880;
-  --card-header: #e0c060;
-  --card-footer: #f8ecc0;
-  --card-shadow: rgba(220, 160, 40, 0.7);
-  --card-text: #2a1800;
+  --card-color: #c8860a;
+  --card-border: #b87808;
+  --card-bg: #f0d060;
+  --card-header: #b87808;
+  --card-footer: #d4a020;
+  --card-shadow: rgba(255, 200, 50, 0.8);
+  --card-text: #0a0800;
 }
-.pipou-card[data-rarity="secret"] {
-  --card-color: #c850a0;
-  --card-border: #780860;
-  --card-bg: #f0a8d8;
-  --card-header: #e080c0;
-  --card-footer: #f8d0ec;
-  --card-shadow: rgba(200, 50, 160, 0.7);
-  --card-text: #280010;
+.pipou-card[data-rarity="legendary"] .pipou-card__cost {
+  background: rgba(255, 245, 200, 0.95);
+  border-color: #f5d060;
+  color: #0a0800;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
+.pipou-card[data-rarity="legendary"] .pipou-card__stat-badge {
+  background: rgba(255, 245, 200, 0.95);
+  border-color: #f5d060;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.pipou-card[data-rarity="secret"] {
+  --card-color: #0a0a0f;
+  --card-border: #2a0a2a;
+  --card-bg: #1a1a2e;
+  --card-header: #12121e;
+  --card-footer: #0f0f1a;
+  --card-shadow: rgba(200, 50, 255, 0.6);
+  --card-text: #f0e8ff;
+}
+.pipou-card[data-rarity="secret"] .pipou-card__stat-badge {
+  background: rgba(10, 10, 15, 0.85);
+  border-color: #6a0a6a;
+}
+
+.pipou-card[data-rarity="secret"] .pipou-card__stat-label {
+  color: #a080c0;
+}
+
+.pipou-card[data-rarity="secret"] .pipou-card__stat-value {
+  color: #f0e8ff;
+}
+
+.pipou-card[data-rarity="secret"] .pipou-card__cost {
+  background: rgba(10, 10, 15, 0.85);
+  border-color: #6a0a6a;
+  color: #f0e8ff;
+}
 /* ── Hint long press mobile ── */
 .pipou-card__mobile-hint {
   position: absolute;

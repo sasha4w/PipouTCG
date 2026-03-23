@@ -137,6 +137,8 @@
     "all": "전체",
     "monster": "몬스터",
     "support": "서포트",
-    "all_rarities": "모든 등급"
+    "all_rarities": "모든 등급",
+    "type": "유형",
+    "rarity": "등급"
   }
 }

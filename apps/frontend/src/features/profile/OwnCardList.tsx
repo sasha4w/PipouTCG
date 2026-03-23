@@ -5,6 +5,8 @@ import type { Card } from "../../services/card.service";
 import CardDisplay from "../cards/CardDisplay";
 import { soundService } from "../../services/sound.service";
 import SearchBar from "../../components/Searchbar";
+import { IconUnknown } from "../../components/Icons";
+import FilterPanel, { useFilters } from "../../components/FilterPanel";
 import "./OwnCardList.css";
 
 function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {
@@ -24,14 +26,6 @@ function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {
 }
 
 const PAGE_SIZE = 6;
-const RARITIES = [
-  "common",
-  "uncommon",
-  "rare",
-  "epic",
-  "legendary",
-  "secret",
-] as const;
 
 interface OwnCardListProps {
   collection: UserCollection;
@@ -40,21 +34,39 @@ interface OwnCardListProps {
 export default function OwnCardList({ collection }: OwnCardListProps) {
   const { t } = useTranslation();
 
-  const RARITY_LABELS: Record<string, string> = {
-    common: t("rarity.common"),
-    uncommon: t("rarity.uncommon"),
-    rare: t("rarity.rare"),
-    epic: t("rarity.epic"),
-    legendary: t("rarity.legendary"),
-    secret: t("rarity.secret"),
-  };
+  const filterConfig = useMemo(
+    () => [
+      {
+        key: "type",
+        label: t("filter.type"),
+        options: [
+          { value: "all", label: t("filter.all") },
+          { value: "monster", label: t("filter.monster") },
+          { value: "support", label: t("filter.support") },
+        ],
+      },
+      {
+        key: "rarity",
+        label: t("filter.rarity"),
+        options: [
+          { value: "all", label: t("filter.all_rarities") },
+          { value: "common", label: t("rarity.common") },
+          { value: "uncommon", label: t("rarity.uncommon") },
+          { value: "rare", label: t("rarity.rare") },
+          { value: "epic", label: t("rarity.epic") },
+          { value: "legendary", label: t("rarity.legendary") },
+          { value: "secret", label: t("rarity.secret") },
+        ],
+      },
+    ],
+    [t],
+  );
+
+  const { filterValues, setFilter, hasActiveFilters } =
+    useFilters(filterConfig);
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "monster" | "support">(
-    "all",
-  );
-  const [filterRarity, setFilterRarity] = useState<string>("all");
   const [showMissing, setShowMissing] = useState(true);
   const [filterSet, setFilterSet] = useState<number | "all">("all");
 
@@ -73,13 +85,19 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
       if (!showMissing && !c.owned) return false;
       if (search && !c.name.toLowerCase().includes(search.toLowerCase()))
         return false;
-      if (filterType !== "all" && c.type?.toLowerCase() !== filterType)
+      if (
+        filterValues.type !== "all" &&
+        c.type?.toLowerCase() !== filterValues.type
+      )
         return false;
-      if (filterRarity !== "all" && c.rarity?.toLowerCase() !== filterRarity)
+      if (
+        filterValues.rarity !== "all" &&
+        c.rarity?.toLowerCase() !== filterValues.rarity
+      )
         return false;
       return true;
     });
-  }, [allCards, search, filterType, filterRarity, showMissing]);
+  }, [allCards, search, filterValues, showMissing]);
 
   const applyFilter = (fn: () => void) => {
     fn();
@@ -101,25 +119,6 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
 
   const totalOwned = allCards.filter((c) => c.owned).length;
   const totalCards = allCards.length;
-
-  const typeBtn = (val: typeof filterType, label: string) => (
-    <button
-      key={val}
-      className={`own-cardlist__filter-btn${filterType === val ? " own-cardlist__filter-btn--active" : ""}`}
-      onClick={() => applyFilter(() => setFilterType(val))}
-    >
-      {label}
-    </button>
-  );
-  const rarityBtn = (val: string, label: string) => (
-    <button
-      key={val}
-      className={`own-cardlist__filter-btn${filterRarity === val ? " own-cardlist__filter-btn--active" : ""}`}
-      onClick={() => applyFilter(() => setFilterRarity(val))}
-    >
-      {label}
-    </button>
-  );
 
   return (
     <div className="own-cardlist">
@@ -148,20 +147,13 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
         value={search}
         onChange={(val) => applyFilter(() => setSearch(val))}
         placeholder={t("search.placeholder")}
-        hasActiveFilters={filterType !== "all" || filterRarity !== "all"}
+        hasActiveFilters={hasActiveFilters}
         filters={
-          <div className="own-cardlist__filters">
-            <div className="own-cardlist__filter-group">
-              {typeBtn("all", t("filter.all"))}
-              {typeBtn("monster", t("filter.monster"))}
-              {typeBtn("support", t("filter.support"))}
-            </div>
-            <div className="own-cardlist__filter-sep" />
-            <div className="own-cardlist__filter-group">
-              {rarityBtn("all", t("filter.all_rarities"))}
-              {RARITIES.map((r) => rarityBtn(r, RARITY_LABELS[r]))}
-            </div>
-          </div>
+          <FilterPanel
+            config={filterConfig}
+            values={filterValues}
+            onChange={(key, val) => applyFilter(() => setFilter(key, val))}
+          />
         }
       />
 
@@ -207,24 +199,30 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
               <div className="own-cardlist__grid" style={{ marginTop: 8 }}>
                 {items.map((item) => (
                   <div key={item.id} style={{ position: "relative" }}>
-                    <div
-                      className={item.owned ? "" : "own-cardlist__card-missing"}
-                    >
+                    {item.owned ? (
                       <CardDisplay
                         card={toCard(item)}
                         size="lg"
-                        interactive={item.owned}
-                        flippable={item.owned}
+                        interactive={true}
+                        flippable={true}
                       />
-                    </div>
+                    ) : (
+                      <div className="own-cardlist__card-unknown">
+                        <IconUnknown
+                          size={48}
+                          color="rgba(160, 128, 112, 0.4)"
+                        />
+                        <span className="own-cardlist__card-missing-label">
+                          {t("collection.not_owned")}
+                        </span>
+                        <span className="own-cardlist__card-missing-rarity">
+                          {t(`rarity.${item.rarity.toLowerCase()}`)}
+                        </span>
+                      </div>
+                    )}
                     {item.owned && item.quantity > 0 && (
                       <span className="own-cardlist__qty-badge">
                         ×{item.quantity}
-                      </span>
-                    )}
-                    {!item.owned && (
-                      <span className="own-cardlist__card-missing-label">
-                        {t("collection.not_owned")}
                       </span>
                     )}
                   </div>
