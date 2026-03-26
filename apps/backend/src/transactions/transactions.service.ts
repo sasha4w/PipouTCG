@@ -91,9 +91,11 @@ export class TransactionService {
     return this.dataSource.transaction(async (manager) => {
       const { Entity, relationKey } = this.mapProductType(dto.productType);
 
-      // 1. Trouver la ligne d'inventaire spécifique du vendeur
       const inventoryItem = await manager.findOne(Entity, {
-        where: { id: dto.productId, user: { id: sellerId } },
+        where: {
+          [relationKey]: { id: dto.productId },
+          user: { id: sellerId },
+        },
         relations: [relationKey],
         lock: { mode: 'pessimistic_write' },
       });
@@ -104,14 +106,14 @@ export class TransactionService {
         );
       }
 
-      // 2. Récupérer l'ID statique (ex: card_id) avant de modifier
+      // On récupère l'ID statique (ex: card_id) pour l'annonce
       const staticId = inventoryItem[relationKey].id;
 
-      // 3. Réserver l'item (Décrémentation, on garde la ligne même à 0)
+      // Décrémentation du stock
       inventoryItem.quantity -= dto.quantity;
       await manager.save(inventoryItem);
 
-      // 4. Créer l'annonce (on stocke le staticId pour l'acheteur)
+      // Création de l'annonce
       const listing = manager.getRepository(Transaction).create({
         seller: { id: sellerId } as any,
         productType: dto.productType,
@@ -194,7 +196,7 @@ export class TransactionService {
 
       // ✅ Finalisation
       listing.status = TransactionStatus.COMPLETED;
-      listing.buyer = buyer; // Plus besoin du "as any" ici car buyer est validé
+      listing.buyer = buyer; // On associe l'acheteur à l'annonce pour l'historique
 
       await manager.save([buyer, seller, listing]);
       return listing;
