@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager, Not } from 'typeorm'; // ✅ Import Not corrigé
+import { Repository, DataSource, EntityManager, Not } from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { User } from '../users/user.entity';
 import { UserCard } from '../users/user-card.entity';
@@ -20,51 +20,52 @@ export class TransactionService {
   ) {}
 
   // ============================================================
-  // 🔍 LECTURE DES ANNONCES
+  // 🔍 LECTURE DES ANNONCES (AVEC RELATIONS POUR LE FRONTEND)
   // ============================================================
 
-  async findAll({ page = 1, limit = 20 }: PaginationDto = {}) {
+  async findAll(pagination: PaginationDto = {}) {
+    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
+
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where: { status: TransactionStatus.PENDING },
         order: { createdAt: 'DESC' },
-        relations: ['seller'],
+        relations: ['seller', 'card', 'booster', 'bundle'], // ✅ Ajout des relations
         skip: (page - 1) * limit,
         take: limit,
       },
     );
+
     return {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
-  async findOtherListings(
-    { page = 1, limit = 20 }: PaginationDto,
-    userId: number,
-  ) {
-    const [transactions, total] = await this.transactionRepository.findAndCount(
-      {
-        where: {
-          status: TransactionStatus.PENDING,
-          seller: { id: Not(userId) }, // ✅ Utilisation de Not[cite: 2]
-        },
-        order: { createdAt: 'DESC' },
-        relations: ['seller'],
-        skip: (page - 1) * limit,
-        take: limit,
+  async findOtherListings(pagination: PaginationDto, userId: number) {
+    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.transactionRepository.findAndCount({
+      where: {
+        status: TransactionStatus.PENDING,
+        seller: { id: Not(userId) },
       },
-    );
+      relations: ['seller', 'card', 'booster', 'bundle'], // ✅ Ajout des relations
+      order: { createdAt: 'DESC' },
+      take: limit,
+      skip: skip,
+    });
+
     return {
-      data: transactions,
+      data,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
-  async findUserListings(
-    { page = 1, limit = 20 }: PaginationDto,
-    userId: number,
-  ) {
+  async findUserListings(pagination: PaginationDto, userId: number) {
+    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
+
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where: {
@@ -72,11 +73,31 @@ export class TransactionService {
           seller: { id: userId },
         },
         order: { createdAt: 'DESC' },
-        relations: ['seller'],
+        relations: ['seller', 'card', 'booster', 'bundle'], // ✅ Ajout des relations
         skip: (page - 1) * limit,
         take: limit,
       },
     );
+
+    return {
+      data: transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async getUserHistory(userId: number, pagination: PaginationDto = {}) {
+    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
+
+    const [transactions, total] = await this.transactionRepository.findAndCount(
+      {
+        where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
+        order: { createdAt: 'DESC' },
+        relations: ['buyer', 'seller', 'card', 'booster', 'bundle'], // ✅ Historique complet
+        skip: (page - 1) * limit,
+        take: limit,
+      },
+    );
+
     return {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -106,18 +127,17 @@ export class TransactionService {
         );
       }
 
-      // On récupère l'ID statique (ex: card_id) pour l'annonce
-      const staticId = inventoryItem[relationKey].id;
-
-      // Décrémentation du stock
+      // On décrémente le stock de l'inventaire
       inventoryItem.quantity -= dto.quantity;
       await manager.save(inventoryItem);
 
-      // Création de l'annonce
+      // Création de l'annonce en liant l'objet statique pour les relations futures
       const listing = manager.getRepository(Transaction).create({
         seller: { id: sellerId } as any,
         productType: dto.productType,
-        productId: staticId,
+        productId: dto.productId,
+        // On lie dynamiquement la relation pour que le .find() fonctionne après
+        [relationKey]: { id: dto.productId },
         quantity: dto.quantity,
         unitPrice: dto.unitPrice,
         totalPrice: dto.unitPrice * dto.quantity,
@@ -136,13 +156,12 @@ export class TransactionService {
         lock: { mode: 'pessimistic_write' },
       });
 
-      if (!listing) throw new BadRequestException('Listing not found');
+      if (!listing) throw new BadRequestException('Annonce introuvable');
       if (listing.status !== TransactionStatus.PENDING)
-        throw new BadRequestException('Already sold or cancelled');
+        throw new BadRequestException('Déjà vendue ou annulée');
       if (listing.seller.id !== sellerId)
-        throw new BadRequestException("Can't cancel someone else's listing");
+        throw new BadRequestException('Action non autorisée');
 
-      // Restituer l'item sur la ligne d'inventaire du vendeur
       await this.restoreReservedItem(manager, listing, sellerId);
 
       listing.status = TransactionStatus.CANCELLED;
@@ -165,7 +184,6 @@ export class TransactionService {
       if (!listing || listing.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Annonce indisponible.');
 
-      // 1. Récupération avec vérification immédiate pour TypeScript ✅
       const buyer = await manager.findOne(User, {
         where: { id: buyerId },
         lock: { mode: 'pessimistic_write' },
@@ -178,14 +196,13 @@ export class TransactionService {
       });
       if (!seller) throw new BadRequestException('Vendeur introuvable.');
 
-      // 2. Maintenant, TS sait que buyer et seller existent !
       if (buyer.id === seller.id)
-        throw new BadRequestException("Impossible d'acheter sa propre annonce");
+        throw new BadRequestException('Achat de sa propre annonce interdit');
 
       if (buyer.gold < listing.totalPrice)
         throw new BadRequestException('Or insuffisant.');
 
-      // 💰 Transfert de fonds
+      // 💰 Transfert d'argent
       buyer.gold -= listing.totalPrice;
       buyer.moneySpent += listing.totalPrice;
       seller.gold += listing.totalPrice;
@@ -194,31 +211,12 @@ export class TransactionService {
       // 📦 Transfert de l'objet
       await this.giveItemToBuyer(manager, listing, buyerId);
 
-      // ✅ Finalisation
       listing.status = TransactionStatus.COMPLETED;
-      listing.buyer = buyer; // On associe l'acheteur à l'annonce pour l'historique
+      listing.buyer = buyer;
 
       await manager.save([buyer, seller, listing]);
       return listing;
     });
-  }
-  async getUserHistory(
-    userId: number,
-    { page = 1, limit = 20 }: PaginationDto = {},
-  ) {
-    const [transactions, total] = await this.transactionRepository.findAndCount(
-      {
-        where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
-        order: { createdAt: 'DESC' },
-        relations: ['buyer', 'seller'],
-        skip: (page - 1) * limit,
-        take: limit,
-      },
-    );
-    return {
-      data: transactions,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-    };
   }
 
   // ============================================================
@@ -268,8 +266,7 @@ export class TransactionService {
       lock: { mode: 'pessimistic_write' },
     });
 
-    if (!item)
-      throw new BadRequestException("Ligne d'inventaire vendeur introuvable");
+    if (!item) throw new BadRequestException('Inventaire introuvable');
     item.quantity += listing.quantity;
     await manager.save(item);
   }
