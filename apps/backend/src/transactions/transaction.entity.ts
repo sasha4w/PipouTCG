@@ -20,47 +20,49 @@ export class Transaction {
   id: number;
 
   // --- RELATIONS UTILISATEURS ---
-
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'buyer_id' })
+  @JoinColumn({ name: 'buyer_id' }) // MySQL: buyer_id
   buyer: User | null;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'seller_id' })
+  @JoinColumn({ name: 'seller_id' }) // MySQL: seller_id
   seller: User;
 
-  // --- RELATIONS OBJETS (POLYMORPHES) ---
-
-  @ManyToOne(() => Card, { nullable: true })
-  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  // --- RELATIONS OBJETS (READ-ONLY) ---
+  // On utilise 'product_id' car c'est le nom physique dans ta table MySQL
+  @ManyToOne(() => Card, { nullable: true, createForeignKeyConstraints: false })
+  @JoinColumn({ name: 'product_id' })
   card: Card;
 
-  @ManyToOne(() => Booster, { nullable: true })
-  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  @ManyToOne(() => Booster, {
+    nullable: true,
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'product_id' })
   booster: Booster;
 
-  @ManyToOne(() => Bundle, { nullable: true })
-  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  @ManyToOne(() => Bundle, {
+    nullable: true,
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({ name: 'product_id' })
   bundle: Bundle;
 
   // --- COLONNES DE DONNÉES ---
 
-  @Column({
-    type: 'enum',
-    enum: ProductType,
-  })
+  @Column({ name: 'product_type', type: 'enum', enum: ProductType })
   productType: ProductType;
 
-  @Column()
+  @Column({ name: 'product_id' }) // On force le nom product_id ici
   productId: number;
 
   @Column()
   quantity: number;
 
-  @Column({ type: 'bigint' })
+  @Column({ name: 'unit_price', type: 'bigint' })
   unitPrice: number;
 
-  @Column({ type: 'bigint' })
+  @Column({ name: 'total_price', type: 'bigint' })
   totalPrice: number;
 
   @Column({
@@ -70,9 +72,9 @@ export class Transaction {
   })
   status: TransactionStatus;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }
