@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsNotEmpty, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsNotEmpty, Min, IsInt } from 'class-validator';
 import { ProductType } from '../enums/product-type.enum';
 
 export class CreateListingDto {
@@ -6,17 +6,16 @@ export class CreateListingDto {
   @IsNotEmpty()
   productType: ProductType;
 
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   @Min(1)
   productId: number;
-
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   @Min(1)
   quantity: number;
 
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   @Min(1)
   unitPrice: number;

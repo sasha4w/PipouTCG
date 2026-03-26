@@ -12,17 +12,40 @@ import {
 import { TransactionService } from './transactions.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
+import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+
 @Controller('transactions')
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
-  // CONNECTÉ //
-  @UseGuards(JwtAuthGuard)
+  // Toutes les annonces PENDING (pour l'admin)
+  @UseGuards(AdminGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.transactionService.findAll(pagination);
   }
+
+  // Toutes les annonces PENDING (sauf celles de l'utilisateur connecté)
+  @UseGuards(JwtAuthGuard)
+  @Get('offers')
+  findOtherListings(@Query() pagination: PaginationDto, @Req() req: any) {
+    return this.transactionService.findOtherListings(
+      pagination,
+      req.user.userId,
+    );
+  }
+
+  // Annonces PENDING de l'utilisateur connecté
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  findUserListings(@Query() pagination: PaginationDto, @Req() req: any) {
+    return this.transactionService.findUserListings(
+      pagination,
+      req.user.userId,
+    );
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('listing')
   createListing(@Body() dto: CreateListingDto, @Req() req: any) {
