@@ -8,6 +8,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Card } from '../cards/card.entity';
+import { Booster } from '../boosters/booster.entity';
+import { Bundle } from '../bundles/bundle.entity';
 import { ProductType } from './enums/product-type.enum';
 import { TransactionStatus } from './enums/transaction-status.enum';
 
@@ -16,15 +19,31 @@ export class Transaction {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Acheteur (null tant que PENDING)
+  // --- RELATIONS UTILISATEURS ---
+
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'buyer_id' })
   buyer: User | null;
 
-  // Vendeur
   @ManyToOne(() => User)
   @JoinColumn({ name: 'seller_id' })
   seller: User;
+
+  // --- RELATIONS OBJETS (POLYMORPHES) ---
+
+  @ManyToOne(() => Card, { nullable: true })
+  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  card: Card;
+
+  @ManyToOne(() => Booster, { nullable: true })
+  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  booster: Booster;
+
+  @ManyToOne(() => Bundle, { nullable: true })
+  @JoinColumn({ name: 'productId', referencedColumnName: 'id' })
+  bundle: Bundle;
+
+  // --- COLONNES DE DONNÉES ---
 
   @Column({
     type: 'enum',
