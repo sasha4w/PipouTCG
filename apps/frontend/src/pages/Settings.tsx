@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
+import { useQueryClient } from "@tanstack/react-query";
 import SoundSettings from "../components/SoundSettings";
 import i18n from "../i18n";
 import "./Settings.css";
@@ -56,6 +57,7 @@ function NotifItem({ label }: { label: string }) {
 const Settings = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   return (
     <div className="settings-page">
@@ -92,6 +94,7 @@ const Settings = () => {
         className="settings-logout-btn"
         onClick={() => {
           authService.logout();
+          queryClient.clear();
           navigate("/login");
         }}
       >

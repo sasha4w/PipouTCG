@@ -15,6 +15,15 @@ export const TransactionStatus = {
 export type TransactionStatus =
   (typeof TransactionStatus)[keyof typeof TransactionStatus];
 
+// --- AJOUT DES INTERFACES POUR LES DÉTAILS ---
+// Ces interfaces permettent à TS de savoir ce qu'il y a dans listing.card, etc.
+interface ItemDetails {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  rarity?: string;
+}
+
 export interface Transaction {
   id: number;
   productType: ProductType;
@@ -26,6 +35,11 @@ export interface Transaction {
   createdAt: string;
   seller: { id: number; username: string };
   buyer?: { id: number; username: string } | null;
+
+  // ✅ AJOUT DES RELATIONS REÇUES DU BACKEND
+  card?: ItemDetails;
+  booster?: ItemDetails;
+  bundle?: ItemDetails;
 }
 
 export interface PaginatedResponse<T> {
@@ -49,6 +63,24 @@ export const transactionService = {
   // Toutes les annonces PENDING (marketplace)
   async findAll(page = 1, limit = 20): Promise<PaginatedResponse<Transaction>> {
     const res = await api.get("/transactions", { params: { page, limit } });
+    return res.data;
+  },
+
+  async findMyListings(
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<Transaction>> {
+    const res = await api.get("/transactions/me", { params: { page, limit } });
+    return res.data;
+  },
+
+  async findOffers(
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<Transaction>> {
+    const res = await api.get("/transactions/offers", {
+      params: { page, limit },
+    });
     return res.data;
   },
 

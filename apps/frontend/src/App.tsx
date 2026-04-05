@@ -5,6 +5,7 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
+import { useRef } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -16,11 +17,14 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import { SoundProvider } from "./contexts/SoundContext";
 import Admin from "./pages/Admin";
+import { useScrollRestoration } from "./hooks/useScrollRestoration";
 function AppLayout() {
+  const mainRef = useRef<HTMLElement>(null);
+  useScrollRestoration(mainRef);
   return (
     <div className="app-layout">
       <Header />
-      <main className="app-main">
+      <main className="app-main" ref={mainRef}>
         <Outlet />
       </main>
       <Footer />

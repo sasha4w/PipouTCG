@@ -1,0 +1,503 @@
+@import url("https://fonts.googleapis.com/css2?family=Lilita+One&family=Comfortaa:wght@400;600;700&display=swap");
+
+/* ── Page ── */
+.marketplace-page {
+  min-height: 100dvh;
+  width: 100%;
+  background: #f5efe0;
+  padding: 2rem 1.25rem;
+  position: relative;
+  overflow: hidden;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+/* ── Bulles déco ── */
+.marketplace-bubble {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.marketplace-bubble--1 {
+  width: 220px;
+  height: 220px;
+  background: #f27aaa;
+  opacity: 0.18;
+  top: -60px;
+  right: -60px;
+}
+.marketplace-bubble--2 {
+  width: 160px;
+  height: 160px;
+  background: #eebc77;
+  opacity: 0.22;
+  bottom: 40px;
+  left: -50px;
+}
+.marketplace-bubble--3 {
+  width: 100px;
+  height: 100px;
+  background: #f27aaa;
+  opacity: 0.13;
+  bottom: 160px;
+  right: 20px;
+}
+
+/* ── Onglets ── */
+.marketplace-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.marketplace-tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: rgba(122, 28, 59, 0.08);
+  color: #7a1c3b;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.marketplace-tab--active {
+  background: #7a1c3b;
+  color: white;
+}
+
+/* ── Section ── */
+.marketplace-section__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1.75rem;
+  color: #7a1c3b;
+  margin-bottom: 1rem;
+  letter-spacing: 0.3px;
+}
+
+/* ── Liste des annonces ── */
+.marketplace-listings {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.marketplace-listing {
+  position: relative;
+  z-index: 1;
+  background: #2a2a2a;
+  border-radius: 16px;
+  border: 1px solid #333;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(61, 16, 32, 0.08);
+  animation: cardIn 0.3s ease both;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Container de l'info (Nom + Vendeur + Prix) */
+.marketplace-listing__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Nom de l'objet */
+.marketplace-listing__name {
+  font-size: 1.05rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.marketplace-listing__qty {
+  color: #888;
+  font-size: 0.9rem;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+/* Infos du vendeur */
+.marketplace-listing__seller {
+  font-size: 0.85rem;
+  color: #bbb;
+}
+
+.marketplace-listing__seller strong {
+  color: #ffd700;
+  font-weight: 500;
+}
+
+/* Prix */
+.marketplace-listing__price {
+  font-weight: bold;
+  color: #4caf50;
+  font-size: 1rem;
+  margin-top: 2px;
+}
+
+/* Message vide */
+.marketplace-empty {
+  color: #888;
+  font-style: italic;
+  padding: 1rem 0;
+}
+
+/* ── Boutons d'action ── */
+.marketplace-create-listing-btn {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: none;
+  background: #7a1c3b;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.25);
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.marketplace-create-listing-btn:hover {
+  background: #9b2349;
+  box-shadow: 0 6px 18px rgba(122, 28, 59, 0.3);
+  transform: translateY(-1px);
+}
+
+.marketplace-cancel-btn,
+.marketplace-buy-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.marketplace-cancel-btn {
+  background: #f27aaa;
+  color: white;
+}
+
+.marketplace-buy-btn {
+  background: #7a1c3b;
+  color: white;
+}
+
+.marketplace-cancel-btn:hover:not(:disabled),
+.marketplace-buy-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.marketplace-cancel-btn:disabled,
+.marketplace-buy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Modal de création d'annonce ── */
+.marketplace-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.marketplace-modal-content {
+  position: relative;
+  z-index: 101;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 24px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 8px 32px rgba(61, 16, 32, 0.15);
+  animation: modalIn 0.35s ease both;
+}
+
+.marketplace-modal-content h3 {
+  font-family: "Lilita One", cursive;
+  font-size: 1.4rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.marketplace-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.marketplace-form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #7a1c3b;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.marketplace-form-group input,
+.marketplace-form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.95rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.marketplace-form-group input:focus,
+.marketplace-form-group select:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+
+.marketplace-form-hint {
+  font-size: 0.78rem;
+  color: #a08070;
+  margin: 0;
+  padding-left: 4px;
+}
+
+.marketplace-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.marketplace-modal-actions button {
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.marketplace-modal-actions button[type="button"] {
+  background: rgba(122, 28, 59, 0.1);
+  color: #7a1c3b;
+}
+
+.marketplace-modal-actions button[type="submit"] {
+  background: #7a1c3b;
+  color: white;
+}
+
+.marketplace-modal-actions button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.marketplace-modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ════════════════════════════════════════════════
+   🔔 TOAST NOTIFICATIONS
+════════════════════════════════════════════════ */
+
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 340px;
+  width: calc(100vw - 3rem);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem 0.85rem 1rem;
+  border-radius: 14px;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    0 1px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: all;
+  cursor: pointer;
+  animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  border: 1.5px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Barre de progression en bas */
+.toast::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  animation: toastProgress 3.5s linear forwards;
+  border-radius: 0 0 14px 14px;
+}
+
+@keyframes toastProgress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* ── Variantes ── */
+.toast--success {
+  background: #edfaf2;
+  color: #1a6b3c;
+  border-color: rgba(26, 107, 60, 0.2);
+}
+.toast--success .toast__icon {
+  background: #1a6b3c;
+  color: white;
+}
+.toast--success::after {
+  background: #1a6b3c;
+}
+
+.toast--error {
+  background: #fff0f4;
+  color: #7a1c3b;
+  border-color: rgba(122, 28, 59, 0.2);
+}
+.toast--error .toast__icon {
+  background: #7a1c3b;
+  color: white;
+}
+.toast--error::after {
+  background: #7a1c3b;
+}
+
+.toast--warning {
+  background: #fff8ec;
+  color: #7a5200;
+  border-color: rgba(238, 188, 119, 0.4);
+}
+.toast--warning .toast__icon {
+  background: #eebc77;
+  color: #7a5200;
+}
+.toast--warning::after {
+  background: #eebc77;
+}
+
+/* ── Icône ronde ── */
+.toast__icon {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ── Texte ── */
+.toast__message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* ── Bouton fermer ── */
+.toast__close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.5;
+  color: inherit;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+.toast__close:hover {
+  opacity: 1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+    max-width: none;
+  }
+}

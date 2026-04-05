@@ -1,5 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import { cardService, Rarity, CardType } from "../../services/card.service";
+import {
+  cardService,
+  Rarity,
+  CardType,
+  SupportType,
+} from "../../services/card.service";
 import { cardSetService } from "../../services/card-set.service";
 import { imageService } from "../../services/image.service";
 import type { Card, CreateCardData } from "../../services/card.service";
@@ -335,7 +340,13 @@ export default function CardManager() {
               <select
                 className="manager-form__select"
                 value={form.type}
-                onChange={(e) => setField("type", e.target.value)}
+                onChange={(e) => {
+                  const newType = e.target.value as CardType;
+                  setField("type", newType);
+                  if (newType === CardType.SUPPORT) {
+                    setForm((f) => ({ ...f, atk: 0, hp: 0, cost: 0 }));
+                  }
+                }}
               >
                 {Object.values(CardType).map((t) => (
                   <option key={t} value={t}>
@@ -346,26 +357,28 @@ export default function CardManager() {
             </div>
           </div>
 
-          <div className="manager-form__grid">
-            <div className="manager-form__row">
-              <label className="manager-form__label">ATK</label>
-              <input
-                className="manager-form__input"
-                type="number"
-                value={form.atk}
-                onChange={(e) => setField("atk", Number(e.target.value))}
-              />
+          {form.type === CardType.MONSTER && (
+            <div className="manager-form__grid">
+              <div className="manager-form__row">
+                <label className="manager-form__label">ATK</label>
+                <input
+                  className="manager-form__input"
+                  type="number"
+                  value={form.atk}
+                  onChange={(e) => setField("atk", Number(e.target.value))}
+                />
+              </div>
+              <div className="manager-form__row">
+                <label className="manager-form__label">HP</label>
+                <input
+                  className="manager-form__input"
+                  type="number"
+                  value={form.hp}
+                  onChange={(e) => setField("hp", Number(e.target.value))}
+                />
+              </div>
             </div>
-            <div className="manager-form__row">
-              <label className="manager-form__label">HP</label>
-              <input
-                className="manager-form__input"
-                type="number"
-                value={form.hp}
-                onChange={(e) => setField("hp", Number(e.target.value))}
-              />
-            </div>
-          </div>
+          )}
 
           <div className="manager-form__grid">
             <div className="manager-form__row">
@@ -393,6 +406,26 @@ export default function CardManager() {
               </select>
             </div>
           </div>
+
+          {form.type === CardType.SUPPORT && (
+            <div className="manager-form__row">
+              <label className="manager-form__label">Type de Support</label>
+              <select
+                className="manager-form__select"
+                value={form.supportType || ""}
+                onChange={(e) =>
+                  setField("supportType", e.target.value as SupportType)
+                }
+              >
+                <option value="">-- Sélectionner --</option>
+                {Object.values(SupportType).map((st) => (
+                  <option key={st} value={st}>
+                    {st}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="manager-form__row">
             <label className="manager-form__label">Image</label>

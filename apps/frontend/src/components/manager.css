@@ -404,3 +404,32 @@
   font-weight: 700;
   color: #a08070;
 }
+.manager-result-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+}
+
+.manager-set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1.5px solid rgba(61, 16, 32, 0.1);
+  margin-top: 0.25rem;
+}
+
+.manager-set-name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.82rem;
+  color: #7a1c3b;
+}
+
+.manager-set-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a08070;
+  background: rgba(122, 28, 59, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}

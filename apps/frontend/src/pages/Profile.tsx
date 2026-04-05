@@ -14,6 +14,7 @@ import OpeningModal, {
 import { IconCollection, IconStats } from "../components/Icons";
 import "./Profile.css";
 import { useTranslation } from "react-i18next";
+import { QUERY_KEYS } from "../utils/querykeys";
 
 type Tab = "collection" | "stats";
 
@@ -31,22 +32,22 @@ export default function Profile() {
     isLoading: l1,
     isError,
   } = useQuery({
-    queryKey: ["myStats"],
+    queryKey: QUERY_KEYS.profile,
     queryFn: () => userService.getMyStats(),
   });
 
   const { data: inventory, isLoading: l2 } = useQuery({
-    queryKey: ["myInventory"],
+    queryKey: QUERY_KEYS.inventory,
     queryFn: () => userService.getMyInventory(),
   });
 
   const { data: quests, isLoading: l3 } = useQuery({
-    queryKey: ["myQuests"],
+    queryKey: QUERY_KEYS.quests,
     queryFn: () => questService.getMyQuests(),
   });
 
   const { data: collection, isLoading: l4 } = useQuery({
-    queryKey: ["myCollection"],
+    queryKey: QUERY_KEYS.collection,
     queryFn: () => userService.getMyCollection(),
   });
 
@@ -63,9 +64,9 @@ export default function Profile() {
   };
 
   const handleOpeningDone = () => {
-    queryClient.invalidateQueries({ queryKey: ["myInventory"] });
-    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
-    queryClient.invalidateQueries({ queryKey: ["myQuests"] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
   };
 
   if (loading) return <Loading message={t("profile.loading")} />;
@@ -122,7 +123,7 @@ export default function Profile() {
       <QuestsPanel
         quests={quests}
         onQuestsUpdate={() =>
-          queryClient.invalidateQueries({ queryKey: ["myQuests"] })
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests })
         }
       />
 

@@ -1,0 +1,122 @@
+.page-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* ── Bulles variante default ── */
+.page-decor__bubble {
+  position: absolute;
+  border-radius: 50%;
+}
+.page-decor__bubble--1 {
+  width: 220px;
+  height: 220px;
+  background: #f27aaa;
+  opacity: 0.18;
+  top: -60px;
+  right: -60px;
+}
+.page-decor__bubble--2 {
+  width: 160px;
+  height: 160px;
+  background: #eebc77;
+  opacity: 0.22;
+  bottom: 40px;
+  left: -50px;
+}
+.page-decor__bubble--3 {
+  width: 100px;
+  height: 100px;
+  background: #f27aaa;
+  opacity: 0.13;
+  bottom: 160px;
+  right: 20px;
+}
+
+/* ── Bulles variante alt (positions miroir) ── */
+.page-decor__bubble--alt-1 {
+  width: 200px;
+  height: 200px;
+  background: #eebc77;
+  opacity: 0.18;
+  top: -50px;
+  left: -50px;
+}
+.page-decor__bubble--alt-2 {
+  width: 140px;
+  height: 140px;
+  background: #f27aaa;
+  opacity: 0.2;
+  bottom: 60px;
+  right: -40px;
+}
+.page-decor__bubble--alt-3 {
+  width: 90px;
+  height: 90px;
+  background: #eebc77;
+  opacity: 0.15;
+  top: 200px;
+  left: 10px;
+}
+
+/* ── Étoiles — base commune ── */
+.page-decor__star--1,
+.page-decor__star--2,
+.page-decor__star--3,
+.page-decor__star--4,
+.page-decor__star--alt-1,
+.page-decor__star--alt-2,
+.page-decor__star--alt-3,
+.page-decor__star--alt-4 {
+  position: absolute;
+  animation: starFloat 3s ease-in-out infinite;
+}
+
+/* ── Positions variante default ── */
+.page-decor__star--1 {
+  top: 24px;
+  left: 20px;
+}
+.page-decor__star--2 {
+  top: 60px;
+  right: 30px;
+}
+.page-decor__star--3 {
+  bottom: 120px;
+  left: 40px;
+}
+.page-decor__star--4 {
+  bottom: 80px;
+  right: 25px;
+}
+
+/* ── Positions variante alt ── */
+.page-decor__star--alt-1 {
+  top: 30px;
+  right: 20px;
+}
+.page-decor__star--alt-2 {
+  top: 80px;
+  left: 25px;
+}
+.page-decor__star--alt-3 {
+  bottom: 100px;
+  right: 40px;
+}
+.page-decor__star--alt-4 {
+  bottom: 60px;
+  left: 20px;
+}
+
+@keyframes starFloat {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(8deg);
+  }
+}

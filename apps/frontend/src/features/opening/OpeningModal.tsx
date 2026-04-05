@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   openingService,
@@ -10,7 +10,9 @@ import type { Card } from "../../services/card.service";
 import "./OpeningModal.css";
 
 // ── Rareté → couleur ─────────────────────────────────────────────────────────
-const RARITY_ORDER = [
+
+/** Du plus rare au moins rare (pour getMaxRarity) */
+const RARITY_ORDER_DESC = [
   "secret",
   "legendary",
   "epic",
@@ -19,13 +21,23 @@ const RARITY_ORDER = [
   "common",
 ];
 
+/** Du moins rare au plus rare (pour la cascade de flash) */
+const RARITY_ORDER_ASC = [
+  "common",
+  "uncommon",
+  "rare",
+  "epic",
+  "legendary",
+  "secret",
+];
+
 const RARITY_FLASH: Record<string, string> = {
-  common: "rgba(176,184,176,0.6)",
-  uncommon: "rgba(112,184,112,0.6)",
-  rare: "rgba(104,152,216,0.7)",
-  epic: "rgba(152, 96,200,0.7)",
-  legendary: "rgba(216,160, 48,0.8)",
-  secret: "rgba(200, 80,160,0.85)",
+  common: "rgba(176,184,176,0.65)",
+  uncommon: "rgba(112,184,112,0.65)",
+  rare: "rgba(104,152,216,0.72)",
+  epic: "rgba(152, 96,200,0.72)",
+  legendary: "rgba(216,160, 48,0.82)",
+  secret: "rgba(200, 80,160,0.88)",
 };
 
 const RARITY_GLOW: Record<string, string> = {
@@ -37,11 +49,24 @@ const RARITY_GLOW: Record<string, string> = {
   secret: "#c850a0",
 };
 
+/** Renvoie la couleur glow de la rareté maximale trouvée dans les cartes */
 function getMaxRarity(cards: OpenedCard[]): string {
-  for (const r of RARITY_ORDER) {
+  for (const r of RARITY_ORDER_DESC) {
     if (cards.some((c) => c.rarity.toLowerCase() === r)) return r;
   }
   return "common";
+}
+
+/**
+ * Construit la séquence de couleurs pour le cascade de flash :
+ * on retient uniquement les raretés présentes, du plus bas au plus haut.
+ * Ex : [common, rare, legendary] → [gris, bleu, or]
+ */
+function getRarityCascade(cards: OpenedCard[]): string[] {
+  const present = new Set(cards.map((c) => c.rarity.toLowerCase()));
+  return RARITY_ORDER_ASC.filter((r) => present.has(r)).map(
+    (r) => RARITY_FLASH[r],
+  );
 }
 
 function toCard(c: OpenedCard): Card {
@@ -60,7 +85,11 @@ function toCard(c: OpenedCard): Card {
   };
 }
 
-type Phase = "idle" | "flash" | "revealing" | "results";
+// ── Durée de chaque flash individuel (ms) ────────────────────────────────────
+const FLASH_STEP_MS = 380;
+
+// ── Types ────────────────────────────────────────────────────────────────────
+type Phase = "idle" | "loading" | "flash" | "revealing" | "results";
 
 export interface OpeningTarget {
   type: "booster" | "bundle";
@@ -74,6 +103,7 @@ interface OpeningModalProps {
   onDone?: () => void;
 }
 
+// ── Composant ─────────────────────────────────────────────────────────────────
 export default function OpeningModal({
   target,
   onClose,
@@ -84,25 +114,53 @@ export default function OpeningModal({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [error, setError] = useState("");
 
+  // Cascade flash
+  const [cascadeColors, setCascadeColors] = useState<string[]>([]);
+  const [flashStep, setFlashStep] = useState(0);
+
   const icon = target.type === "booster" ? "📦" : "🎁";
   const cards = result?.cards ?? [];
   const maxRarity = getMaxRarity(cards);
-  const flashColor = RARITY_FLASH[maxRarity] ?? RARITY_FLASH.common;
   const glowColor = RARITY_GLOW[maxRarity] ?? RARITY_GLOW.common;
 
+  // ── Cascade automatique ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== "flash") return;
+
+    // Tous les flashes ont été joués → passer à la révélation
+    if (flashStep >= cascadeColors.length) {
+      const t = setTimeout(() => {
+        setCurrentIdx(0);
+        setPhase("revealing");
+      }, 120);
+      return () => clearTimeout(t);
+    }
+
+    // Passer au flash suivant après FLASH_STEP_MS
+    const t = setTimeout(() => {
+      setFlashStep((s) => s + 1);
+    }, FLASH_STEP_MS);
+    return () => clearTimeout(t);
+  }, [phase, flashStep, cascadeColors]);
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleOpen = async () => {
     setError("");
-    setPhase("flash");
+    setPhase("loading"); // animation de chargement pendant l'appel API
+
     try {
       const res =
         target.type === "booster"
           ? await openingService.openBooster(target.id)
           : await openingService.openBundle(target.id);
+
       setResult(res);
-      setTimeout(() => {
-        setCurrentIdx(0);
-        setPhase("revealing");
-      }, 900);
+
+      // Calculer la cascade de couleurs et démarrer
+      const colors = getRarityCascade(res.cards);
+      setCascadeColors(colors.length > 0 ? colors : [RARITY_FLASH.common]);
+      setFlashStep(0);
+      setPhase("flash");
     } catch {
       setError("Erreur lors de l'ouverture.");
       setPhase("idle");
@@ -119,43 +177,56 @@ export default function OpeningModal({
     onClose();
   };
 
+  // ── Couleur courante du flash ─────────────────────────────────────────────
+  const currentFlashColor =
+    flashStep < cascadeColors.length ? cascadeColors[flashStep] : "transparent";
+
   return (
     <div
       className="opening-overlay"
       onClick={(e) => {
-        if (e.target === e.currentTarget && phase !== "flash") handleClose();
+        if (
+          e.target === e.currentTarget &&
+          phase !== "flash" &&
+          phase !== "loading"
+        )
+          handleClose();
       }}
     >
-      {/* Flash coloré selon rareté max */}
+      {/* ── Cascade de flashes (un par rareté, du plus bas au plus haut) ── */}
       <AnimatePresence>
-        {phase === "flash" && (
+        {phase === "flash" && flashStep < cascadeColors.length && (
           <motion.div
+            key={`flash-${flashStep}`}
             className="opening-flash"
             style={{
-              background: flashColor,
-              boxShadow: `0 0 120px 60px ${flashColor}`,
+              background: currentFlashColor,
+              boxShadow: `0 0 160px 80px ${currentFlashColor}`,
             }}
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 1, 0] }}
-            transition={{ duration: 0.9, times: [0, 0.2, 0.7, 1] }}
+            animate={{ opacity: [0, 1, 0.85] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: FLASH_STEP_MS / 1000, ease: "easeInOut" }}
           />
         )}
       </AnimatePresence>
 
       <div className="opening-modal">
-        {phase !== "flash" && (
+        {phase !== "flash" && phase !== "loading" && (
           <button className="opening-modal__close" onClick={handleClose}>
             ✕
           </button>
         )}
 
         <AnimatePresence mode="wait">
-          {/* ── Pack fermé ── */}
+          {/* ── Pack fermé (idle) ── */}
           {phase === "idle" && (
             <motion.div
               key="idle"
               className="opening-pack"
-              exit={{ scale: 2, opacity: 0, filter: "brightness(3)" }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ scale: 2.2, opacity: 0, filter: "brightness(4)" }}
               transition={{ duration: 0.35 }}
             >
               <motion.div
@@ -178,7 +249,47 @@ export default function OpeningModal({
             </motion.div>
           )}
 
-          {/* ── Révélation une par une ── */}
+          {/* ── Chargement (appel API en cours) ── */}
+          {phase === "loading" && (
+            <motion.div
+              key="loading"
+              className="opening-pack"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{
+                scale: 3,
+                opacity: 0,
+                filter: "brightness(5)",
+                transition: { duration: 0.25 },
+              }}
+            >
+              <motion.div
+                className="opening-pack__icon"
+                animate={{
+                  rotate: [-4, 4, -6, 6, -3, 3, 0],
+                  scale: [1, 1.06, 0.97, 1.08, 0.96, 1.05, 1],
+                  y: [0, -4, 0, -6, 0, -3, 0],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 0.55,
+                  ease: "easeInOut",
+                }}
+              >
+                {icon}
+              </motion.div>
+              <div className="opening-pack__name">{target.name}</div>
+              <motion.div
+                className="opening-pack__hint"
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ repeat: Infinity, duration: 1.1 }}
+              >
+                Ouverture en cours…
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* ── Révélation carte par carte ── */}
           {phase === "revealing" && cards[currentIdx] && (
             <motion.div
               key="revealing"
@@ -210,7 +321,10 @@ export default function OpeningModal({
                   <div
                     className="opening-reveal__glow"
                     style={{
-                      boxShadow: `0 0 40px 15px ${RARITY_GLOW[cards[currentIdx].rarity.toLowerCase()] ?? "#fff"}55`,
+                      boxShadow: `0 0 40px 15px ${
+                        RARITY_GLOW[cards[currentIdx].rarity.toLowerCase()] ??
+                        "#fff"
+                      }55`,
                     }}
                   />
                   <CardDisplay
