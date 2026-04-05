@@ -7,7 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
-import { QuestModule } from 'src/quests/quests.module';
+import { QuestModule } from '../quests/quests.module';
 
 @Module({
   imports: [
