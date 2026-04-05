@@ -7,9 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+
       devOptions: {
         enabled: true,
       },
+
       manifest: {
         name: "PipouTCG",
         short_name: "PipouTCG",
@@ -38,8 +40,14 @@ export default defineConfig({
           },
         ],
       },
+
       workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+
         runtimeCaching: [
           {
             // API backend — network first, fallback cache 5min
@@ -55,13 +63,14 @@ export default defineConfig({
             },
           },
           {
+            // Images externes (i.ibb.co) — Cache first pour la performance
             urlPattern: /^https:\/\/i\.ibb\.co\/.*/i,
             handler: "CacheFirst",
             options: {
               cacheName: "images-cache",
               expiration: {
                 maxEntries: 200,
-                maxAgeSeconds: 7 * 24 * 60 * 60,
+                maxAgeSeconds: 7 * 24 * 60 * 60, // 7 jours
               },
             },
           },

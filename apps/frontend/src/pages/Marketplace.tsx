@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   transactionService,
   ProductType,
-  type Transaction,
   type CreateListingData,
 } from "../services/transaction.service";
 import { userService, type UserInventory } from "../services/user.service";
