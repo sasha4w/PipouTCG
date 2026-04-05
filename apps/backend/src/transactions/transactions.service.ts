@@ -200,9 +200,9 @@ export class TransactionService {
         throw new BadRequestException('Achat de sa propre annonce interdit');
       const totalPriceNum = Number(listing.totalPrice);
       const buyerGoldNum = Number(buyer.gold);
-      if (buyer.gold < listing.totalPrice)
+      if (buyerGoldNum < totalPriceNum) {
         throw new BadRequestException('Or insuffisant.');
-
+      }
       // 💰 Transfert d'argent
       buyer.gold = buyerGoldNum - totalPriceNum;
       buyer.moneySpent = Number(buyer.moneySpent) + totalPriceNum;
