@@ -198,15 +198,16 @@ export class TransactionService {
 
       if (buyer.id === seller.id)
         throw new BadRequestException('Achat de sa propre annonce interdit');
-
+      const totalPriceNum = Number(listing.totalPrice);
+      const buyerGoldNum = Number(buyer.gold);
       if (buyer.gold < listing.totalPrice)
         throw new BadRequestException('Or insuffisant.');
 
       // 💰 Transfert d'argent
-      buyer.gold -= listing.totalPrice;
-      buyer.moneySpent += listing.totalPrice;
-      seller.gold += listing.totalPrice;
-      seller.moneyEarned += listing.totalPrice;
+      buyer.gold = buyerGoldNum - totalPriceNum;
+      buyer.moneySpent = Number(buyer.moneySpent) + totalPriceNum;
+      seller.gold = Number(seller.gold) + totalPriceNum;
+      seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
       // 📦 Transfert de l'objet
       await this.giveItemToBuyer(manager, listing, buyerId);

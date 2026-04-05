@@ -17,64 +17,64 @@ import { TransactionStatus } from './enums/transaction-status.enum';
 @Entity('transaction')
 export class Transaction {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number; // Ajout du ! ici
 
   // --- RELATIONS UTILISATEURS ---
   @ManyToOne(() => User, { nullable: true })
-  @JoinColumn({ name: 'buyer_id' }) // MySQL: buyer_id
-  buyer: User | null;
+  @JoinColumn({ name: 'buyer_id' })
+  buyer!: User | null;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'seller_id' }) // MySQL: seller_id
-  seller: User;
+  @JoinColumn({ name: 'seller_id' })
+  seller!: User;
 
   // --- RELATIONS OBJETS (READ-ONLY) ---
-  // On utilise 'product_id' car c'est le nom physique dans ta table MySQL
   @ManyToOne(() => Card, { nullable: true, createForeignKeyConstraints: false })
   @JoinColumn({ name: 'product_id' })
-  card: Card;
+  card!: Card;
 
   @ManyToOne(() => Booster, {
     nullable: true,
     createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'product_id' })
-  booster: Booster;
+  booster!: Booster;
 
   @ManyToOne(() => Bundle, {
     nullable: true,
     createForeignKeyConstraints: false,
   })
   @JoinColumn({ name: 'product_id' })
-  bundle: Bundle;
+  bundle!: Bundle;
 
   // --- COLONNES DE DONNÉES ---
 
   @Column({ name: 'product_type', type: 'enum', enum: ProductType })
-  productType: ProductType;
+  productType!: ProductType;
 
-  @Column({ name: 'product_id' }) // On force le nom product_id ici
-  productId: number;
+  @Column({ name: 'product_id' })
+  productId!: number;
 
   @Column()
-  quantity: number;
+  quantity!: number;
 
+  // Attention : bigint en DB est renvoyé en string par JS
   @Column({ name: 'unit_price', type: 'bigint' })
-  unitPrice: number;
+  unitPrice!: number;
 
   @Column({ name: 'total_price', type: 'bigint' })
-  totalPrice: number;
+  totalPrice!: number;
 
   @Column({
     type: 'enum',
     enum: TransactionStatus,
     default: TransactionStatus.PENDING,
   })
-  status: TransactionStatus;
+  status!: TransactionStatus;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
