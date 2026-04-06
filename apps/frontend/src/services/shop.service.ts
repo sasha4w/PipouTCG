@@ -28,19 +28,19 @@ export const shopService = {
 
   async buyBooster(
     boosterId: number,
+    quantity = 1,
   ): Promise<{ success: boolean; newBalance: number }> {
-    const res = await api.post(`/boosters/${boosterId}/buy`);
-    // Backend retourne { message, goldSpent, goldRemaining }
+    const res = await api.post(`/boosters/${boosterId}/buy`, { quantity });
     return { success: true, newBalance: res.data.goldRemaining };
   },
 
   async buyBundle(
     bundleId: number,
+    quantity = 1,
   ): Promise<{ success: boolean; newBalance: number }> {
-    const res = await api.post(`/bundles/${bundleId}/buy`);
+    const res = await api.post(`/bundles/${bundleId}/buy`, { quantity });
     return { success: true, newBalance: res.data.goldRemaining };
   },
-
   async buyBanner(
     bannerId: number,
   ): Promise<{ success: boolean; newBalance: number }> {

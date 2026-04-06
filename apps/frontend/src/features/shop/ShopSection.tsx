@@ -25,15 +25,17 @@ function ShopItemCard({
 }: ShopItemCardProps) {
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
 
   const handleBuy = async () => {
+    if (quantity < 1) return;
     setBuying(true);
     setError("");
     try {
       const res =
         type === "BOOSTER"
-          ? await shopService.buyBooster(id)
-          : await shopService.buyBundle(id);
+          ? await shopService.buyBooster(id, quantity)
+          : await shopService.buyBundle(id, quantity);
       onBought?.(res.newBalance);
     } catch {
       setError("Solde insuffisant");
@@ -48,11 +50,40 @@ function ShopItemCard({
       <div className="shop-item__name">{name}</div>
       <div className="shop-item__meta">{meta}</div>
       <div className="shop-item__price">
-        {price} <IconGold size={13} color="#7a4a00" />
+        {price * quantity} <IconGold size={13} color="#7a4a00" />
       </div>
+
+      <div className="shop-item__qty">
+        <button
+          className="shop-item__qty-btn"
+          onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+          disabled={buying || quantity <= 1}
+        >
+          −
+        </button>
+        <input
+          className="shop-item__qty-input"
+          type="number"
+          min={1}
+          value={quantity}
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10);
+            if (!isNaN(v) && v >= 1) setQuantity(v);
+          }}
+          disabled={buying}
+        />
+        <button
+          className="shop-item__qty-btn"
+          onClick={() => setQuantity((q) => q + 1)}
+          disabled={buying}
+        >
+          +
+        </button>
+      </div>
+
       {error && <span className="shop-item__error">{error}</span>}
       <button className="shop-item__btn" onClick={handleBuy} disabled={buying}>
-        {buying ? "..." : "Acheter"}
+        {buying ? `Achat ${quantity}x...` : `Acheter ×${quantity}`}
       </button>
     </div>
   );
