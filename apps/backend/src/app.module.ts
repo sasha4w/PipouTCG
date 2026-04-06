@@ -20,8 +20,10 @@ import { ShopModule } from './shop/shop.module';
 import { CustomNamingStrategy } from './database/naming.strategy';
 import { validateEnv } from './config/env.validation';
 import { Buffer } from 'buffer';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,

@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager, Not } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Transaction } from './transaction.entity';
 import { User } from '../users/user.entity';
 import { UserCard } from '../users/user-card.entity';
@@ -11,31 +12,39 @@ import { TransactionStatus } from './enums/transaction-status.enum';
 import { ProductType } from './enums/product-type.enum';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
+// ── Payload émis quand une vente est conclue ──────────────────────────────────
+export interface ListingSoldPayload {
+  sellerId: number;
+  buyerUsername: string;
+  itemName: string;
+  totalPrice: number;
+  transactionId: number;
+}
+
 @Injectable()
 export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
     private dataSource: DataSource,
+    private eventEmitter: EventEmitter2, // ← injection
   ) {}
 
   // ============================================================
-  // 🔍 LECTURE DES ANNONCES (AVEC RELATIONS POUR LE FRONTEND)
+  // 🔍 LECTURE DES ANNONCES
   // ============================================================
 
   async findAll(pagination: PaginationDto = {}) {
-    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
-
+    const { page = 1, limit = 20 } = pagination;
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where: { status: TransactionStatus.PENDING },
         order: { createdAt: 'DESC' },
-        relations: ['seller', 'card', 'booster', 'bundle'], // ✅ Ajout des relations
+        relations: ['seller', 'card', 'booster', 'bundle'],
         skip: (page - 1) * limit,
         take: limit,
       },
     );
-
     return {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -43,20 +52,15 @@ export class TransactionService {
   }
 
   async findOtherListings(pagination: PaginationDto, userId: number) {
-    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
+    const { page = 1, limit = 20 } = pagination;
     const skip = (page - 1) * limit;
-
     const [data, total] = await this.transactionRepository.findAndCount({
-      where: {
-        status: TransactionStatus.PENDING,
-        seller: { id: Not(userId) },
-      },
-      relations: ['seller', 'card', 'booster', 'bundle'], // ✅ Ajout des relations
+      where: { status: TransactionStatus.PENDING, seller: { id: Not(userId) } },
+      relations: ['seller', 'card', 'booster', 'bundle'],
       order: { createdAt: 'DESC' },
       take: limit,
-      skip: skip,
+      skip,
     });
-
     return {
       data,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -64,21 +68,16 @@ export class TransactionService {
   }
 
   async findUserListings(pagination: PaginationDto, userId: number) {
-    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
-
+    const { page = 1, limit = 20 } = pagination;
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
-        where: {
-          status: TransactionStatus.PENDING,
-          seller: { id: userId },
-        },
+        where: { status: TransactionStatus.PENDING, seller: { id: userId } },
         order: { createdAt: 'DESC' },
-        relations: ['seller', 'card', 'booster', 'bundle'], // ✅ Ajout des relations
+        relations: ['seller', 'card', 'booster', 'bundle'],
         skip: (page - 1) * limit,
         take: limit,
       },
     );
-
     return {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -86,18 +85,16 @@ export class TransactionService {
   }
 
   async getUserHistory(userId: number, pagination: PaginationDto = {}) {
-    const { page = 1, limit = 20 } = pagination; // ✅ Fix TS "possibly undefined"
-
+    const { page = 1, limit = 20 } = pagination;
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
         order: { createdAt: 'DESC' },
-        relations: ['buyer', 'seller', 'card', 'booster', 'bundle'], // ✅ Historique complet
+        relations: ['buyer', 'seller', 'card', 'booster', 'bundle'],
         skip: (page - 1) * limit,
         take: limit,
       },
     );
-
     return {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
@@ -105,7 +102,7 @@ export class TransactionService {
   }
 
   // ============================================================
-  // 🟡 ACTIONS : CRÉER / ANNULER
+  // 🟡 CRÉER / ANNULER
   // ============================================================
 
   async createListing(dto: CreateListingDto, sellerId: number) {
@@ -113,10 +110,7 @@ export class TransactionService {
       const { Entity, relationKey } = this.mapProductType(dto.productType);
 
       const inventoryItem = await manager.findOne(Entity, {
-        where: {
-          [relationKey]: { id: dto.productId },
-          user: { id: sellerId },
-        },
+        where: { [relationKey]: { id: dto.productId }, user: { id: sellerId } },
         relations: [relationKey],
         lock: { mode: 'pessimistic_write' },
       });
@@ -127,16 +121,13 @@ export class TransactionService {
         );
       }
 
-      // On décrémente le stock de l'inventaire
       inventoryItem.quantity -= dto.quantity;
       await manager.save(inventoryItem);
 
-      // Création de l'annonce en liant l'objet statique pour les relations futures
       const listing = manager.getRepository(Transaction).create({
         seller: { id: sellerId } as any,
         productType: dto.productType,
         productId: dto.productId,
-        // On lie dynamiquement la relation pour que le .find() fonctionne après
         [relationKey]: { id: dto.productId },
         quantity: dto.quantity,
         unitPrice: dto.unitPrice,
@@ -144,7 +135,12 @@ export class TransactionService {
         status: TransactionStatus.PENDING,
       });
 
-      return manager.save(listing);
+      // Recharger avec les relations pour renvoyer le nom au frontend
+      const saved = await manager.save(listing);
+      return manager.findOne(Transaction, {
+        where: { id: saved.id },
+        relations: ['seller', relationKey],
+      });
     });
   }
 
@@ -163,21 +159,20 @@ export class TransactionService {
         throw new BadRequestException('Action non autorisée');
 
       await this.restoreReservedItem(manager, listing, sellerId);
-
       listing.status = TransactionStatus.CANCELLED;
       return manager.save(listing);
     });
   }
 
   // ============================================================
-  // 🟢 ACTION : ACHETER
+  // 🟢 ACHETER — émet un événement SSE après la vente
   // ============================================================
 
   async buyListing(transactionId: number, buyerId: number) {
-    return this.dataSource.transaction(async (manager) => {
+    const listing = await this.dataSource.transaction(async (manager) => {
       const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
-        relations: ['seller'],
+        relations: ['seller', 'card', 'booster', 'bundle'],
         lock: { mode: 'pessimistic_write' },
       });
 
@@ -198,30 +193,48 @@ export class TransactionService {
 
       if (buyer.id === seller.id)
         throw new BadRequestException('Achat de sa propre annonce interdit');
+
       const totalPriceNum = Number(listing.totalPrice);
-      const buyerGoldNum = Number(buyer.gold);
-      if (buyerGoldNum < totalPriceNum) {
+      if (Number(buyer.gold) < totalPriceNum)
         throw new BadRequestException('Or insuffisant.');
-      }
-      // 💰 Transfert d'argent
-      buyer.gold = buyerGoldNum - totalPriceNum;
+
+      buyer.gold = Number(buyer.gold) - totalPriceNum;
       buyer.moneySpent = Number(buyer.moneySpent) + totalPriceNum;
       seller.gold = Number(seller.gold) + totalPriceNum;
       seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
-      // 📦 Transfert de l'objet
       await this.giveItemToBuyer(manager, listing, buyerId);
 
       listing.status = TransactionStatus.COMPLETED;
       listing.buyer = buyer;
-
       await manager.save([buyer, seller, listing]);
-      return listing;
+
+      return { listing, seller, buyer };
     });
+
+    // ✅ Hors de la transaction DB → émettre l'événement SSE
+    // Le nom de l'item est déjà chargé grâce aux relations dans findOne ci-dessus
+    const itemName =
+      listing.listing.card?.name ||
+      listing.listing.booster?.name ||
+      listing.listing.bundle?.name ||
+      `Objet #${listing.listing.productId}`;
+
+    const payload: ListingSoldPayload = {
+      sellerId: listing.seller.id,
+      buyerUsername: listing.buyer.username,
+      itemName,
+      totalPrice: Number(listing.listing.totalPrice),
+      transactionId,
+    };
+
+    this.eventEmitter.emit('listing.sold', payload);
+
+    return listing.listing;
   }
 
   // ============================================================
-  // 🔒 LOGIQUE INTERNE (PRIVATE)
+  // 🔒 LOGIQUE INTERNE
   // ============================================================
 
   private async giveItemToBuyer(
@@ -230,7 +243,6 @@ export class TransactionService {
     buyerId: number,
   ) {
     const { Entity, relationKey } = this.mapProductType(listing.productType);
-
     let buyerItem = await manager.findOne(Entity, {
       where: {
         user: { id: buyerId },
@@ -238,18 +250,16 @@ export class TransactionService {
       },
       lock: { mode: 'pessimistic_write' },
     });
-
     if (buyerItem) {
       buyerItem.quantity += listing.quantity;
-      await manager.save(buyerItem);
     } else {
       buyerItem = manager.create(Entity, {
         user: { id: buyerId },
         [relationKey]: { id: listing.productId },
         quantity: listing.quantity,
       });
-      await manager.save(buyerItem);
     }
+    await manager.save(buyerItem);
   }
 
   private async restoreReservedItem(
@@ -258,7 +268,6 @@ export class TransactionService {
     sellerId: number,
   ) {
     const { Entity, relationKey } = this.mapProductType(listing.productType);
-
     const item = await manager.findOne(Entity, {
       where: {
         user: { id: sellerId },
@@ -266,7 +275,6 @@ export class TransactionService {
       },
       lock: { mode: 'pessimistic_write' },
     });
-
     if (!item) throw new BadRequestException('Inventaire introuvable');
     item.quantity += listing.quantity;
     await manager.save(item);

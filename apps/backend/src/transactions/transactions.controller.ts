@@ -8,8 +8,14 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Observable, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { TransactionService } from './transactions.service';
+import type { ListingSoldPayload } from './transactions.service';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
@@ -17,16 +23,53 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('transactions')
 export class TransactionController {
+  // Subject global : tous les clients SSE connectés reçoivent les événements
+  // filtrés ensuite par sellerId côté serveur avant envoi
+  private readonly sseSubject = new Subject<ListingSoldPayload>();
+
   constructor(private readonly transactionService: TransactionService) {}
 
-  // Toutes les annonces PENDING (pour l'admin)
+  // ─────────────────────────────────────────────────────────────────
+  // 📡 SSE — GET /transactions/events?userId=42
+  //
+  // Le client s'abonne une fois au montage du composant.
+  // Seuls les événements destinés à cet userId sont transmis.
+  // ─────────────────────────────────────────────────────────────────
+  @UseGuards(JwtAuthGuard)
+  @Sse('events')
+  sseEvents(@Req() req: any): Observable<MessageEvent> {
+    const userId: number = req.user.userId;
+
+    return this.sseSubject.asObservable().pipe(
+      // Ne transmettre que les événements destinés à CE vendeur
+      filter((payload) => payload.sellerId === userId),
+      map(
+        (payload): MessageEvent => ({
+          data: JSON.stringify(payload), // sérialisé en JSON pour le client
+          type: 'listing.sold',
+        }),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // 🔔 Écoute de l'EventEmitter → pousse dans le Subject SSE
+  // ─────────────────────────────────────────────────────────────────
+  @OnEvent('listing.sold')
+  handleListingSold(payload: ListingSoldPayload) {
+    this.sseSubject.next(payload);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // ROUTES CLASSIQUES
+  // ─────────────────────────────────────────────────────────────────
+
   @UseGuards(AdminGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.transactionService.findAll(pagination);
   }
 
-  // Toutes les annonces PENDING (sauf celles de l'utilisateur connecté)
   @UseGuards(JwtAuthGuard)
   @Get('offers')
   findOtherListings(@Query() pagination: PaginationDto, @Req() req: any) {
@@ -36,7 +79,6 @@ export class TransactionController {
     );
   }
 
-  // Annonces PENDING de l'utilisateur connecté
   @UseGuards(JwtAuthGuard)
   @Get('me')
   findUserListings(@Query() pagination: PaginationDto, @Req() req: any) {
