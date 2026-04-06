@@ -21,7 +21,15 @@ async function bootstrap() {
 
   app.enableCors({
     origin: origins.length === 1 ? origins[0] : origins,
-    credentials: true, // INDISPENSABLE pour envoyer/recevoir les cookies
+    credentials: true,
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Cache-Control',
+    ],
+    exposedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.useGlobalPipes(

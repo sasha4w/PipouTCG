@@ -169,14 +169,14 @@ export class TransactionService {
   // ============================================================
 
   async buyListing(transactionId: number, buyerId: number) {
-    const listing = await this.dataSource.transaction(async (manager) => {
-      const listing = await manager.findOne(Transaction, {
+    const result = await this.dataSource.transaction(async (manager) => {
+      const transaction = await manager.findOne(Transaction, {
         where: { id: transactionId },
         relations: ['seller', 'card', 'booster', 'bundle'],
         lock: { mode: 'pessimistic_write' },
       });
 
-      if (!listing || listing.status !== TransactionStatus.PENDING)
+      if (!transaction || transaction.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Annonce indisponible.');
 
       const buyer = await manager.findOne(User, {
@@ -186,7 +186,7 @@ export class TransactionService {
       if (!buyer) throw new BadRequestException('Acheteur introuvable.');
 
       const seller = await manager.findOne(User, {
-        where: { id: listing.seller.id },
+        where: { id: transaction.seller.id },
         lock: { mode: 'pessimistic_write' },
       });
       if (!seller) throw new BadRequestException('Vendeur introuvable.');
@@ -194,7 +194,7 @@ export class TransactionService {
       if (buyer.id === seller.id)
         throw new BadRequestException('Achat de sa propre annonce interdit');
 
-      const totalPriceNum = Number(listing.totalPrice);
+      const totalPriceNum = Number(transaction.totalPrice);
       if (Number(buyer.gold) < totalPriceNum)
         throw new BadRequestException('Or insuffisant.');
 
@@ -203,34 +203,31 @@ export class TransactionService {
       seller.gold = Number(seller.gold) + totalPriceNum;
       seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
-      await this.giveItemToBuyer(manager, listing, buyerId);
+      await this.giveItemToBuyer(manager, transaction, buyerId);
 
-      listing.status = TransactionStatus.COMPLETED;
-      listing.buyer = buyer;
-      await manager.save([buyer, seller, listing]);
+      transaction.status = TransactionStatus.COMPLETED;
+      transaction.buyer = buyer;
+      await manager.save([buyer, seller, transaction]);
 
-      return { listing, seller, buyer };
+      return { transaction, seller, buyer };
     });
 
-    // ✅ Hors de la transaction DB → émettre l'événement SSE
-    // Le nom de l'item est déjà chargé grâce aux relations dans findOne ci-dessus
     const itemName =
-      listing.listing.card?.name ||
-      listing.listing.booster?.name ||
-      listing.listing.bundle?.name ||
-      `Objet #${listing.listing.productId}`;
+      result.transaction.card?.name ||
+      result.transaction.booster?.name ||
+      result.transaction.bundle?.name ||
+      `Objet #${result.transaction.productId}`;
 
     const payload: ListingSoldPayload = {
-      sellerId: listing.seller.id,
-      buyerUsername: listing.buyer.username,
+      sellerId: result.seller.id,
+      buyerUsername: result.buyer.username,
       itemName,
-      totalPrice: Number(listing.listing.totalPrice),
+      totalPrice: Number(result.transaction.totalPrice),
       transactionId,
     };
 
     this.eventEmitter.emit('listing.sold', payload);
-
-    return listing.listing;
+    return result.transaction;
   }
 
   // ============================================================
