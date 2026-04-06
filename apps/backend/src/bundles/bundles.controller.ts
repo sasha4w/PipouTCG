@@ -42,8 +42,12 @@ export class BundlesController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/buy')
-  buyBundle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.bundlesService.buyBundle(id, req.user.userId);
+  buyBundle(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quantity') quantity = 1,
+    @Req() req: any,
+  ) {
+    return this.bundlesService.buyBundle(id, req.user.userId, quantity);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -153,26 +153,20 @@ export class BundlesService {
 
   // ── Achat / Ouverture ──────────────────────────────────────────────────────
 
-  async buyBundle(bundleId: number, userId: number) {
+  async buyBundle(bundleId: number, userId: number, quantity = 1) {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} introuvable`);
-
     const bundle = await this.findOne(bundleId);
-
-    if (Number(user.gold) < bundle.price) {
+    const totalCost = bundle.price * quantity;
+    if (Number(user.gold) < totalCost) {
       throw new BadRequestException('Pas assez de gold.');
     }
-
-    await this.usersService.spendGoldAndRecordBundlePurchase(
-      userId,
-      bundle.price,
-    );
-    await this.usersService.addBundleToUser(userId, bundleId, 1);
-
+    await this.usersService.spendGoldAndRecordBundlePurchase(userId, totalCost);
+    await this.usersService.addBundleToUser(userId, bundleId, quantity);
     return {
       message: `Bundle "${bundle.name}" acheté avec succès`,
-      goldSpent: bundle.price,
-      goldRemaining: Number(user.gold) - bundle.price,
+      goldSpent: totalCost,
+      goldRemaining: Number(user.gold) - totalCost,
     };
   }
 

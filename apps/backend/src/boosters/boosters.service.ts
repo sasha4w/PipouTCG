@@ -164,25 +164,22 @@ export class BoostersService {
 
   // ── ACHAT ─────────────────────────────────────────────────────────────────
 
-  async buyBooster(boosterId: number, userId: number) {
+  async buyBooster(boosterId: number, userId: number, quantity = 1) {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} not found`);
-
     const booster = await this.findOne(boosterId);
-
-    if (Number(user.gold) < booster.price) {
+    const totalCost = booster.price * quantity;
+    if (Number(user.gold) < totalCost) {
       throw new BadRequestException(
-        `Not enough gold. Required: ${booster.price}, available: ${user.gold}`,
+        `Not enough gold. Required: ${totalCost}, available: ${user.gold}`,
       );
     }
-
-    await this.usersService.spendGoldAndRecordPurchase(userId, booster.price);
-    await this.usersService.addBoosterToUser(userId, boosterId, 1);
-
+    await this.usersService.spendGoldAndRecordPurchase(userId, totalCost);
+    await this.usersService.addBoosterToUser(userId, boosterId, quantity);
     return {
       message: `Booster "${booster.name}" acheté avec succès`,
-      goldSpent: booster.price,
-      goldRemaining: Number(user.gold) - booster.price,
+      goldSpent: totalCost,
+      goldRemaining: Number(user.gold) - totalCost,
     };
   }
 
