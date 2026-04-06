@@ -1,11 +1,8 @@
-import { api, cookies } from "../api/api";
+import { api } from "../api/api";
 
 export const authService = {
   async login(email: string, password: string, rememberMe = false) {
     const res = await api.post("/auth/login", { email, password, rememberMe });
-
-    const expires = rememberMe ? 30 : undefined;
-    cookies.set("token", res.data.access_token, expires);
 
     return res.data;
   },
@@ -15,21 +12,14 @@ export const authService = {
     return res.data;
   },
 
-  logout() {
-    cookies.remove("token");
+  async logout() {
+    return await api.post("/auth/logout");
   },
-
-  isAuthenticated() {
-    const token = cookies.get("token");
-    if (!token) return false;
-
+  async checkAuth() {
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const isExpired = payload.exp * 1000 < Date.now();
-      if (isExpired) cookies.remove("token");
-      return !isExpired;
+      const res = await api.get("/auth/me");
+      return !!res.data;
     } catch {
-      cookies.remove("token");
       return false;
     }
   },

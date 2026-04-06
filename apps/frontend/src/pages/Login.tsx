@@ -45,6 +45,7 @@ const Login = () => {
         reset("login");
       } else if (mode === "login") {
         await authService.login(email, password, rememberMe);
+
         navigate("/");
       } else if (mode === "forgot") {
         await api.post("/auth/forgot-password", { email });

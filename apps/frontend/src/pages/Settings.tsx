@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import { useQueryClient } from "@tanstack/react-query";
@@ -55,10 +54,23 @@ function NotifItem({ label }: { label: string }) {
 }
 
 const Settings = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const handleLogout = async () => {
+    try {
+      // 1. On tente de prévenir le serveur (pour supprimer le cookie)
+      // On ajoute un .catch() vide pour ignorer l'erreur "Aborted" si elle arrive
+      await authService.logout().catch(() => {});
+    } catch (err) {
+      console.error("Erreur déconnexion", err);
+    } finally {
+      // 2. ON NETTOIE TOUT
+      queryClient.clear(); // Indispensable pour éviter que le Header crash
 
+      // 3. ON REDIRIGE (C'est le seul endroit où on le fait)
+      window.location.href = "/login";
+    }
+  };
   return (
     <div className="settings-page">
       <h1 className="settings-page__title">{t("settings.title")}</h1>
@@ -90,14 +102,7 @@ const Settings = () => {
         </div>
       </div>
 
-      <button
-        className="settings-logout-btn"
-        onClick={() => {
-          authService.logout();
-          queryClient.clear();
-          navigate("/login");
-        }}
-      >
+      <button className="settings-logout-btn" onClick={handleLogout}>
         {t("settings.logout")}
       </button>
     </div>

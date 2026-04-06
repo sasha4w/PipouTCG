@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { isAdmin } from "../utils/authUtils";
+import { useQuery } from "@tanstack/react-query";
+import { userService } from "../services/user.service";
+import { QUERY_KEYS } from "../utils/querykeys";
+import Loading from "../components/Loading";
 import CardSetManager from "../features/cards/CardSetManager";
 import CardManager from "../features/cards/CardManager";
 import BoosterManager from "../features/boosters/BoosterManager";
@@ -20,9 +23,14 @@ const TABS: { key: AdminTab; label: string; icon: string }[] = [
 
 export default function Admin() {
   const [tab, setTab] = useState<AdminTab>("cardsets");
-
-  if (!isAdmin()) return <Navigate to="/" replace />;
-
+  const { data: user, isLoading } = useQuery({
+    queryKey: QUERY_KEYS.profile,
+    queryFn: () => userService.getMe(),
+  });
+  if (isLoading) return <Loading message="Vérification des droits..." />;
+  if (!user || !user.is_admin) {
+    return <Navigate to="/" replace />;
+  }
   return (
     <div className="admin-page">
       <h1 className="admin-page__title">Dashboard Admin</h1>

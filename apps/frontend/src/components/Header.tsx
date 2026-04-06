@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SoundButton from "./SoundButton";
-import { isAdmin } from "../utils/authUtils";
 import "./Header.css";
+import { useQuery } from "@tanstack/react-query";
+import { userService } from "../services/user.service";
+import { QUERY_KEYS } from "../utils/querykeys";
 
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
@@ -261,9 +263,13 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
-
+  const { data: user } = useQuery({
+    queryKey: QUERY_KEYS.profile,
+    queryFn: () => userService.getMe(),
+    staleTime: 5 * 60 * 1000, // Garde l'info 5 min en mémoire
+  });
   useEffect(() => setMounted(true), []);
-
+  const isAdminUser = user?.is_admin === true;
   return (
     <header className="cc-header">
       <div
@@ -273,11 +279,10 @@ export default function Header() {
         <TitleStars />
       </div>
       <div className="cc-header__actions">
-        {isAdmin() && (
+        {isAdminUser && (
           <button
             className="cc-header__admin-btn"
             onClick={() => navigate("/admin")}
-            aria-label="Dashboard admin"
           >
             <IconCrown />
             <span>{t("header.admin")}</span>

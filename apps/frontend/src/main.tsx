@@ -10,8 +10,10 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        if (error.response?.status === 401) return false;
+        return failureCount < 1;
+      },
     },
   },
 });
