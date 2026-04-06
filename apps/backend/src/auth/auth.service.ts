@@ -30,20 +30,28 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
     const passwordToCompare = user?.password ?? this.DUMMY_HASH;
     const isValid = await bcrypt.compare(password, passwordToCompare);
+
     if (!user || !isValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // Fire and forget — pas d'await, le token est retourné immédiatement
+    // Tes quêtes (Fire and forget)
     this.questService
       .syncUserQuests(user.id)
       .catch((err) => console.error('syncUserQuests failed:', err));
 
-    const payload = { sub: user.id, is_admin: user.is_admin };
-    const expiresIn = rememberMe ? '30d' : '1d';
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      is_admin: user.is_admin,
+    };
+
+    // 1. Définir la durée en fonction du rememberMe
+    const duration = rememberMe ? '30d' : '1d';
 
     return {
-      access_token: this.jwtService.sign(payload, { expiresIn }),
+      // 2. PASSER la durée ici pour que le JWT expire en même temps que le Cookie
+      access_token: this.jwtService.sign(payload, { expiresIn: duration }),
       autoClaimedRewards: [],
     };
   }
