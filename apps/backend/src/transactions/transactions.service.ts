@@ -170,23 +170,26 @@ export class TransactionService {
 
   async buyListing(transactionId: number, buyerId: number) {
     const result = await this.dataSource.transaction(async (manager) => {
-      const transaction = await manager.findOne(Transaction, {
+      // 1. On récupère l'annonce avec ses relations pour avoir les noms (Card, Booster, etc.)
+      const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
         relations: ['seller', 'card', 'booster', 'bundle'],
         lock: { mode: 'pessimistic_write' },
       });
 
-      if (!transaction || transaction.status !== TransactionStatus.PENDING)
+      if (!listing || listing.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Annonce indisponible.');
 
+      // 2. Récupération de l'acheteur
       const buyer = await manager.findOne(User, {
         where: { id: buyerId },
         lock: { mode: 'pessimistic_write' },
       });
       if (!buyer) throw new BadRequestException('Acheteur introuvable.');
 
+      // 3. Récupération du vendeur
       const seller = await manager.findOne(User, {
-        where: { id: transaction.seller.id },
+        where: { id: listing.seller.id },
         lock: { mode: 'pessimistic_write' },
       });
       if (!seller) throw new BadRequestException('Vendeur introuvable.');
@@ -194,7 +197,8 @@ export class TransactionService {
       if (buyer.id === seller.id)
         throw new BadRequestException('Achat de sa propre annonce interdit');
 
-      const totalPriceNum = Number(transaction.totalPrice);
+      // 4. Vérification et transfert d'argent
+      const totalPriceNum = Number(listing.totalPrice);
       if (Number(buyer.gold) < totalPriceNum)
         throw new BadRequestException('Or insuffisant.');
 
@@ -203,31 +207,47 @@ export class TransactionService {
       seller.gold = Number(seller.gold) + totalPriceNum;
       seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
-      await this.giveItemToBuyer(manager, transaction, buyerId);
+      // 5. Transfert de l'objet dans l'inventaire
+      await this.giveItemToBuyer(manager, listing, buyerId);
 
-      transaction.status = TransactionStatus.COMPLETED;
-      transaction.buyer = buyer;
-      await manager.save([buyer, seller, transaction]);
+      // 6. SAUVEGARDE CIBLÉE
+      // On sauvegarde les users normalement
+      await manager.save([buyer, seller]);
 
-      return { transaction, seller, buyer };
+      // ✅ FIX ICI : On utilise update() au lieu de save() pour la Transaction.
+      // Cela évite que TypeORM ne regarde les relations nulles (card, booster...)
+      // et n'essaie de mettre product_id à NULL.
+      await manager.update(Transaction, transactionId, {
+        status: TransactionStatus.COMPLETED,
+        buyer: { id: buyerId } as any,
+        updatedAt: new Date(), // Optionnel mais propre
+      });
+
+      // On met à jour l'objet en mémoire pour le retour et le SSE
+      listing.status = TransactionStatus.COMPLETED;
+      listing.buyer = buyer;
+
+      return { listing, seller, buyer };
     });
 
+    // 7. Événement SSE (On utilise 'result' qui contient les objets mis à jour)
     const itemName =
-      result.transaction.card?.name ||
-      result.transaction.booster?.name ||
-      result.transaction.bundle?.name ||
-      `Objet #${result.transaction.productId}`;
+      result.listing.card?.name ||
+      result.listing.booster?.name ||
+      result.listing.bundle?.name ||
+      `Objet #${result.listing.productId}`;
 
     const payload: ListingSoldPayload = {
       sellerId: result.seller.id,
       buyerUsername: result.buyer.username,
       itemName,
-      totalPrice: Number(result.transaction.totalPrice),
+      totalPrice: Number(result.listing.totalPrice),
       transactionId,
     };
 
     this.eventEmitter.emit('listing.sold', payload);
-    return result.transaction;
+
+    return result.listing;
   }
 
   // ============================================================
