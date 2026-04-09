@@ -32,7 +32,7 @@ export default function Profile() {
     isLoading: l1,
     isError,
   } = useQuery({
-    queryKey: QUERY_KEYS.profile,
+    queryKey: QUERY_KEYS.myStats,
     queryFn: () => userService.getMyStats(),
   });
 

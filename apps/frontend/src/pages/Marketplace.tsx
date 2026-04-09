@@ -214,7 +214,7 @@ const Marketplace = () => {
       queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
         old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
       );
-
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
 
