@@ -9,101 +9,101 @@ import { Transaction } from '../transactions/transaction.entity';
 @Entity('user')
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ unique: true })
-  username: string;
+  username!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column()
-  password: string;
+  password!: string;
 
   @Column({ default: false })
-  is_admin: boolean;
+  is_admin!: boolean;
 
   @Column({ type: 'varchar', length: 64, nullable: true, default: null })
-  resetTokenHash: string | null;
+  resetTokenHash!: string | null;
 
   @Column({ type: 'timestamp', nullable: true, default: null })
-  resetTokenExpiry: Date | null;
+  resetTokenExpiry!: Date | null;
 
   // =========================
   // 🔒 PRIVACY
   // =========================
   @Column({ default: false })
-  isPrivate: boolean;
+  isPrivate!: boolean;
 
   // =========================
   // 💰 ECONOMIE
   // =========================
   @Column({ type: 'bigint', default: 0 })
-  gold: number;
+  gold!: number;
 
-  @Column({ type: 'bigint', default: 0 })
-  moneySpent: number;
+  @Column({ name: 'money_spent', type: 'bigint', default: 0 }) // Ajout du name
+  moneySpent!: number;
 
-  @Column({ type: 'bigint', default: 0 })
-  moneyEarned: number;
+  @Column({ name: 'money_earned', type: 'bigint', default: 0 }) // Ajout du name
+  moneyEarned!: number;
 
   // =========================
   // 📦 ACHATS
   // =========================
-  @Column({ default: 0 })
-  cardsBought: number;
+  @Column({ name: 'cards_bought', default: 0 }) // Ajout du name
+  cardsBought!: number;
 
-  @Column({ default: 0 })
-  boostersBought: number;
+  @Column({ name: 'boosters_bought', default: 0 }) // Ajout du name
+  boostersBought!: number;
 
-  @Column({ default: 0 })
-  bundlesBought: number;
+  @Column({ name: 'bundles_bought', default: 0 }) // Ajout du name
+  bundlesBought!: number;
 
   // =========================
   // 🏪 VENTES
   // =========================
-  @Column({ default: 0 })
-  cardsSold: number;
+  @Column({ name: 'cards_sold', default: 0 }) // Ajout du name
+  cardsSold!: number;
 
-  @Column({ default: 0 })
-  boostersSold: number;
+  @Column({ name: 'boosters_sold', default: 0 }) // Ajout du name
+  boostersSold!: number;
 
-  @Column({ default: 0 })
-  bundlesSold: number;
+  @Column({ name: 'bundles_sold', default: 0 }) // Ajout du name
+  bundlesSold!: number;
 
   // =========================
   // 🎮 PROGRESSION
   // =========================
   @Column({ default: 0 })
-  experience: number;
+  experience!: number;
 
-  @Column({ default: 0 })
-  boostersOpened: number;
+  @Column({ name: 'boosters_opened', default: 0 }) // Ajout du name
+  boostersOpened!: number;
 
-  @Column({ default: 0 })
-  setsCompleted: number;
+  @Column({ name: 'sets_completed', default: 0 }) // Ajout du name
+  setsCompleted!: number;
 
   // =========================
-  // 🔗 RELATIONS
+  // 🔗 RELATIONS (Ajoute aussi les !)
   // =========================
   @OneToMany(() => UserCard, (userCard) => userCard.user)
-  userCards: UserCard[];
+  userCards!: UserCard[];
 
   @OneToMany(() => UserBooster, (ub) => ub.user)
-  userBoosters: UserBooster[];
+  userBoosters!: UserBooster[];
 
   @OneToMany(() => UserBundle, (ub) => ub.user)
-  userBundles: UserBundle[];
+  userBundles!: UserBundle[];
 
   @OneToMany(() => UserQuest, (uq) => uq.user)
-  userQuests: UserQuest[];
+  userQuests!: UserQuest[];
 
   @OneToMany(() => BoosterOpenHistory, (boh) => boh.user)
-  boosterOpenHistories: BoosterOpenHistory[];
+  boosterOpenHistories!: BoosterOpenHistory[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.buyer)
-  purchases: Transaction[];
+  purchases!: Transaction[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.seller)
-  sales: Transaction[];
+  sales!: Transaction[];
 }
