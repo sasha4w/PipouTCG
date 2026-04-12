@@ -6,6 +6,7 @@ import {
   IsBoolean,
   IsDateString,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import { BannerItemType } from '../banner.entity';
 
@@ -41,8 +42,14 @@ export class CreateBannerDto {
   @IsDateString()
   startDate!: string;
 
+  /** Obligatoire uniquement si isPermanent est false/absent */
+  @ValidateIf((o) => !o.isPermanent)
   @IsDateString()
-  endDate!: string;
+  endDate?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPermanent?: boolean;
 
   @IsOptional()
   @IsBoolean()

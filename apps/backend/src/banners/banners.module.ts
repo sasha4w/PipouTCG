@@ -4,9 +4,16 @@ import { Banner } from './banner.entity';
 import { BannersService } from './banners.service';
 import { BannersController } from './banners.controller';
 import { UsersModule } from '../users/users.module';
+import { BoostersModule } from '../boosters/boosters.module';
+import { BundlesModule } from '../bundles/bundles.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Banner]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Banner]),
+    UsersModule,
+    BoostersModule,
+    BundlesModule,
+  ],
   controllers: [BannersController],
   providers: [BannersService],
   exports: [BannersService],

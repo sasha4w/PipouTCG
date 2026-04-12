@@ -37,8 +37,11 @@ export class Banner {
   @Column({ type: 'timestamp' })
   startDate!: Date;
 
-  @Column({ type: 'timestamp' })
-  endDate!: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  endDate!: Date | null;
+
+  @Column({ default: false })
+  isPermanent!: boolean;
 
   @Column({ default: true })
   isActive!: boolean;
