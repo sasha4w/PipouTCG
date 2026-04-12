@@ -11,13 +11,22 @@ export interface Banner {
   originalPrice: number;
   bannerPrice: number;
   startDate: string;
-  endDate: string;
+  endDate: string | null;
+  isPermanent: boolean;
   isActive: boolean;
 }
 
 export const bannerService = {
   async getActive(): Promise<Banner[]> {
     const res = await api.get("/banners/active");
+    return res.data;
+  },
+
+  async buy(
+    bannerId: number,
+    quantity = 1,
+  ): Promise<{ message: string; goldSpent: number; goldRemaining: number }> {
+    const res = await api.post(`/banners/${bannerId}/buy`, { quantity });
     return res.data;
   },
 

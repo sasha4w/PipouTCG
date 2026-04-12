@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+// Import des nouveaux hooks et des clés
+import { useQuests, useClaimReward } from "../../hooks/useGameData";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import { questService } from "../../services/quest.service";
 import type {
   UserQuest,
@@ -131,7 +135,7 @@ function QuestItem({
         <button
           className="quest-item__claim-btn"
           onClick={() => onClaim(quest.id)}
-          disabled={claiming === quest.id}
+          disabled={claiming !== null} // On bloque si n'importe quel claim est en cours
         >
           {claiming === quest.id ? "..." : t("quests.claim")}
         </button>
@@ -146,19 +150,16 @@ function QuestItem({
   );
 }
 
-// ── QuestsPanel ───────────────────────────────────────────────────────────────
-interface QuestsPanelProps {
-  quests: UserQuestsGrouped;
-  onQuestsUpdate: (quests: UserQuestsGrouped) => void;
-}
-
-export default function QuestsPanel({
-  quests,
-  onQuestsUpdate,
-}: QuestsPanelProps) {
+export default function QuestsPanel() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+
+  // 1. On récupère les données via le Hook (plus de props !)
+  const { data: quests, isLoading } = useQuests();
+  const claimMutation = useClaimReward();
+
   const [activeTab, setActiveTab] = useState<keyof UserQuestsGrouped>("DAILY");
-  const [claiming, setClaiming] = useState<number | null>(null);
+  const [isClaimingAll, setIsClaimingAll] = useState(false);
 
   const TABS: { key: keyof UserQuestsGrouped; labelKey: string }[] = [
     { key: "DAILY", labelKey: "quests.daily" },
@@ -168,27 +169,37 @@ export default function QuestsPanel({
     { key: "EVENT", labelKey: "quests.event" },
   ];
 
+  if (isLoading || !quests)
+    return <div className="quests-panel__loading">Chargement...</div>;
+
+  // On filtre les onglets qui ont des quêtes
   const visibleTabs = TABS.filter((tab) => quests[tab.key].length > 0);
   const currentList = quests[activeTab] ?? [];
 
-  const handleClaim = async (userQuestId: number) => {
-    setClaiming(userQuestId);
+  // 2. Gestion du "Claim All"
+  const handleClaimAll = async () => {
+    setIsClaimingAll(true);
     try {
-      await questService.claimReward(userQuestId);
-      const updated = await questService.getMyQuests();
-      onQuestsUpdate(updated);
-    } catch (e) {
-      console.error("Claim failed", e);
+      await questService.claimAllRewards();
+      // On rafraîchit tout
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
     } finally {
-      setClaiming(null);
+      setIsClaimingAll(false);
     }
   };
+
+  const claimableInTab = currentList.filter(
+    (q) => q.isCompleted && !q.rewardClaimed,
+  );
 
   return (
     <div className="quests-panel">
       <div className="quests-panel__header">
         <h2 className="quests-panel__title">{t("quests.title")}</h2>
       </div>
+
+      {/* FIX : On ré-intègre les onglets pour utiliser visibleTabs, setActiveTab et IconBell */}
       <div className="quests-panel__tabs">
         {visibleTabs.map((tab) => (
           <button
@@ -197,12 +208,28 @@ export default function QuestsPanel({
             onClick={() => setActiveTab(tab.key)}
           >
             {t(tab.labelKey)}
+            {/* On affiche la cloche si une quête est prête dans cet onglet */}
             {quests[tab.key].some((q) => q.isCompleted && !q.rewardClaimed) && (
-              <IconBell size={11} color="#eebc77" />
+              <IconBell size={11} color="#eebc77" style={{ marginLeft: 5 }} />
             )}
           </button>
         ))}
       </div>
+
+      <div className="quests-panel__list-actions">
+        {claimableInTab.length > 1 && (
+          <button
+            className="quests-panel__claim-all"
+            onClick={handleClaimAll}
+            disabled={isClaimingAll || claimMutation.isPending}
+          >
+            {isClaimingAll
+              ? "..."
+              : `${t("quests.claim_all")} (${claimableInTab.length})`}
+          </button>
+        )}
+      </div>
+
       <div className="quests-panel__list">
         {currentList.length === 0 ? (
           <p className="quests-panel__empty">{t("quests.empty")}</p>
@@ -211,8 +238,12 @@ export default function QuestsPanel({
             <QuestItem
               key={quest.id}
               quest={quest}
-              onClaim={handleClaim}
-              claiming={claiming}
+              onClaim={(id) => claimMutation.mutate(id)} // Utilise la mutation optimiste
+              claiming={
+                claimMutation.isPending
+                  ? (claimMutation.variables as number)
+                  : null
+              }
             />
           ))
         )}

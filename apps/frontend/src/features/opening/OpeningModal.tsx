@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   openingService,
   type OpenedCard,
@@ -113,7 +115,7 @@ export default function OpeningModal({
   const [result, setResult] = useState<OpeningResult | null>(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [error, setError] = useState("");
-
+  const queryClient = useQueryClient();
   // Cascade flash
   const [cascadeColors, setCascadeColors] = useState<string[]>([]);
   const [flashStep, setFlashStep] = useState(0);
@@ -155,7 +157,9 @@ export default function OpeningModal({
           : await openingService.openBundle(target.id);
 
       setResult(res);
-
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       // Calculer la cascade de couleurs et démarrer
       const colors = getRarityCascade(res.cards);
       setCascadeColors(colors.length > 0 ? colors : [RARITY_FLASH.common]);

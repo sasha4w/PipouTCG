@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import type { Banner } from "../../services/banner.service";
-import { shopService } from "../../services/shop.service";
+import { bannerService } from "../../services/banner.service";
 import { IconGold } from "../../components/Icons";
 import "./BannerCard.css";
 
-function useCountdown(endDate: string): string {
+function useCountdown(endDate: string | null): string | null {
   const calc = () => {
+    if (!endDate) return null;
     const diff = new Date(endDate).getTime() - Date.now();
     if (diff <= 0) return "Expiré";
     const d = Math.floor(diff / 86400000);
@@ -16,11 +17,14 @@ function useCountdown(endDate: string): string {
     return `${m}min restantes`;
   };
 
-  const [label, setLabel] = useState(calc);
+  const [label, setLabel] = useState<string | null>(calc);
+
   useEffect(() => {
+    if (!endDate) return;
     const id = setInterval(() => setLabel(calc()), 60000);
     return () => clearInterval(id);
   }, [endDate]);
+
   return label;
 }
 
@@ -32,14 +36,16 @@ interface BannerCardProps {
 export default function BannerCard({ banner, onBought }: BannerCardProps) {
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const timer = useCountdown(banner.endDate);
 
   const handleBuy = async () => {
+    if (quantity < 1) return;
     setBuying(true);
     setError("");
     try {
-      const res = await shopService.buyBanner(banner.id);
-      onBought?.(res.newBalance);
+      const res = await bannerService.buy(banner.id, quantity);
+      onBought?.(res.goldRemaining);
     } catch {
       setError("Solde insuffisant");
     } finally {
@@ -47,18 +53,25 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
     }
   };
 
-  const discount = Math.round(
-    (1 - banner.bannerPrice / banner.originalPrice) * 100,
-  );
+  const hasDiscount = banner.bannerPrice < banner.originalPrice;
+  const discount = hasDiscount
+    ? Math.round((1 - banner.bannerPrice / banner.originalPrice) * 100)
+    : 0;
+  const totalPrice = banner.bannerPrice * quantity;
 
   return (
     <div className="banner-card">
       {banner.imageUrl && (
         <img className="banner-card__bg" src={banner.imageUrl} alt="" />
       )}
-
       <div className="banner-card__content">
-        <span className="banner-card__badge">⚡ PROMO -{discount}%</span>
+        {banner.isPermanent ? (
+          <span className="banner-card__badge banner-card__badge--permanent">
+            ⭐ PERMANENT
+          </span>
+        ) : hasDiscount ? (
+          <span className="banner-card__badge">⚡ PROMO -{discount}%</span>
+        ) : null}
 
         <div className="banner-card__title">{banner.title}</div>
         {banner.description && (
@@ -66,13 +79,44 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
         )}
 
         <div className="banner-card__prices">
-          <span className="banner-card__price-original">
-            {banner.originalPrice}{" "}
-            <IconGold size={11} color="rgba(255,255,255,0.4)" />
-          </span>
+          {hasDiscount && (
+            <span className="banner-card__price-original">
+              {banner.originalPrice * quantity}{" "}
+              <IconGold size={11} color="rgba(255,255,255,0.4)" />
+            </span>
+          )}
           <span className="banner-card__price-banner">
-            {banner.bannerPrice} <IconGold size={13} color="#eebc77" />
+            {totalPrice} <IconGold size={13} color="#eebc77" />
           </span>
+        </div>
+
+        {/* Quantity selector */}
+        <div className="banner-card__qty">
+          <button
+            className="banner-card__qty-btn"
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            disabled={buying || quantity <= 1}
+          >
+            −
+          </button>
+          <input
+            className="banner-card__qty-input"
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(e) => {
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v) && v >= 1) setQuantity(v);
+            }}
+            disabled={buying}
+          />
+          <button
+            className="banner-card__qty-btn"
+            onClick={() => setQuantity((q) => q + 1)}
+            disabled={buying}
+          >
+            +
+          </button>
         </div>
 
         {error && (
@@ -84,10 +128,10 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
           onClick={handleBuy}
           disabled={buying}
         >
-          {buying ? "..." : `Acheter — ${banner.itemName}`}
+          {buying ? "..." : `Acheter ×${quantity} — ${banner.itemName}`}
         </button>
 
-        <span className="banner-card__timer">⏱ {timer}</span>
+        {timer && <span className="banner-card__timer">⏱ {timer}</span>}
       </div>
     </div>
   );

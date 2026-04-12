@@ -1,7 +1,10 @@
+import type { CSSProperties } from "react";
+
 interface IconProps {
   size?: number;
   color?: string;
   className?: string;
+  style?: CSSProperties;
 }
 
 // ── Icône Collection (tab) ───────────────────────────────────────────────────
@@ -277,6 +280,7 @@ export function IconBell({
   size = 16,
   color = "currentColor",
   className,
+  style,
 }: IconProps) {
   return (
     <svg
@@ -286,6 +290,7 @@ export function IconBell({
       viewBox="0 0 24 24"
       fill="none"
       className={className}
+      style={style}
     >
       <path
         d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"

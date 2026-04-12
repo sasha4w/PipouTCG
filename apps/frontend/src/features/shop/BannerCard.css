@@ -10,17 +10,13 @@
   gap: 0.6rem;
   flex-shrink: 0;
   width: 260px;
-  cursor: pointer;
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .banner-card:active {
   transform: scale(0.97);
 }
-
-/* Image de fond */
 .banner-card__bg {
   position: absolute;
   inset: 0;
@@ -30,7 +26,6 @@
   opacity: 0.25;
   pointer-events: none;
 }
-
 .banner-card__content {
   position: relative;
   z-index: 1;
@@ -38,7 +33,6 @@
   flex-direction: column;
   gap: 0.5rem;
 }
-
 .banner-card__badge {
   display: inline-flex;
   align-items: center;
@@ -51,43 +45,101 @@
   border-radius: 20px;
   width: fit-content;
 }
-
+.banner-card__badge--permanent {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
 .banner-card__title {
   font-family: "Lilita One", cursive;
   font-size: 0.95rem;
   color: #fff;
   line-height: 1.2;
 }
-
 .banner-card__desc {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.65);
   font-family: "Comfortaa", sans-serif;
   line-height: 1.4;
 }
-
-/* Prix */
 .banner-card__prices {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 2px;
 }
-
 .banner-card__price-original {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.4);
   text-decoration: line-through;
   font-family: "Comfortaa", sans-serif;
 }
-
 .banner-card__price-banner {
   font-family: "Lilita One", cursive;
   font-size: 1rem;
   color: #eebc77;
 }
 
-/* Bouton */
+/* ── Quantity selector ── */
+.banner-card__qty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+.banner-card__qty-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+.banner-card__qty-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+.banner-card__qty-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.banner-card__qty-input {
+  width: 38px;
+  text-align: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 3px 0;
+  outline: none;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.banner-card__qty-input::-webkit-inner-spin-button,
+.banner-card__qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.banner-card__qty-input:focus {
+  border-color: #eebc77;
+  box-shadow: 0 0 0 2px rgba(238, 188, 119, 0.2);
+}
+.banner-card__qty-input:disabled {
+  opacity: 0.5;
+}
+
 .banner-card__btn {
   background: #eebc77;
   color: #3d1020;
@@ -114,7 +166,6 @@
   cursor: not-allowed;
 }
 
-/* Compte à rebours */
 .banner-card__timer {
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.45);

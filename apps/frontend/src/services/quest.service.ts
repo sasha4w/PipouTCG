@@ -112,6 +112,10 @@ export const questService = {
     const res = await api.post(`/quests/${userQuestId}/claim`);
     return res.data;
   },
+  async claimAllRewards() {
+    const res = await api.post(`/quests/claim-all`);
+    return res.data;
+  },
 
   // ADMIN
   async findAll(): Promise<Quest[]> {

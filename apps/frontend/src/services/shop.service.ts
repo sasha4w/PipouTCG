@@ -41,10 +41,4 @@ export const shopService = {
     const res = await api.post(`/bundles/${bundleId}/buy`, { quantity });
     return { success: true, newBalance: res.data.goldRemaining };
   },
-  async buyBanner(
-    bannerId: number,
-  ): Promise<{ success: boolean; newBalance: number }> {
-    const res = await api.post(`/shop/buy/banner/${bannerId}`);
-    return res.data;
-  },
 };

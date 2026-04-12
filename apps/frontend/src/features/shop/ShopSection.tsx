@@ -6,6 +6,7 @@ import BannerCard from "./BannerCard";
 import { IconGold } from "../../components/Icons";
 import "./ShopSection.css";
 
+// ── Shop item (booster / bundle permanents) ───────────────────────────────────
 interface ShopItemCardProps {
   id: number;
   type: "BOOSTER" | "BUNDLE";
@@ -89,6 +90,7 @@ function ShopItemCard({
   );
 }
 
+// ── ShopSection ───────────────────────────────────────────────────────────────
 interface ShopSectionProps {
   gold: number;
   onBalance?: (newBalance: number) => void;
@@ -115,6 +117,10 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
     onBalance?.(newBalance);
   };
 
+  // Sépare les bannières events (avec endDate) des permanentes
+  const eventBanners = banners.filter((b) => !b.isPermanent);
+  const permanentBanners = banners.filter((b) => b.isPermanent);
+
   const loading = l1 || l2;
 
   return (
@@ -126,19 +132,31 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
         </span>
       </div>
 
-      {/* Bannières limitées */}
-      {banners.length > 0 && (
+      {/* ── Bannières event (offres limitées) ── */}
+      {eventBanners.length > 0 && (
         <>
           <span className="shop-section__label">⚡ Offres limitées</span>
           <div className="shop-section__banners">
-            {banners.map((b) => (
+            {eventBanners.map((b) => (
               <BannerCard key={b.id} banner={b} onBought={handleBought} />
             ))}
           </div>
         </>
       )}
 
-      {/* Boosters permanents */}
+      {/* ── Bannières permanentes ── */}
+      {permanentBanners.length > 0 && (
+        <>
+          <span className="shop-section__label">⭐ Offres permanentes</span>
+          <div className="shop-section__banners">
+            {permanentBanners.map((b) => (
+              <BannerCard key={b.id} banner={b} onBought={handleBought} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* ── Catalogue boosters / bundles ── */}
       {!loading && catalog && (
         <>
           {catalog.boosters.length > 0 && (
@@ -179,9 +197,9 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
             </>
           )}
 
-          {catalog.boosters.length === 0 &&
-            catalog.bundles.length === 0 &&
-            !banners.length && (
+          {!banners.length &&
+            catalog.boosters.length === 0 &&
+            catalog.bundles.length === 0 && (
               <p className="shop-section__empty">Aucun article disponible.</p>
             )}
         </>
