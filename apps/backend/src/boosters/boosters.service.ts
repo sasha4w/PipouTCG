@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
@@ -50,6 +51,7 @@ export class BoostersService {
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
     private readonly usersService: UsersService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
@@ -176,6 +178,11 @@ export class BoostersService {
     }
     await this.usersService.spendGoldAndRecordPurchase(userId, totalCost);
     await this.usersService.addBoosterToUser(userId, boosterId, quantity);
+    this.eventEmitter.emit('booster.bought', {
+      userId,
+      boosterId,
+      amount: quantity,
+    });
     return {
       message: `Booster "${booster.name}" acheté avec succès`,
       goldSpent: totalCost,
@@ -259,7 +266,13 @@ export class BoostersService {
     });
 
     await this.usersService.updatePostOpeningStats(userId, 50);
-
+    this.eventEmitter.emit('booster.opened', {
+      userId,
+      boosterId: booster.id,
+      setId: booster.cardSet.id,
+      amount: 1,
+      cardsDrawn: drawnCards,
+    });
     return {
       historyId: historyId!,
       booster: booster.name,

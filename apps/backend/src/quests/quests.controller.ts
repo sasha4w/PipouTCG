@@ -34,7 +34,11 @@ export class QuestController {
   claimReward(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     return this.questService.claimReward(req.user.userId, id);
   }
-
+  @UseGuards(JwtAuthGuard)
+  @Post('claim-all')
+  async claimAll(@Request() req: any) {
+    return this.questService.claimAllRewards(req.user.userId);
+  }
   /* ===================== ADMIN ===================== */
 
   @UseGuards(JwtAuthGuard, AdminGuard)

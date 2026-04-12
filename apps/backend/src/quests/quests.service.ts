@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, In } from 'typeorm';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Quest } from './quest.entity';
 import {
   UserQuest,
@@ -17,6 +18,7 @@ import {
   QuestResetType,
   RewardType,
   ConditionOperator,
+  ConditionType,
 } from './enums/quest.enums';
 import { UsersService } from '../users/users.service';
 
@@ -224,7 +226,26 @@ export class QuestService {
     uq.rewardClaimed = true;
     return this.userQuestRepository.save(uq);
   }
+  async claimAllRewards(userId: number) {
+    const claimableQuests = await this.userQuestRepository.find({
+      where: {
+        user: { id: userId },
+        isCompleted: true,
+        rewardClaimed: false,
+      },
+      relations: ['quest'],
+    });
 
+    if (claimableQuests.length === 0) return { count: 0 };
+
+    for (const userQuest of claimableQuests) {
+      await this.distributeReward(userId, userQuest.quest);
+      userQuest.rewardClaimed = true;
+      await this.userQuestRepository.save(userQuest);
+    }
+
+    return { count: claimableQuests.length };
+  }
   /* ===================== TRACKING ===================== */
 
   async track(
@@ -243,6 +264,45 @@ export class QuestService {
         await this.userQuestRepository.save(uq);
       }
     }
+  }
+  /* ===================== EVENT HANDLERS ===================== */
+  @OnEvent('booster.opened')
+  async handleBoosterOpened(payload: {
+    userId: number;
+    boosterId: number;
+    setId: number;
+    amount: number;
+    cardsDrawn: any[];
+  }) {
+    // 1. On valide la quête globale d'ouverture de booster
+    await this.track(payload.userId, ConditionType.OPEN_BOOSTER, {
+      boosterId: payload.boosterId,
+      setId: payload.setId,
+      amount: payload.amount,
+    });
+
+    // 2. Bonus : Si tu as des quêtes du style "Trouver 3 cartes épiques"
+    // Tu peux aussi parcourir les cartes tirées pour mettre à jour d'autres quêtes !
+    const epicCards = payload.cardsDrawn.filter((c) => c.rarity === 'EPIC');
+    if (epicCards.length > 0) {
+      await this.track(payload.userId, 'DRAW_RARITY', {
+        rarity: 'EPIC',
+        amount: epicCards.length,
+      });
+    }
+  }
+
+  // Tu pourrais faire la même chose pour l'achat
+  @OnEvent('booster.bought')
+  async handleBoosterBought(payload: {
+    userId: number;
+    boosterId: number;
+    amount: number;
+  }) {
+    await this.track(payload.userId, ConditionType.BUY_CARD, {
+      // Ou créer un BUY_BOOSTER
+      amount: payload.amount,
+    });
   }
 
   /* ===================== HELPERS PRIVÉS ===================== */
