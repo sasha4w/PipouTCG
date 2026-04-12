@@ -120,12 +120,7 @@ export default function Profile() {
 
       {tab === "stats" && <StatsPanel stats={profile.stats} />}
 
-      <QuestsPanel
-        quests={quests}
-        onQuestsUpdate={() =>
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests })
-        }
-      />
+      <QuestsPanel />
 
       {openingTarget && (
         <OpeningModal
