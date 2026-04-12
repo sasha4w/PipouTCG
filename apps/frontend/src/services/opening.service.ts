@@ -14,8 +14,14 @@ export interface OpenedCard {
   isNew: boolean;
 }
 
+export interface BundleBooster {
+  name: string;
+  quantity: number;
+}
+
 export interface OpeningResult {
   cards: OpenedCard[];
+  boosters?: BundleBooster[]; // uniquement pour les bundles
 }
 
 function normalizeCards(rawCards: any[]): OpenedCard[] {
@@ -42,6 +48,9 @@ export const openingService = {
 
   async openBundle(bundleId: number): Promise<OpeningResult> {
     const res = await api.post(`/bundles/${bundleId}/open`);
-    return { cards: normalizeCards(res.data.cards ?? []) };
+    return {
+      cards: normalizeCards(res.data.cards ?? []),
+      boosters: res.data.boosters ?? [],
+    };
   },
 };

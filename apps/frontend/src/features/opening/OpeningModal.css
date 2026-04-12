@@ -268,3 +268,61 @@
   font-weight: 700;
   text-align: center;
 }
+/* ── Bundle reveal ── */
+.opening-bundle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.opening-bundle__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1.1rem;
+  color: #eebc77;
+}
+
+.opening-bundle__row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.opening-bundle__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  max-width: 140px;
+}
+
+.opening-bundle__booster-icon {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.opening-bundle__item-name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.78rem;
+  color: #fff;
+  text-align: center;
+}
+
+.opening-bundle__item-qty {
+  font-family: "Lilita One", cursive;
+  font-size: 0.85rem;
+  color: #eebc77;
+}
+
+.opening-bundle__separator {
+  font-family: "Lilita One", cursive;
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.4);
+  align-self: center;
+  line-height: 1;
+}

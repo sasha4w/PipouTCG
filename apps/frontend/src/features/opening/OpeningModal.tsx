@@ -11,9 +11,6 @@ import CardDisplay from "../cards/CardDisplay";
 import type { Card } from "../../services/card.service";
 import "./OpeningModal.css";
 
-// ── Rareté → couleur ─────────────────────────────────────────────────────────
-
-/** Du plus rare au moins rare (pour getMaxRarity) */
 const RARITY_ORDER_DESC = [
   "secret",
   "legendary",
@@ -22,8 +19,6 @@ const RARITY_ORDER_DESC = [
   "uncommon",
   "common",
 ];
-
-/** Du moins rare au plus rare (pour la cascade de flash) */
 const RARITY_ORDER_ASC = [
   "common",
   "uncommon",
@@ -51,7 +46,6 @@ const RARITY_GLOW: Record<string, string> = {
   secret: "#c850a0",
 };
 
-/** Renvoie la couleur glow de la rareté maximale trouvée dans les cartes */
 function getMaxRarity(cards: OpenedCard[]): string {
   for (const r of RARITY_ORDER_DESC) {
     if (cards.some((c) => c.rarity.toLowerCase() === r)) return r;
@@ -59,11 +53,6 @@ function getMaxRarity(cards: OpenedCard[]): string {
   return "common";
 }
 
-/**
- * Construit la séquence de couleurs pour le cascade de flash :
- * on retient uniquement les raretés présentes, du plus bas au plus haut.
- * Ex : [common, rare, legendary] → [gris, bleu, or]
- */
 function getRarityCascade(cards: OpenedCard[]): string[] {
   const present = new Set(cards.map((c) => c.rarity.toLowerCase()));
   return RARITY_ORDER_ASC.filter((r) => present.has(r)).map(
@@ -87,11 +76,15 @@ function toCard(c: OpenedCard): Card {
   };
 }
 
-// ── Durée de chaque flash individuel (ms) ────────────────────────────────────
 const FLASH_STEP_MS = 380;
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type Phase = "idle" | "loading" | "flash" | "revealing" | "results";
+type Phase =
+  | "idle"
+  | "loading"
+  | "flash"
+  | "revealing"
+  | "bundle-reveal"
+  | "results";
 
 export interface OpeningTarget {
   type: "booster" | "bundle";
@@ -105,7 +98,6 @@ interface OpeningModalProps {
   onDone?: () => void;
 }
 
-// ── Composant ─────────────────────────────────────────────────────────────────
 export default function OpeningModal({
   target,
   onClose,
@@ -116,39 +108,36 @@ export default function OpeningModal({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
-  // Cascade flash
   const [cascadeColors, setCascadeColors] = useState<string[]>([]);
   const [flashStep, setFlashStep] = useState(0);
 
   const icon = target.type === "booster" ? "📦" : "🎁";
   const cards = result?.cards ?? [];
+  const boosters = result?.boosters ?? [];
   const maxRarity = getMaxRarity(cards);
   const glowColor = RARITY_GLOW[maxRarity] ?? RARITY_GLOW.common;
 
-  // ── Cascade automatique ───────────────────────────────────────────────────
+  // ── Cascade flash ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (phase !== "flash") return;
 
-    // Tous les flashes ont été joués → passer à la révélation
     if (flashStep >= cascadeColors.length) {
       const t = setTimeout(() => {
         setCurrentIdx(0);
-        setPhase("revealing");
+        // Bundle → phase dédiée, booster → révélation carte par carte
+        setPhase(target.type === "bundle" ? "bundle-reveal" : "revealing");
       }, 120);
       return () => clearTimeout(t);
     }
 
-    // Passer au flash suivant après FLASH_STEP_MS
-    const t = setTimeout(() => {
-      setFlashStep((s) => s + 1);
-    }, FLASH_STEP_MS);
+    const t = setTimeout(() => setFlashStep((s) => s + 1), FLASH_STEP_MS);
     return () => clearTimeout(t);
-  }, [phase, flashStep, cascadeColors]);
+  }, [phase, flashStep, cascadeColors, target.type]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleOpen = async () => {
     setError("");
-    setPhase("loading"); // animation de chargement pendant l'appel API
+    setPhase("loading");
 
     try {
       const res =
@@ -160,7 +149,7 @@ export default function OpeningModal({
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
-      // Calculer la cascade de couleurs et démarrer
+
       const colors = getRarityCascade(res.cards);
       setCascadeColors(colors.length > 0 ? colors : [RARITY_FLASH.common]);
       setFlashStep(0);
@@ -181,7 +170,6 @@ export default function OpeningModal({
     onClose();
   };
 
-  // ── Couleur courante du flash ─────────────────────────────────────────────
   const currentFlashColor =
     flashStep < cascadeColors.length ? cascadeColors[flashStep] : "transparent";
 
@@ -197,7 +185,7 @@ export default function OpeningModal({
           handleClose();
       }}
     >
-      {/* ── Cascade de flashes (un par rareté, du plus bas au plus haut) ── */}
+      {/* ── Flash ── */}
       <AnimatePresence>
         {phase === "flash" && flashStep < cascadeColors.length && (
           <motion.div
@@ -223,7 +211,7 @@ export default function OpeningModal({
         )}
 
         <AnimatePresence mode="wait">
-          {/* ── Pack fermé (idle) ── */}
+          {/* ── Idle ── */}
           {phase === "idle" && (
             <motion.div
               key="idle"
@@ -253,7 +241,7 @@ export default function OpeningModal({
             </motion.div>
           )}
 
-          {/* ── Chargement (appel API en cours) ── */}
+          {/* ── Loading ── */}
           {phase === "loading" && (
             <motion.div
               key="loading"
@@ -293,7 +281,114 @@ export default function OpeningModal({
             </motion.div>
           )}
 
-          {/* ── Révélation carte par carte ── */}
+          {/* ── Bundle reveal ── */}
+          {phase === "bundle-reveal" && (
+            <motion.div
+              key="bundle-reveal"
+              className="opening-bundle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="opening-bundle__title">🎁 Contenu du bundle</div>
+
+              <div className="opening-bundle__row">
+                {/* Cartes */}
+                {cards.map((c, i) => (
+                  <motion.div
+                    key={c.id + "-" + i}
+                    className="opening-bundle__item"
+                    initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      delay: i * 0.18,
+                      type: "spring",
+                      damping: 16,
+                    }}
+                  >
+                    <div
+                      className="opening-reveal__glow"
+                      style={{
+                        boxShadow: `0 0 30px 10px ${RARITY_GLOW[c.rarity.toLowerCase()] ?? "#fff"}44`,
+                      }}
+                    />
+                    <CardDisplay
+                      card={toCard(c)}
+                      size="md"
+                      interactive
+                      flippable={false}
+                    />
+                    <span className="opening-bundle__item-name">{c.name}</span>
+                    <span
+                      className="opening-cards__rarity"
+                      style={{ color: RARITY_GLOW[c.rarity.toLowerCase()] }}
+                    >
+                      {c.rarity}
+                    </span>
+                    {c.isNew && (
+                      <span className="opening-cards__new-badge">
+                        ✨ Nouvelle !
+                      </span>
+                    )}
+                  </motion.div>
+                ))}
+
+                {/* Séparateur + si les deux sont présents */}
+                {cards.length > 0 && boosters.length > 0 && (
+                  <motion.div
+                    className="opening-bundle__separator"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: cards.length * 0.18 + 0.1 }}
+                  >
+                    +
+                  </motion.div>
+                )}
+
+                {/* Boosters */}
+                {boosters.map((b, i) => (
+                  <motion.div
+                    key={"booster-" + i}
+                    className="opening-bundle__item"
+                    initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      delay: cards.length * 0.18 + 0.3 + i * 0.18,
+                      type: "spring",
+                      damping: 16,
+                    }}
+                  >
+                    <motion.div
+                      className="opening-bundle__booster-icon"
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 2,
+                        ease: "easeInOut",
+                        delay: i * 0.3,
+                      }}
+                    >
+                      📦
+                    </motion.div>
+                    <span className="opening-bundle__item-name">{b.name}</span>
+                    {b.quantity > 1 && (
+                      <span className="opening-bundle__item-qty">
+                        x{b.quantity}
+                      </span>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+
+              <button
+                className="opening-cards__next-btn"
+                onClick={() => setPhase("results")}
+              >
+                Voir les résultats →
+              </button>
+            </motion.div>
+          )}
+
+          {/* ── Révélation carte par carte (booster uniquement) ── */}
           {phase === "revealing" && cards[currentIdx] && (
             <motion.div
               key="revealing"
@@ -325,10 +420,7 @@ export default function OpeningModal({
                   <div
                     className="opening-reveal__glow"
                     style={{
-                      boxShadow: `0 0 40px 15px ${
-                        RARITY_GLOW[cards[currentIdx].rarity.toLowerCase()] ??
-                        "#fff"
-                      }55`,
+                      boxShadow: `0 0 40px 15px ${RARITY_GLOW[cards[currentIdx].rarity.toLowerCase()] ?? "#fff"}55`,
                     }}
                   />
                   <CardDisplay
@@ -390,37 +482,69 @@ export default function OpeningModal({
               >
                 🎉 Résultats !
               </div>
-              <div className="opening-results__grid">
-                {cards.map((c, i) => (
-                  <motion.div
-                    key={c.id + "-" + i}
-                    className="opening-results__item"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      delay: i * 0.06,
-                      type: "spring",
-                      damping: 14,
-                    }}
-                  >
-                    <CardDisplay
-                      card={toCard(c)}
-                      size="sm"
-                      interactive={false}
-                      flippable={false}
-                    />
-                    <span className="opening-results__item-name">{c.name}</span>
-                    {c.isNew && (
-                      <span
-                        className="opening-cards__new-badge"
-                        style={{ fontSize: "0.55rem" }}
-                      >
-                        ✨ New
+
+              {/* Cartes */}
+              {cards.length > 0 && (
+                <div className="opening-results__grid">
+                  {cards.map((c, i) => (
+                    <motion.div
+                      key={c.id + "-" + i}
+                      className="opening-results__item"
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        delay: i * 0.06,
+                        type: "spring",
+                        damping: 14,
+                      }}
+                    >
+                      <CardDisplay
+                        card={toCard(c)}
+                        size="sm"
+                        interactive={false}
+                        flippable={false}
+                      />
+                      <span className="opening-results__item-name">
+                        {c.name}
                       </span>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
+                      {c.isNew && (
+                        <span
+                          className="opening-cards__new-badge"
+                          style={{ fontSize: "0.55rem" }}
+                        >
+                          ✨ New
+                        </span>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {/* Boosters obtenus */}
+              {boosters.length > 0 && (
+                <div className="opening-results__items-list">
+                  {boosters.map((b, i) => (
+                    <motion.div
+                      key={"res-booster-" + i}
+                      className="opening-results__item-row"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: cards.length * 0.06 + i * 0.1 }}
+                    >
+                      <span className="opening-results__item-icon">📦</span>
+                      <span className="opening-results__item-label">
+                        {b.name}
+                      </span>
+                      {b.quantity > 1 && (
+                        <span className="opening-results__item-qty">
+                          x{b.quantity}
+                        </span>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
               <button
                 className="opening-results__close-btn"
                 onClick={handleClose}

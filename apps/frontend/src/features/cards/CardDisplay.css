@@ -35,6 +35,15 @@
   width: 100%;
   max-width: 115px;
 }
+.pipou-card--sm .pipou-card__footer {
+  display: none;
+}
+
+.pipou-card--sm .pipou-card__image-wrap {
+  flex: 1;
+  margin-bottom: 4%;
+}
+
 .pipou-card--md {
   width: 100%;
   max-width: 200px;
