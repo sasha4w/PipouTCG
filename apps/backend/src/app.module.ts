@@ -43,7 +43,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
       namingStrategy: new CustomNamingStrategy(),
       ssl: process.env.DB_SSL_CA_BASE64
         ? {
