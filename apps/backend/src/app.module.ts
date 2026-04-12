@@ -17,6 +17,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { BundlesModule } from './bundles/bundles.module';
 import { BannersModule } from './banners/banners.module';
 import { ShopModule } from './shop/shop.module';
+import { DailyRewardModule } from './daily-reward/daily-reward.module';
 import { CustomNamingStrategy } from './database/naming.strategy';
 import { validateEnv } from './config/env.validation';
 import { Buffer } from 'buffer';
@@ -69,6 +70,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ImagesModule,
     BannersModule,
     ShopModule,
+    DailyRewardModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
