@@ -74,7 +74,12 @@ body {
 #root {
   width: 100%;
   max-width: 430px;
-  height: 100dvh; /* fixe, pas min-height */
+  height: 100dvh;
+  box-sizing: border-box;
+
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+
   overflow: hidden;
   background: #f5efe0;
   display: flex;
@@ -121,7 +126,8 @@ body {
     padding: 2rem 0;
   }
   #root {
-    min-height: auto;
+    padding-top: 0;
+    padding-bottom: 0;
     height: 90dvh;
     max-height: 900px;
     border-radius: 32px;
