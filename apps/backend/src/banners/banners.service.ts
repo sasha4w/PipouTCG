@@ -81,7 +81,7 @@ export class BannersService {
   }
 
   /** Achète un item via bannière (prix promo) */
-  async buyBanner(bannerId: number, userId: number) {
+  async buyBanner(bannerId: number, userId: number, quantity = 1) {
     const banner = await this.findOne(bannerId);
     const now = new Date();
 
@@ -98,28 +98,25 @@ export class BannersService {
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException(`User ${userId} introuvable`);
 
-    if (Number(user.gold) < banner.bannerPrice) {
+    const totalCost = banner.bannerPrice * quantity;
+    if (Number(user.gold) < totalCost) {
       throw new BadRequestException('Pas assez de gold.');
     }
 
-    await this.usersService.spendGoldAndRecordPurchase(
-      userId,
-      banner.bannerPrice,
-    );
+    await this.usersService.spendGoldAndRecordPurchase(userId, totalCost);
 
     if (banner.itemType === 'BOOSTER') {
-      await this.usersService.addBoosterToUser(userId, banner.itemId, 1);
+      await this.usersService.addBoosterToUser(userId, banner.itemId, quantity);
     } else {
-      await this.usersService.addBundleToUser(userId, banner.itemId, 1);
+      await this.usersService.addBundleToUser(userId, banner.itemId, quantity);
     }
 
     return {
-      message: `"${banner.itemName}" acheté via bannière`,
-      goldSpent: banner.bannerPrice,
-      goldRemaining: Number(user.gold) - banner.bannerPrice,
+      message: `"${banner.itemName}" ×${quantity} acheté via bannière`,
+      goldSpent: totalCost,
+      goldRemaining: Number(user.gold) - totalCost,
     };
   }
-
   /* ── ADMIN ── */
 
   async findAll(): Promise<Banner[]> {

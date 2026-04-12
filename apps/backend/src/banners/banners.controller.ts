@@ -29,10 +29,13 @@ export class BannersController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/buy')
-  buy(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.bannersService.buyBanner(id, req.user.userId);
+  buy(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('quantity') quantity = 1,
+    @Req() req: any,
+  ) {
+    return this.bannersService.buyBanner(id, req.user.userId, quantity);
   }
-
   /* ── ADMIN ── */
 
   @UseGuards(JwtAuthGuard, AdminGuard)
