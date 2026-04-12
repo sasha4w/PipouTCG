@@ -7,4 +7,5 @@ export const QUERY_KEYS = {
   history: ["listings", "history"] as const,
   collection: ["user", "collection"] as const,
   quests: ["user", "quests"] as const,
+  dailyRewardStatus: ["daily-reward", "status"] as const,
 } as const;

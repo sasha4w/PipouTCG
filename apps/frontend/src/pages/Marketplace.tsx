@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   transactionService,
@@ -10,75 +10,7 @@ import SearchBar from "../components/Searchbar";
 import FilterPanel, { useFilters } from "../components/FilterPanel";
 import "./Marketplace.css";
 import { QUERY_KEYS } from "../utils/querykeys";
-// ─────────────────────────────────────────────
-// 🔔 SYSTÈME DE TOAST
-// ─────────────────────────────────────────────
-type ToastType = "success" | "error" | "warning";
-
-interface Toast {
-  id: number;
-  message: string;
-  type: ToastType;
-}
-
-let toastCounter = 0;
-
-const useToast = () => {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-
-  const addToast = useCallback(
-    (message: string, type: ToastType = "success") => {
-      const id = ++toastCounter;
-      setToasts((prev) => [...prev, { id, message, type }]);
-      setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
-      }, 3500);
-    },
-    [],
-  );
-
-  const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
-  return { toasts, addToast, removeToast };
-};
-
-// ─────────────────────────────────────────────
-// 🔔 COMPOSANT TOAST
-// ─────────────────────────────────────────────
-const ToastContainer = ({
-  toasts,
-  onRemove,
-}: {
-  toasts: Toast[];
-  onRemove: (id: number) => void;
-}) => {
-  const icons: Record<ToastType, string> = {
-    success: "✓",
-    error: "✕",
-    warning: "⚠",
-  };
-
-  return (
-    <div className="toast-container">
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`toast toast--${toast.type}`}
-          onClick={() => onRemove(toast.id)}
-        >
-          <span className="toast__icon">{icons[toast.type]}</span>
-          <span className="toast__message">{toast.message}</span>
-          <button className="toast__close" onClick={() => onRemove(toast.id)}>
-            ×
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-};
-
+import { useToast, ToastContainer } from "../hooks/useToast";
 // ─────────────────────────────────────────────
 // 🏪 PAGE MARKETPLACE
 // ─────────────────────────────────────────────

@@ -4,6 +4,7 @@ import { userService } from "../services/user.service";
 import CardSetList from "../features/cards/CardSetList";
 import CardList from "../features/cards/CardList";
 import ShopSection from "../features/shop/ShopSection";
+import DailyStreakWidget from "../components/DailyStreakWidget";
 import OpeningModal, {
   type OpeningTarget,
 } from "../features/opening/OpeningModal";
@@ -94,7 +95,6 @@ const Home = () => {
     queryClient.invalidateQueries({ queryKey: ["myInventory"] });
     queryClient.invalidateQueries({ queryKey: ["myCollection"] });
   };
-
   // ── Vue CardList (quand un set est sélectionné) ───────────────────────────
   if (selectedSet) {
     return (
@@ -110,6 +110,9 @@ const Home = () => {
 
   return (
     <div className="home-page">
+      <DailyStreakWidget />
+      <div className="home-divider" />
+
       {/* ── Shop + Bannières ── */}
       <ShopSection
         gold={profile?.gold ?? 0}
@@ -117,16 +120,11 @@ const Home = () => {
           queryClient.invalidateQueries({ queryKey: ["myStats"] })
         }
       />
-
       <div className="home-divider" />
-
       {/* ── Ouverture rapide ── */}
       {inventory && (
         <OpeningQuickAccess inventory={inventory} onOpen={setOpeningTarget} />
       )}
-
-      <div className="home-divider" />
-
       <div className="home-divider" />
 
       {/* ── Sets de cartes ── */}
@@ -139,7 +137,6 @@ const Home = () => {
         </div>
         <CardSetList onSelectSet={(id, name) => setSelectedSet({ id, name })} />
       </div>
-
       {/* ── OpeningModal ── */}
       {openingTarget && (
         <OpeningModal

@@ -1,0 +1,143 @@
+/* ── Widget compact ── */
+.dsw {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1e1e2e; /* ← fond dark explicite au lieu de rgba transparent */
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 0.65rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  user-select: none;
+}
+.dsw:hover {
+  background: #252538; /* ← légèrement plus clair au hover */
+  border-color: rgba(238, 188, 119, 0.3);
+  transform: translateY(-1px);
+}
+
+.dsw--unclaimed {
+  border-color: rgba(238, 188, 119, 0.35);
+  box-shadow: 0 0 16px rgba(238, 188, 119, 0.08);
+}
+
+.dsw--claimed {
+  border-color: rgba(112, 184, 112, 0.25);
+}
+
+/* ── Streak info ── */
+.dsw__streak {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.dsw__streak-icon {
+  font-size: 1.1rem;
+}
+
+.dsw__streak-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dsw__streak-count {
+  font-family: "Lilita One", cursive;
+  font-size: 0.85rem;
+  color: #eebc77;
+  line-height: 1;
+}
+
+.dsw__streak-label {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1;
+}
+
+/* ── Mini cycle ── */
+.dsw__cycle {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.dsw__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+}
+
+.dsw__dot.done {
+  background: #70b870;
+  border-color: #70b870;
+}
+
+.dsw__dot.today {
+  background: #eebc77;
+  border-color: #eebc77;
+  box-shadow: 0 0 6px rgba(238, 188, 119, 0.6);
+  transform: scale(1.3);
+}
+
+/* ── Prochaine récompense ── */
+.dsw__next {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 0.9rem;
+}
+
+.dsw__next-label {
+  font-family: "Lilita One", cursive;
+  font-size: 0.72rem;
+  color: #eebc77;
+}
+
+/* ── Milestone proche ── */
+.dsw__milestone {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.6rem;
+  color: rgba(238, 188, 119, 0.6);
+  white-space: nowrap;
+}
+
+/* ── Ping animation si pas réclamé ── */
+.dsw__ping {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #eebc77;
+}
+
+.dsw__ping::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(238, 188, 119, 0.4);
+  animation: pingPulse 1.5s ease-out infinite;
+}
+
+@keyframes pingPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}

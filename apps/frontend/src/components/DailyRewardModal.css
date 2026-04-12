@@ -1,0 +1,345 @@
+/* ── Overlay ── */
+.drm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 3, 7, 0.92);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Modal ── */
+.drm-modal {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(160deg, #1a0a12 0%, #120818 100%);
+  border: 1.5px solid rgba(238, 188, 119, 0.25);
+  border-radius: 20px;
+  padding: 1.75rem 1.5rem 1.5rem;
+  position: relative;
+  box-shadow: 0 0 60px rgba(238, 188, 119, 0.08);
+}
+
+.drm-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+.drm-close:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Content ── */
+.drm-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+}
+.drm-content--center {
+  min-height: 180px;
+  justify-content: center;
+}
+
+/* ── Header ── */
+.drm-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+.drm-header__icon {
+  font-size: 2.2rem;
+}
+.drm-header__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1.2rem;
+  color: #eebc77;
+  margin: 0;
+}
+.drm-header__streak {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+.drm-header__subtitle {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── Cycle 7j ── */
+.drm-cycle {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+.drm-cycle__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.drm-cycle__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Lilita One", cursive;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.35);
+  transition: all 0.2s;
+}
+.drm-cycle__day.done .drm-cycle__dot {
+  background: rgba(112, 184, 112, 0.2);
+  border-color: #70b870;
+  color: #70b870;
+}
+.drm-cycle__day.today .drm-cycle__dot {
+  background: rgba(238, 188, 119, 0.2);
+  border-color: #eebc77;
+  color: #eebc77;
+  box-shadow: 0 0 10px rgba(238, 188, 119, 0.4);
+  font-size: 0.8rem;
+}
+.drm-cycle__label {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+.drm-cycle__day.today .drm-cycle__label {
+  color: #eebc77;
+}
+.drm-cycle__day.done .drm-cycle__label {
+  color: #70b870;
+}
+
+/* ── Prochaine récompense ── */
+.drm-next-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(238, 188, 119, 0.15);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  width: 100%;
+}
+.drm-next-reward__label {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.drm-next-reward__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #eebc77;
+}
+
+/* ── Milestone hint ── */
+.drm-milestone-hint {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── Bouton claim ── */
+.drm-claim-btn {
+  background: linear-gradient(135deg, #eebc77, #d4913a);
+  color: #3d1020;
+  border: none;
+  border-radius: 14px;
+  padding: 0.75rem 2rem;
+  font-family: "Lilita One", cursive;
+  font-size: 0.95rem;
+  cursor: pointer;
+  width: 100%;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+}
+.drm-claim-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.drm-claim-btn:active {
+  transform: scale(0.97);
+}
+
+/* ── Loading ── */
+.drm-loading-icon {
+  font-size: 2.5rem;
+}
+.drm-loading-text {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── Rewards résultat ── */
+.drm-rewards {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.drm-reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  min-width: 80px;
+}
+.drm-reward--milestone {
+  border-color: rgba(238, 188, 119, 0.4);
+  background: rgba(238, 188, 119, 0.08);
+}
+.drm-reward__icon {
+  font-size: 1.8rem;
+}
+.drm-reward__qty {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #eebc77;
+}
+.drm-reward__type {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+.drm-reward__milestone-badge {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.55rem;
+  color: #eebc77;
+  background: rgba(238, 188, 119, 0.15);
+  padding: 2px 6px;
+  border-radius: 20px;
+}
+
+/* ── Rescue ── */
+.drm-rescue-options {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.drm-rescue-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.drm-rescue-option.selected {
+  border-color: #eebc77;
+  background: rgba(238, 188, 119, 0.12);
+  color: #eebc77;
+}
+.drm-rescue-option__cost {
+  font-family: "Lilita One", cursive;
+  font-size: 0.82rem;
+  color: #eebc77;
+}
+
+.drm-rescue-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.drm-rescue-btn {
+  background: linear-gradient(135deg, #eebc77, #d4913a);
+  color: #3d1020;
+  border: none;
+  border-radius: 12px;
+  padding: 0.7rem;
+  font-family: "Lilita One", cursive;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.drm-rescue-btn:hover {
+  opacity: 0.88;
+}
+
+.drm-reset-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.6rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.drm-reset-btn:hover {
+  border-color: rgba(255, 100, 100, 0.4);
+  color: rgba(255, 100, 100, 0.7);
+}
+
+/* ── Close btn résultat ── */
+.drm-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.65rem 2rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.15s;
+  width: 100%;
+}
+.drm-close-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+/* ── Error ── */
+.drm-error {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.78rem;
+  color: #f27aaa;
+  text-align: center;
+}
