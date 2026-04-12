@@ -13,16 +13,16 @@ import { BoosterOpenHistory } from './booster-open-history.entity';
 @Index(['openHistory', 'card'], { unique: true })
 export class BoosterOpenCard {
   @PrimaryGeneratedColumn({ name: 'id' })
-  id: number;
+  id!: number;
 
   @ManyToOne(() => Card, (card) => card.boosterOpenCards)
   @JoinColumn({ name: 'card_id' })
-  card: Card;
+  card!: Card;
 
   @ManyToOne(() => BoosterOpenHistory, (history) => history.openCards)
   @JoinColumn({ name: 'open_history_id' })
-  openHistory: BoosterOpenHistory;
+  openHistory!: BoosterOpenHistory;
 
   @Column({ default: 1 })
-  quantity: number;
+  quantity!: number;
 }

@@ -30,31 +30,31 @@ export interface QuestProgress {
 @Index(['user', 'quest'], { unique: true })
 export class UserQuest {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => User, (user) => user.userQuests, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => Quest, (q) => q.userQuests, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'quest_id' })
-  quest: Quest;
+  quest!: Quest;
 
   @Column({ type: 'json' })
-  progress: QuestProgress;
+  progress!: QuestProgress;
 
   @Column({ default: false })
-  isCompleted: boolean;
+  isCompleted!: boolean;
 
   @Column({ default: false })
-  rewardClaimed: boolean;
+  rewardClaimed!: boolean;
 
   @CreateDateColumn()
-  assignedAt: Date;
+  assignedAt!: Date;
 
   @Column({ type: 'datetime', nullable: true })
-  completedAt: Date | null;
+  completedAt!: Date | null;
 
   @Column({ type: 'datetime', nullable: true })
-  resetAt: Date | null;
+  resetAt!: Date | null;
 }

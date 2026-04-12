@@ -11,7 +11,7 @@ import { BannerItemType } from '../banner.entity';
 
 export class CreateBannerDto {
   @IsString()
-  title: string;
+  title!: string;
 
   @IsOptional()
   @IsString()
@@ -22,27 +22,27 @@ export class CreateBannerDto {
   imageUrl?: string;
 
   @IsEnum(BannerItemType)
-  itemType: BannerItemType;
+  itemType!: BannerItemType;
 
   @IsNumber()
-  itemId: number;
+  itemId!: number;
 
   @IsString()
-  itemName: string;
+  itemName!: string;
 
   @IsNumber()
   @Min(0)
-  originalPrice: number;
+  originalPrice!: number;
 
   @IsNumber()
   @Min(0)
-  bannerPrice: number;
+  bannerPrice!: number;
 
   @IsDateString()
-  startDate: string;
+  startDate!: string;
 
   @IsDateString()
-  endDate: string;
+  endDate!: string;
 
   @IsOptional()
   @IsBoolean()

@@ -14,18 +14,18 @@ export class CreateBoosterDto {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @IsEnum(CardNumber, {
     message: 'cardNumber must be a valid CardNumber enum value',
   })
-  cardNumber: CardNumber;
+  cardNumber!: CardNumber;
 
   @IsInt()
   @Min(1)
-  cardSetId: number;
+  cardSetId!: number;
 
   @IsInt()
   @Min(1)
-  price: number;
+  price!: number;
 }

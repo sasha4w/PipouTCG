@@ -13,16 +13,16 @@ import { Bundle } from '../bundles/bundle.entity';
 @Index(['user', 'bundle'], { unique: true })
 export class UserBundle {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => User, (user) => user.userBundles, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => Bundle, { eager: true })
   @JoinColumn({ name: 'bundle_id' })
-  bundle: Bundle;
+  bundle!: Bundle;
 
   @Column({ default: 1 })
-  quantity: number;
+  quantity!: number;
 }

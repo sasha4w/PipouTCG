@@ -33,28 +33,28 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/profile')
-  async getProfile(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  async getProfile(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     await this.assertCanView(req, id);
     return this.usersService.getProfile(id);
   }
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req) {
+  getMe(@Request() req: any) {
     return this.usersService.findOne(req.user.userId);
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/inventory')
-  getMyInventory(@Request() req) {
+  getMyInventory(@Request() req: any) {
     return this.usersService.getInventory(req.user.userId);
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/stats')
-  getMyStats(@Request() req) {
+  getMyStats(@Request() req: any) {
     return this.usersService.getProfile(req.user.userId);
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id/inventory')
-  async getInventory(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  async getInventory(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     await this.assertCanView(req, id);
     return this.usersService.getInventory(id);
   }
@@ -63,7 +63,7 @@ export class UsersController {
   @Get(':id/boosters')
   async getUserBoosters(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req,
+    @Request() req: any,
     @Query() pagination: PaginationDto,
   ) {
     await this.assertCanView(req, id);
@@ -74,7 +74,7 @@ export class UsersController {
   @Get(':id/bundles')
   async getUserBundles(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req,
+    @Request() req: any,
     @Query() pagination: PaginationDto,
   ) {
     await this.assertCanView(req, id);
@@ -82,14 +82,14 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/collection')
-  getMyCollection(@Request() req) {
+  getMyCollection(@Request() req: any) {
     return this.usersService.getCollection(req.user.userId);
   }
   /* ===================== OWNER ONLY ===================== */
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/privacy')
-  togglePrivacy(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  togglePrivacy(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     this.assertOwner(req.user.userId, id);
     return this.usersService.togglePrivacy(id);
   }

@@ -10,20 +10,20 @@ import { Card } from '../cards/card.entity';
 @Entity('image')
 export class Image {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  url: string;
+  url!: string;
 
   @Column()
-  deleteUrl: string;
+  deleteUrl!: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @OneToMany(() => Card, (card) => card.image)
-  cards: Card[];
+  cards!: Card[];
 }

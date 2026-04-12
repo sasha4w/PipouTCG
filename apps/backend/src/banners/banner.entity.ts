@@ -8,38 +8,38 @@ export enum BannerItemType {
 @Entity('banner')
 export class Banner {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   @Column({ nullable: true })
-  imageUrl: string;
+  imageUrl!: string;
 
   @Column({ type: 'enum', enum: BannerItemType })
-  itemType: BannerItemType;
+  itemType!: BannerItemType;
 
   @Column()
-  itemId: number;
+  itemId!: number;
 
   @Column()
-  itemName: string;
+  itemName!: string;
 
   @Column({ type: 'int' })
-  originalPrice: number;
+  originalPrice!: number;
 
   @Column({ type: 'int' })
-  bannerPrice: number;
+  bannerPrice!: number;
 
   @Column({ type: 'timestamp' })
-  startDate: Date;
+  startDate!: Date;
 
   @Column({ type: 'timestamp' })
-  endDate: Date;
+  endDate!: Date;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 }

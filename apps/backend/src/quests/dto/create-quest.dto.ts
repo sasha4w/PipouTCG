@@ -21,7 +21,7 @@ import {
 
 export class QuestConditionDto {
   @IsEnum(ConditionType)
-  type: ConditionType;
+  type!: ConditionType;
 
   @IsOptional()
   @IsNumber()
@@ -47,24 +47,24 @@ export class QuestConditionDto {
 
 export class QuestConditionGroupDto {
   @IsEnum(ConditionOperator)
-  operator: ConditionOperator;
+  operator!: ConditionOperator;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => QuestConditionDto)
-  conditions: QuestConditionDto[];
+  conditions!: QuestConditionDto[];
 }
 
 export class CreateQuestDto {
   @IsString()
-  title: string;
+  title!: string;
 
   @IsOptional()
   @IsString()
   description?: string;
 
   @IsEnum(QuestResetType)
-  resetType: QuestResetType;
+  resetType!: QuestResetType;
 
   // Heure du reset (0-23), défaut 4h00
   @IsOptional()
@@ -87,14 +87,14 @@ export class CreateQuestDto {
   @IsObject()
   @ValidateNested()
   @Type(() => QuestConditionGroupDto)
-  conditionGroup: QuestConditionGroupDto;
+  conditionGroup!: QuestConditionGroupDto;
 
   @IsEnum(RewardType)
-  rewardType: RewardType;
+  rewardType!: RewardType;
 
   @IsNumber()
   @Min(0)
-  rewardAmount: number;
+  rewardAmount!: number;
 
   @IsOptional()
   @IsNumber()

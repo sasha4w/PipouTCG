@@ -68,7 +68,7 @@ export class AuthController {
   // --- NOUVELLE MÉTHODE AJOUTÉE ---
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req) {
+  getMe(@Request() req: any) {
     return req.user;
   }
   // -------------------------------

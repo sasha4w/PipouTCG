@@ -2,10 +2,10 @@ import { IsEmail, IsBoolean, IsOptional, MinLength } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @IsOptional()
   @IsBoolean()

@@ -25,5 +25,5 @@ export class AddBundleContentDto {
   @ArrayNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => BundleItemDto)
-  items: BundleItemDto[];
+  items!: BundleItemDto[];
 }

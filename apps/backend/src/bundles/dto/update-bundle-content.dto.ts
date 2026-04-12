@@ -5,5 +5,5 @@ export class UpdateBundleContentDto {
   @IsInt()
   @Min(1)
   @Type(() => Number)
-  quantity: number;
+  quantity!: number;
 }

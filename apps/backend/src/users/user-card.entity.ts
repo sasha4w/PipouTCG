@@ -13,16 +13,16 @@ import { Card } from '../cards/card.entity';
 @Index(['user', 'card'], { unique: true })
 export class UserCard {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => User, (user) => user.userCards)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
   @ManyToOne(() => Card, (card) => card.userCards)
   @JoinColumn({ name: 'card_id' })
-  card: Card;
+  card!: Card;
 
   @Column({ default: 1 })
-  quantity: number;
+  quantity!: number;
 }

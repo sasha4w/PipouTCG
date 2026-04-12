@@ -24,14 +24,14 @@ export class QuestController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMyQuests(@Request() req) {
+  async getMyQuests(@Request() req: any) {
     await this.questService.syncUserQuests(req.user.userId);
     return this.questService.getUserQuests(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/claim')
-  claimReward(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  claimReward(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     return this.questService.claimReward(req.user.userId, id);
   }
 

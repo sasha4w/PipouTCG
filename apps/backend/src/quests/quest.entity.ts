@@ -23,46 +23,46 @@ export interface QuestConditionGroup {
 @Entity('quest')
 export class Quest {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   // Type de reset
   @Column({ type: 'enum', enum: QuestResetType, default: QuestResetType.NONE })
-  resetType: QuestResetType;
+  resetType!: QuestResetType;
 
   // Heure du reset (ex: 4 = 4h00 du matin)
   @Column({ default: 4 })
-  resetHour: number;
+  resetHour!: number;
 
   // Jour de la semaine pour WEEKLY (0=dimanche, 1=lundi... 6=samedi)
   @Column({ nullable: true })
-  resetDayOfWeek: number;
+  resetDayOfWeek!: number;
 
   // Conditions en JSON
   @Column({ type: 'json' })
-  conditionGroup: QuestConditionGroup;
+  conditionGroup!: QuestConditionGroup;
 
   // Récompense
   @Column({ type: 'enum', enum: RewardType })
-  rewardType: RewardType;
+  rewardType!: RewardType;
 
   @Column({ type: 'bigint', default: 0 })
-  rewardAmount: number;
+  rewardAmount!: number;
 
   @Column({ nullable: true })
-  rewardItemId: number; // boosterId ou bundleId
+  rewardItemId!: number; // boosterId ou bundleId
 
   @Column({ type: 'timestamp', nullable: true })
-  endDate: Date | null;
+  endDate!: Date | null;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @OneToMany(() => UserQuest, (uq) => uq.quest)
-  userQuests: UserQuest[];
+  userQuests!: UserQuest[];
 }

@@ -26,7 +26,7 @@ import {
 
 export class EffectConditionDto {
   @IsEnum(ConditionType)
-  type: ConditionType;
+  type!: ConditionType;
 
   @IsOptional()
   value?: number | string;
@@ -34,10 +34,10 @@ export class EffectConditionDto {
 
 export class EffectActionDto {
   @IsEnum(ActionType)
-  type: ActionType;
+  type!: ActionType;
 
   @IsEnum(EffectTarget)
-  target: EffectTarget;
+  target!: EffectTarget;
 
   @IsOptional()
   @IsNumber()
@@ -50,7 +50,7 @@ export class EffectActionDto {
 
 export class CardEffectDto {
   @IsEnum(EffectTrigger)
-  trigger: EffectTrigger;
+  trigger!: EffectTrigger;
 
   @IsOptional()
   @ValidateNested()
@@ -60,7 +60,7 @@ export class CardEffectDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => EffectActionDto)
-  actions: EffectActionDto[];
+  actions!: EffectActionDto[];
 }
 
 export class CreateCardDto {
@@ -68,7 +68,7 @@ export class CreateCardDto {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @IsOptional()
   @IsString()
@@ -77,26 +77,26 @@ export class CreateCardDto {
 
   @IsEnum(Rarity)
   @IsNotEmpty()
-  rarity: Rarity;
+  rarity!: Rarity;
 
   @IsEnum(CardType)
   @IsNotEmpty()
-  type: CardType;
+  type!: CardType;
 
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  atk: number;
+  atk!: number;
 
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  hp: number;
+  hp!: number;
 
   @IsNumber()
   @Min(1)
   @Type(() => Number)
-  cardSetId: number;
+  cardSetId!: number;
 
   @IsOptional()
   @IsNumber()

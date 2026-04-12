@@ -12,21 +12,21 @@ import { CardNumber } from './enums/cardnumber.enum';
 @Entity('booster')
 export class Booster {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ type: 'enum', enum: CardNumber })
-  cardNumber: CardNumber;
+  cardNumber!: CardNumber;
 
   @ManyToOne(() => CardSet)
   @JoinColumn({ name: 'card_set_id' })
-  cardSet: CardSet;
+  cardSet!: CardSet;
 
   @Column({ type: 'int' })
-  price: number;
+  price!: number;
 
   @OneToMany(() => BoosterOpenHistory, (boh) => boh.booster)
-  openHistories: BoosterOpenHistory[];
+  openHistories!: BoosterOpenHistory[];
 }

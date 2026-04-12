@@ -13,22 +13,22 @@ import { BoosterOpenCard } from './booster-open-card.entity';
 @Entity('booster_open_history')
 export class BoosterOpenHistory {
   @PrimaryGeneratedColumn({ name: 'id' })
-  id: number;
+  id!: number;
 
   // Clé étrangère vers User
   @ManyToOne(() => User, (user) => user.boosterOpenHistories)
   @JoinColumn({ name: 'user_id' }) // FK correspondante dans la DB
-  user: User;
+  user!: User;
 
   // Clé étrangère vers Booster
   @ManyToOne(() => Booster, (booster) => booster.openHistories)
   @JoinColumn({ name: 'booster_id' }) // FK correspondante dans la DB
-  booster: Booster;
+  booster!: Booster;
 
   @Column({ name: 'opened_at', type: 'datetime' })
-  openedAt: Date;
+  openedAt!: Date;
 
   // Relation vers les cartes ouvertes dans ce booster
   @OneToMany(() => BoosterOpenCard, (boc) => boc.openHistory)
-  openCards: BoosterOpenCard[];
+  openCards!: BoosterOpenCard[];
 }

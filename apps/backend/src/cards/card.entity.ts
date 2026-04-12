@@ -18,27 +18,27 @@ import { Archetype } from './enums/archetype.enum';
 @Entity('card')
 export class Card {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ type: 'enum', enum: Rarity })
-  rarity: Rarity;
+  rarity!: Rarity;
 
   @Column({ type: 'enum', enum: CardType })
-  type: CardType;
+  type!: CardType;
 
   @Column({ default: 0 })
-  atk: number;
+  atk!: number;
 
   @Column({ default: 0 })
-  hp: number;
+  hp!: number;
 
   // ── Nouveau ──────────────────────────────────────────────────
 
   @Column({ default: 0 })
-  cost: number;
+  cost!: number;
 
   @Column({
     type: 'enum',
@@ -46,7 +46,7 @@ export class Card {
     nullable: true,
     default: null,
   })
-  supportType: SupportType | null;
+  supportType!: SupportType | null;
 
   @Column({
     type: 'enum',
@@ -54,30 +54,30 @@ export class Card {
     nullable: true,
     default: null,
   })
-  archetype: Archetype | null;
+  archetype!: Archetype | null;
 
   @Column({ type: 'json', nullable: true, default: null })
-  effects: CardEffect[] | null;
+  effects!: CardEffect[] | null;
 
   // ─────────────────────────────────────────────────────────────
 
   @Column({ nullable: true })
-  description: string;
+  description!: string;
 
   @ManyToOne(() => Image, (image) => image.cards, {
     nullable: true,
     eager: true,
   })
   @JoinColumn({ name: 'image_id' })
-  image: Image | null;
+  image!: Image | null;
 
   @ManyToOne(() => CardSet, (cardSet) => cardSet.cards)
   @JoinColumn({ name: 'card_set_id' })
-  cardSet: CardSet;
+  cardSet!: CardSet;
 
   @OneToMany(() => BoosterOpenCard, (boc) => boc.card)
-  boosterOpenCards: BoosterOpenCard[];
+  boosterOpenCards!: BoosterOpenCard[];
 
   @OneToMany(() => UserCard, (userCard) => userCard.card)
-  userCards: UserCard[];
+  userCards!: UserCard[];
 }

@@ -15,20 +15,20 @@ import { Booster } from '../boosters/booster.entity';
 @Index(['bundle', 'booster'])
 export class BundleContent {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @ManyToOne(() => Bundle, (bundle) => bundle.contents)
   @JoinColumn({ name: 'bundle_id' })
-  bundle: Bundle;
+  bundle!: Bundle;
 
   @ManyToOne(() => Card, { nullable: true })
   @JoinColumn({ name: 'card_id' })
-  card: Card;
+  card!: Card;
 
   @ManyToOne(() => Booster, { nullable: true })
   @JoinColumn({ name: 'booster_id' })
-  booster: Booster;
+  booster!: Booster;
 
   @Column({ default: 1 })
-  quantity: number;
+  quantity!: number;
 }

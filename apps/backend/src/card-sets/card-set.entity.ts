@@ -4,11 +4,11 @@ import { Card } from '../cards/card.entity';
 @Entity('card_set')
 export class CardSet {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @OneToMany(() => Card, (card) => card.cardSet)
-  cards: Card[];
+  cards!: Card[];
 }
