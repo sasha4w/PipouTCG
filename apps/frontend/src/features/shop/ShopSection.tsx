@@ -3,7 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { bannerService } from "../../services/banner.service";
 import { shopService } from "../../services/shop.service";
 import BannerCard from "./BannerCard";
-import { IconGold } from "../../components/Icons";
+import {
+  IconGold,
+  IconCart,
+  IconBooster,
+  IconBundle,
+} from "../../components/Icons";
 import "./ShopSection.css";
 
 // ── Shop item (booster / bundle permanents) ───────────────────────────────────
@@ -47,7 +52,13 @@ function ShopItemCard({
 
   return (
     <div className="shop-item">
-      <div className="shop-item__icon">{type === "BOOSTER" ? "📦" : "🎁"}</div>
+      <div className="shop-item__icon">
+        {type === "BOOSTER" ? (
+          <IconBooster size={28} color="#7a1c3b" />
+        ) : (
+          <IconBundle size={28} color="#7a1c3b" />
+        )}
+      </div>
       <div className="shop-item__name">{name}</div>
       <div className="shop-item__meta">{meta}</div>
       <div className="shop-item__price">
@@ -126,7 +137,10 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
   return (
     <div className="shop-section">
       <div className="shop-section__heading">
-        <h2 className="shop-section__title">🛒 Boutique</h2>
+        <h2 className="shop-section__title">
+          <IconCart size={18} color="#7a1c3b" />
+          Boutique
+        </h2>
         <span className="shop-section__gold">
           <IconGold size={14} color="#7a4a00" /> {gold.toLocaleString()}
         </span>
@@ -135,7 +149,7 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
       {/* ── Bannières event (offres limitées) ── */}
       {eventBanners.length > 0 && (
         <>
-          <span className="shop-section__label">⚡ Offres limitées</span>
+          <span className="shop-section__label">Offres limitées</span>
           <div className="shop-section__banners">
             {eventBanners.map((b) => (
               <BannerCard key={b.id} banner={b} onBought={handleBought} />
@@ -147,7 +161,7 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
       {/* ── Bannières permanentes ── */}
       {permanentBanners.length > 0 && (
         <>
-          <span className="shop-section__label">⭐ Offres permanentes</span>
+          <span className="shop-section__label">Offres permanentes</span>
           <div className="shop-section__banners">
             {permanentBanners.map((b) => (
               <BannerCard key={b.id} banner={b} onBought={handleBought} />

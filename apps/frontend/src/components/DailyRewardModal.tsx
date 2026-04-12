@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type JSX } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -9,14 +9,23 @@ import {
 import { QUERY_KEYS } from "../utils/querykeys";
 import type { ToastType } from "../hooks/useToast";
 import "./DailyRewardModal.css";
-
+import {
+  IconFire,
+  IconCalendar,
+  IconGold,
+  IconCards,
+  IconBooster,
+  IconBundle,
+  IconPartyHorn,
+  IconSkull,
+} from "./Icons";
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const REWARD_ICON: Record<string, string> = {
-  gold: "🪙",
-  card: "🃏",
-  booster: "📦",
-  bundle: "🎁",
+const REWARD_ICON: Record<string, JSX.Element> = {
+  gold: <IconGold size={28} color="#c8960c" />,
+  card: <IconCards size={28} color="#7a1c3b" />,
+  booster: <IconBooster size={28} color="#7a1c3b" />,
+  bundle: <IconBundle size={28} color="#7a1c3b" />,
 };
 
 const REWARD_LABEL: Record<string, string> = {
@@ -196,11 +205,13 @@ export default function DailyRewardModal({
               exit={{ opacity: 0 }}
             >
               <div className="drm-header">
-                <span className="drm-header__icon">📅</span>
+                <span className="drm-header__icon">
+                  <IconCalendar size={32} color="#7a1c3b" />
+                </span>
                 <h2 className="drm-header__title">Récompense journalière</h2>
                 {status && (
                   <p className="drm-header__streak">
-                    🔥 Streak :{" "}
+                    <IconFire size={16} color="#e05a00" /> Streak :{" "}
                     <strong>
                       {status.streak.current} jour
                       {status.streak.current > 1 ? "s" : ""}
@@ -280,7 +291,9 @@ export default function DailyRewardModal({
               exit={{ opacity: 0 }}
             >
               <div className="drm-header">
-                <span className="drm-header__icon">😬</span>
+                <span className="drm-header__icon">
+                  <IconSkull size={32} color="#7a1c3b" />
+                </span>
                 <h2 className="drm-header__title">Streak en danger !</h2>
                 <p className="drm-header__subtitle">
                   Tu as manqué{" "}
@@ -301,7 +314,10 @@ export default function DailyRewardModal({
                     <span>
                       {i + 1} jour{i > 0 ? "s" : ""}
                     </span>
-                    <span className="drm-rescue-option__cost">🪙 {cost}g</span>
+                    <span className="drm-rescue-option__cost">
+                      <IconGold size={14} color="#c8960c" />
+                      {cost}g
+                    </span>
                   </button>
                 ))}
               </div>
@@ -314,8 +330,9 @@ export default function DailyRewardModal({
                   onClick={handleRescue}
                   disabled={isResetting || (phase as Phase) === "claiming"}
                 >
-                  💰 Racheter (
-                  {claimResult.rescue.costPerScenario[rescueDays - 1]}g)
+                  <IconGold size={14} color="#c8960c" />
+                  Racheter ({claimResult.rescue.costPerScenario[rescueDays - 1]}
+                  g)
                 </button>
 
                 <button
@@ -339,10 +356,12 @@ export default function DailyRewardModal({
               exit={{ opacity: 0 }}
             >
               <div className="drm-header">
-                <span className="drm-header__icon">🎉</span>
+                <span className="drm-header__icon">
+                  <IconPartyHorn size={32} color="#c8960c" />
+                </span>
                 <h2 className="drm-header__title">Récompense reçue !</h2>
                 <p className="drm-header__streak">
-                  🔥 Streak :{" "}
+                  <IconFire size={16} color="#e05a00" /> Streak :{" "}
                   <strong>
                     {claimResult.streak.current} jour
                     {claimResult.streak.current > 1 ? "s" : ""}
