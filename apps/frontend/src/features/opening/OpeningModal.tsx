@@ -9,6 +9,7 @@ import {
 } from "../../services/opening.service";
 import CardDisplay from "../cards/CardDisplay";
 import type { Card } from "../../services/card.service";
+import { soundService } from "../../services/sound.service";
 import "./OpeningModal.css";
 
 const RARITY_ORDER_DESC = [
@@ -78,6 +79,8 @@ function toCard(c: OpenedCard): Card {
 
 const FLASH_STEP_MS = 380;
 
+type FlashStep = { color: string; duration: number };
+
 type Phase =
   | "idle"
   | "loading"
@@ -108,7 +111,7 @@ export default function OpeningModal({
   const [currentIdx, setCurrentIdx] = useState(0);
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
-  const [cascadeColors, setCascadeColors] = useState<string[]>([]);
+  const [flashSteps, setFlashSteps] = useState<FlashStep[]>([]);
   const [flashStep, setFlashStep] = useState(0);
 
   const icon = target.type === "booster" ? "📦" : "🎁";
@@ -117,28 +120,52 @@ export default function OpeningModal({
   const maxRarity = getMaxRarity(cards);
   const glowColor = RARITY_GLOW[maxRarity] ?? RARITY_GLOW.common;
 
-  // ── Cascade flash ─────────────────────────────────────────────────────────
+  // ── Cascade flash & SFX Rareté ──────────────────────────────────────────
   useEffect(() => {
     if (phase !== "flash") return;
 
-    if (flashStep >= cascadeColors.length) {
+    if (flashStep >= flashSteps.length) {
       const t = setTimeout(() => {
         setCurrentIdx(0);
-        // Bundle → phase dédiée, booster → révélation carte par carte
         setPhase(target.type === "bundle" ? "bundle-reveal" : "revealing");
       }, 120);
       return () => clearTimeout(t);
     }
 
-    const t = setTimeout(() => setFlashStep((s) => s + 1), FLASH_STEP_MS);
+    const currentColor = flashSteps[flashStep].color;
+    const currentDuration = flashSteps[flashStep].duration;
+
+    if (currentColor !== "tension") {
+      const rarityKey = Object.keys(RARITY_FLASH).find(
+        (key) => RARITY_FLASH[key] === currentColor,
+      );
+
+      if (rarityKey === "legendary" || rarityKey === "secret") {
+        soundService.play("rarityLegendary");
+      } else if (rarityKey === "epic") {
+        soundService.play("rarityEpic");
+      } else if (rarityKey === "rare") {
+        soundService.play("rarityRare");
+      } else {
+        soundService.play("rarityCommon");
+      }
+    }
+
+    const t = setTimeout(() => setFlashStep((s) => s + 1), currentDuration);
     return () => clearTimeout(t);
-  }, [phase, flashStep, cascadeColors, target.type]);
+  }, [phase, flashStep, flashSteps, target.type]);
+
+  // ── Son d'arrivée sur l'écran "Résultats" ──────────────────────────────
+  useEffect(() => {
+    if (phase === "results") {
+      soundService.play("confirm");
+    }
+  }, [phase]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleOpen = async () => {
     setError("");
     setPhase("loading");
-
     try {
       const res =
         target.type === "booster"
@@ -150,8 +177,35 @@ export default function OpeningModal({
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
 
-      const colors = getRarityCascade(res.cards);
-      setCascadeColors(colors.length > 0 ? colors : [RARITY_FLASH.common]);
+      let steps: FlashStep[] = getRarityCascade(res.cards).map((color) => ({
+        color,
+        duration: FLASH_STEP_MS,
+      }));
+      const maxR = getMaxRarity(res.cards).toLowerCase();
+
+      // 🎲 LOGIQUE DE FAKE-OUT (33% de chance sur du lourd)
+      if (
+        ["epic", "legendary", "secret"].includes(maxR) &&
+        Math.random() < 0.33
+      ) {
+        const finalStep = steps.pop()!;
+        // Flash long sur uncommon pour lull le joueur ("c'est juste ça...")
+        steps.push({ color: RARITY_FLASH.uncommon, duration: 600 });
+        // Écran de tension : l'overlay "retient son souffle"
+        steps.push({ color: "tension", duration: 500 });
+        // BAM : flash rapide et violent de la vraie rareté
+        steps.push({ ...finalStep, duration: 280 });
+      }
+
+      setFlashSteps(
+        steps.length > 0
+          ? steps
+          : [{ color: RARITY_FLASH.common, duration: FLASH_STEP_MS }],
+      );
+
+      // AJOUT : Son d'ouverture initial
+      soundService.play("openBooster");
+
       setFlashStep(0);
       setPhase("flash");
     } catch {
@@ -161,46 +215,64 @@ export default function OpeningModal({
   };
 
   const handleNext = () => {
+    soundService.play("select"); // AJOUT : petit bruit au passage de la carte suivante
     if (currentIdx < cards.length - 1) setCurrentIdx((i) => i + 1);
     else setPhase("results");
   };
 
   const handleClose = () => {
+    soundService.play("cancel"); // (Optionnel) Bruit quand on ferme tout
     if (phase === "results") onDone?.();
     onClose();
   };
 
-  const currentFlashColor =
-    flashStep < cascadeColors.length ? cascadeColors[flashStep] : "transparent";
+  const currentFlashStep =
+    flashStep < flashSteps.length ? flashSteps[flashStep] : null;
 
   return (
     <div
       className="opening-overlay"
       onClick={(e) => {
-        if (
-          e.target === e.currentTarget &&
-          phase !== "flash" &&
-          phase !== "loading"
-        )
+        if (e.target !== e.currentTarget) return;
+
+        if (phase === "idle" || phase === "results") {
           handleClose();
+        }
       }}
     >
       {/* ── Flash ── */}
       <AnimatePresence>
-        {phase === "flash" && flashStep < cascadeColors.length && (
-          <motion.div
-            key={`flash-${flashStep}`}
-            className="opening-flash"
-            style={{
-              background: currentFlashColor,
-              boxShadow: `0 0 160px 80px ${currentFlashColor}`,
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0.85] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: FLASH_STEP_MS / 1000, ease: "easeInOut" }}
-          />
-        )}
+        {phase === "flash" &&
+          currentFlashStep !== null &&
+          (currentFlashStep.color === "tension" ? (
+            <motion.div
+              key={`tension-${flashStep}`}
+              className="opening-flash opening-flash--tension"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.5, 0.85, 0.5] }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: currentFlashStep.duration / 1000,
+                ease: "easeInOut",
+              }}
+            />
+          ) : (
+            <motion.div
+              key={`flash-${flashStep}`}
+              className="opening-flash"
+              style={{
+                background: currentFlashStep.color,
+                boxShadow: `0 0 100px 50px ${currentFlashStep.color}`,
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.55, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: currentFlashStep.duration / 1000,
+                ease: "easeOut",
+              }}
+            />
+          ))}
       </AnimatePresence>
 
       <div className="opening-modal">
