@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-
+import "./useToast.css";
 export type ToastType = "success" | "error" | "warning";
 
 export interface Toast {

@@ -1,0 +1,23 @@
+/* ── Bouton acheter ── */
+.marketplace-buy-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: #7a1c3b;
+  color: white;
+}
+
+.marketplace-buy-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.marketplace-buy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

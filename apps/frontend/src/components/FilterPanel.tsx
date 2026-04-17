@@ -1,15 +1,5 @@
-/**
- * FilterPanel — composant de filtres réutilisable
- *
- * Utilisation :
- *   const { filterValues, setFilter, resetFilters, hasActiveFilters } = useFilters(filterConfig);
- *   <FilterPanel config={filterConfig} values={filterValues} onChange={setFilter} />
- *
- * Puis dans SearchBar :
- *   <SearchBar ... hasActiveFilters={hasActiveFilters} filters={<FilterPanel ... />} />
- */
-
 import "./FilterPanel.css";
+import { useState, useMemo, useCallback } from "react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,13 +12,16 @@ export interface FilterGroupConfig {
   key: string;
   label: string;
   options: FilterOption[];
-  /** Valeur considérée comme "pas de filtre actif" (défaut: "all") */
   defaultValue?: string;
 }
 
+// ✅ Ajout de ces alias pour que BuyTab.tsx ne soit plus en erreur
+export type FilterConfig = FilterGroupConfig;
+export type FilterValues = Record<string, string>;
+
 export interface FilterPanelProps {
   config: FilterGroupConfig[];
-  values: Record<string, string>;
+  values: FilterValues;
   onChange: (key: string, value: string) => void;
 }
 
@@ -68,23 +61,14 @@ export default function FilterPanel({
 
 // ── Hook useFilters ───────────────────────────────────────────────────────────
 
-/**
- * Hook companion pour gérer l'état des filtres.
- *
- *   const { filterValues, setFilter, resetFilters, hasActiveFilters } = useFilters(config);
- */
-import { useState, useMemo, useCallback } from "react";
-
 export function useFilters(config: FilterGroupConfig[]) {
   const defaults = useMemo(
     () =>
       Object.fromEntries(config.map((g) => [g.key, g.defaultValue ?? "all"])),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    [config], // ✅ Ajout de config ici pour plus de sécurité
   );
 
-  const [filterValues, setFilterValues] =
-    useState<Record<string, string>>(defaults);
+  const [filterValues, setFilterValues] = useState<FilterValues>(defaults);
 
   const setFilter = useCallback((key: string, value: string) => {
     setFilterValues((prev) => ({ ...prev, [key]: value }));

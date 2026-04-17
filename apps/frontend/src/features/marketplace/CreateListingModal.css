@@ -1,0 +1,131 @@
+/* ── Overlay ── */
+.marketplace-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Contenu ── */
+.marketplace-modal-content {
+  position: relative;
+  z-index: 101;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 24px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 8px 32px rgba(61, 16, 32, 0.15);
+  animation: modalIn 0.35s ease both;
+}
+
+.marketplace-modal-content h3 {
+  font-family: "Lilita One", cursive;
+  font-size: 1.4rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Champs de formulaire ── */
+.marketplace-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.marketplace-form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #7a1c3b;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.marketplace-form-group input,
+.marketplace-form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.95rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.marketplace-form-group input:focus,
+.marketplace-form-group select:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+
+.marketplace-form-hint {
+  font-size: 0.78rem;
+  color: #a08070;
+  margin: 0;
+  padding-left: 4px;
+}
+
+/* ── Actions ── */
+.marketplace-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.marketplace-modal-actions button {
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.marketplace-modal-actions button[type="button"] {
+  background: rgba(122, 28, 59, 0.1);
+  color: #7a1c3b;
+}
+
+.marketplace-modal-actions button[type="submit"] {
+  background: #7a1c3b;
+  color: white;
+}
+
+.marketplace-modal-actions button:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.marketplace-modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

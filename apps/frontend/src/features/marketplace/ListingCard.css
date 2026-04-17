@@ -1,0 +1,122 @@
+/* ── Grille des annonces ── */
+.marketplace-listings {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+}
+/* ── La Carte (Base Uiverse adaptée) ── */
+.marketplace-listing {
+  width: 220px;
+  height: 220px;
+  background: #1a1a1a; /* Fond sombre */
+  border-radius: 20px;
+  box-shadow: -8px 8px 0px 0px rgba(122, 28, 59, 0.2); /* Ombre bordeaux */
+  border: solid 2px #333;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.4s ease;
+  font-family: "Comfortaa", sans-serif;
+  transform: rotate(2deg) skewX(2deg); /* L'effet incliné */
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+}
+
+/* Effet de brillance (cardbrightfilter) */
+.marketplace-listing::after {
+  content: "";
+  width: 450px;
+  height: 200px;
+  background-color: rgba(255, 255, 255, 0.1);
+  position: absolute;
+  transform: rotate(-40deg) translateX(-15%) translateY(-160%);
+  transition: all 0.6s ease;
+  z-index: 1;
+}
+
+.marketplace-listing:hover {
+  transform: translateY(-10px) rotate(0deg) skewX(0deg); /* Se redresse au hover */
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.5);
+  border-color: #7a1c3b;
+}
+
+.marketplace-listing:hover::after {
+  transform: rotate(-42deg) translateX(-15%) translateY(-70%);
+}
+
+/* ── Haut de la carte (Image / Nom) ── */
+.marketplace-listing__top {
+  width: 100%;
+  height: 65%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  background: linear-gradient(to bottom, #252525, #1a1a1a);
+}
+
+.marketplace-listing__name {
+  font-family: "Lilita One", cursive;
+  font-size: 1.2rem;
+  margin-top: 10px;
+  color: #fff;
+}
+
+/* Badge Quantité (cardnewfilter) */
+.marketplace-listing__qty {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  width: 60px;
+  height: 25px;
+  background-color: #7a1c3b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 10px 10px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  z-index: 2;
+}
+
+/* ── Bas de la carte (Prix / Vendeur / Bouton) ── */
+.marketplace-listing__bottom {
+  width: 100%;
+  height: 35%;
+  background-color: #fff;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.marketplace-listing__seller {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.marketplace-listing__price {
+  font-family: "Lilita One", cursive;
+  font-size: 1.1rem;
+  color: #7a1c3b;
+  border-top: 1px solid #eee;
+  padding-top: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* On adapte le bouton pour qu'il soit petit dans la carte */
+.marketplace-listing .marketplace-buy-btn {
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  border-radius: 8px;
+}

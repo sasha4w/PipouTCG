@@ -7,11 +7,14 @@ import {
   type CreateListingData,
 } from "../services/transaction.service";
 import { userService, type UserInventory } from "../services/user.service";
-import SearchBar from "../components/Searchbar";
-import FilterPanel, { useFilters } from "../components/FilterPanel";
+import { useFilters } from "../components/FilterPanel";
 import "./Marketplace.css";
 import { QUERY_KEYS } from "../utils/querykeys";
 import { useToast, ToastContainer } from "../hooks/useToast";
+import MarketplaceTabs from "../features/marketplace/MarketplaceTabs";
+import SellTab from "../features/marketplace/SellTab";
+import BuyTab from "../features/marketplace/BuyTab";
+import CreateListingModal from "../features/marketplace/CreateListingModal";
 
 // ─────────────────────────────────────────────
 // 🏪 PAGE MARKETPLACE
@@ -63,7 +66,6 @@ const Marketplace = () => {
   }, [availableItems, selectedInventoryId]);
 
   // --- HELPERS ---
-  // ✅ itemName est maintenant une colonne directe, plus de chaîne de relations
   const getDisplayName = (listing: Transaction) =>
     listing.itemName || `Objet #${listing.productId}`;
 
@@ -207,10 +209,8 @@ const Marketplace = () => {
         listing.productType !== filterValues.type
       )
         return false;
-
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
-        // ✅ Recherche directement sur itemName
         const itemName = (listing.itemName || "").toLowerCase();
         const sellerName = (listing.seller?.username || "").toLowerCase();
         return itemName.includes(search) || sellerName.includes(search);
@@ -230,235 +230,49 @@ const Marketplace = () => {
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
-      {/* Onglets */}
-      <div className="marketplace-tabs">
-        <button
-          className={`marketplace-tab ${selectedTab === "buy" ? "marketplace-tab--active" : ""}`}
-          onClick={() => setSelectedTab("buy")}
-        >
-          Achat
-        </button>
-        <button
-          className={`marketplace-tab ${selectedTab === "sell" ? "marketplace-tab--active" : ""}`}
-          onClick={() => setSelectedTab("sell")}
-        >
-          Vente
-        </button>
-      </div>
+      <MarketplaceTabs selectedTab={selectedTab} onTabChange={setSelectedTab} />
 
-      {/* ── Onglet VENTE ── */}
       {selectedTab === "sell" && (
-        <div className="marketplace-sell">
-          <h2 className="marketplace-section__title">Mes Annonces En Cours</h2>
-          <button
-            className="marketplace-create-listing-btn"
-            onClick={() => setShowCreateListingForm(true)}
-          >
-            + Créer une annonce
-          </button>
-          <div className="marketplace-listings">
-            {userListings?.data.length === 0 ? (
-              <p className="marketplace-empty">Aucune vente en cours.</p>
-            ) : (
-              userListings?.data.map((listing: Transaction) => (
-                <div key={listing.id} className="marketplace-listing">
-                  <div className="marketplace-listing__info">
-                    <span className="marketplace-listing__name">
-                      <strong>{getDisplayName(listing)}</strong>
-                      <span className="marketplace-listing__qty">
-                        (x{listing.quantity})
-                      </span>
-                    </span>
-                    <span className="marketplace-listing__price">
-                      {listing.unitPrice} gold / u
-                    </span>
-                  </div>
-                  <button
-                    className="marketplace-cancel-btn"
-                    onClick={() => handleCancelListing(listing.id)}
-                    disabled={loadingAction === listing.id}
-                  >
-                    {loadingAction === listing.id ? "..." : "Annuler"}
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <SellTab
+          userListings={userListings?.data}
+          loadingAction={loadingAction}
+          getDisplayName={getDisplayName}
+          onCreateListing={() => setShowCreateListingForm(true)}
+          onCancelListing={handleCancelListing}
+        />
       )}
 
-      {/* ── Onglet ACHAT ── */}
       {selectedTab === "buy" && (
-        <div className="marketplace-buy">
-          <h2 className="marketplace-section__title">Marché</h2>
-          <SearchBar
-            value={searchTerm}
-            onChange={setSearchTerm}
-            placeholder="Rechercher un objet ou un vendeur..."
-            filters={
-              <FilterPanel
-                config={filterConfig}
-                values={filterValues}
-                onChange={setFilter}
-              />
-            }
-            hasActiveFilters={hasActiveFilters}
-          />
-          <div className="marketplace-listings">
-            {filteredListings?.length === 0 ? (
-              <p className="marketplace-empty">Aucun objet trouvé.</p>
-            ) : (
-              filteredListings?.map((listing: Transaction) => (
-                <div key={listing.id} className="marketplace-listing">
-                  <div className="marketplace-listing__info">
-                    <span className="marketplace-listing__name">
-                      <strong>{getDisplayName(listing)}</strong>
-                      <span className="marketplace-listing__qty">
-                        (x{listing.quantity})
-                      </span>
-                    </span>
-                    <span className="marketplace-listing__seller">
-                      Vendu par :{" "}
-                      <strong>{listing.seller?.username || "Inconnu"}</strong>
-                    </span>
-                    <span className="marketplace-listing__price">
-                      {listing.unitPrice} gold / u
-                    </span>
-                  </div>
-                  <button
-                    className="marketplace-buy-btn"
-                    onClick={() => handleBuyListing(listing.id)}
-                    disabled={loadingAction === listing.id}
-                  >
-                    {loadingAction === listing.id ? "..." : "Acheter"}
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <BuyTab
+          filteredListings={filteredListings}
+          loadingAction={loadingAction}
+          searchTerm={searchTerm}
+          filterConfig={filterConfig}
+          filterValues={filterValues}
+          hasActiveFilters={hasActiveFilters}
+          getDisplayName={getDisplayName}
+          onSearchChange={setSearchTerm}
+          onFilterChange={setFilter}
+          onBuyListing={handleBuyListing}
+        />
       )}
 
-      {/* ── Modal de création d'annonce ── */}
       {showCreateListingForm && (
-        <div
-          className="marketplace-modal"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowCreateListingForm(false);
+        <CreateListingModal
+          isCreating={isCreating}
+          formProductType={formProductType}
+          selectedInventoryId={selectedInventoryId}
+          availableItems={availableItems}
+          selectedItem={selectedItem}
+          onProductTypeChange={(type) => {
+            setFormProductType(type);
+            setSelectedInventoryId("");
           }}
-        >
-          <div className="marketplace-modal-content">
-            <h3>Mettre en vente un objet</h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const quantity = Number(formData.get("quantity"));
-                const unitPrice = Number(formData.get("unitPrice"));
-
-                if (!selectedInventoryId) {
-                  addToast("Veuillez sélectionner un objet.", "warning");
-                  return;
-                }
-                if (!quantity || quantity < 1) {
-                  addToast("La quantité doit être d'au moins 1.", "warning");
-                  return;
-                }
-                if (!unitPrice || unitPrice < 1) {
-                  addToast("Le prix doit être d'au moins 1 gold.", "warning");
-                  return;
-                }
-
-                handleCreateListing({
-                  productType: formProductType,
-                  productId: Number(selectedInventoryId),
-                  quantity,
-                  unitPrice,
-                });
-              }}
-            >
-              <div className="marketplace-form-group">
-                <label>Type d'objet</label>
-                <select
-                  value={formProductType}
-                  onChange={(e) => {
-                    setFormProductType(e.target.value as ProductType);
-                    setSelectedInventoryId("");
-                  }}
-                  required
-                >
-                  {Object.values(ProductType).map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="marketplace-form-group">
-                <label>Sélectionner l'objet</label>
-                <select
-                  name="productId"
-                  value={selectedInventoryId}
-                  onChange={(e) =>
-                    setSelectedInventoryId(Number(e.target.value))
-                  }
-                  required
-                >
-                  <option value="">-- Choisir --</option>
-                  {availableItems.map((item: any) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name} (Stock : {item.quantity})
-                    </option>
-                  ))}
-                </select>
-                {availableItems.length === 0 && (
-                  <p className="marketplace-form-hint">
-                    Aucun {formProductType.toLowerCase()} dans votre inventaire.
-                  </p>
-                )}
-              </div>
-
-              <div className="marketplace-form-group">
-                <label>Quantité</label>
-                <input
-                  type="number"
-                  name="quantity"
-                  min="1"
-                  max={selectedItem?.quantity || 1}
-                  defaultValue="1"
-                  required
-                />
-                {selectedItem && (
-                  <p className="marketplace-form-hint">
-                    Max disponible : {selectedItem.quantity}
-                  </p>
-                )}
-              </div>
-
-              <div className="marketplace-form-group">
-                <label>Prix unitaire (Gold)</label>
-                <input type="number" name="unitPrice" min="1" required />
-              </div>
-
-              <div className="marketplace-modal-actions">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateListingForm(false)}
-                  disabled={isCreating}
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={!selectedInventoryId || isCreating}
-                >
-                  {isCreating ? "Mise en vente..." : "Vendre"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          onInventoryIdChange={setSelectedInventoryId}
+          onSubmit={handleCreateListing}
+          onClose={() => setShowCreateListingForm(false)}
+          addToast={addToast}
+        />
       )}
     </div>
   );
