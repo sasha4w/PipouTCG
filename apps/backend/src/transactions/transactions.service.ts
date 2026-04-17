@@ -12,7 +12,6 @@ import { TransactionStatus } from './enums/transaction-status.enum';
 import { ProductType } from './enums/product-type.enum';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
-// ── Payload émis quand une vente est conclue ──────────────────────────────────
 export interface ListingSoldPayload {
   sellerId: number;
   buyerUsername: string;
@@ -27,7 +26,7 @@ export class TransactionService {
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
     private dataSource: DataSource,
-    private eventEmitter: EventEmitter2, // ← injection
+    private eventEmitter: EventEmitter2,
   ) {}
 
   // ============================================================
@@ -40,7 +39,8 @@ export class TransactionService {
       {
         where: { status: TransactionStatus.PENDING },
         order: { createdAt: 'DESC' },
-        relations: ['seller', 'card', 'booster', 'bundle'],
+        // ✅ Plus besoin de charger card/booster/bundle
+        relations: ['seller'],
         skip: (page - 1) * limit,
         take: limit,
       },
@@ -56,7 +56,8 @@ export class TransactionService {
     const skip = (page - 1) * limit;
     const [data, total] = await this.transactionRepository.findAndCount({
       where: { status: TransactionStatus.PENDING, seller: { id: Not(userId) } },
-      relations: ['seller', 'card', 'booster', 'bundle'],
+      // ✅ Plus besoin de charger card/booster/bundle
+      relations: ['seller'],
       order: { createdAt: 'DESC' },
       take: limit,
       skip,
@@ -73,7 +74,8 @@ export class TransactionService {
       {
         where: { status: TransactionStatus.PENDING, seller: { id: userId } },
         order: { createdAt: 'DESC' },
-        relations: ['seller', 'card', 'booster', 'bundle'],
+        // ✅ Plus besoin de charger card/booster/bundle
+        relations: ['seller'],
         skip: (page - 1) * limit,
         take: limit,
       },
@@ -90,7 +92,8 @@ export class TransactionService {
       {
         where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
         order: { createdAt: 'DESC' },
-        relations: ['buyer', 'seller', 'card', 'booster', 'bundle'],
+        // ✅ On garde buyer/seller pour l'historique, plus besoin des objets
+        relations: ['buyer', 'seller'],
         skip: (page - 1) * limit,
         take: limit,
       },
@@ -109,6 +112,7 @@ export class TransactionService {
     return this.dataSource.transaction(async (manager) => {
       const { Entity, relationKey } = this.mapProductType(dto.productType);
 
+      // On charge la relation pour récupérer le nom de l'objet
       const inventoryItem = await manager.findOne(Entity, {
         where: { [relationKey]: { id: dto.productId }, user: { id: sellerId } },
         relations: [relationKey],
@@ -121,6 +125,10 @@ export class TransactionService {
         );
       }
 
+      // ✅ On récupère le nom avant de décrémenter le stock
+      const itemName =
+        (inventoryItem as any)[relationKey]?.name ?? `Objet #${dto.productId}`;
+
       inventoryItem.quantity -= dto.quantity;
       await manager.save(inventoryItem);
 
@@ -128,18 +136,20 @@ export class TransactionService {
         seller: { id: sellerId } as any,
         productType: dto.productType,
         productId: dto.productId,
-        [relationKey]: { id: dto.productId },
         quantity: dto.quantity,
         unitPrice: dto.unitPrice,
         totalPrice: dto.unitPrice * dto.quantity,
         status: TransactionStatus.PENDING,
+        // ✅ Nom figé au moment de la création
+        itemName,
       });
 
-      // Recharger avec les relations pour renvoyer le nom au frontend
       const saved = await manager.save(listing);
+
+      // On recharge uniquement avec seller (itemName est déjà dans la ligne)
       return manager.findOne(Transaction, {
         where: { id: saved.id },
-        relations: ['seller', relationKey],
+        relations: ['seller'],
       });
     });
   }
@@ -165,29 +175,27 @@ export class TransactionService {
   }
 
   // ============================================================
-  // 🟢 ACHETER — émet un événement SSE après la vente
+  // 🟢 ACHETER
   // ============================================================
 
   async buyListing(transactionId: number, buyerId: number) {
     const result = await this.dataSource.transaction(async (manager) => {
-      // 1. On récupère l'annonce avec ses relations pour avoir les noms (Card, Booster, etc.)
+      // ✅ Plus besoin de charger card/booster/bundle — itemName est en colonne
       const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
-        relations: ['seller', 'card', 'booster', 'bundle'],
+        relations: ['seller'],
         lock: { mode: 'pessimistic_write' },
       });
 
       if (!listing || listing.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Annonce indisponible.');
 
-      // 2. Récupération de l'acheteur
       const buyer = await manager.findOne(User, {
         where: { id: buyerId },
         lock: { mode: 'pessimistic_write' },
       });
       if (!buyer) throw new BadRequestException('Acheteur introuvable.');
 
-      // 3. Récupération du vendeur
       const seller = await manager.findOne(User, {
         where: { id: listing.seller.id },
         lock: { mode: 'pessimistic_write' },
@@ -197,7 +205,6 @@ export class TransactionService {
       if (buyer.id === seller.id)
         throw new BadRequestException('Achat de sa propre annonce interdit');
 
-      // 4. Vérification et transfert d'argent
       const totalPriceNum = Number(listing.totalPrice);
       if (Number(buyer.gold) < totalPriceNum)
         throw new BadRequestException('Or insuffisant.');
@@ -207,40 +214,26 @@ export class TransactionService {
       seller.gold = Number(seller.gold) + totalPriceNum;
       seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
-      // 5. Transfert de l'objet dans l'inventaire
       await this.giveItemToBuyer(manager, listing, buyerId);
-
-      // 6. SAUVEGARDE CIBLÉE
-      // On sauvegarde les users normalement
       await manager.save([buyer, seller]);
 
-      // ✅ FIX ICI : On utilise update() au lieu de save() pour la Transaction.
-      // Cela évite que TypeORM ne regarde les relations nulles (card, booster...)
-      // et n'essaie de mettre product_id à NULL.
       await manager.update(Transaction, transactionId, {
         status: TransactionStatus.COMPLETED,
         buyer: { id: buyerId } as any,
-        updatedAt: new Date(), // Optionnel mais propre
+        updatedAt: new Date(),
       });
 
-      // On met à jour l'objet en mémoire pour le retour et le SSE
       listing.status = TransactionStatus.COMPLETED;
       listing.buyer = buyer;
 
       return { listing, seller, buyer };
     });
 
-    // 7. Événement SSE (On utilise 'result' qui contient les objets mis à jour)
-    const itemName =
-      result.listing.card?.name ||
-      result.listing.booster?.name ||
-      result.listing.bundle?.name ||
-      `Objet #${result.listing.productId}`;
-
+    // ✅ itemName vient directement de la colonne, pas d'une relation
     const payload: ListingSoldPayload = {
       sellerId: result.seller.id,
       buyerUsername: result.buyer.username,
-      itemName,
+      itemName: result.listing.itemName ?? `Objet #${result.listing.productId}`,
       totalPrice: Number(result.listing.totalPrice),
       transactionId,
     };

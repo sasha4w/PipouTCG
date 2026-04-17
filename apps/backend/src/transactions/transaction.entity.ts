@@ -8,16 +8,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
-import { Card } from '../cards/card.entity';
-import { Booster } from '../boosters/booster.entity';
-import { Bundle } from '../bundles/bundle.entity';
 import { ProductType } from './enums/product-type.enum';
 import { TransactionStatus } from './enums/transaction-status.enum';
 
 @Entity('transaction')
 export class Transaction {
   @PrimaryGeneratedColumn()
-  id!: number; // Ajout du ! ici
+  id!: number;
 
   // --- RELATIONS UTILISATEURS ---
   @ManyToOne(() => User, { nullable: true })
@@ -28,37 +25,19 @@ export class Transaction {
   @JoinColumn({ name: 'seller_id' })
   seller!: User;
 
-  // --- RELATIONS OBJETS (READ-ONLY) ---
-  @ManyToOne(() => Card, { nullable: true, createForeignKeyConstraints: false })
-  @JoinColumn({ name: 'product_id' })
-  card!: Card;
-
-  @ManyToOne(() => Booster, {
-    nullable: true,
-    createForeignKeyConstraints: false,
-  })
-  @JoinColumn({ name: 'product_id' })
-  booster!: Booster;
-
-  @ManyToOne(() => Bundle, {
-    nullable: true,
-    createForeignKeyConstraints: false,
-  })
-  @JoinColumn({ name: 'product_id' })
-  bundle!: Bundle;
-
   // --- COLONNES DE DONNÉES ---
-
   @Column({ name: 'product_type', type: 'enum', enum: ProductType })
   productType!: ProductType;
 
   @Column({ name: 'product_id' })
   productId!: number;
 
+  @Column({ name: 'item_name', nullable: true })
+  itemName!: string;
+
   @Column()
   quantity!: number;
 
-  // Attention : bigint en DB est renvoyé en string par JS
   @Column({ name: 'unit_price', type: 'bigint' })
   unitPrice!: number;
 
