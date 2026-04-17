@@ -261,23 +261,29 @@ function IconCrown() {
 
 export default function Header() {
   const [mounted, setMounted] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Tu as déjà ceci
   const { t } = useTranslation();
   const { data: user } = useQuery({
     queryKey: QUERY_KEYS.profile,
     queryFn: () => userService.getMe(),
-    staleTime: 5 * 60 * 1000, // Garde l'info 5 min en mémoire
+    staleTime: 5 * 60 * 1000,
   });
+
   useEffect(() => setMounted(true), []);
   const isAdminUser = user?.is_admin === true;
+
   return (
     <header className="cc-header">
+      {/* Ajout du onClick et du cursor: pointer ici 👇 */}
       <div
         className={`cc-header__title-row ${mounted ? "cc-header__title-row--visible" : "cc-header__title-row--hidden"}`}
+        onClick={() => navigate("/")}
+        style={{ cursor: "pointer" }}
       >
         <h1 className="cc-header__title">PipouTCG</h1>
         <TitleStars />
       </div>
+
       <div className="cc-header__actions">
         {isAdminUser && (
           <button

@@ -15,15 +15,6 @@ export const TransactionStatus = {
 export type TransactionStatus =
   (typeof TransactionStatus)[keyof typeof TransactionStatus];
 
-// --- AJOUT DES INTERFACES POUR LES DÉTAILS ---
-// Ces interfaces permettent à TS de savoir ce qu'il y a dans listing.card, etc.
-interface ItemDetails {
-  id: number;
-  name: string;
-  imageUrl?: string;
-  rarity?: string;
-}
-
 export interface Transaction {
   id: number;
   productType: ProductType;
@@ -36,10 +27,7 @@ export interface Transaction {
   seller: { id: number; username: string };
   buyer?: { id: number; username: string } | null;
 
-  // ✅ AJOUT DES RELATIONS REÇUES DU BACKEND
-  card?: ItemDetails;
-  booster?: ItemDetails;
-  bundle?: ItemDetails;
+  itemName?: string;
 }
 
 export interface PaginatedResponse<T> {

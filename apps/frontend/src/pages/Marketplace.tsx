@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   transactionService,
   ProductType,
+  type Transaction,
   type CreateListingData,
 } from "../services/transaction.service";
 import { userService, type UserInventory } from "../services/user.service";
@@ -11,6 +12,7 @@ import FilterPanel, { useFilters } from "../components/FilterPanel";
 import "./Marketplace.css";
 import { QUERY_KEYS } from "../utils/querykeys";
 import { useToast, ToastContainer } from "../hooks/useToast";
+
 // ─────────────────────────────────────────────
 // 🏪 PAGE MARKETPLACE
 // ─────────────────────────────────────────────
@@ -40,11 +42,11 @@ const Marketplace = () => {
     queryKey: QUERY_KEYS.myListings,
     queryFn: () => transactionService.findMyListings(),
   });
-
   const { data: inventory } = useQuery<UserInventory>({
     queryKey: QUERY_KEYS.inventory,
     queryFn: () => userService.getMyInventory(),
   });
+
   // --- LOGIQUE INVENTAIRE ---
   const availableItems = useMemo(() => {
     if (!inventory) return [];
@@ -60,9 +62,13 @@ const Marketplace = () => {
     return availableItems.find((item: any) => item.id === selectedInventoryId);
   }, [availableItems, selectedInventoryId]);
 
+  // --- HELPERS ---
+  // ✅ itemName est maintenant une colonne directe, plus de chaîne de relations
+  const getDisplayName = (listing: Transaction) =>
+    listing.itemName || `Objet #${listing.productId}`;
+
   // --- HANDLERS ---
   const handleCreateListing = async (data: CreateListingData) => {
-    // Validation côté client
     if (!data.productId || data.productId <= 0) {
       addToast("Veuillez sélectionner un objet à vendre.", "warning");
       return;
@@ -85,12 +91,11 @@ const Marketplace = () => {
 
     setIsCreating(true);
     try {
-      const newListing = await transactionService.createListing(data); // ← récupère la réponse
+      const newListing = await transactionService.createListing(data);
 
       queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
         old ? { ...old, data: [newListing, ...old.data] } : old,
       );
-
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
 
       setShowCreateListingForm(false);
@@ -107,7 +112,6 @@ const Marketplace = () => {
 
   const handleCancelListing = async (id: number) => {
     setLoadingAction(id);
-
     const snapshot = queryClient.getQueryData(QUERY_KEYS.myListings);
 
     queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
@@ -116,16 +120,13 @@ const Marketplace = () => {
 
     try {
       await transactionService.cancel(id);
-
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
-
       addToast(
         "Annonce annulée. L'objet a été remis dans votre inventaire.",
         "success",
       );
     } catch (error: any) {
       queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
-
       const message =
         error.response?.data?.message || "Impossible d'annuler l'annonce.";
       addToast(message, "error");
@@ -142,7 +143,6 @@ const Marketplace = () => {
       queryClient.setQueryData(QUERY_KEYS.offers, (old: any) =>
         old ? { ...old, data: old.data.filter((l: any) => l.id !== id) } : old,
       );
-
       queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
         old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
       );
@@ -201,7 +201,7 @@ const Marketplace = () => {
     useFilters(filterConfig);
 
   const filteredListings = useMemo(() => {
-    return listings?.data.filter((listing: any) => {
+    return listings?.data.filter((listing: Transaction) => {
       if (
         filterValues.type !== "all" &&
         listing.productType !== filterValues.type
@@ -210,12 +210,8 @@ const Marketplace = () => {
 
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
-        const itemName = (
-          listing.card?.name ||
-          listing.booster?.name ||
-          listing.bundle?.name ||
-          ""
-        ).toLowerCase();
+        // ✅ Recherche directement sur itemName
+        const itemName = (listing.itemName || "").toLowerCase();
         const sellerName = (listing.seller?.username || "").toLowerCase();
         return itemName.includes(search) || sellerName.includes(search);
       }
@@ -223,26 +219,15 @@ const Marketplace = () => {
     });
   }, [listings, filterValues, searchTerm]);
 
-  const getDisplayName = (listing: any) => {
-    return (
-      listing.card?.name ||
-      listing.booster?.name ||
-      listing.bundle?.name ||
-      `Objet #${listing.productId}`
-    );
-  };
-
   // ─────────────────────────────────────────────
   // RENDU
   // ─────────────────────────────────────────────
   return (
     <div className="marketplace-page">
-      {/* Bulles décoratives */}
       <div className="marketplace-bubble marketplace-bubble--1" />
       <div className="marketplace-bubble marketplace-bubble--2" />
       <div className="marketplace-bubble marketplace-bubble--3" />
 
-      {/* 🔔 Toast notifications */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />
 
       {/* Onglets */}
@@ -275,7 +260,7 @@ const Marketplace = () => {
             {userListings?.data.length === 0 ? (
               <p className="marketplace-empty">Aucune vente en cours.</p>
             ) : (
-              userListings?.data.map((listing: any) => (
+              userListings?.data.map((listing: Transaction) => (
                 <div key={listing.id} className="marketplace-listing">
                   <div className="marketplace-listing__info">
                     <span className="marketplace-listing__name">
@@ -323,7 +308,7 @@ const Marketplace = () => {
             {filteredListings?.length === 0 ? (
               <p className="marketplace-empty">Aucun objet trouvé.</p>
             ) : (
-              filteredListings?.map((listing: any) => (
+              filteredListings?.map((listing: Transaction) => (
                 <div key={listing.id} className="marketplace-listing">
                   <div className="marketplace-listing__info">
                     <span className="marketplace-listing__name">
@@ -371,7 +356,6 @@ const Marketplace = () => {
                 const quantity = Number(formData.get("quantity"));
                 const unitPrice = Number(formData.get("unitPrice"));
 
-                // Validations avant soumission
                 if (!selectedInventoryId) {
                   addToast("Veuillez sélectionner un objet.", "warning");
                   return;
