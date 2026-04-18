@@ -14,6 +14,8 @@ import SearchBar from "../../components/Searchbar";
 import FilterPanel, { useFilters } from "../../components/FilterPanel";
 import "../../components/manager.css";
 
+const STEPS = [{ label: "Identité" }, { label: "Stats" }, { label: "Image" }];
+
 const emptyForm: CreateCardData = {
   name: "",
   rarity: Rarity.COMMON,
@@ -24,6 +26,8 @@ const emptyForm: CreateCardData = {
   cardSetId: 0,
 };
 
+type View = "list" | "edit";
+
 export default function CardManager() {
   const [cards, setCards] = useState<Card[]>([]);
   const [sets, setSets] = useState<CardSet[]>([]);
@@ -32,7 +36,8 @@ export default function CardManager() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [showForm, setShowForm] = useState(false);
+  const [view, setView] = useState<View>("list");
+  const [step, setStep] = useState(1);
   const [editing, setEditing] = useState<Card | null>(null);
   const [form, setForm] = useState<CreateCardData>(emptyForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -43,7 +48,6 @@ export default function CardManager() {
   const [search, setSearch] = useState("");
   const [groupBySet, setGroupBySet] = useState(false);
 
-  // ── Config des filtres (sets chargés dynamiquement) ──────────────────────
   const filterConfig = useMemo(
     () => [
       {
@@ -78,10 +82,8 @@ export default function CardManager() {
     [sets],
   );
 
-  const { filterValues, setFilter, hasActiveFilters } =
-    useFilters(filterConfig);
+  const { filterValues, setFilter } = useFilters(filterConfig);
 
-  // ── Chargement ───────────────────────────────────────────────────────────
   const load = async (p = page) => {
     setLoading(true);
     try {
@@ -105,7 +107,6 @@ export default function CardManager() {
     load();
   }, [page]);
 
-  // ── Filtrage local ───────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return cards.filter((c) => {
       if (search && !c.name.toLowerCase().includes(search.toLowerCase()))
@@ -129,7 +130,6 @@ export default function CardManager() {
     });
   }, [cards, search, filterValues]);
 
-  // ── Groupement par set ───────────────────────────────────────────────────
   const groupedBySet = useMemo(() => {
     if (!groupBySet) return null;
     const map = new Map<number, { setName: string; cards: Card[] }>();
@@ -146,7 +146,6 @@ export default function CardManager() {
     setPage(1);
   };
 
-  // ── Form helpers ─────────────────────────────────────────────────────────
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm);
@@ -154,7 +153,9 @@ export default function CardManager() {
     setImageName("");
     setSelectedImageId(null);
     setUploadMode("existing");
-    setShowForm(true);
+    setStep(1);
+    setError("");
+    setView("edit");
   };
   const openEdit = (c: Card) => {
     setEditing(c);
@@ -170,11 +171,36 @@ export default function CardManager() {
     });
     setSelectedImageId(c.image?.id ?? null);
     setUploadMode("existing");
-    setShowForm(true);
+    setStep(1);
+    setError("");
+    setView("edit");
   };
-  const cancel = () => {
-    setShowForm(false);
+  const backToList = () => {
+    setView("list");
     setEditing(null);
+    setError("");
+  };
+
+  const validateStep = (s: number): string | null => {
+    if (s === 1) {
+      if (!form.name.trim()) return "Le nom est requis.";
+      if (!form.cardSetId) return "Veuillez sélectionner un Card Set.";
+    }
+    return null;
+  };
+
+  const goNext = () => {
+    const err = validateStep(step);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setError("");
+    setStep((s) => s + 1);
+  };
+  const goPrev = () => {
+    setError("");
+    setStep((s) => s - 1);
   };
 
   const handleSubmit = async () => {
@@ -188,12 +214,9 @@ export default function CardManager() {
       } else if (uploadMode === "existing" && selectedImageId) {
         data.imageId = selectedImageId;
       }
-      if (editing) {
-        await cardService.update(editing.id, data);
-      } else {
-        await cardService.create(data);
-      }
-      cancel();
+      if (editing) await cardService.update(editing.id, data);
+      else await cardService.create(data);
+      backToList();
       load();
     } catch (err) {
       console.error(err);
@@ -216,7 +239,6 @@ export default function CardManager() {
   const setField = (k: keyof CreateCardData, v: any) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  // ── Rendu d'une carte ────────────────────────────────────────────────────
   const renderCard = (c: Card) => (
     <div key={c.id} className="manager-item">
       {c.image && (
@@ -252,64 +274,165 @@ export default function CardManager() {
     </div>
   );
 
+  const isLast = step === STEPS.length;
+
+  // ══ VUE LISTE ════════════════════════════════════════════════════════════════
+  if (view === "list")
+    return (
+      <div className="manager">
+        <div className="manager__header">
+          <h2 className="manager__title">Cartes</h2>
+          <button className="manager__add-btn" onClick={openCreate}>
+            + Nouvelle
+          </button>
+        </div>
+
+        {error && <p className="manager-error">{error}</p>}
+
+        <SearchBar
+          value={search}
+          onChange={(v) => {
+            setSearch(v);
+            setPage(1);
+          }}
+          placeholder="Rechercher une carte…"
+          extra={
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                color: "#7a1c3b",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={groupBySet}
+                onChange={(e) => setGroupBySet(e.target.checked)}
+                style={{ accentColor: "#7a1c3b" }}
+              />
+              Par set
+            </label>
+          }
+        />
+
+        <FilterPanel
+          config={filterConfig}
+          values={filterValues}
+          onChange={(k, v) => applyFilter(() => setFilter(k, v))}
+        />
+
+        {loading ? (
+          <p className="manager-empty">Chargement...</p>
+        ) : filtered.length === 0 ? (
+          <p className="manager-empty">Aucune carte.</p>
+        ) : groupBySet && groupedBySet ? (
+          groupedBySet.map(([setId, { setName, cards: setCards }]) => (
+            <div key={setId} style={{ marginBottom: "1rem" }}>
+              <div className="manager-set-header">
+                <span className="manager-set-name">{setName}</span>
+                <span className="manager-set-count">
+                  {setCards.length} carte{setCards.length > 1 ? "s" : ""}
+                </span>
+              </div>
+              <div className="manager-list">{setCards.map(renderCard)}</div>
+            </div>
+          ))
+        ) : (
+          <div className="manager-list">{filtered.map(renderCard)}</div>
+        )}
+
+        {total > 1 && (
+          <div className="manager-pagination">
+            <button
+              className="manager-pagination__btn"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              ←
+            </button>
+            <span className="manager-pagination__info">
+              {page} / {total}
+            </span>
+            <button
+              className="manager-pagination__btn"
+              disabled={page >= total}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              →
+            </button>
+          </div>
+        )}
+      </div>
+    );
+
+  // ══ VUE WIZARD ═══════════════════════════════════════════════════════════════
   return (
     <div className="manager">
       <div className="manager__header">
-        <h2 className="manager__title">Cartes</h2>
-        <button className="manager__add-btn" onClick={openCreate}>
-          + Nouvelle
+        <button className="manager-form__cancel" onClick={backToList}>
+          ← Retour
         </button>
+        <h2 className="manager__title">
+          {editing ? "Modifier" : "Nouvelle"} carte
+        </h2>
+      </div>
+
+      {/* ── Stepper ── */}
+      <div className="bm-stepper">
+        {STEPS.map((s, i) => {
+          const n = i + 1;
+          const done = n < step;
+          const active = n === step;
+          return (
+            <div key={n} className="bm-stepper__item">
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`bm-stepper__line${done ? " bm-stepper__line--done" : ""}`}
+                />
+              )}
+              <button
+                className={`bm-stepper__dot${active ? " bm-stepper__dot--active" : done ? " bm-stepper__dot--done" : ""}`}
+                onClick={() => {
+                  if (done) {
+                    setError("");
+                    setStep(n);
+                  }
+                }}
+                disabled={!done && !active}
+                aria-label={s.label}
+              >
+                {done ? "✓" : n}
+              </button>
+              <span
+                className={`bm-stepper__label${active ? " bm-stepper__label--active" : ""}`}
+              >
+                {s.label}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {error && <p className="manager-error">{error}</p>}
 
-      {/* ── Recherche + filtres ── */}
-      <div style={{ marginBottom: "0.75rem" }}>
-        <SearchBar
-          value={search}
-          onChange={(val) => applyFilter(() => setSearch(val))}
-          placeholder="Rechercher une carte..."
-          hasActiveFilters={hasActiveFilters}
-          filters={
-            <FilterPanel
-              config={filterConfig}
-              values={filterValues}
-              onChange={(key, val) => applyFilter(() => setFilter(key, val))}
-            />
-          }
-        />
-        <label className="manager-toggle">
-          <input
-            type="checkbox"
-            checked={groupBySet}
-            onChange={(e) => setGroupBySet(e.target.checked)}
-          />
-          Grouper par set
-        </label>
-        {(search || hasActiveFilters) && (
-          <span className="manager-result-count">
-            {filtered.length} carte{filtered.length > 1 ? "s" : ""}
-          </span>
-        )}
-      </div>
-
-      {/* ── Formulaire ── */}
-      {showForm && (
+      {/* ── Étape 1 : Identité ── */}
+      {step === 1 && (
         <div className="manager-form">
-          <p className="manager-form__title">
-            {editing ? "Modifier" : "Nouvelle"} carte
-          </p>
-
+          <p className="manager-form__title">Identité</p>
           <div className="manager-form__row">
-            <label className="manager-form__label">Nom</label>
+            <label className="manager-form__label">Nom *</label>
             <input
               className="manager-form__input"
               value={form.name}
               onChange={(e) => setField("name", e.target.value)}
               placeholder="Nom de la carte"
+              autoFocus
             />
           </div>
-
           <div className="manager-form__row">
             <label className="manager-form__label">Description</label>
             <textarea
@@ -319,7 +442,6 @@ export default function CardManager() {
               placeholder="Description..."
             />
           </div>
-
           <div className="manager-form__grid">
             <div className="manager-form__row">
               <label className="manager-form__label">Rareté</label>
@@ -335,6 +457,30 @@ export default function CardManager() {
                 ))}
               </select>
             </div>
+            <div className="manager-form__row">
+              <label className="manager-form__label">Card Set *</label>
+              <select
+                className="manager-form__select"
+                value={form.cardSetId}
+                onChange={(e) => setField("cardSetId", Number(e.target.value))}
+              >
+                <option value={0}>-- Choisir --</option>
+                {sets.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Étape 2 : Stats ── */}
+      {step === 2 && (
+        <div className="manager-form">
+          <p className="manager-form__title">Stats & type</p>
+          <div className="manager-form__grid">
             <div className="manager-form__row">
               <label className="manager-form__label">Type</label>
               <select
@@ -354,6 +500,15 @@ export default function CardManager() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="manager-form__row">
+              <label className="manager-form__label">Coût</label>
+              <input
+                className="manager-form__input"
+                type="number"
+                value={form.cost}
+                onChange={(e) => setField("cost", Number(e.target.value))}
+              />
             </div>
           </div>
 
@@ -380,33 +535,6 @@ export default function CardManager() {
             </div>
           )}
 
-          <div className="manager-form__grid">
-            <div className="manager-form__row">
-              <label className="manager-form__label">Coût</label>
-              <input
-                className="manager-form__input"
-                type="number"
-                value={form.cost}
-                onChange={(e) => setField("cost", Number(e.target.value))}
-              />
-            </div>
-            <div className="manager-form__row">
-              <label className="manager-form__label">Card Set</label>
-              <select
-                className="manager-form__select"
-                value={form.cardSetId}
-                onChange={(e) => setField("cardSetId", Number(e.target.value))}
-              >
-                <option value={0}>-- Choisir --</option>
-                {sets.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           {form.type === CardType.SUPPORT && (
             <div className="manager-form__row">
               <label className="manager-form__label">Type de Support</label>
@@ -426,15 +554,26 @@ export default function CardManager() {
               </select>
             </div>
           )}
+        </div>
+      )}
 
+      {/* ── Étape 3 : Image ── */}
+      {step === 3 && (
+        <div className="manager-form">
+          <p className="manager-form__title">
+            Image <span className="bm-optional">(optionnel)</span>
+          </p>
           <div className="manager-form__row">
-            <label className="manager-form__label">Image</label>
+            <label className="manager-form__label">Source</label>
             <select
               className="manager-form__select"
               value={uploadMode}
-              onChange={(e) =>
-                setUploadMode(e.target.value as "existing" | "new")
-              }
+              onChange={(e) => {
+                setUploadMode(e.target.value as "existing" | "new");
+                setSelectedImageId(null);
+                setImageFile(null);
+                setImageName("");
+              }}
             >
               <option value="existing">Image existante</option>
               <option value="new">Upload nouvelle image</option>
@@ -481,64 +620,47 @@ export default function CardManager() {
             </>
           )}
 
-          <div className="manager-form__actions">
-            <button
-              className="manager-form__submit"
-              onClick={handleSubmit}
-              disabled={saving}
-            >
-              {saving ? "..." : editing ? "Modifier" : "Créer"}
-            </button>
-            <button className="manager-form__cancel" onClick={cancel}>
-              Annuler
-            </button>
-          </div>
+          {selectedImageId &&
+            uploadMode === "existing" &&
+            (() => {
+              const img = images.find((i) => i.id === selectedImageId);
+              return img ? (
+                <img src={img.url} alt={img.name} className="bm-img-preview" />
+              ) : null;
+            })()}
+          {imageFile && uploadMode === "new" && (
+            <img
+              src={URL.createObjectURL(imageFile)}
+              alt="preview"
+              className="bm-img-preview"
+            />
+          )}
         </div>
       )}
 
-      {/* ── Liste ── */}
-      {loading ? (
-        <p className="manager-empty">Chargement...</p>
-      ) : filtered.length === 0 ? (
-        <p className="manager-empty">Aucune carte.</p>
-      ) : groupBySet && groupedBySet ? (
-        groupedBySet.map(([setId, { setName, cards: setCards }]) => (
-          <div key={setId} style={{ marginBottom: "1rem" }}>
-            <div className="manager-set-header">
-              <span className="manager-set-name">{setName}</span>
-              <span className="manager-set-count">
-                {setCards.length} carte{setCards.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            <div className="manager-list">{setCards.map(renderCard)}</div>
-          </div>
-        ))
-      ) : (
-        <div className="manager-list">{filtered.map(renderCard)}</div>
-      )}
-
-      {/* ── Pagination ── */}
-      {total > 1 && (
-        <div className="manager-pagination">
-          <button
-            className="manager-pagination__btn"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => p - 1)}
-          >
-            ←
+      {/* ── Navigation wizard ── */}
+      <div className="bm-nav">
+        {step > 1 ? (
+          <button className="manager-form__cancel" onClick={goPrev}>
+            ← Précédent
           </button>
-          <span className="manager-pagination__info">
-            {page} / {total}
-          </span>
+        ) : (
+          <div />
+        )}
+        {isLast ? (
           <button
-            className="manager-pagination__btn"
-            disabled={page >= total}
-            onClick={() => setPage((p) => p + 1)}
+            className="manager-form__submit"
+            onClick={handleSubmit}
+            disabled={saving}
           >
-            →
+            {saving ? "..." : editing ? "Modifier" : "Créer la carte"}
           </button>
-        </div>
-      )}
+        ) : (
+          <button className="manager-form__submit" onClick={goNext}>
+            Suivant →
+          </button>
+        )}
+      </div>
     </div>
   );
 }

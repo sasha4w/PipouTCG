@@ -46,6 +46,7 @@ interface SearchBarProps {
   placeholder?: string;
   filters?: ReactNode;
   hasActiveFilters?: boolean;
+  extra?: ReactNode;
 }
 
 export default function SearchBar({
@@ -54,6 +55,7 @@ export default function SearchBar({
   placeholder,
   filters,
   hasActiveFilters = false,
+  extra,
 }: SearchBarProps) {
   const { t } = useTranslation();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -88,7 +90,7 @@ export default function SearchBar({
             onChange={(e) => onChange(e.target.value)}
           />
         </div>
-
+        {extra && <div className="search-bar__extra">{extra}</div>}
         {filters && (
           <button
             className={`search-bar__icon-btn${filterOpen ? " search-bar__icon-btn--active" : ""}`}

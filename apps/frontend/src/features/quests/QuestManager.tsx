@@ -36,6 +36,12 @@ const CONDITION_LABELS: Record<ConditionType, string> = {
   WIN_FIGHT: "Gagner combat",
 };
 
+const STEPS = [
+  { label: "Général" },
+  { label: "Conditions" },
+  { label: "Récompense" },
+];
+
 // ── Empty form ────────────────────────────────────────────────────────────────
 function emptyForm(): CreateQuestData {
   return {
@@ -61,6 +67,7 @@ export default function QuestManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [view, setView] = useState<View>("list");
+  const [step, setStep] = useState(1);
   const [editing, setEditing] = useState<Quest | null>(null);
   const [form, setForm] = useState<CreateQuestData>(emptyForm());
   const [saving, setSaving] = useState(false);
@@ -86,6 +93,7 @@ export default function QuestManager() {
   const openCreate = () => {
     setEditing(null);
     setForm(emptyForm());
+    setStep(1);
     setError("");
     setView("form");
   };
@@ -105,6 +113,7 @@ export default function QuestManager() {
       rewardItemId: q.rewardItemId,
       isActive: q.isActive,
     });
+    setStep(1);
     setError("");
     setView("form");
   };
@@ -154,7 +163,6 @@ export default function QuestManager() {
   const setF = (k: keyof CreateQuestData, v: any) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  // Conditions
   const addCondition = () =>
     setForm((f) => ({
       ...f,
@@ -186,6 +194,30 @@ export default function QuestManager() {
         conditions: f.conditionGroup.conditions.filter((_, idx) => idx !== i),
       },
     }));
+
+  // ── Validation par étape ──────────────────────────────────────────────────
+  const validateStep = (s: number): string | null => {
+    if (s === 1 && !form.title.trim()) return "Le titre est requis.";
+    if (s === 2 && form.conditionGroup.conditions.length === 0)
+      return "Ajoutez au moins une condition.";
+    return null;
+  };
+
+  const goNext = () => {
+    const err = validateStep(step);
+    if (err) {
+      setError(err);
+      return;
+    }
+    setError("");
+    setStep((s) => s + 1);
+  };
+  const goPrev = () => {
+    setError("");
+    setStep((s) => s - 1);
+  };
+
+  const isLast = step === STEPS.length;
 
   // ══ VUE LISTE ══════════════════════════════════════════════════════════════
   if (view === "list")
@@ -254,7 +286,7 @@ export default function QuestManager() {
       </div>
     );
 
-  // ══ VUE FORMULAIRE ═════════════════════════════════════════════════════════
+  // ══ VUE WIZARD ═══════════════════════════════════════════════════════════════
   return (
     <div className="manager">
       <div className="manager__header">
@@ -266,96 +298,155 @@ export default function QuestManager() {
         </h2>
       </div>
 
+      {/* ── Stepper ── */}
+      <div className="bm-stepper">
+        {STEPS.map((s, i) => {
+          const n = i + 1;
+          const done = n < step;
+          const active = n === step;
+          return (
+            <div key={n} className="bm-stepper__item">
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`bm-stepper__line${done ? " bm-stepper__line--done" : ""}`}
+                />
+              )}
+              <button
+                className={`bm-stepper__dot${active ? " bm-stepper__dot--active" : done ? " bm-stepper__dot--done" : ""}`}
+                onClick={() => {
+                  if (done) {
+                    setError("");
+                    setStep(n);
+                  }
+                }}
+                disabled={!done && !active}
+                aria-label={s.label}
+              >
+                {done ? "✓" : n}
+              </button>
+              <span
+                className={`bm-stepper__label${active ? " bm-stepper__label--active" : ""}`}
+              >
+                {s.label}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
       {error && <p className="manager-error">{error}</p>}
 
-      <div className="manager-form">
-        {/* ── Infos de base ── */}
-        <div className="manager-form__row">
-          <label className="manager-form__label">Titre</label>
-          <input
-            className="manager-form__input"
-            value={form.title}
-            onChange={(e) => setF("title", e.target.value)}
-            placeholder="Titre de la quête"
-          />
-        </div>
-
-        <div className="manager-form__row">
-          <label className="manager-form__label">Description</label>
-          <textarea
-            className="manager-form__textarea"
-            value={form.description}
-            onChange={(e) => setF("description", e.target.value)}
-            placeholder="Description (optionnel)"
-          />
-        </div>
-
-        {/* ── Reset ── */}
-        <div className="quest-form-section">
-          <p className="quest-form-section__title">Réinitialisation</p>
-          <div className="manager-form__grid">
-            <div className="manager-form__row">
-              <label className="manager-form__label">Type</label>
-              <select
-                className="manager-form__select"
-                value={form.resetType}
-                onChange={(e) =>
-                  setF("resetType", e.target.value as QuestResetType)
-                }
-              >
-                {Object.values(QuestResetType).map((r) => (
-                  <option key={r} value={r}>
-                    {RESET_LABELS[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="manager-form__row">
-              <label className="manager-form__label">Heure reset</label>
-              <input
-                className="manager-form__input"
-                type="number"
-                min={0}
-                max={23}
-                value={form.resetHour ?? 4}
-                onChange={(e) => setF("resetHour", Number(e.target.value))}
-              />
-            </div>
+      {/* ── Étape 1 : Général ── */}
+      {step === 1 && (
+        <div className="manager-form">
+          <p className="manager-form__title">Informations générales</p>
+          <div className="manager-form__row">
+            <label className="manager-form__label">Titre *</label>
+            <input
+              className="manager-form__input"
+              value={form.title}
+              onChange={(e) => setF("title", e.target.value)}
+              placeholder="Titre de la quête"
+              autoFocus
+            />
+          </div>
+          <div className="manager-form__row">
+            <label className="manager-form__label">Description</label>
+            <textarea
+              className="manager-form__textarea"
+              value={form.description}
+              onChange={(e) => setF("description", e.target.value)}
+              placeholder="Description (optionnel)"
+            />
           </div>
 
-          {form.resetType === QuestResetType.WEEKLY && (
-            <div className="manager-form__row">
-              <label className="manager-form__label">
-                Jour (0=Dim ... 6=Sam)
-              </label>
-              <input
-                className="manager-form__input"
-                type="number"
-                min={0}
-                max={6}
-                value={form.resetDayOfWeek ?? 1}
-                onChange={(e) => setF("resetDayOfWeek", Number(e.target.value))}
-              />
+          <div className="quest-form-section">
+            <p className="quest-form-section__title">Réinitialisation</p>
+            <div className="manager-form__grid">
+              <div className="manager-form__row">
+                <label className="manager-form__label">Type</label>
+                <select
+                  className="manager-form__select"
+                  value={form.resetType}
+                  onChange={(e) =>
+                    setF("resetType", e.target.value as QuestResetType)
+                  }
+                >
+                  {Object.values(QuestResetType).map((r) => (
+                    <option key={r} value={r}>
+                      {RESET_LABELS[r]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="manager-form__row">
+                <label className="manager-form__label">Heure reset</label>
+                <input
+                  className="manager-form__input"
+                  type="number"
+                  min={0}
+                  max={23}
+                  value={form.resetHour ?? 4}
+                  onChange={(e) => setF("resetHour", Number(e.target.value))}
+                />
+              </div>
             </div>
-          )}
+            {form.resetType === QuestResetType.WEEKLY && (
+              <div className="manager-form__row">
+                <label className="manager-form__label">
+                  Jour (0=Dim ... 6=Sam)
+                </label>
+                <input
+                  className="manager-form__input"
+                  type="number"
+                  min={0}
+                  max={6}
+                  value={form.resetDayOfWeek ?? 1}
+                  onChange={(e) =>
+                    setF("resetDayOfWeek", Number(e.target.value))
+                  }
+                />
+              </div>
+            )}
+            {form.resetType === QuestResetType.EVENT && (
+              <div className="manager-form__row">
+                <label className="manager-form__label">Date de fin</label>
+                <input
+                  className="manager-form__input"
+                  type="datetime-local"
+                  value={form.endDate ?? ""}
+                  onChange={(e) => setF("endDate", e.target.value)}
+                />
+              </div>
+            )}
+          </div>
 
-          {form.resetType === QuestResetType.EVENT && (
-            <div className="manager-form__row">
-              <label className="manager-form__label">Date de fin</label>
-              <input
-                className="manager-form__input"
-                type="datetime-local"
-                value={form.endDate ?? ""}
-                onChange={(e) => setF("endDate", e.target.value)}
-              />
-            </div>
-          )}
+          <div
+            className="manager-form__row"
+            style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+          >
+            <input
+              type="checkbox"
+              id="isActive"
+              checked={form.isActive ?? true}
+              onChange={(e) => setF("isActive", e.target.checked)}
+              style={{ accentColor: "#7a1c3b", width: 16, height: 16 }}
+            />
+            <label
+              htmlFor="isActive"
+              className="manager-form__label"
+              style={{ textTransform: "none", margin: 0, cursor: "pointer" }}
+            >
+              Quête active
+            </label>
+          </div>
         </div>
+      )}
 
-        {/* ── Conditions ── */}
-        <div className="quest-form-section">
-          <p className="quest-form-section__title">Conditions</p>
-
+      {/* ── Étape 2 : Conditions ── */}
+      {step === 2 && (
+        <div className="manager-form">
+          <p className="manager-form__title">Conditions</p>
           <div className="manager-form__row">
             <label className="manager-form__label">Opérateur</label>
             <select
@@ -414,10 +505,12 @@ export default function QuestManager() {
             + Ajouter une condition
           </button>
         </div>
+      )}
 
-        {/* ── Récompense ── */}
-        <div className="quest-form-section">
-          <p className="quest-form-section__title">Récompense</p>
+      {/* ── Étape 3 : Récompense ── */}
+      {step === 3 && (
+        <div className="manager-form">
+          <p className="manager-form__title">Récompense</p>
           <div className="manager-form__grid">
             <div className="manager-form__row">
               <label className="manager-form__label">Type</label>
@@ -446,7 +539,6 @@ export default function QuestManager() {
               />
             </div>
           </div>
-
           {(form.rewardType === RewardType.BOOSTER ||
             form.rewardType === RewardType.BUNDLE) && (
             <div className="manager-form__row">
@@ -462,41 +554,30 @@ export default function QuestManager() {
             </div>
           )}
         </div>
+      )}
 
-        {/* ── Statut ── */}
-        <div
-          className="manager-form__row"
-          style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-        >
-          <input
-            type="checkbox"
-            id="isActive"
-            checked={form.isActive ?? true}
-            onChange={(e) => setF("isActive", e.target.checked)}
-            style={{ accentColor: "#7a1c3b", width: 16, height: 16 }}
-          />
-          <label
-            htmlFor="isActive"
-            className="manager-form__label"
-            style={{ textTransform: "none", margin: 0, cursor: "pointer" }}
-          >
-            Quête active
-          </label>
-        </div>
-
-        {/* ── Actions ── */}
-        <div className="manager-form__actions">
+      {/* ── Navigation wizard ── */}
+      <div className="bm-nav">
+        {step > 1 ? (
+          <button className="manager-form__cancel" onClick={goPrev}>
+            ← Précédent
+          </button>
+        ) : (
+          <div />
+        )}
+        {isLast ? (
           <button
             className="manager-form__submit"
             onClick={handleSubmit}
             disabled={saving}
           >
-            {saving ? "..." : editing ? "Modifier" : "Créer"}
+            {saving ? "..." : editing ? "Modifier" : "Créer la quête"}
           </button>
-          <button className="manager-form__cancel" onClick={backToList}>
-            Annuler
+        ) : (
+          <button className="manager-form__submit" onClick={goNext}>
+            Suivant →
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
