@@ -216,7 +216,32 @@ export class TransactionService {
 
       await this.giveItemToBuyer(manager, listing, buyerId);
       await manager.save([buyer, seller]);
-
+      const qty = listing.quantity;
+      if (listing.productType === ProductType.CARD) {
+        await manager.increment(User, { id: buyerId }, 'cardsBought', qty);
+        await manager.increment(
+          User,
+          { id: listing.seller.id },
+          'cardsSold',
+          qty,
+        );
+      } else if (listing.productType === ProductType.BOOSTER) {
+        await manager.increment(User, { id: buyerId }, 'boostersBought', qty);
+        await manager.increment(
+          User,
+          { id: listing.seller.id },
+          'boostersSold',
+          qty,
+        );
+      } else if (listing.productType === ProductType.BUNDLE) {
+        await manager.increment(User, { id: buyerId }, 'bundlesBought', qty);
+        await manager.increment(
+          User,
+          { id: listing.seller.id },
+          'bundlesSold',
+          qty,
+        );
+      }
       await manager.update(Transaction, transactionId, {
         status: TransactionStatus.COMPLETED,
         buyer: { id: buyerId } as any,
@@ -239,6 +264,39 @@ export class TransactionService {
     };
 
     this.eventEmitter.emit('listing.sold', payload);
+
+    // ── Quest tracking ──
+    const qty = result.listing.quantity;
+    const type = result.listing.productType;
+
+    if (type === ProductType.CARD) {
+      this.eventEmitter.emit('market.card.bought', {
+        userId: buyerId,
+        amount: qty,
+      });
+      this.eventEmitter.emit('market.card.sold', {
+        userId: result.seller.id,
+        amount: qty,
+      });
+    } else if (type === ProductType.BOOSTER) {
+      this.eventEmitter.emit('market.booster.bought', {
+        userId: buyerId,
+        amount: qty,
+      });
+      this.eventEmitter.emit('market.booster.sold', {
+        userId: result.seller.id,
+        amount: qty,
+      });
+    } else if (type === ProductType.BUNDLE) {
+      this.eventEmitter.emit('market.bundle.bought', {
+        userId: buyerId,
+        amount: qty,
+      });
+      this.eventEmitter.emit('market.bundle.sold', {
+        userId: result.seller.id,
+        amount: qty,
+      });
+    }
 
     return result.listing;
   }

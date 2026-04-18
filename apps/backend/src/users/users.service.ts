@@ -600,7 +600,12 @@ export class UsersService {
         'cardsBought',
         'cardsSold',
         'moneyEarned',
+        'moneySpent',
         'setsCompleted',
+        'boostersBought',
+        'bundlesBought',
+        'boostersSold',
+        'bundlesSold',
       ],
     });
     if (!user) return null;
@@ -622,7 +627,12 @@ export class UsersService {
         cardsBought: user.cardsBought,
         cardsSold: user.cardsSold,
         moneyEarned: Number(user.moneyEarned),
+        moneySpent: Number(user.moneySpent),
         setsCompleted: user.setsCompleted,
+        boostersBought: user.boostersBought,
+        bundlesBought: user.bundlesBought,
+        boostersSold: user.boostersSold,
+        bundlesSold: user.bundlesSold,
       },
     };
   }

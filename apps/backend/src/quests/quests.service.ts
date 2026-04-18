@@ -299,8 +299,7 @@ export class QuestService {
     boosterId: number;
     amount: number;
   }) {
-    await this.track(payload.userId, ConditionType.BUY_CARD, {
-      // Ou créer un BUY_BOOSTER
+    await this.track(payload.userId, ConditionType.BUY_BOOSTER, {
       amount: payload.amount,
     });
   }

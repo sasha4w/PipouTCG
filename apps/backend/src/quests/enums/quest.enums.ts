@@ -21,10 +21,12 @@ export enum ConditionType {
   OPEN_BOOSTER = 'OPEN_BOOSTER',
   BUY_CARD = 'BUY_CARD',
   SELL_CARD = 'SELL_CARD',
+  BUY_BOOSTER = 'BUY_BOOSTER',
+  SELL_BOOSTER = 'SELL_BOOSTER',
   OWN_CARD = 'OWN_CARD',
   COMPLETE_SET = 'COMPLETE_SET',
   REACH_LEVEL = 'REACH_LEVEL',
-  WIN_FIGHT = 'WIN_FIGHT', // pour plus tard
+  WIN_FIGHT = 'WIN_FIGHT',
 }
 
 export enum ConditionOperator {
