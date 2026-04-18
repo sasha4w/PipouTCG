@@ -198,6 +198,7 @@ export class DailyRewardService {
             longest: streak.longestStreak,
             totalDays: streak.totalDays,
             cycleDay: streak.cycleDay,
+            lastClaimDate: streak.lastClaimDate,
           },
           rescue: {
             daysMissed: missed,
@@ -257,15 +258,18 @@ export class DailyRewardService {
     const milestone = await this.milestoneRepo.findOne({
       where: { dayThreshold: streak.totalDays, isActive: true },
     });
+
     if (milestone) {
       await this.distributeReward(userId, milestone);
       rewards.push({
         type: milestone.rewardType,
         value: milestone.rewardValue,
         quantity: milestone.quantity,
-        label: milestone.label,
+        label: milestone.label ?? null,
         isMilestone: true,
       });
+
+      // Historique du milestone
       await this.historyRepo.save(
         this.historyRepo.create({
           userId,
@@ -274,7 +278,6 @@ export class DailyRewardService {
           rewardType: milestone.rewardType,
           rewardValue: milestone.rewardValue,
           quantity: milestone.quantity,
-          wasPurchased: false,
           isMilestone: true,
         }),
       );
@@ -288,6 +291,7 @@ export class DailyRewardService {
         longest: streak.longestStreak,
         totalDays: streak.totalDays,
         cycleDay: streak.cycleDay,
+        lastClaimDate: streak.lastClaimDate,
       },
       rewards,
     };
@@ -406,6 +410,7 @@ export class DailyRewardService {
         totalDays: streak.totalDays,
         cycleDay: streak.cycleDay,
         weekNumber,
+        lastClaimDate: streak.lastClaimDate,
       },
       alreadyClaimed,
       daysMissed,
