@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { bannerService } from "../../services/banner.service";
 import { shopService } from "../../services/shop.service";
 import BannerCard from "./BannerCard";
+import BannerCarousel from "./BannerCarousel";
 import {
   IconGold,
   IconCart,
@@ -150,11 +151,7 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
       {eventBanners.length > 0 && (
         <>
           <span className="shop-section__label">Offres limitées</span>
-          <div className="shop-section__banners">
-            {eventBanners.map((b) => (
-              <BannerCard key={b.id} banner={b} onBought={handleBought} />
-            ))}
-          </div>
+          <BannerCarousel banners={eventBanners} onBought={handleBought} />
         </>
       )}
 

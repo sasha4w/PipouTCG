@@ -122,7 +122,12 @@
     "boosters_opened": "오픈한 부스터",
     "cards_bought": "구매한 카드",
     "cards_sold": "판매한 카드",
+    "boosters_bought": "구매한 부스터",
+    "bundles_bought": "구매한 번들",
+    "boosters_sold": "판매한 부스터",
+    "bundles_sold": "판매한 번들",
     "money_earned": "획득한 골드",
+    "money_spent": "사용한 골드",
     "sets_completed": "완성한 세트"
   },
   "rarity": {

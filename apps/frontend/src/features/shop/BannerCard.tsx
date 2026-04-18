@@ -64,20 +64,22 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
       {banner.imageUrl && (
         <img className="banner-card__bg" src={banner.imageUrl} alt="" />
       )}
-      <div className="banner-card__content">
-        {banner.isPermanent ? (
-          <span className="banner-card__badge banner-card__badge--permanent">
-            ⭐ PERMANENT
-          </span>
-        ) : hasDiscount ? (
-          <span className="banner-card__badge">⚡ PROMO -{discount}%</span>
-        ) : null}
 
+      {/* Ribbon positionné par rapport à .banner-card, pas __content */}
+      {banner.isPermanent ? (
+        <span
+          className="banner-card__ribbon banner-card__ribbon--permanent"
+          data-label="PERMANENT"
+        />
+      ) : hasDiscount ? (
+        <span className="banner-card__ribbon" data-label={`-${discount}%`} />
+      ) : null}
+
+      <div className="banner-card__content">
         <div className="banner-card__title">{banner.title}</div>
         {banner.description && (
           <div className="banner-card__desc">{banner.description}</div>
         )}
-
         <div className="banner-card__prices">
           {hasDiscount && (
             <span className="banner-card__price-original">
@@ -89,8 +91,6 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
             {totalPrice} <IconGold size={13} color="#eebc77" />
           </span>
         </div>
-
-        {/* Quantity selector */}
         <div className="banner-card__qty">
           <button
             className="banner-card__qty-btn"
@@ -118,11 +118,9 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
             +
           </button>
         </div>
-
         {error && (
           <span style={{ fontSize: "0.7rem", color: "#f27aaa" }}>{error}</span>
         )}
-
         <button
           className="banner-card__btn"
           onClick={handleBuy}
@@ -130,7 +128,6 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
         >
           {buying ? "..." : `Acheter ×${quantity} — ${banner.itemName}`}
         </button>
-
         {timer && <span className="banner-card__timer">⏱ {timer}</span>}
       </div>
     </div>

@@ -122,7 +122,12 @@
     "boosters_opened": "Boosters ouverts",
     "cards_bought": "Cartes achetées",
     "cards_sold": "Cartes vendues",
-    "money_earned": "Gold gagné",
+    "boosters_bought": "Boosters achetés",
+    "bundles_bought": "Bundles achetés",
+    "boosters_sold": "Boosters vendus",
+    "bundles_sold": "Bundles vendus",
+    "money_earned": "Or gagné",
+    "money_spent": "Or dépensé",
     "sets_completed": "Sets complétés"
   },
   "rarity": {

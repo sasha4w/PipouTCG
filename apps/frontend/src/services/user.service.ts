@@ -15,7 +15,12 @@ export interface UserProfile {
     cardsBought: number;
     cardsSold: number;
     moneyEarned: number;
+    moneySpent: number;
     setsCompleted: number;
+    boostersBought: number;
+    bundlesBought: number;
+    boostersSold: number;
+    bundlesSold: number;
   };
 }
 

@@ -13,10 +13,14 @@ export default function StatsPanel({ stats }: StatsPanelProps) {
     { key: "boostersOpened" as const, label: t("stats.boosters_opened") },
     { key: "cardsBought" as const, label: t("stats.cards_bought") },
     { key: "cardsSold" as const, label: t("stats.cards_sold") },
+    { key: "boostersBought" as const, label: t("stats.boosters_bought") },
+    { key: "bundlesBought" as const, label: t("stats.bundles_bought") },
+    { key: "boostersSold" as const, label: t("stats.boosters_sold") },
+    { key: "bundlesSold" as const, label: t("stats.bundles_sold") },
     { key: "moneyEarned" as const, label: t("stats.money_earned") },
+    { key: "moneySpent" as const, label: t("stats.money_spent") },
     { key: "setsCompleted" as const, label: t("stats.sets_completed") },
   ];
-
   return (
     <div className="stats-panel">
       <h2 className="stats-panel__title">{t("stats.title")}</h2>

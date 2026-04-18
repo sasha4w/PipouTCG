@@ -39,19 +39,29 @@
   padding: 0.65rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.stats-panel__card:hover {
+  background: rgba(238, 188, 119, 0.22);
+  transform: translateY(-1px);
 }
 
 .stats-panel__card-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  color: #a08070;
+  color: #b09080;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
 }
 
 .stats-panel__card-value {
   font-family: "Lilita One", cursive;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: #7a1c3b;
+  line-height: 1;
 }
