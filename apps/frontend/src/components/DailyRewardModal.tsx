@@ -19,6 +19,7 @@ import {
   IconPartyHorn,
   IconSkull,
 } from "./Icons";
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const REWARD_ICON: Record<string, JSX.Element> = {
@@ -35,7 +36,21 @@ const REWARD_LABEL: Record<string, string> = {
   bundle: "Bundle",
 };
 
-const DAY_LABELS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const MONTH_FR = [
+  "Janvier",
+  "Février",
+  "Mars",
+  "Avril",
+  "Mai",
+  "Juin",
+  "Juillet",
+  "Août",
+  "Septembre",
+  "Octobre",
+  "Novembre",
+  "Décembre",
+];
+const DAY_SHORT = ["L", "M", "M", "J", "V", "S", "D"];
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -46,7 +61,157 @@ interface DailyRewardModalProps {
   addToast: (message: string, type?: ToastType) => void;
 }
 
-// ── Composant ─────────────────────────────────────────────────────────────
+// ── Calendrier mensuel ────────────────────────────────────────────────────
+
+/**
+ * Construit un calendrier mensuel pour le mois courant.
+ * claimedDates : tableau de strings YYYY-MM-DD déjà réclamés.
+ * lastClaimDate : string YYYY-MM-DD du dernier claim.
+ */
+function MonthCalendar({
+  claimedDates,
+  lastClaimDate,
+}: {
+  claimedDates: string[];
+  lastClaimDate: string | null;
+}) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const todayNum = now.getDate();
+
+  // Premier jour du mois (0=dim → on décale pour lundi)
+  const firstDow = new Date(year, month, 1).getDay();
+  const startOffset = (firstDow + 6) % 7; // 0=lun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const todayStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(todayNum).padStart(2, "0")}`;
+  const claimedSet = new Set(claimedDates);
+
+  const cells: Array<{ day: number | null; dateStr: string | null }> = [];
+  for (let i = 0; i < startOffset; i++)
+    cells.push({ day: null, dateStr: null });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    cells.push({ day: d, dateStr: ds });
+  }
+
+  return (
+    <div className="drm-calendar">
+      <div className="drm-calendar__header">
+        {DAY_SHORT.map((d, i) => (
+          <span key={i} className="drm-calendar__dow">
+            {d}
+          </span>
+        ))}
+      </div>
+      <div className="drm-calendar__grid">
+        {cells.map((cell, i) => {
+          if (!cell.day || !cell.dateStr) {
+            return <span key={i} className="drm-calendar__empty" />;
+          }
+          const isClaimed = claimedSet.has(cell.dateStr);
+          const isToday = cell.dateStr === todayStr;
+          const isPast = cell.day < todayNum && !isClaimed;
+          const isMissed = isPast && !isClaimed && cell.dateStr < todayStr;
+          const isLast = cell.dateStr === lastClaimDate;
+
+          return (
+            <motion.span
+              key={i}
+              className={[
+                "drm-calendar__day",
+                isClaimed ? "claimed" : "",
+                isToday ? "today" : "",
+                isMissed ? "missed" : "",
+                isLast ? "last" : "",
+              ].join(" ")}
+              initial={isClaimed ? { scale: 0.6 } : false}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", damping: 12, delay: i * 0.01 }}
+            >
+              {cell.day}
+            </motion.span>
+          );
+        })}
+      </div>
+      <div className="drm-calendar__legend">
+        <span>
+          <span className="drm-legend-dot claimed" />
+          Réclamé
+        </span>
+        <span>
+          <span className="drm-legend-dot today" />
+          Aujourd'hui
+        </span>
+        <span>
+          <span className="drm-legend-dot missed" />
+          Manqué
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── MilestoneTracker ──────────────────────────────────────────────────────
+
+const MILESTONE_THRESHOLDS = [
+  7, 14, 21, 30, 50, 60, 77, 100, 120, 180, 270, 365, 500,
+];
+
+function MilestoneTracker({ totalDays }: { totalDays: number }) {
+  const visibleMilestones = MILESTONE_THRESHOLDS.slice(0, 8); // affiche les 8 prochains + passés
+  const nextIdx = visibleMilestones.findIndex((t) => t > totalDays);
+  const next = nextIdx !== -1 ? visibleMilestones[nextIdx] : null;
+
+  return (
+    <div className="drm-milestones">
+      <div className="drm-milestones__title">Paliers de fidélité</div>
+      <div className="drm-milestones__track">
+        {/* Barre de progression */}
+        <div className="drm-milestones__bar">
+          <motion.div
+            className="drm-milestones__fill"
+            initial={{ width: 0 }}
+            animate={{
+              width: next
+                ? `${Math.min((totalDays / next) * 100, 100)}%`
+                : "100%",
+            }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+        </div>
+        {/* Points de palier */}
+        <div className="drm-milestones__nodes">
+          {visibleMilestones.map((threshold) => {
+            const done = totalDays >= threshold;
+            const isNext = threshold === next;
+            const remaining = threshold - totalDays;
+            return (
+              <div
+                key={threshold}
+                className={`drm-ms-node ${done ? "done" : ""} ${isNext ? "next" : ""}`}
+              >
+                <div className="drm-ms-node__dot">
+                  {done ? "✓" : isNext ? "⭐" : ""}
+                </div>
+                <span className="drm-ms-node__label">
+                  {done
+                    ? `J${threshold}`
+                    : isNext
+                      ? `-${remaining}j`
+                      : `J${threshold}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Composant principal ────────────────────────────────────────────────────
 
 export default function DailyRewardModal({
   onClose,
@@ -61,6 +226,22 @@ export default function DailyRewardModal({
 
   const status = queryClient.getQueryData<any>(QUERY_KEYS.dailyRewardStatus);
 
+  // Récupère l'historique des claims du mois courant depuis le cache ou le service
+  // Pour simplifier : on déduit les dates depuis streak.totalDays + lastClaimDate
+  // Idéalement, passer l'historique comme prop ou via une query dédiée
+  const buildClaimedDates = (): string[] => {
+    if (!status?.streak?.lastClaimDate) return [];
+    const dates: string[] = [];
+    const last = new Date(status.streak.lastClaimDate);
+    const totalDays = status.streak.totalDays;
+    for (let i = 0; i < Math.min(totalDays, 31); i++) {
+      const d = new Date(last);
+      d.setDate(d.getDate() - i);
+      dates.push(d.toISOString().slice(0, 10));
+    }
+    return dates;
+  };
+
   // ── Claim ────────────────────────────────────────────────────────────────
 
   const handleClaim = async () => {
@@ -69,7 +250,6 @@ export default function DailyRewardModal({
     try {
       const result = await dailyRewardService.claimDaily();
       setClaimResult(result);
-
       if (result.status === "rescue_required") {
         setPhase("rescue");
       } else {
@@ -92,7 +272,6 @@ export default function DailyRewardModal({
     try {
       const res = await dailyRewardService.rescueStreak(rescueDays);
       addToast(`Streak sauvegardée ! ${res.goldSpent}g dépensés.`, "success");
-      // Après le rescue, on claim automatiquement
       const result = await dailyRewardService.claimDaily();
       setClaimResult(result);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
@@ -107,7 +286,7 @@ export default function DailyRewardModal({
   // ── Reset ────────────────────────────────────────────────────────────────
 
   const handleReset = async () => {
-    setIsResetting(true); // On utilise l'état local
+    setIsResetting(true);
     setError("");
     try {
       await dailyRewardService.resetStreak();
@@ -118,34 +297,9 @@ export default function DailyRewardModal({
       setError(
         e.response?.data?.message ?? "Erreur lors de la réinitialisation.",
       );
-      setIsResetting(false); // On libère le bouton en cas d'erreur
+      setIsResetting(false);
     }
   };
-
-  // ── Cycle 7j visuel ───────────────────────────────────────────────────────
-
-  const currentCycleDay = status?.streak?.cycleDay ?? 1;
-
-  const renderCycleBar = () => (
-    <div className="drm-cycle">
-      {DAY_LABELS.map((label, i) => {
-        const day = i + 1;
-        const isDone = day < currentCycleDay;
-        const isToday = day === currentCycleDay;
-        return (
-          <div
-            key={day}
-            className={`drm-cycle__day ${isDone ? "done" : ""} ${isToday ? "today" : ""}`}
-          >
-            <div className="drm-cycle__dot">
-              {isDone ? "✓" : isToday ? "★" : day}
-            </div>
-            <span className="drm-cycle__label">{label}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
 
   // ── Rendu récompenses ─────────────────────────────────────────────────────
 
@@ -174,6 +328,8 @@ export default function DailyRewardModal({
     </div>
   );
 
+  const claimedDates = buildClaimedDates();
+
   return (
     <div
       className="drm-overlay"
@@ -195,7 +351,7 @@ export default function DailyRewardModal({
         )}
 
         <AnimatePresence mode="wait">
-          {/* ── Idle : invitation à claim ── */}
+          {/* ── Idle ── */}
           {phase === "idle" && (
             <motion.div
               key="idle"
@@ -206,22 +362,40 @@ export default function DailyRewardModal({
             >
               <div className="drm-header">
                 <span className="drm-header__icon">
-                  <IconCalendar size={32} color="#7a1c3b" />
+                  <IconCalendar size={32} color="#eebc77" />
                 </span>
-                <h2 className="drm-header__title">Récompense journalière</h2>
+                <h2 className="drm-header__title">
+                  {MONTH_FR[new Date().getMonth()]} {new Date().getFullYear()}
+                </h2>
                 {status && (
-                  <p className="drm-header__streak">
-                    <IconFire size={16} color="#e05a00" /> Streak :{" "}
-                    <strong>
-                      {status.streak.current} jour
-                      {status.streak.current > 1 ? "s" : ""}
-                    </strong>
-                  </p>
+                  <div className="drm-header__stats">
+                    <span className="drm-stat">
+                      <IconFire size={14} color="#e05a00" />
+                      <strong>{status.streak.current}</strong> consécutifs
+                    </span>
+                    <span className="drm-stat-sep">·</span>
+                    <span className="drm-stat">
+                      <strong>{status.streak.totalDays}</strong> au total
+                    </span>
+                    {status.streak.longest > 0 && (
+                      <>
+                        <span className="drm-stat-sep">·</span>
+                        <span className="drm-stat">
+                          record <strong>{status.streak.longest}</strong>j
+                        </span>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {renderCycleBar()}
+              {/* Calendrier mensuel */}
+              <MonthCalendar
+                claimedDates={claimedDates}
+                lastClaimDate={status?.streak?.lastClaimDate ?? null}
+              />
 
+              {/* Récompense du jour */}
               {status?.nextReward && (
                 <div className="drm-next-reward">
                   <span className="drm-next-reward__label">
@@ -231,32 +405,29 @@ export default function DailyRewardModal({
                     <span>{REWARD_ICON[status.nextReward.type]}</span>
                     <span>
                       {status.nextReward.label ??
-                        `${
-                          status.nextReward.type === "gold"
-                            ? `${status.nextReward.value * status.nextReward.quantity} gold`
-                            : `${status.nextReward.quantity}x ${REWARD_LABEL[status.nextReward.type]}`
-                        }`}
+                        (status.nextReward.type === "gold"
+                          ? `${status.nextReward.value * status.nextReward.quantity} gold`
+                          : `${status.nextReward.quantity}× ${REWARD_LABEL[status.nextReward.type]}`)}
                     </span>
                   </div>
                 </div>
               )}
 
-              {status?.nextMilestone && (
-                <div className="drm-milestone-hint">
-                  🏆 Prochain palier dans{" "}
-                  <strong>
-                    {status.nextMilestone.daysRemaining} jour
-                    {status.nextMilestone.daysRemaining > 1 ? "s" : ""}
-                  </strong>
-                  {status.nextMilestone.label &&
-                    ` — ${status.nextMilestone.label}`}
-                </div>
+              {/* Milestones tracker */}
+              {status && (
+                <MilestoneTracker totalDays={status.streak.totalDays} />
               )}
 
               {error && <p className="drm-error">{error}</p>}
 
-              <button className="drm-claim-btn" onClick={handleClaim}>
-                Réclamer ma récompense !
+              <button
+                className="drm-claim-btn"
+                onClick={handleClaim}
+                disabled={status?.alreadyClaimed}
+              >
+                {status?.alreadyClaimed
+                  ? "✓ Récompense réclamée aujourd'hui"
+                  : "Réclamer ma récompense !"}
               </button>
             </motion.div>
           )}
@@ -281,7 +452,7 @@ export default function DailyRewardModal({
             </motion.div>
           )}
 
-          {/* ── Rescue requis ── */}
+          {/* ── Rescue ── */}
           {phase === "rescue" && claimResult?.rescue && (
             <motion.div
               key="rescue"
@@ -292,17 +463,23 @@ export default function DailyRewardModal({
             >
               <div className="drm-header">
                 <span className="drm-header__icon">
-                  <IconSkull size={32} color="#7a1c3b" />
+                  <IconSkull size={32} color="#f27aaa" />
                 </span>
-                <h2 className="drm-header__title">Streak en danger !</h2>
+                <h2 className="drm-header__title drm-header__title--danger">
+                  Streak en danger !
+                </h2>
                 <p className="drm-header__subtitle">
                   Tu as manqué{" "}
-                  <strong>{claimResult.rescue.daysMissed} jour(s)</strong>. Tu
-                  peux racheter jusqu'à{" "}
-                  <strong>{claimResult.rescue.maxRescuable} jour(s)</strong> en
-                  gold.
+                  <strong>{claimResult.rescue.daysMissed} jour(s)</strong>.
+                  Rachète en gold ou repars de zéro.
                 </p>
               </div>
+
+              {/* Calendrier avec les jours manqués visibles */}
+              <MonthCalendar
+                claimedDates={claimedDates}
+                lastClaimDate={status?.streak?.lastClaimDate ?? null}
+              />
 
               <div className="drm-rescue-options">
                 {claimResult.rescue.costPerScenario.map((cost, i) => (
@@ -328,13 +505,12 @@ export default function DailyRewardModal({
                 <button
                   className="drm-rescue-btn"
                   onClick={handleRescue}
-                  disabled={isResetting || (phase as Phase) === "claiming"}
+                  disabled={isResetting}
                 >
                   <IconGold size={14} color="#c8960c" />
                   Racheter ({claimResult.rescue.costPerScenario[rescueDays - 1]}
                   g)
                 </button>
-
                 <button
                   className="drm-reset-btn"
                   onClick={handleReset}
@@ -346,7 +522,7 @@ export default function DailyRewardModal({
             </motion.div>
           )}
 
-          {/* ── Résultat du claim ── */}
+          {/* ── Résultat ── */}
           {phase === "result" && claimResult?.rewards && (
             <motion.div
               key="result"
@@ -371,7 +547,17 @@ export default function DailyRewardModal({
 
               {renderRewards(claimResult.rewards)}
 
-              {renderCycleBar()}
+              {/* Calendrier mis à jour post-claim */}
+              <MonthCalendar
+                claimedDates={[
+                  ...claimedDates,
+                  new Date().toISOString().slice(0, 10),
+                ]}
+                lastClaimDate={new Date().toISOString().slice(0, 10)}
+              />
+
+              {/* Milestone tracker post-claim */}
+              <MilestoneTracker totalDays={claimResult.streak.totalDays} />
 
               <button className="drm-close-btn" onClick={onClose}>
                 Super, merci !

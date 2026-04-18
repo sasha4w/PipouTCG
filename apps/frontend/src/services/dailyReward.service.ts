@@ -17,6 +17,7 @@ export interface StreakStatus {
     totalDays: number;
     cycleDay: number;
     weekNumber: number;
+    lastClaimDate: string | null; // ← AJOUTER
   };
   alreadyClaimed: boolean;
   daysMissed: number;

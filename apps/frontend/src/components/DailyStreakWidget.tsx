@@ -11,6 +11,46 @@ const REWARD_ICON: Record<string, string> = {
   bundle: "🎁",
 };
 
+/**
+ * Retourne les 7 jours de la semaine courante (lundi → dimanche)
+ * avec leur statut : claimed, today, missed, future
+ */
+function buildWeekDays(lastClaimDate: string | null, totalDays: number) {
+  const now = new Date();
+  const dow = (now.getDay() + 6) % 7; // 0=lundi
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - dow);
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const ds = d.toISOString().slice(0, 10);
+    const todayStr = now.toISOString().slice(0, 10);
+
+    // On reconstitue les dates claimées à partir du lastClaimDate
+    const claimedDates: string[] = [];
+    if (lastClaimDate) {
+      const last = new Date(lastClaimDate);
+      for (let j = 0; j < Math.min(totalDays, 31); j++) {
+        const cd = new Date(last);
+        cd.setDate(cd.getDate() - j);
+        claimedDates.push(cd.toISOString().slice(0, 10));
+      }
+    }
+
+    return {
+      date: d,
+      dateStr: ds,
+      dayNum: d.getDate(),
+      isToday: ds === todayStr,
+      isClaimed: claimedDates.includes(ds),
+      isFuture: ds > todayStr,
+    };
+  });
+}
+
+const DAY_SHORT_WIDGET = ["L", "M", "M", "J", "V", "S", "D"];
+
 export default function DailyStreakWidget() {
   const { openModal } = useDailyReward();
 
@@ -25,6 +65,11 @@ export default function DailyStreakWidget() {
   const { streak, alreadyClaimed, daysMissed, nextReward, nextMilestone } =
     status;
 
+  const weekDays = buildWeekDays(
+    streak.lastClaimDate ?? null,
+    streak.totalDays,
+  );
+
   return (
     <div
       className={`dsw ${alreadyClaimed ? "dsw--claimed" : "dsw--unclaimed"}`}
@@ -32,7 +77,7 @@ export default function DailyStreakWidget() {
       role="button"
       tabIndex={0}
     >
-      {/* Indicateur de streak */}
+      {/* Streak info */}
       <div className="dsw__streak">
         <span className="dsw__streak-icon">
           {alreadyClaimed ? "✅" : daysMissed > 0 ? "⚠️" : "🔥"}
@@ -51,21 +96,24 @@ export default function DailyStreakWidget() {
         </div>
       </div>
 
-      {/* Miniature cycle 7j */}
-      <div className="dsw__cycle">
-        {Array.from({ length: 7 }, (_, i) => {
-          const day = i + 1;
-          const isDone =
-            day < streak.cycleDay ||
-            (day === streak.cycleDay && alreadyClaimed);
-          const isToday = day === streak.cycleDay && !alreadyClaimed;
-          return (
-            <div
-              key={day}
-              className={`dsw__dot ${isDone ? "done" : ""} ${isToday ? "today" : ""}`}
-            />
-          );
-        })}
+      {/* Mini-calendrier semaine courante */}
+      <div className="dsw__week">
+        {weekDays.map((day, i) => (
+          <div key={i} className="dsw__week-col">
+            <span className="dsw__week-dow">{DAY_SHORT_WIDGET[i]}</span>
+            <span
+              className={[
+                "dsw__week-day",
+                day.isClaimed ? "claimed" : "",
+                day.isToday ? "today" : "",
+                !day.isClaimed && !day.isFuture && !day.isToday ? "missed" : "",
+                day.isFuture ? "future" : "",
+              ].join(" ")}
+            >
+              {day.isClaimed ? "✓" : day.dayNum}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Prochaine récompense */}
@@ -81,14 +129,14 @@ export default function DailyStreakWidget() {
         </div>
       )}
 
-      {/* Milestone */}
-      {nextMilestone && nextMilestone.daysRemaining <= 7 && (
+      {/* Milestone proche (≤ 3 jours) */}
+      {nextMilestone && nextMilestone.daysRemaining <= 3 && (
         <div className="dsw__milestone">
           🏆 J{nextMilestone.dayThreshold} dans {nextMilestone.daysRemaining}j
         </div>
       )}
 
-      {/* Pulse si pas encore réclamé */}
+      {/* Pulse */}
       {!alreadyClaimed && <span className="dsw__ping" />}
     </div>
   );

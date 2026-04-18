@@ -12,13 +12,19 @@
 /* ── Modal ── */
 .drm-modal {
   width: 100%;
-  max-width: 360px;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
   background: linear-gradient(160deg, #1a0a12 0%, #120818 100%);
   border: 1.5px solid rgba(238, 188, 119, 0.25);
   border-radius: 20px;
   padding: 1.75rem 1.5rem 1.5rem;
   position: relative;
   box-shadow: 0 0 60px rgba(238, 188, 119, 0.08);
+  scrollbar-width: none;
+}
+.drm-modal::-webkit-scrollbar {
+  display: none;
 }
 
 .drm-close {
@@ -32,6 +38,7 @@
   cursor: pointer;
   line-height: 1;
   padding: 4px;
+  z-index: 2;
 }
 .drm-close:hover {
   color: rgba(255, 255, 255, 0.7);
@@ -56,6 +63,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
+  width: 100%;
 }
 .drm-header__icon {
   font-size: 2.2rem;
@@ -65,6 +73,9 @@
   font-size: 1.2rem;
   color: #eebc77;
   margin: 0;
+}
+.drm-header__title--danger {
+  color: #f27aaa;
 }
 .drm-header__streak {
   font-family: "Comfortaa", sans-serif;
@@ -80,56 +91,236 @@
   line-height: 1.5;
 }
 
-/* ── Cycle 7j ── */
-.drm-cycle {
+/* Statistiques sous le titre */
+.drm-header__stats {
   display: flex;
+  align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
   justify-content: center;
+  margin-top: 2px;
+}
+.drm-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+.drm-stat strong {
+  color: #eebc77;
+}
+.drm-stat-sep {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.7rem;
+}
+
+/* ── Calendrier mensuel ── */
+.drm-calendar {
   width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(238, 188, 119, 0.12);
+  border-radius: 14px;
+  padding: 0.9rem;
 }
-.drm-cycle__day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
+
+.drm-calendar__header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
 }
-.drm-cycle__dot {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+.drm-calendar__dow {
+  text-align: center;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.drm-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.drm-calendar__day {
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
   font-family: "Lilita One", cursive;
   font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.3);
+  background: transparent;
+  border: 1px solid transparent;
   transition: all 0.2s;
+  cursor: default;
 }
-.drm-cycle__day.done .drm-cycle__dot {
+
+/* Jour réclamé */
+.drm-calendar__day.claimed {
   background: rgba(112, 184, 112, 0.2);
-  border-color: #70b870;
+  border-color: rgba(112, 184, 112, 0.5);
   color: #70b870;
 }
-.drm-cycle__day.today .drm-cycle__dot {
+
+/* Aujourd'hui */
+.drm-calendar__day.today {
   background: rgba(238, 188, 119, 0.2);
   border-color: #eebc77;
   color: #eebc77;
-  box-shadow: 0 0 10px rgba(238, 188, 119, 0.4);
-  font-size: 0.8rem;
+  box-shadow: 0 0 10px rgba(238, 188, 119, 0.3);
+  font-size: 0.72rem;
 }
-.drm-cycle__label {
+
+/* Aujourd'hui ET réclamé */
+.drm-calendar__day.today.claimed {
+  background: rgba(112, 184, 112, 0.25);
+  border-color: #70b870;
+  color: #70b870;
+  box-shadow: 0 0 10px rgba(112, 184, 112, 0.2);
+}
+
+/* Jour passé manqué */
+.drm-calendar__day.missed {
+  color: rgba(242, 122, 170, 0.35);
+}
+
+/* Dernier claim */
+.drm-calendar__day.last:not(.today) {
+  border-color: rgba(238, 188, 119, 0.3);
+}
+
+/* Légende */
+.drm-calendar__legend {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.drm-calendar__legend span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: "Comfortaa", sans-serif;
-  font-size: 0.55rem;
+  font-size: 0.56rem;
   color: rgba(255, 255, 255, 0.3);
 }
-.drm-cycle__day.today .drm-cycle__label {
-  color: #eebc77;
+.drm-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
 }
-.drm-cycle__day.done .drm-cycle__label {
+.drm-legend-dot.claimed {
+  background: #70b870;
+}
+.drm-legend-dot.today {
+  background: #eebc77;
+}
+.drm-legend-dot.missed {
+  background: rgba(242, 122, 170, 0.4);
+}
+
+/* ── Milestone Tracker ── */
+.drm-milestones {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(238, 188, 119, 0.12);
+  border-radius: 14px;
+  padding: 0.9rem;
+}
+
+.drm-milestones__title {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.drm-milestones__track {
+  position: relative;
+}
+
+/* Barre de progression */
+.drm-milestones__bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.drm-milestones__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #70b870, #eebc77);
+  border-radius: 2px;
+}
+
+/* Noeuds */
+.drm-milestones__nodes {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+
+.drm-ms-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+}
+
+.drm-ms-node__dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s;
+  position: relative;
+  z-index: 1;
+}
+
+.drm-ms-node.done .drm-ms-node__dot {
+  background: rgba(112, 184, 112, 0.25);
+  border-color: #70b870;
   color: #70b870;
+}
+
+.drm-ms-node.next .drm-ms-node__dot {
+  background: rgba(238, 188, 119, 0.2);
+  border-color: #eebc77;
+  color: #eebc77;
+  box-shadow: 0 0 8px rgba(238, 188, 119, 0.4);
+  font-size: 0.6rem;
+}
+
+.drm-ms-node__label {
+  font-family: "Lilita One", cursive;
+  font-size: 0.52rem;
+  color: rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+}
+.drm-ms-node.done .drm-ms-node__label {
+  color: #70b870;
+}
+.drm-ms-node.next .drm-ms-node__label {
+  color: #eebc77;
 }
 
 /* ── Prochaine récompense ── */
@@ -160,15 +351,6 @@
   color: #eebc77;
 }
 
-/* ── Milestone hint ── */
-.drm-milestone-hint {
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.45);
-  text-align: center;
-  line-height: 1.5;
-}
-
 /* ── Bouton claim ── */
 .drm-claim-btn {
   background: linear-gradient(135deg, #eebc77, #d4913a);
@@ -184,12 +366,17 @@
     opacity 0.15s,
     transform 0.1s;
 }
-.drm-claim-btn:hover {
+.drm-claim-btn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
 }
-.drm-claim-btn:active {
+.drm-claim-btn:active:not(:disabled) {
   transform: scale(0.97);
+}
+.drm-claim-btn:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.3);
+  cursor: default;
 }
 
 /* ── Loading ── */
@@ -279,6 +466,9 @@
   font-family: "Lilita One", cursive;
   font-size: 0.82rem;
   color: #eebc77;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .drm-rescue-actions {
@@ -288,6 +478,10 @@
   width: 100%;
 }
 .drm-rescue-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: linear-gradient(135deg, #eebc77, #d4913a);
   color: #3d1020;
   border: none;
@@ -298,8 +492,12 @@
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.drm-rescue-btn:hover {
+.drm-rescue-btn:hover:not(:disabled) {
   opacity: 0.88;
+}
+.drm-rescue-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .drm-reset-btn {
@@ -313,7 +511,7 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.drm-reset-btn:hover {
+.drm-reset-btn:hover:not(:disabled) {
   border-color: rgba(255, 100, 100, 0.4);
   color: rgba(255, 100, 100, 0.7);
 }
