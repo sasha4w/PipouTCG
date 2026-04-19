@@ -11,6 +11,7 @@ import { useFilters } from "../components/FilterPanel";
 import "./Marketplace.css";
 import { QUERY_KEYS } from "../utils/querykeys";
 import { useToast, ToastContainer } from "../hooks/useToast";
+import { useSseNewListings } from "../hooks/useSseNotifications";
 import MarketplaceTabs from "../features/marketplace/MarketplaceTabs";
 import SellTab from "../features/marketplace/SellTab";
 import BuyTab from "../features/marketplace/BuyTab";
@@ -35,6 +36,11 @@ const Marketplace = () => {
 
   const queryClient = useQueryClient();
   const { toasts, addToast, removeToast } = useToast();
+
+  // ── SSE : tout le monde voit les nouvelles annonces et annulations ──
+  useSseNewListings(() => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.offers });
+  });
 
   // --- QUERIES ---
   const { data: listings } = useQuery({
@@ -148,9 +154,11 @@ const Marketplace = () => {
       queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
         old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
       );
+      // ✅ Invalide toutes les données impactées par l'achat
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
 
       addToast(
         "🎉 Achat réussi ! L'objet est dans votre inventaire.",

@@ -6,6 +6,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import { useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -23,12 +24,24 @@ import { useDailyRewardModal } from "./hooks/Usedailyrewardmodal";
 import DailyRewardModal from "./components/DailyRewardModal";
 import { useToast, ToastContainer } from "./hooks/useToast";
 import { DailyRewardContext } from "./contexts/DailyRewardContext";
+import { useSseNotifications } from "./hooks/useSseNotifications";
+import { QUERY_KEYS } from "./utils/querykeys";
 
 function AppLayout() {
   const mainRef = useRef<HTMLElement>(null);
   useScrollRestoration(mainRef);
   const { isOpen, open, close } = useDailyRewardModal(true);
   const { toasts, addToast, removeToast } = useToast();
+  const queryClient = useQueryClient();
+
+  // ── SSE global : actif sur toutes les pages ──
+  useSseNotifications(() => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myListings });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
+  });
 
   return (
     <DailyRewardContext.Provider value={{ openModal: open }}>
@@ -52,11 +65,8 @@ function App() {
     <SoundProvider>
       <BrowserRouter>
         <Routes>
-          {/* Pages publiques — sans Header/Footer */}
           <Route path="/login" element={<Login />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-
-          {/* Pages protégées — avec Header/Footer */}
           <Route
             element={
               <ProtectedRoute>
@@ -70,7 +80,6 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/admin" element={<Admin />} />
           </Route>
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
