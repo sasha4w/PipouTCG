@@ -81,14 +81,12 @@ export class QuestService {
 
   async syncUserQuests(userId: number): Promise<AutoClaimedReward[]> {
     const autoClaimedRewards = await this.resetExpiredQuests(userId);
-    await this.removeInactiveUserQuests(userId); // ← nettoyage des inactives
+    await this.removeInactiveUserQuests(userId);
     await this.assignMissingQuests(userId);
     return autoClaimedRewards;
   }
 
-  /* ── Supprime les UserQuest dont la quête est désactivée ── */
   private async removeInactiveUserQuests(userId: number): Promise<void> {
-    // Récupère les IDs des quêtes inactives
     const inactiveQuests = await this.questRepository.find({
       where: { isActive: false },
       select: ['id'],
@@ -98,7 +96,6 @@ export class QuestService {
 
     const inactiveQuestIds = inactiveQuests.map((q) => q.id);
 
-    // Supprime tous les UserQuest de cet user liés à ces quêtes
     const toDelete = await this.userQuestRepository.find({
       where: {
         user: { id: userId },
@@ -226,6 +223,7 @@ export class QuestService {
     uq.rewardClaimed = true;
     return this.userQuestRepository.save(uq);
   }
+
   async claimAllRewards(userId: number) {
     const claimableQuests = await this.userQuestRepository.find({
       where: {
@@ -246,6 +244,7 @@ export class QuestService {
 
     return { count: claimableQuests.length };
   }
+
   /* ===================== TRACKING ===================== */
 
   async track(
@@ -265,7 +264,9 @@ export class QuestService {
       }
     }
   }
+
   /* ===================== EVENT HANDLERS ===================== */
+
   @OnEvent('booster.opened')
   async handleBoosterOpened(payload: {
     userId: number;
@@ -274,15 +275,12 @@ export class QuestService {
     amount: number;
     cardsDrawn: any[];
   }) {
-    // 1. On valide la quête globale d'ouverture de booster
     await this.track(payload.userId, ConditionType.OPEN_BOOSTER, {
       boosterId: payload.boosterId,
       setId: payload.setId,
       amount: payload.amount,
     });
 
-    // 2. Bonus : Si tu as des quêtes du style "Trouver 3 cartes épiques"
-    // Tu peux aussi parcourir les cartes tirées pour mettre à jour d'autres quêtes !
     const epicCards = payload.cardsDrawn.filter((c) => c.rarity === 'EPIC');
     if (epicCards.length > 0) {
       await this.track(payload.userId, 'DRAW_RARITY', {
@@ -290,9 +288,10 @@ export class QuestService {
         amount: epicCards.length,
       });
     }
+
+    await this.checkSetCompletion(payload.userId, payload.setId);
   }
 
-  // Tu pourrais faire la même chose pour l'achat
   @OnEvent('booster.bought')
   async handleBoosterBought(payload: {
     userId: number;
@@ -302,6 +301,74 @@ export class QuestService {
     await this.track(payload.userId, ConditionType.BUY_BOOSTER, {
       amount: payload.amount,
     });
+  }
+
+  // ✅ Achat de carte sur le marché
+  @OnEvent('market.card.bought')
+  async handleMarketCardBought(payload: { userId: number; amount: number }) {
+    await this.track(payload.userId, ConditionType.BUY_CARD, {
+      amount: payload.amount,
+    });
+  }
+
+  // ✅ Vente de carte sur le marché
+  @OnEvent('market.card.sold')
+  async handleMarketCardSold(payload: { userId: number; amount: number }) {
+    await this.track(payload.userId, ConditionType.SELL_CARD, {
+      amount: payload.amount,
+    });
+  }
+
+  // ✅ Achat de booster sur le marché
+  @OnEvent('market.booster.bought')
+  async handleMarketBoosterBought(payload: { userId: number; amount: number }) {
+    await this.track(payload.userId, ConditionType.BUY_BOOSTER, {
+      amount: payload.amount,
+    });
+  }
+
+  // ✅ Vente de booster sur le marché
+  @OnEvent('market.booster.sold')
+  async handleMarketBoosterSold(payload: { userId: number; amount: number }) {
+    await this.track(payload.userId, ConditionType.SELL_BOOSTER, {
+      amount: payload.amount,
+    });
+  }
+
+  // ✅ Vérifie si un set est complété après réception d'une carte
+  @OnEvent('card.set.check')
+  async handleSetCheck(payload: { userId: number; setId: number }) {
+    await this.checkSetCompletion(payload.userId, payload.setId);
+  }
+
+  /* ===================== HELPERS PUBLICS ===================== */
+
+  // ✅ Vérifie si le user possède toutes les cartes d'un set
+  async checkSetCompletion(userId: number, setId: number): Promise<void> {
+    const allCardsInSet = await this.questRepository.manager
+      .getRepository('card')
+      .find({ where: { cardSet: { id: setId } } });
+
+    if (allCardsInSet.length === 0) return;
+
+    const ownedCards = await this.questRepository.manager
+      .getRepository('user_card')
+      .find({
+        where: {
+          user: { id: userId },
+          card: { cardSet: { id: setId } },
+        },
+        relations: ['card'],
+      });
+
+    const hasAll = ownedCards.length >= allCardsInSet.length;
+
+    if (hasAll) {
+      await this.track(userId, ConditionType.COMPLETE_SET, {
+        setId,
+        amount: 1,
+      });
+    }
   }
 
   /* ===================== HELPERS PRIVÉS ===================== */

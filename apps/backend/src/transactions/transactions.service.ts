@@ -7,6 +7,7 @@ import { User } from '../users/user.entity';
 import { UserCard } from '../users/user-card.entity';
 import { UserBooster } from '../users/user-booster.entity';
 import { UserBundle } from '../users/user-bundle.entity';
+import { Card } from '../cards/card.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { TransactionStatus } from './enums/transaction-status.enum';
 import { ProductType } from './enums/product-type.enum';
@@ -39,7 +40,6 @@ export class TransactionService {
       {
         where: { status: TransactionStatus.PENDING },
         order: { createdAt: 'DESC' },
-        // ✅ Plus besoin de charger card/booster/bundle
         relations: ['seller'],
         skip: (page - 1) * limit,
         take: limit,
@@ -56,7 +56,6 @@ export class TransactionService {
     const skip = (page - 1) * limit;
     const [data, total] = await this.transactionRepository.findAndCount({
       where: { status: TransactionStatus.PENDING, seller: { id: Not(userId) } },
-      // ✅ Plus besoin de charger card/booster/bundle
       relations: ['seller'],
       order: { createdAt: 'DESC' },
       take: limit,
@@ -74,7 +73,6 @@ export class TransactionService {
       {
         where: { status: TransactionStatus.PENDING, seller: { id: userId } },
         order: { createdAt: 'DESC' },
-        // ✅ Plus besoin de charger card/booster/bundle
         relations: ['seller'],
         skip: (page - 1) * limit,
         take: limit,
@@ -92,7 +90,6 @@ export class TransactionService {
       {
         where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
         order: { createdAt: 'DESC' },
-        // ✅ On garde buyer/seller pour l'historique, plus besoin des objets
         relations: ['buyer', 'seller'],
         skip: (page - 1) * limit,
         take: limit,
@@ -112,7 +109,6 @@ export class TransactionService {
     return this.dataSource.transaction(async (manager) => {
       const { Entity, relationKey } = this.mapProductType(dto.productType);
 
-      // On charge la relation pour récupérer le nom de l'objet
       const inventoryItem = await manager.findOne(Entity, {
         where: { [relationKey]: { id: dto.productId }, user: { id: sellerId } },
         relations: [relationKey],
@@ -125,7 +121,6 @@ export class TransactionService {
         );
       }
 
-      // ✅ On récupère le nom avant de décrémenter le stock
       const itemName =
         (inventoryItem as any)[relationKey]?.name ?? `Objet #${dto.productId}`;
 
@@ -140,13 +135,11 @@ export class TransactionService {
         unitPrice: dto.unitPrice,
         totalPrice: dto.unitPrice * dto.quantity,
         status: TransactionStatus.PENDING,
-        // ✅ Nom figé au moment de la création
         itemName,
       });
 
       const saved = await manager.save(listing);
 
-      // On recharge uniquement avec seller (itemName est déjà dans la ligne)
       return manager.findOne(Transaction, {
         where: { id: saved.id },
         relations: ['seller'],
@@ -180,7 +173,6 @@ export class TransactionService {
 
   async buyListing(transactionId: number, buyerId: number) {
     const result = await this.dataSource.transaction(async (manager) => {
-      // ✅ Plus besoin de charger card/booster/bundle — itemName est en colonne
       const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
         relations: ['seller'],
@@ -214,7 +206,9 @@ export class TransactionService {
       seller.gold = Number(seller.gold) + totalPriceNum;
       seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
-      await this.giveItemToBuyer(manager, listing, buyerId);
+      // ✅ On récupère le setId si c'est une carte (pour COMPLETE_SET)
+      const setId = await this.giveItemToBuyer(manager, listing, buyerId);
+
       await manager.save([buyer, seller]);
       const qty = listing.quantity;
       if (listing.productType === ProductType.CARD) {
@@ -251,10 +245,10 @@ export class TransactionService {
       listing.status = TransactionStatus.COMPLETED;
       listing.buyer = buyer;
 
-      return { listing, seller, buyer };
+      // ✅ On retourne aussi le setId
+      return { listing, seller, buyer, setId };
     });
 
-    // ✅ itemName vient directement de la colonne, pas d'une relation
     const payload: ListingSoldPayload = {
       sellerId: result.seller.id,
       buyerUsername: result.buyer.username,
@@ -278,6 +272,14 @@ export class TransactionService {
         userId: result.seller.id,
         amount: qty,
       });
+
+      // ✅ Vérifie si le set est complété après l'achat de la carte
+      if (result.setId) {
+        this.eventEmitter.emit('card.set.check', {
+          userId: buyerId,
+          setId: result.setId,
+        });
+      }
     } else if (type === ProductType.BOOSTER) {
       this.eventEmitter.emit('market.booster.bought', {
         userId: buyerId,
@@ -305,11 +307,12 @@ export class TransactionService {
   // 🔒 LOGIQUE INTERNE
   // ============================================================
 
+  // ✅ Retourne le setId si c'est une carte, null sinon
   private async giveItemToBuyer(
     manager: EntityManager,
     listing: Transaction,
     buyerId: number,
-  ) {
+  ): Promise<number | null> {
     const { Entity, relationKey } = this.mapProductType(listing.productType);
     let buyerItem = await manager.findOne(Entity, {
       where: {
@@ -328,6 +331,17 @@ export class TransactionService {
       });
     }
     await manager.save(buyerItem);
+
+    // ✅ On charge le cardSet pour récupérer le setId
+    if (listing.productType === ProductType.CARD) {
+      const card = await manager.findOne(Card, {
+        where: { id: listing.productId },
+        relations: ['cardSet'],
+      });
+      return card?.cardSet?.id ?? null;
+    }
+
+    return null;
   }
 
   private async restoreReservedItem(
