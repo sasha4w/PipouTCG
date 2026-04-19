@@ -4,6 +4,7 @@ import { bannerService } from "../../services/banner.service";
 import { shopService } from "../../services/shop.service";
 import BannerCard from "./BannerCard";
 import BannerCarousel from "./BannerCarousel";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   IconGold,
   IconCart,
@@ -124,8 +125,9 @@ export default function ShopSection({ gold, onBalance }: ShopSectionProps) {
   });
 
   const handleBought = (newBalance: number) => {
-    queryClient.invalidateQueries({ queryKey: ["myStats"] });
-    queryClient.invalidateQueries({ queryKey: ["myInventory"] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
     onBalance?.(newBalance);
   };
 

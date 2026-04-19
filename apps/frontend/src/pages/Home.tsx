@@ -8,70 +8,13 @@ import DailyStreakWidget from "../components/DailyStreakWidget";
 import OpeningModal, {
   type OpeningTarget,
 } from "../features/opening/OpeningModal";
-
+import OpeningQuickAccess from "../features/opening/OpeningQuickAccess";
+import { QUERY_KEYS } from "../utils/querykeys";
 import "./Home.css";
 
 interface SelectedSet {
   id: number;
   name: string;
-}
-
-// ── Ouverture rapide ──────────────────────────────────────────────────────────
-function OpeningQuickAccess({
-  inventory,
-  onOpen,
-}: {
-  inventory: any;
-  onOpen: (target: OpeningTarget) => void;
-}) {
-  const boosters = inventory?.boosters?.data ?? [];
-  const bundles = inventory?.bundles?.data ?? [];
-  const items = [
-    ...boosters
-      .filter((b: any) => b.quantity > 0)
-      .map((b: any) => ({
-        type: "booster" as const,
-        id: b.id,
-        name: b.name,
-        qty: b.quantity,
-      })),
-    ...bundles
-      .filter((b: any) => b.quantity > 0)
-      .map((b: any) => ({
-        type: "bundle" as const,
-        id: b.id,
-        name: b.name,
-        qty: b.quantity,
-      })),
-  ];
-
-  if (items.length === 0) return null;
-
-  return (
-    <div className="home-opening">
-      <h2 className="home-section__title">🎲 Ouvrir</h2>
-      <div className="home-opening__list">
-        {items.map((item, i) => (
-          <button
-            key={i}
-            className="home-opening__item"
-            onClick={() =>
-              onOpen({ type: item.type, id: item.id, name: item.name })
-            }
-          >
-            <span className="home-opening__item-icon">
-              {item.type === "booster" ? "📦" : "🎁"}
-            </span>
-            <div className="home-opening__item-info">
-              <span className="home-opening__item-name">{item.name}</span>
-              <span className="home-opening__item-qty">×{item.qty}</span>
-            </div>
-            <span className="home-opening__item-arrow">→</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 // ── Home ──────────────────────────────────────────────────────────────────────
@@ -83,17 +26,16 @@ const Home = () => {
   const queryClient = useQueryClient();
 
   const { data: profile } = useQuery({
-    queryKey: ["myStats"],
+    queryKey: QUERY_KEYS.myStats,
     queryFn: () => userService.getMyStats(),
   });
   const { data: inventory } = useQuery({
-    queryKey: ["myInventory"],
+    queryKey: QUERY_KEYS.inventory,
     queryFn: () => userService.getMyInventory(),
   });
-
   const handleOpeningDone = () => {
-    queryClient.invalidateQueries({ queryKey: ["myInventory"] });
-    queryClient.invalidateQueries({ queryKey: ["myCollection"] });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
   };
   // ── Vue CardList (quand un set est sélectionné) ───────────────────────────
   if (selectedSet) {
@@ -117,7 +59,7 @@ const Home = () => {
       <ShopSection
         gold={profile?.gold ?? 0}
         onBalance={() =>
-          queryClient.invalidateQueries({ queryKey: ["myStats"] })
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats })
         }
       />
       <div className="home-divider" />

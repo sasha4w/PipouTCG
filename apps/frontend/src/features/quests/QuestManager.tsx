@@ -30,6 +30,8 @@ const CONDITION_LABELS: Record<ConditionType, string> = {
   OPEN_BOOSTER: "Ouvrir booster",
   BUY_CARD: "Acheter carte",
   SELL_CARD: "Vendre carte",
+  BUY_BOOSTER: "Acheter booster",
+  SELL_BOOSTER: "Vendre booster",
   OWN_CARD: "Posséder carte",
   COMPLETE_SET: "Compléter set",
   REACH_LEVEL: "Atteindre niveau",
