@@ -30,10 +30,6 @@ export class TransactionService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  // ============================================================
-  // 🔍 LECTURE DES ANNONCES
-  // ============================================================
-
   async findAll(pagination: PaginationDto = {}) {
     const { page = 1, limit = 20 } = pagination;
     const [transactions, total] = await this.transactionRepository.findAndCount(
@@ -106,7 +102,7 @@ export class TransactionService {
   // ============================================================
 
   async createListing(dto: CreateListingDto, sellerId: number) {
-    return this.dataSource.transaction(async (manager) => {
+    const saved = await this.dataSource.transaction(async (manager) => {
       const { Entity, relationKey } = this.mapProductType(dto.productType);
 
       const inventoryItem = await manager.findOne(Entity, {
@@ -123,7 +119,6 @@ export class TransactionService {
 
       const itemName =
         (inventoryItem as any)[relationKey]?.name ?? `Objet #${dto.productId}`;
-
       inventoryItem.quantity -= dto.quantity;
       await manager.save(inventoryItem);
 
@@ -138,17 +133,35 @@ export class TransactionService {
         itemName,
       });
 
-      const saved = await manager.save(listing);
-
+      const created = await manager.save(listing);
       return manager.findOne(Transaction, {
-        where: { id: saved.id },
+        where: { id: created.id },
         relations: ['seller'],
       });
     });
+
+    // ✨ On rassure TypeScript ici : si ça a échoué, on bloque l'exécution.
+    if (!saved) {
+      throw new BadRequestException(
+        "Erreur critique : impossible de récupérer l'annonce après sa création.",
+      );
+    }
+
+    // ✅ TS sait maintenant que "saved" n'est pas null, plus d'erreur !
+    this.eventEmitter.emit('listing.created', {
+      id: saved.id,
+      productType: saved.productType,
+      itemName: saved.itemName,
+      unitPrice: saved.unitPrice,
+      quantity: saved.quantity,
+      seller: { username: saved.seller.username },
+    });
+
+    return saved;
   }
 
   async cancelListing(transactionId: number, sellerId: number) {
-    return this.dataSource.transaction(async (manager) => {
+    const saved = await this.dataSource.transaction(async (manager) => {
       const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
         relations: ['seller'],
@@ -165,6 +178,13 @@ export class TransactionService {
       listing.status = TransactionStatus.CANCELLED;
       return manager.save(listing);
     });
+
+    // ✅ Notifie tous les clients qu'une annonce a été retirée
+    this.eventEmitter.emit('listing.cancelled', {
+      transactionId: saved.id,
+    });
+
+    return saved;
   }
 
   // ============================================================
@@ -206,7 +226,6 @@ export class TransactionService {
       seller.gold = Number(seller.gold) + totalPriceNum;
       seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
 
-      // ✅ On récupère le setId si c'est une carte (pour COMPLETE_SET)
       const setId = await this.giveItemToBuyer(manager, listing, buyerId);
 
       await manager.save([buyer, seller]);
@@ -236,6 +255,7 @@ export class TransactionService {
           qty,
         );
       }
+
       await manager.update(Transaction, transactionId, {
         status: TransactionStatus.COMPLETED,
         buyer: { id: buyerId } as any,
@@ -245,21 +265,17 @@ export class TransactionService {
       listing.status = TransactionStatus.COMPLETED;
       listing.buyer = buyer;
 
-      // ✅ On retourne aussi le setId
       return { listing, seller, buyer, setId };
     });
 
-    const payload: ListingSoldPayload = {
+    this.eventEmitter.emit('listing.sold', {
       sellerId: result.seller.id,
       buyerUsername: result.buyer.username,
       itemName: result.listing.itemName ?? `Objet #${result.listing.productId}`,
       totalPrice: Number(result.listing.totalPrice),
       transactionId,
-    };
+    });
 
-    this.eventEmitter.emit('listing.sold', payload);
-
-    // ── Quest tracking ──
     const qty = result.listing.quantity;
     const type = result.listing.productType;
 
@@ -272,8 +288,6 @@ export class TransactionService {
         userId: result.seller.id,
         amount: qty,
       });
-
-      // ✅ Vérifie si le set est complété après l'achat de la carte
       if (result.setId) {
         this.eventEmitter.emit('card.set.check', {
           userId: buyerId,
@@ -307,7 +321,6 @@ export class TransactionService {
   // 🔒 LOGIQUE INTERNE
   // ============================================================
 
-  // ✅ Retourne le setId si c'est une carte, null sinon
   private async giveItemToBuyer(
     manager: EntityManager,
     listing: Transaction,
@@ -332,7 +345,6 @@ export class TransactionService {
     }
     await manager.save(buyerItem);
 
-    // ✅ On charge le cardSet pour récupérer le setId
     if (listing.productType === ProductType.CARD) {
       const card = await manager.findOne(Card, {
         where: { id: listing.productId },

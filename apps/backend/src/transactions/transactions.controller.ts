@@ -23,17 +23,19 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('transactions')
 export class TransactionController {
-  // Subject global : tous les clients SSE connectés reçoivent les événements
-  // filtrés ensuite par sellerId côté serveur avant envoi
+  // Subject pour les events privés (vendeur uniquement)
   private readonly sseSubject = new Subject<ListingSoldPayload>();
+
+  // Subject pour les events publics (tout le monde : création, annulation)
+  private readonly sseMarketSubject = new Subject<{
+    type: string;
+    [key: string]: any;
+  }>();
 
   constructor(private readonly transactionService: TransactionService) {}
 
   // ─────────────────────────────────────────────────────────────────
-  // 📡 SSE — GET /transactions/events?userId=42
-  //
-  // Le client s'abonne une fois au montage du composant.
-  // Seuls les événements destinés à cet userId sont transmis.
+  // 📡 SSE privé — listing.sold → vendeur uniquement
   // ─────────────────────────────────────────────────────────────────
   @UseGuards(JwtAuthGuard)
   @Sse('events')
@@ -41,11 +43,10 @@ export class TransactionController {
     const userId: number = req.user.userId;
 
     return this.sseSubject.asObservable().pipe(
-      // Ne transmettre que les événements destinés à CE vendeur
       filter((payload) => payload.sellerId === userId),
       map(
         (payload): MessageEvent => ({
-          data: JSON.stringify(payload), // sérialisé en JSON pour le client
+          data: JSON.stringify(payload),
           type: 'listing.sold',
         }),
       ),
@@ -53,11 +54,37 @@ export class TransactionController {
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // 🔔 Écoute de l'EventEmitter → pousse dans le Subject SSE
+  // 📡 SSE public — listing.created / listing.cancelled → tout le monde
+  // ─────────────────────────────────────────────────────────────────
+  @UseGuards(JwtAuthGuard)
+  @Sse('events/new-listings')
+  sseNewListings(): Observable<MessageEvent> {
+    return this.sseMarketSubject.asObservable().pipe(
+      map(
+        (payload): MessageEvent => ({
+          data: JSON.stringify(payload),
+          type: 'market.update',
+        }),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // 🔔 Handlers EventEmitter → push dans les subjects SSE
   // ─────────────────────────────────────────────────────────────────
   @OnEvent('listing.sold')
   handleListingSold(payload: ListingSoldPayload) {
     this.sseSubject.next(payload);
+  }
+
+  @OnEvent('listing.created')
+  handleListingCreated(payload: any) {
+    this.sseMarketSubject.next({ type: 'listing.created', ...payload });
+  }
+
+  @OnEvent('listing.cancelled')
+  handleListingCancelled(payload: any) {
+    this.sseMarketSubject.next({ type: 'listing.cancelled', ...payload });
   }
 
   // ─────────────────────────────────────────────────────────────────
