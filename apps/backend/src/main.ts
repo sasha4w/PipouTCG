@@ -6,9 +6,11 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 1. WebSocket Adapter
   app.useWebSocketAdapter(new IoAdapter(app));
-  await app.listen(3000);
-  // Activation du parsing des cookies
+
+  // 2. Configuration (Cookies, Pipes, etc.) AVANT le listen
   app.use(cookieParser());
 
   const corsOrigin =
@@ -42,6 +44,11 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+  // 3. UN SEUL ET UNIQUE LISTEN À LA FIN
+  // On utilise process.env.PORT pour Render et '0.0.0.0' pour l'accessibilité réseau
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
+
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
