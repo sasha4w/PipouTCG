@@ -41,6 +41,7 @@ export interface UserMe {
 export interface UserInventory {
   cards: {
     data: {
+      userCardId: number;
       id: number;
       name: string;
       rarity: string;

@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { soundService } from "../services/sound.service";
 import "./Footer.css";
+
 const NAV_ITEMS = [
   {
     id: "home",
@@ -76,6 +77,34 @@ const NAV_ITEMS = [
     ),
   },
   {
+    id: "arena",
+    labelKey: "nav.arena",
+    path: "/arena",
+    icon: (active: boolean) => (
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+        {/* Crossed swords */}
+        <line
+          x1="4" y1="4" x2="20" y2="20"
+          stroke={active ? "#7A1C3B" : "#A08070"}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <line
+          x1="20" y1="4" x2="4" y2="20"
+          stroke={active ? "#7A1C3B" : "#A08070"}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <circle
+          cx="12" cy="12" r="3"
+          stroke={active ? "#7A1C3B" : "#A08070"}
+          strokeWidth="2"
+          fill={active ? "rgba(122,28,59,0.13)" : "none"}
+        />
+      </svg>
+    ),
+  },
+  {
     id: "settings",
     labelKey: "nav.settings",
     path: "/settings",
@@ -113,27 +142,25 @@ export default function Footer() {
     )?.id ?? "home";
 
   return (
-    <>
-      <footer className="cc-footer">
-        {NAV_ITEMS.map((item) => {
-          const isActive = activeId === item.id;
-          return (
-            <button
-              key={item.id}
-              className={`cc-footer__item${isActive ? " cc-footer__item--active" : ""}`}
-              onClick={() => {
-                soundService.play("select");
-                navigate(item.path);
-              }}
-              aria-label={t(item.labelKey)}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <span className="cc-footer__icon">{item.icon(isActive)}</span>
-              <span className="cc-footer__label">{t(item.labelKey)}</span>
-            </button>
-          );
-        })}
-      </footer>
-    </>
+    <footer className="cc-footer">
+      {NAV_ITEMS.map((item) => {
+        const isActive = activeId === item.id;
+        return (
+          <button
+            key={item.id}
+            className={`cc-footer__item${isActive ? " cc-footer__item--active" : ""}`}
+            onClick={() => {
+              soundService.play("select");
+              navigate(item.path);
+            }}
+            aria-label={t(item.labelKey)}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <span className="cc-footer__icon">{item.icon(isActive)}</span>
+            <span className="cc-footer__label">{t(item.labelKey)}</span>
+          </button>
+        );
+      })}
+    </footer>
   );
 }

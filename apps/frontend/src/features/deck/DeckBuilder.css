@@ -1,0 +1,353 @@
+/* ═══════════════════════════════════════════
+   DECK BUILDER — styles
+═══════════════════════════════════════════ */
+
+.deck-layout {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── Panels ─────────────────────────────── */
+.deck-panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #ece8e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.deck-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.deck-panel__header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2c1a1a;
+}
+
+.deck-panel__count {
+  font-size: 12px;
+  color: #999;
+  background: #f5f3ef;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.deck-panel--right {
+  position: sticky;
+  top: 16px;
+}
+
+/* ─── Search ─────────────────────────────── */
+.deck-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 1.5px solid #ece8e1;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 10px;
+  outline: none;
+  background: #faf9f7;
+  transition: border-color 0.2s;
+}
+
+.deck-search:focus {
+  border-color: #7a1c3b;
+}
+
+/* ─── Inventory list ─────────────────────── */
+.deck-inventory-list {
+  max-height: 55vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+
+.deck-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 4px;
+  border-bottom: 1px solid #f5f3ef;
+  transition: background 0.15s;
+}
+
+.deck-card-row:hover {
+  background: #faf9f7;
+  border-radius: 6px;
+}
+
+.deck-card-row__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.deck-card-row__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.deck-card-row__name {
+  font-size: 13px;
+  color: #2c1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-card-row__stock {
+  font-size: 11px;
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.deck-card-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.deck-card-row__qty {
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a1c3b;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ─── Icon buttons ───────────────────────── */
+.deck-icon-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+
+.deck-icon-btn--add {
+  background: #f0e8d0;
+  color: #7a1c3b;
+}
+
+.deck-icon-btn--add:hover:not(:disabled) {
+  background: #7a1c3b;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.deck-icon-btn--remove {
+  background: #fde8e8;
+  color: #c0392b;
+}
+
+.deck-icon-btn--remove:hover {
+  background: #c0392b;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.deck-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Counter bar ────────────────────────── */
+.deck-counter-bar {
+  height: 6px;
+  background: #f0ece6;
+  border-radius: 99px;
+  margin: 10px 0 4px;
+  overflow: hidden;
+}
+
+.deck-counter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7a1c3b, #c0392b);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.deck-counter {
+  font-size: 13px;
+  font-weight: 600;
+  color: #7a1c3b;
+  margin-bottom: 12px;
+}
+
+.deck-counter--over {
+  color: #c0392b;
+}
+
+.deck-counter--hint {
+  font-size: 11px;
+  color: #e07b00;
+  font-weight: 400;
+}
+
+/* ─── Deck list (right panel) ────────────── */
+.deck-list {
+  margin: 4px 0 16px;
+  max-height: 40vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+
+.deck-list--empty {
+  font-size: 12px;
+  color: #bbb;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.deck-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px;
+  border-bottom: 1px solid #f5f3ef;
+}
+
+.deck-row__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.deck-row__name {
+  font-size: 13px;
+  color: #2c1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deck-row__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.deck-row__qty {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  min-width: 22px;
+  text-align: center;
+}
+
+/* ─── Save button ────────────────────────── */
+.deck-save-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ─── List view ──────────────────────────── */
+.deck-item {
+  cursor: default;
+}
+
+.deck-item__meta {
+  margin-top: 4px;
+}
+
+.deck-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.deck-badge--valid {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.deck-badge--invalid {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.deck-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+
+.deck-btn--edit {
+  background: #f0e8d0;
+}
+
+.deck-btn--edit:hover {
+  background: #7a1c3b;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.deck-btn--delete {
+  background: #fde8e8;
+}
+
+.deck-btn--delete:hover {
+  background: #c0392b;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* ─── Empty state ────────────────────────── */
+.deck-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #aaa;
+}
+
+.deck-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.deck-empty-state p {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  margin: 0 0 4px;
+}
+
+.deck-empty-state span {
+  font-size: 13px;
+}

@@ -26,7 +26,9 @@ import { useToast, ToastContainer } from "./hooks/useToast";
 import { DailyRewardContext } from "./contexts/DailyRewardContext";
 import { useSseNotifications } from "./hooks/useSseNotifications";
 import { QUERY_KEYS } from "./utils/querykeys";
-
+import FightHub from "./pages/FightHub";
+import DeckBuilder from "./features/deck/DeckBuilder";
+import FightPage from "./features/fight/Fight";
 function AppLayout() {
   const mainRef = useRef<HTMLElement>(null);
   useScrollRestoration(mainRef);
@@ -79,6 +81,12 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/arena" element={<FightHub />} />
+            <Route path="/decks" element={<DeckBuilder />} />
+            <Route
+              path="/fight"
+              element={<FightPage userId={0} username="" />}
+            />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
