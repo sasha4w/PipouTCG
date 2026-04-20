@@ -22,6 +22,8 @@ import { CustomNamingStrategy } from './database/naming.strategy';
 import { validateEnv } from './config/env.validation';
 import { Buffer } from 'buffer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { DecksModule } from './decks/decks.module';
+import { FightsModule } from './fights/fights.module';
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
@@ -71,6 +73,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     BannersModule,
     ShopModule,
     DailyRewardModule,
+    DecksModule,
+    FightsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
