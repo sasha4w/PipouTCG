@@ -5,11 +5,12 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Deck } from './deck.entity';
 import { DeckCard } from './deck-card.entity';
 import { Card } from '../cards/card.entity';
 import { CreateDeckDto } from './dto/create-deck.dto';
+import { UserCard } from '../users/user-card.entity';
 
 const MIN_DECK_SIZE = 20;
 const MAX_DECK_SIZE = 40;
@@ -20,7 +21,7 @@ export class DecksService {
   constructor(
     @InjectRepository(Deck) private deckRepo: Repository<Deck>,
     @InjectRepository(DeckCard) private deckCardRepo: Repository<DeckCard>,
-    @InjectRepository(Card) private cardRepo: Repository<Card>,
+    @InjectRepository(UserCard) private userCardRepo: Repository<UserCard>,
     private dataSource: DataSource,
   ) {}
 
@@ -44,14 +45,17 @@ export class DecksService {
     const cards: Card[] = [];
     for (const entry of deck.deckCards) {
       for (let i = 0; i < entry.quantity; i++) {
-        cards.push(entry.card);
+        cards.push(entry.userCard.card); // ← via userCard
       }
     }
     return cards;
   }
 
-  async create(userId: number, dto: CreateDeckDto): Promise<Deck> {
-    // Validate total size
+  private async validateUserCards(
+    userId: number,
+    dto: CreateDeckDto,
+  ): Promise<UserCard[]> {
+    // Taille totale
     const total = dto.cards.reduce((sum, c) => sum + c.quantity, 0);
     if (total < MIN_DECK_SIZE || total > MAX_DECK_SIZE) {
       throw new BadRequestException(
@@ -59,20 +63,42 @@ export class DecksService {
       );
     }
 
-    // Validate individual copy limits
+    // Limite d'exemplaires
     const offender = dto.cards.find((c) => c.quantity > MAX_COPIES);
     if (offender) {
       throw new BadRequestException(
-        `Maximum ${MAX_COPIES} exemplaires de la même carte (cardId ${offender.cardId})`,
+        `Maximum ${MAX_COPIES} exemplaires de la même carte (userCardId ${offender.userCardId})`,
       );
     }
 
-    // Validate all cards exist
-    const cardIds = dto.cards.map((c) => c.cardId);
-    const foundCards = await this.cardRepo.findByIds(cardIds);
-    if (foundCards.length !== cardIds.length) {
-      throw new BadRequestException('Une ou plusieurs cartes sont introuvables');
+    // Vérifier que toutes les UserCard existent et appartiennent à l'utilisateur
+    const userCardIds = dto.cards.map((c) => c.userCardId);
+    const foundUserCards = await this.userCardRepo.find({
+      where: { id: In(userCardIds), user: { id: userId } },
+      relations: ['card'],
+    });
+
+    if (foundUserCards.length !== userCardIds.length) {
+      throw new BadRequestException(
+        'Une ou plusieurs cartes sont introuvables ou ne vous appartiennent pas',
+      );
     }
+
+    // Vérifier que le stock est suffisant
+    for (const entry of dto.cards) {
+      const uc = foundUserCards.find((c) => c.id === entry.userCardId)!;
+      if (uc.quantity < entry.quantity) {
+        throw new BadRequestException(
+          `Stock insuffisant pour la carte #${uc.card.id} (possédé : ${uc.quantity}, demandé : ${entry.quantity})`,
+        );
+      }
+    }
+
+    return foundUserCards;
+  }
+
+  async create(userId: number, dto: CreateDeckDto): Promise<Deck> {
+    await this.validateUserCards(userId, dto);
 
     return this.dataSource.transaction(async (manager) => {
       const deck = manager.create(Deck, { name: dto.name, userId });
@@ -81,7 +107,7 @@ export class DecksService {
       const deckCards = dto.cards.map((entry) =>
         manager.create(DeckCard, {
           deckId: saved.id,
-          cardId: entry.cardId,
+          userCardId: entry.userCardId, // ← userCardId
           quantity: entry.quantity,
         }),
       );
@@ -93,26 +119,7 @@ export class DecksService {
 
   async update(id: number, userId: number, dto: CreateDeckDto): Promise<Deck> {
     await this.findOne(id, userId); // ownership check
-
-    const total = dto.cards.reduce((sum, c) => sum + c.quantity, 0);
-    if (total < MIN_DECK_SIZE || total > MAX_DECK_SIZE) {
-      throw new BadRequestException(
-        `Un deck doit contenir entre ${MIN_DECK_SIZE} et ${MAX_DECK_SIZE} cartes`,
-      );
-    }
-
-    const offender = dto.cards.find((c) => c.quantity > MAX_COPIES);
-    if (offender) {
-      throw new BadRequestException(
-        `Maximum ${MAX_COPIES} exemplaires de la même carte (cardId ${offender.cardId})`,
-      );
-    }
-
-    const cardIds = dto.cards.map((c) => c.cardId);
-    const foundCards = await this.cardRepo.findByIds(cardIds);
-    if (foundCards.length !== cardIds.length) {
-      throw new BadRequestException('Une ou plusieurs cartes sont introuvables');
-    }
+    await this.validateUserCards(userId, dto);
 
     return this.dataSource.transaction(async (manager) => {
       await manager.delete(DeckCard, { deckId: id });
@@ -121,11 +128,12 @@ export class DecksService {
       const deckCards = dto.cards.map((entry) =>
         manager.create(DeckCard, {
           deckId: id,
-          cardId: entry.cardId,
+          userCardId: entry.userCardId, // ← userCardId
           quantity: entry.quantity,
         }),
       );
       await manager.save(DeckCard, deckCards);
+
       return manager.findOneOrFail(Deck, { where: { id } });
     });
   }

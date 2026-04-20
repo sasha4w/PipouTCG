@@ -6,8 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Deck } from './deck.entity';
-import { Card } from '../cards/card.entity';
-
+import { UserCard } from '../users/user-card.entity';
 @Entity('deck_card')
 export class DeckCard {
   @PrimaryGeneratedColumn()
@@ -20,12 +19,13 @@ export class DeckCard {
   @Column({ name: 'deck_id' })
   deckId!: number;
 
-  @ManyToOne(() => Card, { eager: true })
-  @JoinColumn({ name: 'card_id' })
-  card!: Card;
+  // On pointe vers UserCard, pas Card directement
+  @ManyToOne(() => UserCard, { eager: true })
+  @JoinColumn({ name: 'user_card_id' })
+  userCard!: UserCard;
 
-  @Column({ name: 'card_id' })
-  cardId!: number;
+  @Column({ name: 'user_card_id' })
+  userCardId!: number;
 
   @Column({ default: 1 })
   quantity!: number;

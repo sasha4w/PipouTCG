@@ -159,6 +159,7 @@ export class UsersService {
     return {
       cards: {
         data: userCards.map((uc) => ({
+          userCardId: uc.id,
           id: uc.card.id,
           name: uc.card.name,
           rarity: uc.card.rarity,

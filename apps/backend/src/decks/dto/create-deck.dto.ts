@@ -14,9 +14,8 @@ import { IsInt, Min, Max } from 'class-validator';
 export class DeckCardEntryDto {
   @IsInt()
   @Min(1)
-  cardId!: number;
+  userCardId!: number;
 
-  /** Max 3 copies of the same card. */
   @IsInt()
   @Min(1)
   @Max(3)
