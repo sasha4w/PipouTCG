@@ -10,7 +10,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { DecksService } from './decks.service';
 import { CreateDeckDto } from './dto/create-deck.dto';
 

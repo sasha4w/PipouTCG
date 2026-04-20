@@ -7,7 +7,8 @@ import {
   DefaultValuePipe,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt.authguard';
+
 import { FightsService } from './fights.service';
 
 @UseGuards(JwtAuthGuard)
