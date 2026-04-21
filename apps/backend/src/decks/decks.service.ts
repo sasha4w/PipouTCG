@@ -8,10 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { Deck } from './deck.entity';
 import { DeckCard } from './deck-card.entity';
-import { Card } from '../cards/card.entity';
+import { v4 as uuidv4 } from 'uuid';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { UserCard } from '../users/user-card.entity';
-
+import { CardInstance } from '../fights/interfaces/game-state.interface';
 const MIN_DECK_SIZE = 20;
 const MAX_DECK_SIZE = 40;
 const MAX_COPIES = 3;
@@ -40,14 +40,31 @@ export class DecksService {
    * Load a deck with full card objects, ready for a fight.
    * Returns the flat list of cards (respecting quantities).
    */
-  async loadDeckCards(deckId: number, userId: number): Promise<Card[]> {
-    const deck = await this.findOne(deckId, userId);
-    const cards: Card[] = [];
-    for (const entry of deck.deckCards) {
-      for (let i = 0; i < entry.quantity; i++) {
-        cards.push(entry.userCard.card); // ← via userCard
+  async loadDeckCards(deckId: number, userId: number): Promise<CardInstance[]> {
+    const deck = await this.deckRepo.findOne({
+      where: { id: deckId, userId },
+      relations: [
+        'deckCards',
+        'deckCards.userCard',
+        'deckCards.userCard.card',
+        'deckCards.userCard.card.effects',
+      ],
+    });
+
+    if (!deck) throw new Error('Deck introuvable');
+
+    const cards: CardInstance[] = [];
+
+    for (const deckCard of deck.deckCards) {
+      for (let i = 0; i < deckCard.quantity; i++) {
+        cards.push({
+          instanceId: uuidv4(),
+          baseCard: deckCard.userCard.card,
+          ownerId: userId,
+        });
       }
     }
+
     return cards;
   }
 

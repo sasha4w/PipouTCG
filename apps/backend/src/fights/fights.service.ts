@@ -19,6 +19,7 @@ import {
   GameEndReason,
   ClientGameState,
   CombatMode,
+  CardInstance,
 } from './interfaces/game-state.interface';
 
 // ─── Internal types ───────────────────────────────────────────────────────────
@@ -128,7 +129,7 @@ export class FightsService {
     const player = this.getPlayerState(game, userId);
     if (player.ready) return { error: 'Deck déjà soumis' };
 
-    let cards: Card[];
+    let cards: CardInstance[];
     try {
       cards = await this.decksService.loadDeckCards(deckId, userId);
     } catch {
@@ -257,9 +258,10 @@ export class FightsService {
       return { error: 'Index main invalide' };
 
     const card = player.hand[handIndex];
-    if (card.type !== CardType.MONSTER) return { error: 'Pas un Monstre' };
+    if (card.baseCard.type !== CardType.MONSTER)
+      return { error: 'Pas un Monstre' };
 
-    const cost = card.cost ?? 0;
+    const cost = card.baseCard.cost ?? 0;
     const uniquePayment = [...new Set(paymentHandIndices)];
     const handPayNeeded = Math.max(0, cost - player.recycleEnergy);
 
@@ -294,7 +296,7 @@ export class FightsService {
     const instance: MonsterOnBoard = {
       instanceId: uuidv4(),
       card: monster,
-      currentHp: monster.hp,
+      currentHp: monster.baseCard.hp,
       mode: 'attack',
       equipments: [],
       atkBuff: 0,
@@ -305,7 +307,7 @@ export class FightsService {
 
     this.addLog(
       game,
-      `${player.username} invoque ${monster.name} (${monster.atk}ATK / ${monster.hp}HP)`,
+      `${player.username} invoque ${monster.baseCard.name} (${monster.baseCard.atk}ATK / ${monster.baseCard.hp}HP)`,
     );
 
     // ── Trigger ON_SUMMON ──────────────────────────────────────────────────
@@ -350,15 +352,16 @@ export class FightsService {
       return { error: 'Index main invalide' };
 
     const card = player.hand[handIndex];
-    if (card.type !== CardType.SUPPORT) return { error: 'Pas un Support' };
+    if (card.baseCard.type !== CardType.SUPPORT)
+      return { error: 'Pas un Support' };
 
     const [support] = player.hand.splice(handIndex, 1);
     const log: string[] = [];
 
-    switch (support.supportType) {
+    switch (support.baseCard.supportType) {
       case SupportType.EPHEMERAL: {
         player.graveyard.push(support);
-        this.addLog(game, `${player.username} joue ${support.name}`);
+        this.addLog(game, `${player.username} joue ${support.baseCard.name}`);
         // ON_PLAY trigger
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
@@ -383,7 +386,7 @@ export class FightsService {
         target.equipments.push(support);
         this.addLog(
           game,
-          `${player.username} équipe ${support.name} sur ${target.card.name}`,
+          `${player.username} équipe ${support.baseCard.name} sur ${target.card.baseCard.name}`,
         );
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
@@ -407,7 +410,7 @@ export class FightsService {
         player.supportZones[zoneIndex] = support;
         this.addLog(
           game,
-          `${player.username} pose ${support.name} en zone ${zoneIndex}`,
+          `${player.username} pose ${support.baseCard.name} en zone ${zoneIndex}`,
         );
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
@@ -459,7 +462,7 @@ export class FightsService {
 
     this.addLog(
       game,
-      `${player.username} recycle ${support.name} → +1 énergie`,
+      `${player.username} recycle ${support.baseCard.name} → +1 énergie`,
     );
     this.resetTurnTimeout(game, server);
     this.emitGameState(game, server);
@@ -489,7 +492,7 @@ export class FightsService {
     monster.mode = mode;
     this.addLog(
       game,
-      `${player.username} : ${monster.card.name} → mode ${mode === 'attack' ? 'Attaque ⚔️' : 'Garde 🛡️'}`,
+      `${player.username} : ${monster.card.baseCard.name} → mode ${mode === 'attack' ? 'Attaque ⚔️' : 'Garde 🛡️'}`,
     );
     this.resetTurnTimeout(game, server);
     this.emitGameState(game, server);
@@ -526,7 +529,7 @@ export class FightsService {
 
     attacker.hasAttackedThisTurn = true;
 
-    const attackerAtk = attacker.card.atk + attacker.atkBuff;
+    const attackerAtk = attacker.card.baseCard.atk + attacker.atkBuff;
 
     // ── Trigger ON_ATTACK ────────────────────────────────────────────────────
     const onAttackLog: string[] = [];
@@ -551,7 +554,7 @@ export class FightsService {
         opponent.primes -= 1;
         this.addLog(
           game,
-          `💥 Attaque directe ! ${attacker.card.name} bannit 1 Prime (${opponent.primes} restantes)`,
+          `💥 Attaque directe ! ${attacker.card.baseCard.name} bannit 1 Prime (${opponent.primes} restantes)`,
         );
       }
       await this.checkWinAndEmit(game, server);
@@ -565,7 +568,7 @@ export class FightsService {
     );
     if (!target) return { error: 'Cible introuvable' };
 
-    const targetAtk = target.card.atk + target.atkBuff;
+    const targetAtk = target.card.baseCard.atk + target.atkBuff;
 
     // Trigger ON_DEFEND for target
     const onDefendLog: string[] = [];
@@ -589,7 +592,7 @@ export class FightsService {
       if (aDied && tDied) {
         this.addLog(
           game,
-          `⚔️ Double KO ! ${attacker.card.name} & ${target.card.name}`,
+          `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name}`,
         );
         this.removeMonster(player, attackerInstanceId, game);
         this.removeMonster(opponent, targetInstanceId, game);
@@ -600,7 +603,7 @@ export class FightsService {
       } else if (tDied) {
         this.addLog(
           game,
-          `⚔️ ${attacker.card.name} détruit ${target.card.name}`,
+          `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`,
         );
         this.removeMonster(opponent, targetInstanceId, game);
         this.stealPrime(game, userId, opponent.userId);
@@ -608,7 +611,7 @@ export class FightsService {
       } else if (aDied) {
         this.addLog(
           game,
-          `⚔️ ${target.card.name} détruit ${attacker.card.name}`,
+          `⚔️ ${target.card.baseCard.name} détruit ${attacker.card.baseCard.name}`,
         );
         this.removeMonster(player, attackerInstanceId, game);
         this.stealPrime(game, opponent.userId, userId);
@@ -616,7 +619,7 @@ export class FightsService {
       } else {
         this.addLog(
           game,
-          `⚔️ Duel : ${attacker.card.name} (${attacker.currentHp}HP) vs ${target.card.name} (${target.currentHp}HP)`,
+          `⚔️ Duel : ${attacker.card.baseCard.name} (${attacker.currentHp}HP) vs ${target.card.baseCard.name} (${target.currentHp}HP)`,
         );
       }
     } else {
@@ -625,14 +628,14 @@ export class FightsService {
       if (target.currentHp <= 0) {
         this.addLog(
           game,
-          `🛡️ ${attacker.card.name} brise la Garde de ${target.card.name}`,
+          `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name}`,
         );
         this.removeMonster(opponent, targetInstanceId, game);
         this.drawCard(game, opponent.userId);
       } else {
         this.addLog(
           game,
-          `🛡️ ${attacker.card.name} attaque ${target.card.name} (${target.currentHp}HP) — Garde tient`,
+          `🛡️ ${attacker.card.baseCard.name} attaque ${target.card.baseCard.name} (${target.currentHp}HP) — Garde tient`,
         );
       }
     }
@@ -665,7 +668,7 @@ export class FightsService {
 
     const [card] = player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
-    this.addLog(game, `${player.username} défausse ${card.name}`);
+    this.addLog(game, `${player.username} défausse ${card.baseCard.name}`);
     this.emitGameState(game, server);
     return {};
   }
@@ -856,7 +859,7 @@ export class FightsService {
     };
   }
 
-  private drawCard(game: GameState, userId: number): Card | null {
+  private drawCard(game: GameState, userId: number): CardInstance | null {
     const player = this.getPlayerState(game, userId);
     const card = player.deck.shift() ?? null;
     if (card) player.hand.push(card);
@@ -901,7 +904,7 @@ export class FightsService {
     thief.hand.push(prime);
     this.addLog(
       game,
-      `🏆 ${thief.username} vole une Prime (${prime.name}) — ${victim.primes} restantes`,
+      `🏆 ${thief.username} vole une Prime (${prime.baseCard.name}) — ${victim.primes} restantes`,
     );
   }
 
