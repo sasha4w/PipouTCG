@@ -710,6 +710,9 @@ export class FightsService {
   async getMatchHistory(userId: number, page = 1, limit = 20) {
     const [data, total] = await this.matchRepo
       .createQueryBuilder('match')
+      .leftJoinAndSelect('match.player1', 'player1')
+      .leftJoinAndSelect('match.player2', 'player2')
+      .leftJoinAndSelect('match.winner', 'winner')
       .where('match.player1Id = :u OR match.player2Id = :u', { u: userId })
       .andWhere('match.status != :s', { s: MatchStatus.IN_PROGRESS })
       .orderBy('match.startedAt', 'DESC')
