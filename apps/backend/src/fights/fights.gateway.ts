@@ -88,20 +88,33 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket): void {
     try {
-      const token =
-        (client.handshake.auth?.token as string | undefined) ||
-        (client.handshake.query?.token as string | undefined);
+      const cookies = client.handshake.headers.cookie;
+
+      if (!cookies) throw new Error('No cookies');
+
+      const token = cookies
+        .split(';')
+        .find((c) => c.trim().startsWith('token='))
+        ?.split('=')[1];
 
       if (!token) throw new Error('No token');
 
-      const payload = this.jwtService.verify<{ sub: number; username: string }>(
-        token,
-        { secret: this.configService.getOrThrow<string>('JWT_SECRET') },
-      );
+      const payload = this.jwtService.verify<{
+        sub: number;
+        username: string;
+      }>(token, {
+        secret: this.configService.getOrThrow<string>('JWT_SECRET'),
+      });
 
       client.data.userId = payload.sub;
       client.data.username = payload.username;
-    } catch {
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error('WS auth error:', err.message);
+      } else {
+        console.error('WS auth error:', err);
+      }
+
       client.emit('fight:error', { message: 'Authentification invalide' });
       client.disconnect();
     }
