@@ -69,8 +69,11 @@ interface DiscardPayload {
 // ─────────────────────────────────────────────────────────────────────────────
 
 @WebSocketGateway({
-  cors: { origin: '*' },
-  namespace: 'fights',
+  cors: {
+    origin: ['https://pipoutcg.netlify.app', 'http://localhost:5173'],
+    credentials: true,
+  },
+  namespace: 'fight',
 })
 export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server!: Server;
@@ -106,7 +109,10 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleDisconnect(client: Socket): Promise<void> {
     if (client.data.userId) {
-      await this.fightsService.handleDisconnect(client.data.userId, this.server);
+      await this.fightsService.handleDisconnect(
+        client.data.userId,
+        this.server,
+      );
     }
   }
 
@@ -296,6 +302,10 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { matchId: number },
   ): Promise<void> {
-    await this.fightsService.surrender(data.matchId, client.data.userId, this.server);
+    await this.fightsService.surrender(
+      data.matchId,
+      client.data.userId,
+      this.server,
+    );
   }
 }
