@@ -43,12 +43,7 @@ export class DecksService {
   async loadDeckCards(deckId: number, userId: number): Promise<CardInstance[]> {
     const deck = await this.deckRepo.findOne({
       where: { id: deckId, userId },
-      relations: [
-        'deckCards',
-        'deckCards.userCard',
-        'deckCards.userCard.card',
-        'deckCards.userCard.card.effects',
-      ],
+      relations: ['deckCards', 'deckCards.userCard', 'deckCards.userCard.card'],
     });
 
     if (!deck) throw new Error('Deck introuvable');
