@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FightsService } from './fights.service';
-
+import * as cookie from 'cookie';
 // ─── Payload shapes received from client ─────────────────────────────────────
 
 interface SubmitDeckPayload {
@@ -88,14 +88,9 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket): void {
     try {
-      const cookies = client.handshake.headers.cookie;
-
-      if (!cookies) throw new Error('No cookies');
-
-      const token = cookies
-        .split(';')
-        .find((c) => c.trim().startsWith('token='))
-        ?.split('=')[1];
+      const rawCookies = client.handshake.headers.cookie ?? '';
+      const cookies = cookie.parse(rawCookies); // ✅ parsing robuste
+      const token = cookies['token'];
 
       if (!token) throw new Error('No token');
 
@@ -106,7 +101,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         secret: this.configService.getOrThrow<string>('JWT_SECRET'),
       });
 
-      client.data.userId = payload.sub;
+      client.data.userId = Number(payload.sub);
       client.data.username = payload.username;
     } catch (err) {
       if (err instanceof Error) {
@@ -114,7 +109,6 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       } else {
         console.error('WS auth error:', err);
       }
-
       client.emit('fight:error', { message: 'Authentification invalide' });
       client.disconnect();
     }
