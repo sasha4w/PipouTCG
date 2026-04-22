@@ -442,10 +442,10 @@ export class FightsService {
   // MAIN PHASE — RECYCLE / CHANGE MODE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async recycleSupport(
+  async recycleFromHand(
     matchId: number,
     userId: number,
-    zoneIndex: number,
+    handIndex: number,
     server: Server,
   ): Promise<{ error?: string }> {
     const game = this.getGame(matchId);
@@ -455,21 +455,16 @@ export class FightsService {
     if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
 
     const player = this.getPlayerState(game, userId);
-    if (zoneIndex < 0 || zoneIndex > 2 || !player.supportZones[zoneIndex]) {
-      return { error: 'Aucun support en zone ' + zoneIndex };
-    }
+    if (handIndex < 0 || handIndex >= player.hand.length)
+      return { error: 'Index main invalide' };
 
-    const support = player.supportZones[zoneIndex]!;
-    player.supportZones[zoneIndex] = null;
-    player.graveyard.push(support);
+    const [card] = player.hand.splice(handIndex, 1);
+    player.graveyard.push(card);
     player.recycleEnergy += 1;
-
-    // Buffs need recalc since terrain is gone
-    this.buffsCalc.recalculate(player);
 
     this.addLog(
       game,
-      `${player.username} recycle ${support.baseCard.name} → +1 énergie`,
+      `♻️ ${player.username} recycle ${card.baseCard.name} → +1 énergie (${player.recycleEnergy} total)`,
     );
     this.resetTurnTimeout(game, server);
     this.emitGameState(game, server);

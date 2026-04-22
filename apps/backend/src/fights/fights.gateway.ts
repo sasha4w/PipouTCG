@@ -232,14 +232,14 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:recycle_support')
-  async recycleSupport(
+  async recycleFromHand(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: RecycleSupportPayload,
+    @MessageBody() data: { matchId: number; handIndex: number },
   ): Promise<void> {
-    const result = await this.fightsService.recycleSupport(
+    const result = await this.fightsService.recycleFromHand(
       data.matchId,
       client.data.userId,
-      data.zoneIndex,
+      data.handIndex,
       this.server,
     );
     if (result?.error) {
