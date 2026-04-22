@@ -529,11 +529,52 @@ export class FightsService {
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
     if (attacker.hasAttackedThisTurn) return { error: 'Déjà attaqué ce tour' };
 
+    // ── Direct attack ──────────────────────────────────────────────────────────
+    if (direct) {
+      // ✅ Vérification tour 1 AVANT de poser le flag
+      if (game.turnNumber === 1) {
+        return { error: 'Attaque directe interdite au premier tour' };
+      }
+      if (opponent.monsterZones.some((z) => z !== null)) {
+        return {
+          error: "Attaque directe impossible : l'adversaire a des monstres",
+        };
+      }
+
+      attacker.hasAttackedThisTurn = true; // ✅ posé seulement si l'attaque est valide
+
+      // ✅ Trigger ON_ATTACK
+      const onAttackLog: string[] = [];
+      this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
+        game,
+        ownerUserId: userId,
+        sourceMonster: attacker,
+        log: onAttackLog,
+      });
+      onAttackLog.forEach((l) => this.addLog(game, l));
+
+      // ✅ Vole la prime (dans la main de l'attaquant) au lieu de la bannir
+      if (opponent.primes > 0 && opponent.primeDeck.length > 0) {
+        const prime = opponent.primeDeck.shift()!;
+        opponent.primes -= 1;
+        player.hand.push(prime);
+        this.addLog(
+          game,
+          `💥 Attaque directe ! ${attacker.card.baseCard.name} vole une Prime de ${opponent.username} (${opponent.primes} restantes)`,
+        );
+      }
+
+      this.resetTurnTimeout(game, server);
+      await this.checkWinAndEmit(game, server);
+      return {};
+    }
+
+    // ✅ Flag posé ici pour les attaques normales aussi
     attacker.hasAttackedThisTurn = true;
 
     const attackerAtk = attacker.card.baseCard.atk + attacker.atkBuff;
 
-    // ── Trigger ON_ATTACK ────────────────────────────────────────────────────
+    // ── Trigger ON_ATTACK ──────────────────────────────────────────────────────
     const onAttackLog: string[] = [];
     this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
       game,
@@ -543,27 +584,7 @@ export class FightsService {
     });
     onAttackLog.forEach((l) => this.addLog(game, l));
 
-    // ── Direct attack ────────────────────────────────────────────────────────
-    if (direct) {
-      if (opponent.monsterZones.some((z) => z !== null)) {
-        return {
-          error: "Attaque directe impossible : l'adversaire a des monstres",
-        };
-      }
-      if (opponent.primes > 0 && opponent.primeDeck.length > 0) {
-        const prime = opponent.primeDeck.shift()!;
-        opponent.banished.push(prime);
-        opponent.primes -= 1;
-        this.addLog(
-          game,
-          `💥 Attaque directe ! ${attacker.card.baseCard.name} bannit 1 Prime (${opponent.primes} restantes)`,
-        );
-      }
-      await this.checkWinAndEmit(game, server);
-      return {};
-    }
-
-    // ── Monster vs Monster ───────────────────────────────────────────────────
+    // ── Monster vs Monster ─────────────────────────────────────────────────────
     if (!targetInstanceId) return { error: 'Cible requise' };
     const target = opponent.monsterZones.find(
       (m) => m?.instanceId === targetInstanceId,
@@ -572,7 +593,6 @@ export class FightsService {
 
     const targetAtk = target.card.baseCard.atk + target.atkBuff;
 
-    // Trigger ON_DEFEND for target
     const onDefendLog: string[] = [];
     this.effectsResolver.resolve(target.card, EffectTrigger.ON_DEFEND, {
       game,
@@ -584,7 +604,6 @@ export class FightsService {
     onDefendLog.forEach((l) => this.addLog(game, l));
 
     if (target.mode === 'attack') {
-      // Mutual damage
       attacker.currentHp -= targetAtk;
       target.currentHp -= attackerAtk;
 
@@ -625,7 +644,6 @@ export class FightsService {
         );
       }
     } else {
-      // Guard — no riposte
       target.currentHp -= attackerAtk;
       if (target.currentHp <= 0) {
         this.addLog(
@@ -642,7 +660,6 @@ export class FightsService {
       }
     }
 
-    // Recalculate buffs after board changes
     this.buffsCalc.recalculate(player);
     this.buffsCalc.recalculate(opponent);
 
@@ -759,18 +776,24 @@ export class FightsService {
     const handle = setTimeout(async () => {
       if (!this.games.has(game.matchId)) return;
       const currentGame = this.games.get(game.matchId)!;
-      // Auto-end the current phase
+      const player = this.getPlayerState(
+        currentGame,
+        currentGame.currentTurnUserId,
+      );
+
       this.addLog(currentGame, `⏱️ Timeout — passage de phase automatique`);
+
+      // ✅ Force reset des flags peu importe la phase
+      for (const z of player.monsterZones) {
+        if (z) z.hasAttackedThisTurn = false;
+      }
+
       if (currentGame.phase === 'end') {
-        // Force-discard surplus
-        const player = this.getPlayerState(
-          currentGame,
-          currentGame.currentTurnUserId,
-        );
         while (player.hand.length > HAND_LIMIT) {
           player.graveyard.push(player.hand.pop()!);
         }
       }
+
       await this.endPhase(
         currentGame.matchId,
         currentGame.currentTurnUserId,
