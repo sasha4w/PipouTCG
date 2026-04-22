@@ -1,0 +1,94 @@
+.fhand-area {
+  margin-top: 8px;
+}
+
+.fhand-label {
+  font-size: 11px;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.fhand-cards {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.fhand-card {
+  min-width: 88px;
+  max-width: 88px;
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+  flex-shrink: 0;
+  position: relative;
+  background: #fff;
+  border: 1.5px solid #f0ddd0;
+}
+
+.fhand-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.1);
+}
+
+.fhand-card--selected {
+  background: #f8edf2;
+  border: 2px solid #7a1c3b;
+  box-shadow: 0 0 0 3px rgba(122, 28, 59, 0.2);
+}
+
+.fhand-card--paying {
+  background: #fce4d4;
+  border: 2px solid #e67e22;
+}
+
+.fhand-card--discard {
+  border: 2px solid #e74c3c;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.15);
+}
+
+/* ── Draw animation ─────────────────────────────────────────── */
+
+.fhand-card--drawn {
+  animation: fhand-draw 0.4s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+@keyframes fhand-draw {
+  0% {
+    transform: translateY(-32px) scale(0.8) rotate(-4deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(4px) scale(1.03) rotate(1deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.fhand-rarity {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+}
+
+.fhand-card-name {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.fhand-card-meta {
+  font-size: 10px;
+  color: #aaa;
+}

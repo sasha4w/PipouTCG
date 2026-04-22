@@ -28,7 +28,9 @@ import { useSseNotifications } from "./hooks/useSseNotifications";
 import { QUERY_KEYS } from "./utils/querykeys";
 import FightHub from "./pages/FightHub";
 import DeckBuilder from "./features/deck/DeckBuilder";
-import FightPage from "./features/fight/Fight";
+import FightPage from "./features/fight/FightPage";
+import { useQuery } from "@tanstack/react-query";
+import { userService } from "./services/user.service";
 function AppLayout() {
   const mainRef = useRef<HTMLElement>(null);
   useScrollRestoration(mainRef);
@@ -61,7 +63,17 @@ function AppLayout() {
     </DailyRewardContext.Provider>
   );
 }
+function FightPageWrapper() {
+  const { data } = useQuery({
+    queryKey: QUERY_KEYS.profile,
+    queryFn: () => userService.getMe(),
+    staleTime: 10 * 60 * 1000,
+  });
 
+  if (!data) return null;
+
+  return <FightPage userId={data.id} username={data.username} />;
+}
 function App() {
   return (
     <SoundProvider>
@@ -83,10 +95,7 @@ function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/arena" element={<FightHub />} />
             <Route path="/decks" element={<DeckBuilder />} />
-            <Route
-              path="/fight"
-              element={<FightPage userId={0} username="" />}
-            />
+            <Route path="/fight" element={<FightPageWrapper />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

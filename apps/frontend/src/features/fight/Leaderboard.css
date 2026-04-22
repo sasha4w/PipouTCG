@@ -1,0 +1,283 @@
+.wrapper {
+  width: 100%;
+  font-family: "Comfortaa", sans-serif;
+  color: #2c1a12;
+}
+
+.title {
+  font-family: "Lilita One", sans-serif;
+  color: #7a1c3b;
+  font-size: 1.9rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.muted {
+  color: #a8a1a1;
+  font-size: 0.9rem;
+}
+
+/* ---------- TABLE CONTAINER ---------- */
+
+.tableWrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #fff8f4;
+  border: 1.5px solid #edd8cc;
+  box-shadow: 0 10px 30px rgba(122, 28, 59, 0.06);
+}
+
+/* ---------- TABLE ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table thead {
+  background: #7a1c3b;
+}
+
+.th {
+  padding: 1rem 0.4rem;
+  color: white;
+  font-family: "Lilita One", sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.th-left {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+/* ---------- ROW ---------- */
+
+.tr {
+  transition: 0.18s ease;
+  background: #fffaf7;
+}
+
+.tr:nth-child(even) {
+  background: #fff;
+}
+
+.tr:hover {
+  background: #fff3f7;
+}
+
+.me-row {
+  background: rgba(122, 28, 59, 0.06);
+}
+
+/* ---------- CELLS ---------- */
+
+.td {
+  padding: 0.95rem 0.35rem;
+  border-bottom: 1px solid #f2e7e0;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* ---------- PLAYER CELL ---------- */
+
+.player-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-family: "Lilita One", sans-serif;
+  font-size: 1rem;
+
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.08);
+}
+
+.player-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #3a1c16;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tierLabel {
+  font-size: 0.75rem;
+  color: #9f9a95;
+  margin-top: 2px;
+}
+
+/* ---------- BADGES ---------- */
+
+.meBadge {
+  background: #7a1c3b;
+  color: white;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.tierChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1.5px solid;
+  border-radius: 999px;
+  padding: 4px 10px;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- ELO ---------- */
+
+.eloNum {
+  font-family: "Lilita One", sans-serif;
+  font-size: 1.35rem;
+}
+
+/* ---------- WINS / LOSSES ---------- */
+
+.wins {
+  color: #2ebd75;
+  font-weight: 700;
+}
+
+.losses {
+  color: #e05757;
+  font-weight: 700;
+}
+
+/* ---------- WINRATE ---------- */
+
+.winrateWrap {
+  position: relative;
+  width: 70px;
+  height: 18px;
+
+  border-radius: 999px;
+  overflow: hidden;
+
+  background: #f1e5df;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.winrateBar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgba(122, 28, 59, 0.25);
+  transition: width 0.3s ease;
+}
+
+.winrateNum {
+  position: relative;
+  z-index: 2;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #7a1c3b;
+}
+
+/* ---------- MOBILE POLISH ---------- */
+
+@media (max-width: 430px) {
+  .td {
+    padding: 0.85rem 0.25rem;
+  }
+
+  .avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .eloNum {
+    font-size: 1.15rem;
+  }
+
+  .tierChip {
+    padding: 3px 8px;
+    font-size: 0.66rem;
+  }
+}
+.leaderboardCardCell {
+  padding: 0;
+  border: none;
+}
+
+.leaderboardCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 1rem;
+  border-bottom: 1px solid #f1e4dc;
+}
+
+.rankBlock {
+  width: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rankMedal {
+  font-size: 1.2rem;
+}
+
+.playerBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.playerInfos {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.statsBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.eloBlock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.miniStats {
+  display: flex;
+  gap: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}

@@ -1,0 +1,57 @@
+.fab-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.fab-btn {
+  background: #7a1c3b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: Comfortaa, sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.fab-btn-phase {
+  background: #f0ddd0;
+  color: #7a1c3b;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: Comfortaa, sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.fab-btn-phase--disabled {
+  background: #eee;
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+.fab-discard-warning {
+  color: #e74c3c;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fce9e9;
+  border-radius: 8px;
+  padding: 8px 14px;
+}
+
+.fab-btn-surrender {
+  background: transparent;
+  color: #e74c3c;
+  border: 1.5px solid #e74c3c;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-family: Comfortaa, sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+}
