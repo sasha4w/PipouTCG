@@ -139,7 +139,7 @@ export class FightsService {
     try {
       cards = await this.decksService.loadDeckCards(deckId, userId);
     } catch (e) {
-      console.log('❌ loadDeckCards error:', e); // ← ajoute ça aussi
+      console.log('❌ loadDeckCards error:', e);
       return { error: 'Deck invalide ou inaccessible' };
     }
 
@@ -147,8 +147,9 @@ export class FightsService {
       return { error: 'Le deck doit contenir au moins 20 cartes' };
 
     const shuffled = this.shuffle(cards);
+    // Les 6 premières cartes forment le deck de primes du joueur
     player.primeDeck = shuffled.splice(0, STARTING_PRIMES);
-    player.primes = STARTING_PRIMES;
+    player.primes = STARTING_PRIMES; // nombre de primes restantes à récupérer
     player.deck = shuffled;
     for (let i = 0; i < STARTING_HAND; i++) {
       const c = player.deck.shift();
@@ -327,7 +328,6 @@ export class FightsService {
     });
     log.forEach((l) => this.addLog(game, l));
 
-    // Recalculate buffs for both sides (terrain may affect newly placed monster)
     this.buffsCalc.recalculate(player);
     this.buffsCalc.recalculate(this.getOpponentState(game, userId));
 
@@ -369,7 +369,6 @@ export class FightsService {
       case SupportType.EPHEMERAL: {
         player.graveyard.push(support);
         this.addLog(game, `${player.username} joue ${support.baseCard.name}`);
-        // ON_PLAY trigger
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
           ownerUserId: userId,
@@ -531,7 +530,6 @@ export class FightsService {
 
     // ── Direct attack ──────────────────────────────────────────────────────────
     if (direct) {
-      // ✅ Vérification tour 1 AVANT de poser le flag
       if (game.turnNumber === 1) {
         return { error: 'Attaque directe interdite au premier tour' };
       }
@@ -541,9 +539,8 @@ export class FightsService {
         };
       }
 
-      attacker.hasAttackedThisTurn = true; // ✅ posé seulement si l'attaque est valide
+      attacker.hasAttackedThisTurn = true;
 
-      // ✅ Trigger ON_ATTACK
       const onAttackLog: string[] = [];
       this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
         game,
@@ -553,28 +550,19 @@ export class FightsService {
       });
       onAttackLog.forEach((l) => this.addLog(game, l));
 
-      // ✅ Vole la prime (dans la main de l'attaquant) au lieu de la bannir
-      if (opponent.primes > 0 && opponent.primeDeck.length > 0) {
-        const prime = opponent.primeDeck.shift()!;
-        opponent.primes -= 1;
-        player.hand.push(prime);
-        this.addLog(
-          game,
-          `💥 Attaque directe ! ${attacker.card.baseCard.name} vole une Prime de ${opponent.username} (${opponent.primes} restantes)`,
-        );
-      }
+      // Attaque directe → l'attaquant récupère UNE de ses propres primes
+      this.gainPrime(game, userId, attacker.card.baseCard.name);
 
       this.resetTurnTimeout(game, server);
       await this.checkWinAndEmit(game, server);
       return {};
     }
 
-    // ✅ Flag posé ici pour les attaques normales aussi
+    // ── Monster vs Monster ─────────────────────────────────────────────────────
     attacker.hasAttackedThisTurn = true;
 
     const attackerAtk = attacker.card.baseCard.atk + attacker.atkBuff;
 
-    // ── Trigger ON_ATTACK ──────────────────────────────────────────────────────
     const onAttackLog: string[] = [];
     this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
       game,
@@ -584,7 +572,6 @@ export class FightsService {
     });
     onAttackLog.forEach((l) => this.addLog(game, l));
 
-    // ── Monster vs Monster ─────────────────────────────────────────────────────
     if (!targetInstanceId) return { error: 'Cible requise' };
     const target = opponent.monsterZones.find(
       (m) => m?.instanceId === targetInstanceId,
@@ -603,6 +590,7 @@ export class FightsService {
     });
     onDefendLog.forEach((l) => this.addLog(game, l));
 
+    // ── Mode ATK vs ATK ────────────────────────────────────────────────────────
     if (target.mode === 'attack') {
       attacker.currentHp -= targetAtk;
       target.currentHp -= attackerAtk;
@@ -611,44 +599,50 @@ export class FightsService {
       const tDied = target.currentHp <= 0;
 
       if (aDied && tDied) {
+        // Double KO → les deux récupèrent une de leurs propres primes
         this.addLog(
           game,
-          `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name}`,
+          `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name} — chacun récupère une Prime`,
         );
         this.removeMonster(player, attackerInstanceId, game);
         this.removeMonster(opponent, targetInstanceId, game);
-        this.stealPrime(game, opponent.userId, userId);
-        this.stealPrime(game, userId, opponent.userId);
+        this.gainPrime(game, userId, attacker.card.baseCard.name);
+        this.gainPrime(game, opponent.userId, target.card.baseCard.name);
         this.drawCard(game, userId);
         this.drawCard(game, opponent.userId);
       } else if (tDied) {
+        // Attaquant détruit le défenseur en mode ATK → attaquant récupère une prime
         this.addLog(
           game,
           `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`,
         );
         this.removeMonster(opponent, targetInstanceId, game);
-        this.stealPrime(game, userId, opponent.userId);
+        this.gainPrime(game, userId, attacker.card.baseCard.name);
         this.drawCard(game, opponent.userId);
       } else if (aDied) {
+        // Défenseur détruit l'attaquant en mode ATK → défenseur récupère une prime
         this.addLog(
           game,
           `⚔️ ${target.card.baseCard.name} détruit ${attacker.card.baseCard.name}`,
         );
         this.removeMonster(player, attackerInstanceId, game);
-        this.stealPrime(game, opponent.userId, userId);
+        this.gainPrime(game, opponent.userId, target.card.baseCard.name);
         this.drawCard(game, userId);
       } else {
+        // Les deux survivent, personne ne récupère de prime
         this.addLog(
           game,
           `⚔️ Duel : ${attacker.card.baseCard.name} (${attacker.currentHp}HP) vs ${target.card.baseCard.name} (${target.currentHp}HP)`,
         );
       }
+
+      // ── Mode GUARD — pas de prime dans tous les cas ────────────────────────────
     } else {
       target.currentHp -= attackerAtk;
       if (target.currentHp <= 0) {
         this.addLog(
           game,
-          `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name}`,
+          `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`,
         );
         this.removeMonster(opponent, targetInstanceId, game);
         this.drawCard(game, opponent.userId);
@@ -783,7 +777,6 @@ export class FightsService {
 
       this.addLog(currentGame, `⏱️ Timeout — passage de phase automatique`);
 
-      // ✅ Force reset des flags peu importe la phase
       for (const z of player.monsterZones) {
         if (z) z.hasAttackedThisTurn = false;
       }
@@ -835,7 +828,6 @@ export class FightsService {
         log,
       });
     }
-    // Also check active terrains
     for (const terrain of player.supportZones) {
       if (!terrain) continue;
       this.effectsResolver.resolve(terrain, EffectTrigger.ON_TURN_START, {
@@ -848,18 +840,74 @@ export class FightsService {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // PRIVATE — PRIME SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Le joueur récupère UNE de ses propres primes depuis son primeDeck.
+   * La prime rejoint sa main. Conditions qui donnent une prime :
+   *   - Attaque directe réussie
+   *   - Destruction d'un monstre adverse en mode ATK
+   *   - Double KO (les deux joueurs récupèrent chacun une prime)
+   * Mode GUARD détruit → aucune prime.
+   */
+  private gainPrime(
+    game: GameState,
+    userId: number,
+    monsterName: string,
+  ): void {
+    const player = this.getPlayerState(game, userId);
+    if (player.primeDeck.length === 0) return;
+    const prime = player.primeDeck.shift()!;
+    player.primes -= 1;
+    player.hand.push(prime);
+    this.addLog(
+      game,
+      `🏆 ${player.username} récupère une Prime avec ${monsterName} ! (${player.primes} restante${player.primes > 1 ? 's' : ''})`,
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PRIVATE — WIN CONDITION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Un joueur gagne quand il a récupéré TOUTES ses 6 primes (primes === 0).
+   */
+  private checkWinCondition(game: GameState): number | null {
+    if (game.player1.primes <= 0) return game.player1.userId;
+    if (game.player2.primes <= 0) return game.player2.userId;
+    return null;
+  }
+
+  private async checkWinAndEmit(
+    game: GameState,
+    server: Server,
+  ): Promise<void> {
+    const winner = this.checkWinCondition(game);
+    if (winner !== null) {
+      await this.endGame(game, winner, 'primes_depleted', server);
+    } else {
+      this.emitGameState(game, server);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // PRIVATE — GAME HELPERS
   // ═══════════════════════════════════════════════════════════════════════════
 
   private getGame(matchId: number) {
     return this.games.get(matchId);
   }
+
   private getPlayerState(game: GameState, userId: number): PlayerGameState {
     return game.player1.userId === userId ? game.player1 : game.player2;
   }
+
   private getOpponentState(game: GameState, userId: number): PlayerGameState {
     return game.player1.userId === userId ? game.player2 : game.player1;
   }
+
   private isCurrentPlayer(game: GameState, userId: number): boolean {
     return game.currentTurnUserId === userId;
   }
@@ -902,7 +950,6 @@ export class FightsService {
     if (idx === -1) return;
     const monster = player.monsterZones[idx]!;
 
-    // ON_DEATH trigger
     const log: string[] = [];
     this.effectsResolver.resolve(monster.card, EffectTrigger.ON_DEATH, {
       game,
@@ -914,41 +961,6 @@ export class FightsService {
 
     player.graveyard.push(...monster.equipments, monster.card);
     player.monsterZones[idx] = null;
-  }
-
-  private stealPrime(
-    game: GameState,
-    fromUserId: number,
-    toUserId: number,
-  ): void {
-    const victim = this.getPlayerState(game, fromUserId);
-    const thief = this.getPlayerState(game, toUserId);
-    if (victim.primes <= 0 || !victim.primeDeck.length) return;
-    const prime = victim.primeDeck.shift()!;
-    victim.primes -= 1;
-    thief.hand.push(prime);
-    this.addLog(
-      game,
-      `🏆 ${thief.username} vole une Prime (${prime.baseCard.name}) — ${victim.primes} restantes`,
-    );
-  }
-
-  private checkWinCondition(game: GameState): number | null {
-    if (game.player1.primes <= 0) return game.player2.userId;
-    if (game.player2.primes <= 0) return game.player1.userId;
-    return null;
-  }
-
-  private async checkWinAndEmit(
-    game: GameState,
-    server: Server,
-  ): Promise<void> {
-    const winner = this.checkWinCondition(game);
-    if (winner !== null) {
-      await this.endGame(game, winner, 'primes_depleted', server);
-    } else {
-      this.emitGameState(game, server);
-    }
   }
 
   private async endGame(
