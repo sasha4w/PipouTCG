@@ -122,6 +122,12 @@ export class FightsService {
     deckId: number,
     server: Server,
   ): Promise<{ error?: string }> {
+    console.log('📦 submitDeck:', {
+      matchId,
+      userId,
+      deckId,
+      typeUserId: typeof userId,
+    });
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
     if (game.phase !== 'waiting') return { error: 'Le match a déjà commencé' };
@@ -132,7 +138,8 @@ export class FightsService {
     let cards: CardInstance[];
     try {
       cards = await this.decksService.loadDeckCards(deckId, userId);
-    } catch {
+    } catch (e) {
+      console.log('❌ loadDeckCards error:', e); // ← ajoute ça aussi
       return { error: 'Deck invalide ou inaccessible' };
     }
 
