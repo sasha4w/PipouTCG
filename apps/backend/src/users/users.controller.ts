@@ -44,8 +44,12 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/inventory')
-  getMyInventory(@Request() req: any) {
-    return this.usersService.getInventory(req.user.userId);
+  getMyInventory(@Request() req: any, @Query() pagination: PaginationDto) {
+    return this.usersService.getInventory(
+      req.user.userId,
+      pagination.page,
+      pagination.limit,
+    );
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/stats')
@@ -54,9 +58,17 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id/inventory')
-  async getInventory(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+  async getInventory(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: any,
+    @Query() pagination: PaginationDto,
+  ) {
     await this.assertCanView(req, id);
-    return this.usersService.getInventory(id);
+    return this.usersService.getInventory(
+      id,
+      pagination.page,
+      pagination.limit,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

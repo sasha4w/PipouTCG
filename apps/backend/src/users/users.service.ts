@@ -132,7 +132,7 @@ export class UsersService {
 
   /* ===================== INVENTORY ===================== */
 
-  async getInventory(userId: number) {
+  async getInventory(userId: number, page = 1, limit = 200) {
     const [
       [userCards, totalCards],
       [boosters, totalBoosters],
@@ -140,9 +140,12 @@ export class UsersService {
     ] = await Promise.all([
       this.userCardRepository.findAndCount({
         where: { user: { id: userId }, quantity: MoreThan(0) },
-        relations: { card: { cardSet: true } },
-        take: 20,
-        order: { id: 'ASC' },
+        relations: { card: { cardSet: true, image: true } }, // image ajoutée
+        skip: (page - 1) * limit,
+        take: limit,
+        order: {
+          card: { cardSet: { id: 'ASC' }, id: 'ASC' }, // tri par set puis carte
+        },
       }),
       this.userBoosterRepository.findAndCount({
         where: { user: { id: userId } },
@@ -178,9 +181,9 @@ export class UsersService {
         })),
         meta: {
           total: totalCards,
-          page: 1,
-          limit: 20,
-          totalPages: Math.ceil(totalCards / 20),
+          page,
+          limit,
+          totalPages: Math.ceil(totalCards / limit),
         },
       },
       boosters: {
