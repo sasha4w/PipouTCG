@@ -101,8 +101,10 @@ export const userService = {
     return res.data;
   },
 
-  async getMyInventory(): Promise<UserInventory> {
-    const res = await api.get("/users/me/inventory");
+  async getMyInventory(page = 1, limit = 200): Promise<UserInventory> {
+    const res = await api.get("/users/me/inventory", {
+      params: { page, limit },
+    });
     return res.data;
   },
 

@@ -84,19 +84,27 @@ const NAV_ITEMS = [
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
         {/* Crossed swords */}
         <line
-          x1="4" y1="4" x2="20" y2="20"
+          x1="4"
+          y1="4"
+          x2="20"
+          y2="20"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           strokeLinecap="round"
         />
         <line
-          x1="20" y1="4" x2="4" y2="20"
+          x1="20"
+          y1="4"
+          x2="4"
+          y2="20"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           strokeLinecap="round"
         />
         <circle
-          cx="12" cy="12" r="3"
+          cx="12"
+          cy="12"
+          r="3"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           fill={active ? "rgba(122,28,59,0.13)" : "none"}
