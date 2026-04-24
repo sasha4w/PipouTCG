@@ -26,26 +26,23 @@ export interface CardInstance {
 export type CombatMode = 'attack' | 'guard';
 
 export interface MonsterOnBoard {
-  /** Same as card.instanceId but duplicated for quick access */
   instanceId: string;
-
-  /** Full instance (NOT raw Card) */
   card: CardInstance;
-
-  /** Current HP (can diverge from baseCard.hp) */
   currentHp: number;
-
   mode: CombatMode;
-
-  /** Attached equipments (instances) */
   equipments: CardInstance[];
-
-  /** Buffs calculated dynamically */
   atkBuff: number;
   hpBuff: number;
-
-  /** Turn state */
+  tempAtkBuff: number; // ← nouveau : buff temporaire (reset fin de tour, pas par recalculate)
   hasAttackedThisTurn: boolean;
+  attacksPerTurn: number; // ← nouveau : défaut 1, Archer = 2
+  attacksUsedThisTurn: number; // ← nouveau : compteur d'attaques ce tour
+  hasTaunt: boolean; // ← nouveau : doit être détruit en premier
+  hasPiercing: boolean; // ← nouveau : prime même si garde brisée
+  isImmuneToDebuffs: boolean; // ← nouveau : Maître Magouille
+  forcedAttackMode: boolean; // ← nouveau : Grossebouille ne peut pas passer en garde
+  summonedThisTurn: boolean; // ← nouveau : Quenouille ne peut pas attaquer ce tour
+  doubleAtkNextTurn: boolean; // ← nouveau : Quenouille double ATK tour suivant
 }
 
 // ─── Per-player state ────────────────────────────────────────────────────────

@@ -18,6 +18,7 @@ export class BuffsCalculatorService {
       if (!zone) continue;
       zone.atkBuff = 0;
       zone.hpBuff = 0;
+      // tempAtkBuff intentionnellement NON resetté ici — géré en fin de tour
     }
 
     // 2. Terrain

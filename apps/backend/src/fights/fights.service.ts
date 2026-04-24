@@ -205,8 +205,18 @@ export class FightsService {
           return { error: `Défaussez ${surplus} carte(s) avant de terminer` };
         }
         // Reset per-turn flags
-        for (const z of player.monsterZones)
-          if (z) z.hasAttackedThisTurn = false;
+        for (const z of player.monsterZones) {
+          if (!z) continue;
+          z.hasAttackedThisTurn = false;
+          z.attacksUsedThisTurn = 0;
+          z.tempAtkBuff = 0;
+          z.summonedThisTurn = false;
+          // Quenouille : active le double ATK le tour suivant
+          if (z.doubleAtkNextTurn) {
+            z.attacksPerTurn = 2;
+            z.doubleAtkNextTurn = false;
+          }
+        }
         player.recycleEnergy = 0;
         player.hasDrawnThisTurn = false;
 
@@ -309,7 +319,16 @@ export class FightsService {
       equipments: [],
       atkBuff: 0,
       hpBuff: 0,
+      tempAtkBuff: 0,
       hasAttackedThisTurn: false,
+      attacksPerTurn: 1,
+      attacksUsedThisTurn: 0,
+      hasTaunt: false,
+      hasPiercing: false,
+      isImmuneToDebuffs: false,
+      forcedAttackMode: false,
+      summonedThisTurn: true,
+      doubleAtkNextTurn: false,
     };
     player.monsterZones[zoneIndex] = instance;
 
@@ -459,6 +478,15 @@ export class FightsService {
 
     const [card] = player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
+    if (card.baseCard.id === 17) {
+      const drawn = this.drawCard(game, userId);
+      if (drawn) {
+        this.addLog(
+          game,
+          `🎺 Clairon recyclé — ${player.username} pioche une carte`,
+        );
+      }
+    }
     player.recycleEnergy += 1;
 
     this.addLog(
@@ -489,7 +517,9 @@ export class FightsService {
       (m) => m?.instanceId === instanceId,
     );
     if (!monster) return { error: 'Monstre introuvable' };
-
+    if (monster.forcedAttackMode && mode === 'guard') {
+      return { error: 'Ce monstre ne peut pas passer en mode Garde' };
+    }
     monster.mode = mode;
     this.addLog(
       game,
@@ -526,7 +556,34 @@ export class FightsService {
     );
     if (!attacker) return { error: 'Attaquant introuvable' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
-    if (attacker.hasAttackedThisTurn) return { error: 'Déjà attaqué ce tour' };
+
+    // Quenouille : ne peut pas attaquer son tour d'invocation
+    if (attacker.summonedThisTurn) {
+      return { error: "Ce monstre ne peut pas attaquer son tour d'invocation" };
+    }
+
+    // Double attaque
+    const maxAttacks = attacker.attacksPerTurn ?? 1;
+    if (attacker.attacksUsedThisTurn >= maxAttacks) {
+      return { error: 'Ce monstre a déjà utilisé toutes ses attaques ce tour' };
+    }
+
+    // Taunt : obligation d'attaquer le monstre avec provocation
+    if (!direct) {
+      const tauntMonsters = opponent.monsterZones.filter((m) => m?.hasTaunt);
+      if (
+        tauntMonsters.length > 0 &&
+        !tauntMonsters.find((m) => m?.instanceId === targetInstanceId)
+      ) {
+        return {
+          error: '⚠️ Vous devez attaquer le monstre avec Provocation !',
+        };
+      }
+    }
+
+    attacker.attacksUsedThisTurn += 1;
+    attacker.hasAttackedThisTurn =
+      attacker.attacksUsedThisTurn >= (attacker.attacksPerTurn ?? 1);
 
     // ── Direct attack ──────────────────────────────────────────────────────────
     if (direct) {
@@ -561,7 +618,10 @@ export class FightsService {
     // ── Monster vs Monster ─────────────────────────────────────────────────────
     attacker.hasAttackedThisTurn = true;
 
-    const attackerAtk = attacker.card.baseCard.atk + attacker.atkBuff;
+    const attackerAtk =
+      attacker.card.baseCard.atk +
+      attacker.atkBuff +
+      (attacker.tempAtkBuff ?? 0);
 
     const onAttackLog: string[] = [];
     this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
@@ -645,6 +705,19 @@ export class FightsService {
           `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`,
         );
         this.removeMonster(opponent, targetInstanceId, game);
+        this.drawCard(game, opponent.userId);
+        if (attacker.hasPiercing) {
+          this.gainPrime(game, userId, attacker.card.baseCard.name);
+          this.addLog(
+            game,
+            `⚔️ Attaque Perçante ! ${attacker.card.baseCard.name} perce la Garde et gagne une Prime`,
+          );
+        } else {
+          this.addLog(
+            game,
+            `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`,
+          );
+        }
         this.drawCard(game, opponent.userId);
       } else {
         this.addLog(

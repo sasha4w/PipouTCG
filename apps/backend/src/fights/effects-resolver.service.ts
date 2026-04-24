@@ -190,6 +190,174 @@ export class EffectsResolverService {
           }
           break;
         }
+        case ActionType.SET_TAUNT:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.hasTaunt = true;
+            ctx.log.push(`🛡️ ${card.baseCard.name} active la Provocation`);
+          }
+          break;
+
+        case ActionType.SET_PIERCING:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.hasPiercing = true;
+            ctx.log.push(`⚔️ ${card.baseCard.name} gagne l'Attaque Perçante`);
+          }
+          break;
+
+        case ActionType.SET_ATTACKS_PER_TURN:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.attacksPerTurn = action.value ?? 1;
+            ctx.log.push(
+              `🏹 ${card.baseCard.name} peut attaquer ${action.value} fois par tour`,
+            );
+          }
+          break;
+
+        case ActionType.SET_DEBUFF_IMMUNITY:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.isImmuneToDebuffs = true;
+            ctx.log.push(`✨ ${card.baseCard.name} est immunisé aux débuffs`);
+          }
+          break;
+
+        case ActionType.FORCE_ATTACK_MODE:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.forcedAttackMode = true;
+            ctx.sourceMonster.mode = 'attack';
+            ctx.log.push(`⚔️ ${card.baseCard.name} est forcé en mode Attaque`);
+          }
+          break;
+
+        case ActionType.SET_DELAY_DOUBLE_ATK:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.summonedThisTurn = true;
+            ctx.sourceMonster.doubleAtkNextTurn = true;
+            ctx.log.push(`⏳ ${card.baseCard.name} prépare son double assaut`);
+          }
+          break;
+
+        case ActionType.BUFF_ATK_TEMP:
+          for (const target of targets.monsters) {
+            if (target.isImmuneToDebuffs && (action.value ?? 0) < 0) continue;
+            target.tempAtkBuff =
+              (target.tempAtkBuff ?? 0) + (action.value ?? 0);
+            ctx.log.push(
+              `⚡ ${card.baseCard.name} booste temporairement ${target.card.baseCard.name} (+${action.value} ATK)`,
+            );
+          }
+          break;
+
+        case ActionType.GAIN_RECYCLE_ENERGY:
+          for (const p of targets.players) {
+            p.recycleEnergy += action.value ?? 0;
+            ctx.log.push(
+              `♻️ ${p.username} gagne ${action.value} énergie de recyclage`,
+            );
+          }
+          break;
+
+        case ActionType.RETURN_FROM_GRAVEYARD: {
+          const filter = action.filter;
+          const count = action.value ?? 1;
+          for (const p of targets.players) {
+            const candidates = p.graveyard
+              .filter((c) => {
+                if (
+                  filter?.archetype &&
+                  c.baseCard.archetype !== filter.archetype
+                )
+                  return false;
+                if (
+                  filter?.rarities &&
+                  !filter.rarities.includes(c.baseCard.rarity)
+                )
+                  return false;
+                if (filter?.name && c.baseCard.name !== filter.name)
+                  return false;
+                if (filter?.type && c.baseCard.type !== filter.type)
+                  return false;
+                return true;
+              })
+              .slice(0, count);
+            for (const c of candidates) {
+              p.graveyard.splice(p.graveyard.indexOf(c), 1);
+              p.hand.push(c);
+            }
+            ctx.log.push(
+              `📥 ${p.username} récupère ${candidates.length} carte(s) du cimetière`,
+            );
+          }
+          break;
+        }
+
+        case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK: {
+          const filter = action.filter;
+          for (const p of targets.players) {
+            const matchFn = (c: CardInstance) => {
+              if (filter?.name && c.baseCard.name !== filter.name) return false;
+              if (
+                filter?.archetype &&
+                c.baseCard.archetype !== filter.archetype
+              )
+                return false;
+              if (
+                filter?.rarities &&
+                !filter.rarities.includes(c.baseCard.rarity)
+              )
+                return false;
+              return true;
+            };
+            // Cherche d'abord dans le cimetière, sinon dans le deck
+            const fromGrave = p.graveyard.find(matchFn);
+            if (fromGrave) {
+              p.graveyard.splice(p.graveyard.indexOf(fromGrave), 1);
+              p.hand.push(fromGrave);
+              ctx.log.push(
+                `📥 ${p.username} récupère ${fromGrave.baseCard.name} du cimetière`,
+              );
+            } else {
+              const fromDeck = p.deck.find(matchFn);
+              if (fromDeck) {
+                p.deck.splice(p.deck.indexOf(fromDeck), 1);
+                p.hand.push(fromDeck);
+                ctx.log.push(
+                  `📥 ${p.username} récupère ${fromDeck.baseCard.name} du deck`,
+                );
+              }
+            }
+          }
+          break;
+        }
+
+        case ActionType.SEARCH_DECK: {
+          const filter = action.filter;
+          for (const p of targets.players) {
+            const idx = p.deck.findIndex((c) => {
+              if (filter?.type && c.baseCard.type !== filter.type) return false;
+              if (
+                filter?.archetype &&
+                c.baseCard.archetype !== filter.archetype
+              )
+                return false;
+              if (
+                filter?.rarities &&
+                !filter.rarities.includes(c.baseCard.rarity)
+              )
+                return false;
+              if (filter?.name && c.baseCard.name !== filter.name) return false;
+              return true;
+            });
+            if (idx !== -1) {
+              const [found] = p.deck.splice(idx, 1);
+              p.hand.push(found);
+              p.deck = this.shuffle([...p.deck]);
+              ctx.log.push(
+                `🔮 ${card.baseCard.name} cherche une carte dans le deck de ${p.username}`,
+              );
+            }
+          }
+          break;
+        }
       }
     }
   }
@@ -258,6 +426,21 @@ export class EffectsResolverService {
         }
         break;
       }
+      case EffectTarget.ALLIES_EXCEPT_SELF:
+        monsters = allies.filter(
+          (m) => m.instanceId !== ctx.sourceMonster?.instanceId,
+        );
+        register(monsters, owner);
+        break;
+
+      case EffectTarget.TARGET_ALLY:
+        // Pour l'instant prend le premier allié disponible
+        // À terme : sélection côté client
+        if (allies.length > 0) {
+          monsters = [allies[0]];
+          register(monsters, owner);
+        }
+        break;
     }
 
     return {
@@ -308,5 +491,12 @@ export class EffectsResolverService {
       ownerUserId: owner.userId,
       sourceMonster: monster,
     });
+  }
+  private shuffle<T>(arr: T[]): T[] {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
   }
 }
