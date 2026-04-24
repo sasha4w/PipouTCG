@@ -24,3 +24,13 @@
   font-size: 15px;
   cursor: pointer;
 }
+.fb-side-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fb-zones-col {
+  flex: 1;
+  min-width: 0;
+}

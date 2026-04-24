@@ -253,3 +253,38 @@
   background: #7a1c3b;
   color: #fff;
 }
+.zr-monster-badges {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.zr-badge {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+
+.zr-badge--taunt {
+  background: rgba(122, 28, 59, 0.15);
+}
+.zr-badge--piercing {
+  background: rgba(231, 76, 60, 0.15);
+}
+.zr-badge--immune {
+  background: rgba(155, 89, 182, 0.15);
+}
+.zr-badge--sleep {
+  background: rgba(100, 100, 100, 0.15);
+}
+.zr-badge--charge {
+  background: rgba(243, 156, 18, 0.15);
+}
+.zr-badge--multi {
+  background: rgba(39, 174, 96, 0.2);
+  font-weight: 700;
+}

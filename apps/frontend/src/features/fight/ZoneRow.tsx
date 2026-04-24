@@ -142,6 +142,56 @@ export default function ZoneRow({
                   </div>
                 ) : (
                   <div className="zr-monster">
+                    <div className="zr-monster-badges">
+                      {zone.hasTaunt && (
+                        <span
+                          className="zr-badge zr-badge--taunt"
+                          title="Provocation"
+                        >
+                          🛡
+                        </span>
+                      )}
+                      {zone.hasPiercing && (
+                        <span
+                          className="zr-badge zr-badge--piercing"
+                          title="Perçant"
+                        >
+                          🗡
+                        </span>
+                      )}
+                      {zone.isImmuneToDebuffs && (
+                        <span
+                          className="zr-badge zr-badge--immune"
+                          title="Immunité débuffs"
+                        >
+                          ✨
+                        </span>
+                      )}
+                      {zone.summonedThisTurn && (
+                        <span
+                          className="zr-badge zr-badge--sleep"
+                          title="Ne peut pas attaquer"
+                        >
+                          💤
+                        </span>
+                      )}
+                      {zone.doubleAtkNextTurn && (
+                        <span
+                          className="zr-badge zr-badge--charge"
+                          title="Double attaque au prochain tour"
+                        >
+                          ⚡
+                        </span>
+                      )}
+                      {zone.attacksPerTurn > 1 && !zone.summonedThisTurn && (
+                        <span
+                          className="zr-badge zr-badge--multi"
+                          title="Double attaque"
+                        >
+                          ×{zone.attacksPerTurn - zone.attacksUsedThisTurn}
+                        </span>
+                      )}
+                    </div>
                     <div className={`zr-mode-chip zr-mode-chip--${zone.mode}`}>
                       {zone.mode === "attack" ? "⚔️" : "🛡️"}
                     </div>
@@ -149,13 +199,16 @@ export default function ZoneRow({
                       {zone.card.baseCard.name}
                     </div>
                     <div className="zr-monster-stats">
-                      {zone.card.baseCard.atk + zone.atkBuff}⚔ {zone.currentHp}/
-                      {zone.card.baseCard.hp + zone.hpBuff}❤
+                      {zone.card.baseCard.atk +
+                        zone.atkBuff +
+                        (zone.tempAtkBuff ?? 0)}
+                      ⚔ {zone.currentHp}/{zone.card.baseCard.hp + zone.hpBuff}❤
                     </div>
-                    {zone.hasAttackedThisTurn && (
-                      <div className="zr-attacked">attaqué</div>
-                    )}
-                    {!isOpponent && onModeChange && (
+                    {zone.hasAttackedThisTurn &&
+                      zone.attacksUsedThisTurn >= zone.attacksPerTurn && (
+                        <div className="zr-attacked">attaqué</div>
+                      )}
+                    {!isOpponent && onModeChange && !zone.forcedAttackMode && (
                       <div className="zr-mode-btns">
                         <button
                           onClick={(e) => {

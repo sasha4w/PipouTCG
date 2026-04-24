@@ -17,7 +17,16 @@ export interface MonsterOnBoard {
   equipments: { id: number; name: string }[];
   atkBuff: number;
   hpBuff: number;
+  tempAtkBuff: number;
   hasAttackedThisTurn: boolean;
+  attacksPerTurn: number;
+  attacksUsedThisTurn: number;
+  hasTaunt: boolean;
+  hasPiercing: boolean;
+  isImmuneToDebuffs: boolean;
+  forcedAttackMode: boolean;
+  summonedThisTurn: boolean;
+  doubleAtkNextTurn: boolean;
 }
 export interface CardInstance {
   instanceId: string;
@@ -56,9 +65,9 @@ export interface OppState {
   handCount: number;
   deckCount: number;
   monsterZones: (MonsterOnBoard | null)[];
-  supportZones: ({ id: number; name: string } | null)[];
-  graveyard: { id: number; name: string }[];
-  banished: { id: number; name: string }[];
+  supportZones: (CardInstance | null)[];
+  graveyard: CardInstance[];
+  banished: CardInstance[];
 }
 
 export interface GameState {

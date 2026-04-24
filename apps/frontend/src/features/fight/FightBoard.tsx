@@ -8,7 +8,7 @@ import FightHand from "./FightHand";
 import type { HandCard } from "./FightHand";
 import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
-
+import GraveyardPile from "./GraveyardPile";
 interface Props {
   gs: GameState;
   selectedCard: number | null;
@@ -174,23 +174,31 @@ export default function FightBoard({
         timeLeft={timeLeft}
       />
 
-      <ZoneRow
-        label="Adversaire — Supports"
-        zones={gs.opponent.supportZones}
-        isSupport
-        dim
-      />
-      <ZoneRow
-        label="Adversaire — Monstres"
-        zones={gs.opponent.monsterZones}
-        isOpponent
-        damagedZones={damagedOppZones}
-        onMonsterClick={
-          phase === "battle" && gs.isMyTurn && selectedZone !== null
-            ? handleAttackMonster
-            : undefined
-        }
-      />
+      <div className="fb-side-row">
+        <GraveyardPile
+          graveyard={gs.opponent.graveyard}
+          label={gs.opponent.username}
+        />
+        <div className="fb-zones-col">
+          <ZoneRow
+            label="Adversaire — Supports"
+            zones={gs.opponent.supportZones}
+            isSupport
+            dim
+          />
+          <ZoneRow
+            label="Adversaire — Monstres"
+            zones={gs.opponent.monsterZones}
+            isOpponent
+            damagedZones={damagedOppZones}
+            onMonsterClick={
+              phase === "battle" && gs.isMyTurn && selectedZone !== null
+                ? handleAttackMonster
+                : undefined
+            }
+          />
+        </div>
+      </div>
 
       {phase === "battle" && gs.isMyTurn && selectedZone !== null && (
         <div className="fb-direct-atk">
@@ -200,23 +208,28 @@ export default function FightBoard({
         </div>
       )}
 
-      <ZoneRow
-        label="Mes Monstres"
-        zones={gs.me.monsterZones}
-        onZoneClick={gs.isMyTurn ? handleZoneClick : undefined}
-        onModeChange={
-          phase === "main" && gs.isMyTurn ? onChangeMode : undefined
-        }
-        selectedZone={selectedZone}
-        attackingZone={attackingZoneIdx}
-        damagedZones={damagedMyZones}
-      />
-      <ZoneRow
-        label="Mes Supports"
-        zones={gs.me.supportZones}
-        isSupport
-        recycleEnergy={gs.me.recycleEnergy}
-      />
+      <div className="fb-side-row">
+        <div className="fb-zones-col">
+          <ZoneRow
+            label="Mes Monstres"
+            zones={gs.me.monsterZones}
+            onZoneClick={gs.isMyTurn ? handleZoneClick : undefined}
+            onModeChange={
+              phase === "main" && gs.isMyTurn ? onChangeMode : undefined
+            }
+            selectedZone={selectedZone}
+            attackingZone={attackingZoneIdx}
+            damagedZones={damagedMyZones}
+          />
+          <ZoneRow
+            label="Mes Supports"
+            zones={gs.me.supportZones}
+            isSupport
+            recycleEnergy={gs.me.recycleEnergy}
+          />
+        </div>
+        <GraveyardPile graveyard={gs.me.graveyard} label="Moi" />
+      </div>
 
       <FightHand
         hand={mappedHand}
