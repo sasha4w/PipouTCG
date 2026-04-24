@@ -1,50 +1,85 @@
 .hud {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fff;
-  border-radius: 14px;
-  padding: 12px 18px;
-  margin-bottom: 8px;
-  border: 1.5px solid #f0ddd0;
-}
-
-.hud-left,
-.hud-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hud-center {
+  position: sticky;
+  top: 0;
+  z-index: 800;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border: 1.5px solid #f0ddd0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+/* ── Lignes joueur ── */
+.hud-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-row--opp {
+  opacity: 0.75;
+}
+
+.hud-row--me {
+  font-weight: 600;
+}
+
+/* ── Nom ── */
 .hud-name {
   font-family: "Lilita One", sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   color: #7a1c3b;
+  min-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
 }
 
+.hud-name--opp {
+  opacity: 0.8;
+}
+
+/* ── Primes ── */
 .hud-primes {
-  font-size: 14px;
-  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: 1;
 }
 
-.hud-secondary {
-  font-size: 12px;
+/* ── Stats (deck / main) ── */
+.hud-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
   color: #aaa;
+  white-space: nowrap;
+}
+
+/* ── Centre : phase + timer ── */
+.hud-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 2px 0;
+  border-top: 1px solid #f0ddd0;
+  border-bottom: 1px solid #f0ddd0;
 }
 
 .hud-phase-chip {
   background: #7a1c3b;
   color: #fff;
   border-radius: 99px;
-  padding: 4px 14px;
-  font-size: 12px;
+  padding: 2px 10px;
+  font-size: 11px;
   font-family: "Lilita One", sans-serif;
 }
 
@@ -53,13 +88,62 @@
   color: #aaa;
 }
 
+/* ── Timer ── */
 .hud-timer {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
   font-family: "Lilita One", sans-serif;
   color: #2c1a12;
-  transition: color 0.5s;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1.5px solid transparent;
+  transition:
+    color 0.4s,
+    background 0.4s,
+    border-color 0.4s;
 }
 
 .hud-timer--urgent {
   color: #e74c3c;
+  background: rgba(231, 76, 60, 0.12);
+  border-color: #e74c3c;
+  animation: hud-timer-pulse 0.8s ease-in-out infinite;
+}
+
+.hud-timer-icon {
+  animation: hud-timer-tick 1s steps(1) infinite;
+}
+
+.hud-timer--urgent .hud-timer-icon {
+  animation: hud-timer-tick-fast 0.5s steps(1) infinite;
+}
+
+@keyframes hud-timer-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(231, 76, 60, 0.15);
+  }
+  50% {
+    box-shadow: 0 4px 24px rgba(231, 76, 60, 0.45);
+  }
+}
+
+@keyframes hud-timer-tick {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes hud-timer-tick-fast {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
 }

@@ -1,6 +1,7 @@
 import "./FightHUD.css";
 import type { MyState, OppState, Phase } from "./fight.types";
 import { PHASE_LABEL } from "./fight.types";
+import { IconChest, IconCards, IconHand } from "../../components/Icons";
 
 interface Props {
   me: MyState;
@@ -11,34 +12,74 @@ interface Props {
   timeLeft: number;
 }
 
-export default function FightHUD({ me, opponent, phase, turnNumber, isMyTurn, timeLeft }: Props) {
+function PrimesRow({ primes }: { primes: number }) {
+  return (
+    <span
+      className="hud-primes"
+      title={`${primes} prime${primes > 1 ? "s" : ""}`}
+    >
+      {Array.from({ length: 6 }).map((_, i) => (
+        <IconChest key={i} size={13} color={i < primes ? "#7a1c3b" : "#ddd"} />
+      ))}
+    </span>
+  );
+}
+
+export default function FightHUD({
+  me,
+  opponent,
+  phase,
+  turnNumber,
+  isMyTurn,
+  timeLeft,
+}: Props) {
   return (
     <div className="hud">
-      <div className="hud-left">
-        <span className="hud-name">{opponent.username}</span>
-        <span className="hud-primes">
-          {"💎".repeat(opponent.primes)}{"○".repeat(Math.max(0, 6 - opponent.primes))}
+      {/* ── Ligne adversaire ── */}
+      <div className="hud-row hud-row--opp">
+        <span className="hud-name hud-name--opp">{opponent.username}</span>
+        <PrimesRow primes={opponent.primes} />
+        <span
+          className="hud-stat"
+          title={`${opponent.deckCount} cartes dans le deck`}
+        >
+          <IconCards size={12} color="currentColor" />
+          {opponent.deckCount}
         </span>
-        <span className="hud-secondary">📚 {opponent.deckCount}</span>
-        <span className="hud-secondary">🤚 {opponent.handCount}</span>
+        <span
+          className="hud-stat"
+          title={`${opponent.handCount} cartes en main`}
+        >
+          <IconHand size={12} color="currentColor" />
+          {opponent.handCount}
+        </span>
       </div>
 
+      {/* ── Ligne centrale : phase + tour + timer ── */}
       <div className="hud-center">
         <span className="hud-phase-chip">{PHASE_LABEL[phase]}</span>
         <span className="hud-turn-num">Tour {turnNumber}</span>
         {isMyTurn && (
-          <span className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}>
-            ⏱ {timeLeft}s
+          <span
+            className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
+          >
+            <span className="hud-timer-icon">⏱</span>
+            {timeLeft}s
           </span>
         )}
       </div>
 
-      <div className="hud-right">
-        <span className="hud-secondary">📚 {me.deckCount}</span>
-        <span className="hud-primes">
-          {"💎".repeat(me.primes)}{"○".repeat(Math.max(0, 6 - me.primes))}
+      {/* ── Ligne moi ── */}
+      <div className="hud-row hud-row--me">
+        <span className="hud-name hud-name--me">{me.username}</span>
+        <PrimesRow primes={me.primes} />
+        <span
+          className="hud-stat"
+          title={`${me.deckCount} cartes dans le deck`}
+        >
+          <IconCards size={12} color="currentColor" />
+          {me.deckCount}
         </span>
-        <span className="hud-name">{me.username}</span>
       </div>
     </div>
   );

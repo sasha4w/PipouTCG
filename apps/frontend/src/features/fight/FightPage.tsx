@@ -237,27 +237,12 @@ export default function FightPage({
     setMatchId(null);
   };
 
-  // ── Derived ───────────────────────────────────────────────────────────────
-
-  const showStickyTimer = status === "playing" && gameState?.isMyTurn === true;
-  const timerUrgent = timeLeft < 20;
-
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="fp-root">
       {toast && (
         <div className={`fp-toast fp-toast--${toast.type}`}>{toast.msg}</div>
-      )}
-
-      {/* Sticky timer — always on top during player's turn */}
-      {showStickyTimer && (
-        <div
-          className={`fp-sticky-timer${timerUrgent ? " fp-sticky-timer--urgent" : ""}`}
-        >
-          <span className="fp-sticky-timer-icon">⏱</span>
-          {timeLeft}s
-        </div>
       )}
 
       <FightTabBar
