@@ -558,8 +558,11 @@ export class FightsService {
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
 
     // Quenouille : ne peut pas attaquer son tour d'invocation
-    if (attacker.summonedThisTurn) {
-      return { error: "Ce monstre ne peut pas attaquer son tour d'invocation" };
+    if (attacker.summonedThisTurn && attacker.card.baseCard.id === 9) {
+      return {
+        error:
+          "Commandant Quenouille ne peut pas attaquer son tour d'invocation",
+      };
     }
 
     // Double attaque
