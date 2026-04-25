@@ -9,7 +9,10 @@ import { DecksService } from '../decks/decks.service';
 import { Card } from '../cards/card.entity';
 import { CardType } from '../cards/enums/cardtype.enum';
 import { SupportType } from '../cards/enums/support-type.enum';
-import { EffectTrigger } from '../cards/interfaces/card-effect.interface';
+import {
+  EffectTrigger,
+  ConditionType,
+} from '../cards/interfaces/card-effect.interface';
 import { EffectsResolverService } from './effects-resolver.service';
 import { BuffsCalculatorService } from './buffs-calculator.service';
 import {
@@ -279,10 +282,14 @@ export class FightsService {
     if (card.baseCard.type !== CardType.MONSTER)
       return { error: 'Pas un Monstre' };
 
-    const cost = card.baseCard.cost ?? 0;
-    const uniquePayment = [...new Set(paymentHandIndices)];
-    const handPayNeeded = Math.max(0, cost - player.recycleEnergy);
+    const isFree = player.freeSummonAvailable && card.baseCard.id === 29;
+    if (isFree) {
+      player.freeSummonAvailable = false;
+    }
 
+    const cost = isFree ? 0 : (card.baseCard.cost ?? 0);
+    const uniquePayment = isFree ? [] : [...new Set(paymentHandIndices)];
+    const handPayNeeded = isFree ? 0 : Math.max(0, cost - player.recycleEnergy);
     if (uniquePayment.length < handPayNeeded)
       return {
         error: `Pas assez de cartes défaussées (besoin: ${handPayNeeded})`,
@@ -352,6 +359,15 @@ export class FightsService {
 
     this.resetTurnTimeout(game, server);
     this.emitGameState(game, server);
+    for (const handCard of player.hand) {
+      const log: string[] = [];
+      this.effectsResolver.resolve(handCard, EffectTrigger.ON_ALLY_SUMMON, {
+        game,
+        ownerUserId: userId,
+        log,
+      });
+      log.forEach((l) => this.addLog(game, l));
+    }
     return {};
   }
 
@@ -380,7 +396,13 @@ export class FightsService {
     const card = player.hand[handIndex];
     if (card.baseCard.type !== CardType.SUPPORT)
       return { error: 'Pas un Support' };
-
+    // Vérification jouabilité pour les éphémères avec condition
+    if (card.baseCard.supportType === SupportType.EPHEMERAL) {
+      const playable = this.isSupportPlayable(card, player, game);
+      if (!playable) {
+        return { error: 'Condition non remplie pour jouer cette carte' };
+      }
+    }
     const [support] = player.hand.splice(handIndex, 1);
     const log: string[] = [];
 
@@ -655,8 +677,8 @@ export class FightsService {
 
     // ── Mode ATK vs ATK ────────────────────────────────────────────────────────
     if (target.mode === 'attack') {
-      attacker.currentHp -= targetAtk;
-      target.currentHp -= attackerAtk;
+      this.applyDamage(attacker, targetAtk);
+      this.applyDamage(target, attackerAtk);
 
       const aDied = attacker.currentHp <= 0;
       const tDied = target.currentHp <= 0;
@@ -703,10 +725,6 @@ export class FightsService {
     } else {
       target.currentHp -= attackerAtk;
       if (target.currentHp <= 0) {
-        this.addLog(
-          game,
-          `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`,
-        );
         this.removeMonster(opponent, targetInstanceId, game);
         this.drawCard(game, opponent.userId);
         if (attacker.hasPiercing) {
@@ -721,7 +739,6 @@ export class FightsService {
             `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`,
           );
         }
-        this.drawCard(game, opponent.userId);
       } else {
         this.addLog(
           game,
@@ -888,7 +905,13 @@ export class FightsService {
   // ═══════════════════════════════════════════════════════════════════════════
   // PRIVATE — TURN START EFFECTS
   // ═══════════════════════════════════════════════════════════════════════════
-
+  private applyDamage(target: MonsterOnBoard, dmg: number): number {
+    const reduced = target.damageReduction
+      ? Math.ceil(dmg / target.damageReduction)
+      : dmg;
+    target.currentHp -= reduced;
+    return reduced;
+  }
   private triggerTurnStart(
     game: GameState,
     player: PlayerGameState,
@@ -914,7 +937,41 @@ export class FightsService {
     }
     log.forEach((l) => this.addLog(game, l));
   }
+  private isSupportPlayable(
+    card: CardInstance,
+    player: PlayerGameState,
+    game: GameState,
+  ): boolean {
+    const effects = card.baseCard.effects;
+    if (!effects?.length) return true; // pas d'effets = toujours jouable
 
+    for (const effect of effects) {
+      if (effect.trigger !== EffectTrigger.ON_PLAY) continue;
+      if (!effect.condition) return true; // effet sans condition = jouable
+
+      switch (effect.condition.type) {
+        case ConditionType.ARCHETYPE_ON_BOARD: {
+          const arch = effect.condition.value as string;
+          const hasOnBoard = player.monsterZones.some(
+            (m) => m?.card.baseCard.archetype === arch,
+          );
+          if (!hasOnBoard) return false;
+          break;
+        }
+        case ConditionType.HAND_SIZE_MIN: {
+          if (player.hand.length < (effect.condition.value as number))
+            return false;
+          break;
+        }
+        // Pour Ouille au rapport / Prêtre Fouille — vérifie si cimetière non vide
+        default:
+          // Les effets RETURN_FROM_GRAVEYARD sont toujours jouables
+          // (ils font juste moins si cimetière vide)
+          return true;
+      }
+    }
+    return true;
+  }
   // ═══════════════════════════════════════════════════════════════════════════
   // PRIVATE — PRIME SYSTEM
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1004,6 +1061,7 @@ export class FightsService {
       recycleEnergy: 0,
       hasDrawnThisTurn: false,
       handLimitEnforced: false,
+
       ready: false,
     };
   }

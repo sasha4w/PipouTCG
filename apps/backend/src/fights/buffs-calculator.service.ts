@@ -96,6 +96,28 @@ export class BuffsCalculatorService {
         }
       }
     }
+    // 5. Adjacent ally bonus (Champion Ouille-Ouille)
+    for (let idx = 0; idx < player.monsterZones.length; idx++) {
+      const zone = player.monsterZones[idx];
+      if (!zone) continue;
+      const effects = zone.card.baseCard.effects;
+      if (!effects) continue;
+
+      for (const effect of effects) {
+        if (effect.trigger !== EffectTrigger.PASSIVE) continue;
+        for (const action of effect.actions) {
+          if (action.type !== ActionType.BUFF_HP_PER_ADJACENT_ALLY) continue;
+
+          const left = idx > 0 ? player.monsterZones[idx - 1] : null;
+          const right =
+            idx < player.monsterZones.length - 1
+              ? player.monsterZones[idx + 1]
+              : null;
+          const adjacentCount = (left ? 1 : 0) + (right ? 1 : 0);
+          zone.hpBuff += (action.value ?? 0) * adjacentCount;
+        }
+      }
+    }
   }
 
   private resolveTerrainTargets(

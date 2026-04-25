@@ -98,9 +98,11 @@ export class EffectsResolverService {
       switch (action.type) {
         case ActionType.DEAL_DAMAGE: {
           const dmg = action.value ?? 0;
-
           for (const target of targets.monsters) {
-            target.currentHp -= dmg;
+            const reduced = target.damageReduction
+              ? Math.ceil(dmg / target.damageReduction)
+              : dmg;
+            target.currentHp -= reduced;
 
             ctx.log.push(
               `✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`,
@@ -358,6 +360,22 @@ export class EffectsResolverService {
           }
           break;
         }
+        case ActionType.SET_FREE_SUMMON:
+          for (const p of targets.players) {
+            p.freeSummonAvailable = true;
+            ctx.log.push(
+              `⚡ Chevalier Touille peut être invoqué gratuitement !`,
+            );
+          }
+          break;
+        case ActionType.SET_DAMAGE_REDUCTION:
+          if (ctx.sourceMonster) {
+            ctx.sourceMonster.damageReduction = action.value ?? 1;
+            ctx.log.push(
+              `🛡️ ${card.baseCard.name} réduit les dégâts de moitié`,
+            );
+          }
+          break;
       }
     }
   }

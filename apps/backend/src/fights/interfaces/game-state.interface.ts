@@ -43,6 +43,7 @@ export interface MonsterOnBoard {
   forcedAttackMode: boolean; // ← nouveau : Grossebouille ne peut pas passer en garde
   summonedThisTurn: boolean; // ← nouveau : Quenouille ne peut pas attaquer ce tour
   doubleAtkNextTurn: boolean; // ← nouveau : Quenouille double ATK tour suivant
+  damageReduction?: number; // diviseur, ex: 2 = dégâts /2
 }
 
 // ─── Per-player state ────────────────────────────────────────────────────────
@@ -75,7 +76,7 @@ export interface PlayerGameState {
 
   hasDrawnThisTurn: boolean;
   handLimitEnforced: boolean;
-
+  freeSummonAvailable?: boolean;
   ready: boolean;
 }
 
