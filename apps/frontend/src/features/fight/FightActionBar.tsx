@@ -1,6 +1,6 @@
 import "./FightActionBar.css";
 import type { Phase, MonsterOnBoard } from "./fight.types";
-import { END_PHASE_LABEL } from "./fight.types";
+import { END_PHASE_LABEL, FREE_SUMMON_CARD_ID } from "./fight.types";
 import type { HandCard } from "./FightHand";
 
 interface Props {
@@ -10,7 +10,9 @@ interface Props {
   selectedZone: number | null;
   hand: HandCard[];
   monsterZones: (MonsterOnBoard | null)[];
+  freeSummonAvailable?: boolean;
   onSummon: () => void;
+  onOpenSummonModal: () => void; // ouvre la modal de coût
   onPlaySupport: (
     handIndex: number,
     zoneIndex?: number,
@@ -28,26 +30,46 @@ export default function FightActionBar({
   selectedZone,
   hand,
   monsterZones,
+  freeSummonAvailable = false,
   onSummon,
+  onOpenSummonModal,
   onPlaySupport,
   onEndPhase,
   onSurrender,
-  onRecycleFromHand, // ✅ était manquant dans le destructuring
+  onRecycleFromHand,
 }: Props) {
   if (!isMyTurn) return null;
 
   const card = selectedCard !== null ? hand[selectedCard] : null;
   const overhandLimit = phase === "end" && hand.length > 7;
 
+  const isFreeCard = freeSummonAvailable && card?.id === FREE_SUMMON_CARD_ID;
+
+  /**
+   * Summon button logic:
+   * - Free card (Chevalier Touille + freeSummonAvailable) → invoke directly, no modal
+   * - Cost = 0 → invoke directly, no modal
+   * - Otherwise → open cost modal
+   */
+  const handleSummonClick = () => {
+    if (!card) return;
+    if (isFreeCard || (card.cost ?? 0) === 0) {
+      onSummon();
+    } else {
+      onOpenSummonModal();
+    }
+  };
+
   return (
     <div className="fab-bar">
       {phase === "main" && card !== null && (
         <>
           {card.type === "monster" && selectedZone !== null && (
-            <button onClick={onSummon} className="fab-btn">
-              ⬆️ Invoquer
+            <button onClick={handleSummonClick} className="fab-btn">
+              {isFreeCard ? "⚡ Invoquer (gratuit)" : "⬆️ Invoquer"}
             </button>
           )}
+
           {card.type === "support" &&
             (!card.supportType || card.supportType === "EPHEMERAL") && (
               <button
@@ -57,6 +79,7 @@ export default function FightActionBar({
                 ✨ Jouer
               </button>
             )}
+
           {card.type === "support" &&
             card.supportType === "TERRAIN" &&
             selectedZone !== null && (
@@ -67,6 +90,7 @@ export default function FightActionBar({
                 🌍 Poser le Terrain
               </button>
             )}
+
           {card.type === "support" &&
             card.supportType === "EQUIPMENT" &&
             selectedZone !== null &&
@@ -84,6 +108,7 @@ export default function FightActionBar({
                 🔧 Équiper
               </button>
             )}
+
           <button
             onClick={() => onRecycleFromHand(selectedCard!)}
             className="fab-btn fab-btn--recycle"

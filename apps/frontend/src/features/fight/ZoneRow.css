@@ -288,3 +288,23 @@
   background: rgba(39, 174, 96, 0.2);
   font-weight: 700;
 }
+/* Hover sur zones cliquables */
+.zr-zone--clickable:hover {
+  border-color: #7a1c3b;
+  background: #f8edf2;
+}
+
+.zr-zone--pulse-target {
+  border: 2px dashed #c97a9a;
+  animation: zr-pulse-target 1.2s ease-in-out infinite;
+}
+
+@keyframes zr-pulse-target {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(122, 28, 59, 0.15);
+  }
+}

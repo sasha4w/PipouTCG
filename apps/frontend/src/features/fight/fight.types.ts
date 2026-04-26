@@ -1,33 +1,6 @@
 export type Phase = "waiting" | "draw" | "main" | "battle" | "end" | "finished";
 export type Tab = "fight" | "history" | "leaderboard";
 
-export interface MonsterOnBoard {
-  instanceId: string;
-  card: {
-    id: number;
-    name: string;
-    atk: number;
-    hp: number;
-    rarity: string;
-    cost: number;
-    image?: { url: string };
-  };
-  currentHp: number;
-  mode: "attack" | "guard";
-  equipments: { id: number; name: string }[];
-  atkBuff: number;
-  hpBuff: number;
-  tempAtkBuff: number;
-  hasAttackedThisTurn: boolean;
-  attacksPerTurn: number;
-  attacksUsedThisTurn: number;
-  hasTaunt: boolean;
-  hasPiercing: boolean;
-  isImmuneToDebuffs: boolean;
-  forcedAttackMode: boolean;
-  summonedThisTurn: boolean;
-  doubleAtkNextTurn: boolean;
-}
 export interface CardInstance {
   instanceId: string;
   baseCard: {
@@ -45,17 +18,40 @@ export interface CardInstance {
   ownerId: number;
 }
 
+export interface MonsterOnBoard {
+  instanceId: string;
+  card: CardInstance;
+  currentHp: number;
+  mode: "attack" | "guard";
+  equipments: { id: number; name: string }[];
+  atkBuff: number;
+  hpBuff: number;
+  tempAtkBuff: number;
+  hasAttackedThisTurn: boolean;
+  attacksPerTurn: number;
+  attacksUsedThisTurn: number;
+  hasTaunt: boolean;
+  hasPiercing: boolean;
+  isImmuneToDebuffs: boolean;
+  forcedAttackMode: boolean;
+  summonedThisTurn: boolean;
+  doubleAtkNextTurn: boolean;
+  damageReduction?: number;
+}
+
 export interface MyState {
   userId: number;
   username: string;
   primes: number;
-  hand: CardInstance[]; // ✅ au lieu de l'objet à plat
+  hand: CardInstance[];
   deckCount: number;
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
   graveyard: CardInstance[];
   banished: CardInstance[];
+  /** Set by SET_FREE_SUMMON effect — Chevalier Touille can be summoned for free */
+  freeSummonAvailable?: boolean;
 }
 
 export interface OppState {
@@ -70,6 +66,30 @@ export interface OppState {
   banished: CardInstance[];
 }
 
+// ─── Pending card pick (deck search / graveyard retrieval) ────────────────────
+
+export interface ClientChoiceCandidate {
+  instanceId: string;
+  baseCard: {
+    id: number;
+    name: string;
+    type: string;
+    atk: number;
+    hp: number;
+    rarity: string;
+    supportType?: string | null;
+  };
+  source: "graveyard" | "deck";
+}
+
+export interface PendingChoice {
+  candidates: ClientChoiceCandidate[];
+  count: number;
+  prompt: string;
+}
+
+// ─── Full game state ──────────────────────────────────────────────────────────
+
 export interface GameState {
   matchId: number;
   phase: Phase;
@@ -80,7 +100,17 @@ export interface GameState {
   log: string[];
   winner?: number;
   endReason?: string;
+  /** Present when an effect requires the player to pick card(s) */
+  pendingChoice?: PendingChoice;
 }
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+/** Card ID for Chevalier Touille (free summon target) */
+export const FREE_SUMMON_CARD_ID = 29;
+
+/** Card ID for Commandant Quenouille (can't attack turn summoned) */
+export const QUENOUILLE_CARD_ID = 9;
 
 export const RARITY_COLOR: Record<string, string> = {
   common: "#a8a8a8",

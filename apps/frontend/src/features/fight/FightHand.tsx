@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from "react";
 import "./FightHand.css";
-import type { Phase } from "./fight.types";
-import { RARITY_COLOR } from "./fight.types";
+import type { Phase, CardInstance } from "./fight.types";
+import { RARITY_COLOR, FREE_SUMMON_CARD_ID } from "./fight.types";
 
-export type HandCard = {
+export interface HandCard {
   id: number;
   name: string;
   type: string;
@@ -12,14 +11,30 @@ export type HandCard = {
   cost: number;
   rarity: string;
   supportType?: string;
-};
+}
+
+/** Converts a CardInstance (from server) to the flat HandCard shape */
+export function toHandCard(c: CardInstance): HandCard {
+  return {
+    id: c.baseCard.id,
+    name: c.baseCard.name,
+    type: c.baseCard.type,
+    atk: c.baseCard.atk,
+    hp: c.baseCard.hp,
+    cost: c.baseCard.cost,
+    rarity: c.baseCard.rarity,
+    supportType: c.baseCard.supportType ?? undefined,
+  };
+}
 
 interface Props {
   hand: HandCard[];
-  phase: Phase | undefined;
+  phase: Phase;
   isMyTurn: boolean;
   selectedCard: number | null;
   payIndices: number[];
+  /** When true, card id=29 (Chevalier Touille) shows a FREE badge */
+  freeSummonAvailable?: boolean;
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -29,66 +44,69 @@ export default function FightHand({
   isMyTurn,
   selectedCard,
   payIndices,
+  freeSummonAvailable = false,
   onCardClick,
 }: Props) {
-  const isDiscardPhase = phase === "end" && isMyTurn && hand.length > 7;
-
-  // ── Draw animation ────────────────────────────────────────────────────────
-  // Track which indices are freshly drawn
-  const prevLengthRef = useRef(hand.length);
-  const [drawnIndices, setDrawnIndices] = useState<Set<number>>(new Set());
-
-  useEffect(() => {
-    const prev = prevLengthRef.current;
-    if (hand.length > prev) {
-      // New cards arrived — animate from prev index to end
-      const incoming = new Set<number>();
-      for (let i = prev; i < hand.length; i++) incoming.add(i);
-      setDrawnIndices(incoming);
-      const t = setTimeout(() => setDrawnIndices(new Set()), 500);
-      prevLengthRef.current = hand.length;
-      return () => clearTimeout(t);
-    }
-    prevLengthRef.current = hand.length;
-  }, [hand.length]);
+  const isInteractive = isMyTurn && (phase === "main" || phase === "end");
+  const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
   return (
-    <div className="fhand-area">
-      <div className="fhand-label">Main ({hand.length})</div>
-      <div className="fhand-cards">
-        {hand.map((card, idx) => {
-          const isPaying = payIndices.includes(idx);
-          const isSel = selectedCard === idx;
-          const isDrawn = drawnIndices.has(idx);
+    <div className="fhand">
+      {hand.map((card, idx) => {
+        const isSelected = selectedCard === idx;
+        const isPaying = payIndices.includes(idx);
+        const isPayable =
+          !isSelected && selectedCard !== null && phase === "main";
+        const isFree = freeSummonAvailable && card.id === FREE_SUMMON_CARD_ID;
 
-          return (
-            <div
-              key={idx}
-              className={[
-                "fhand-card",
-                isSel ? "fhand-card--selected" : "",
-                isPaying ? "fhand-card--paying" : "",
-                isDiscardPhase ? "fhand-card--discard" : "",
-                isDrawn ? "fhand-card--drawn" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              onClick={() => onCardClick(idx, card)}
-            >
-              <div
-                className="fhand-rarity"
-                style={{ background: RARITY_COLOR[card.rarity] ?? "#888" }}
-              />
-              <div className="fhand-card-name">{card.name}</div>
-              <div className="fhand-card-meta">
-                {card.type === "monster"
-                  ? `${card.atk}⚔ ${card.hp}❤ ${card.cost}⚡`
-                  : `Support · ${card.cost}⚡`}
-              </div>
+        return (
+          <div
+            key={`${card.id}-${idx}`}
+            className={[
+              "fhand-card",
+              `fhand-card--${card.type}`,
+              isSelected ? "fhand-card--selected" : "",
+              isPaying ? "fhand-card--paying" : "",
+              isInteractive ? "fhand-card--interactive" : "",
+              isPayable && !isPaying ? "fhand-card--payable" : "",
+              phase === "end" && isMyTurn ? "fhand-card--discard-hint" : "",
+              isFree ? "fhand-card--free" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            style={{ borderColor: RARITY_COLOR[card.rarity] ?? "#666" }}
+            onClick={() => isInteractive && onCardClick(idx, card)}
+          >
+            <div className="fhand-card-cost">
+              {isFree ? (
+                <span className="fhand-free-label">GRATUIT ⚡</span>
+              ) : (
+                `${card.cost ?? 0}⚡`
+              )}
             </div>
-          );
-        })}
-      </div>
+
+            {isPaying && (
+              <div className="fhand-pay-badge" title="Carte de paiement">
+                💰
+              </div>
+            )}
+
+            {isSelected && <div className="fhand-selected-badge">✓</div>}
+
+            <div className="fhand-card-name">{card.name}</div>
+
+            <div className="fhand-card-sub">
+              {card.type === "monster"
+                ? `${card.atk}⚔ ${card.hp}❤`
+                : (card.supportType ?? card.type)}
+            </div>
+
+            {mustDiscard && (
+              <div className="fhand-discard-label">défausser</div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -9,10 +9,12 @@ import {
 } from "../../services/fight.service";
 import Leaderboard from "./Leaderboard";
 import type { Tab, GameState } from "./fight.types";
+
 import FightTabBar from "./FightTabBar";
 import FightLobby from "./FightLobby";
 import MatchHistory from "./MatchHistory";
 import FightBoard from "./FightBoard";
+import CardPickModal from "./CardPickModal";
 import "./FightPage.css";
 
 export default function FightPage({
@@ -142,13 +144,13 @@ export default function FightPage({
   // ── Emit helper ───────────────────────────────────────────────────────────
 
   const emit = useCallback((event: string, data: object) => {
+    console.log("emit →", event, data); // ← ajoute ça
     socketRef.current?.emit(event, data);
   }, []);
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
   const joinQueue = () => emit("fight:queue", {});
-
   const leaveQueue = () => {
     emit("fight:dequeue", {});
     setStatus("idle");
@@ -166,13 +168,14 @@ export default function FightPage({
     emit("fight:surrender", { matchId });
   };
 
-  const summon = () => {
+  /** Called after the cost modal confirms payment indices */
+  const summon = (paymentIndices: number[] = payIndices) => {
     if (selectedCard === null || selectedZone === null || !matchId) return;
     emit("fight:summon", {
       matchId,
       handIndex: selectedCard,
       zoneIndex: selectedZone,
-      paymentHandIndices: payIndices,
+      paymentHandIndices: paymentIndices,
     });
     setSelectedCard(null);
     setSelectedZone(null);
@@ -231,6 +234,12 @@ export default function FightPage({
     emit("fight:discard", { matchId, handIndex });
   };
 
+  /** Confirm a pendingChoice card pick */
+  const pickCards = (instanceIds: string[]) => {
+    console.log("pickCards →", { matchId, instanceIds }); // ← ajoute ça
+    if (!matchId) return;
+    emit("fight:pick_cards", { matchId, instanceIds });
+  };
   const handleReplay = () => {
     setStatus("idle");
     setGameState(null);
@@ -285,25 +294,35 @@ export default function FightPage({
           )}
 
           {status === "playing" && gameState && (
-            <FightBoard
-              gs={gameState}
-              selectedCard={selectedCard}
-              selectedZone={selectedZone}
-              payIndices={payIndices}
-              timeLeft={timeLeft}
-              onSetSelectedCard={setSelectedCard}
-              onSetSelectedZone={setSelectedZone}
-              onSetPayIndices={setPayIndices}
-              onAttackMonster={attackMonster}
-              onDirectAttack={directAttack}
-              onSummon={summon}
-              onPlaySupport={playSupport}
-              onChangeMode={changeMode}
-              onRecycleSupport={recycleFromHand}
-              onDiscardCard={discardCard}
-              onEndPhase={endPhase}
-              onSurrender={surrender}
-            />
+            <>
+              <FightBoard
+                gs={gameState}
+                selectedCard={selectedCard}
+                selectedZone={selectedZone}
+                payIndices={payIndices}
+                timeLeft={timeLeft}
+                onSetSelectedCard={setSelectedCard}
+                onSetSelectedZone={setSelectedZone}
+                onSetPayIndices={setPayIndices}
+                onAttackMonster={attackMonster}
+                onDirectAttack={directAttack}
+                onSummon={summon}
+                onPlaySupport={playSupport}
+                onChangeMode={changeMode}
+                onRecycleSupport={recycleFromHand}
+                onDiscardCard={discardCard}
+                onEndPhase={endPhase}
+                onSurrender={surrender}
+              />
+
+              {/* ── Card pick modal (pendingChoice) ── */}
+              {gameState.pendingChoice && (
+                <CardPickModal
+                  choice={gameState.pendingChoice}
+                  onConfirm={pickCards}
+                />
+              )}
+            </>
           )}
         </div>
       )}

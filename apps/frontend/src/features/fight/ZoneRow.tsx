@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./ZoneRow.css";
+import { QUENOUILLE_CARD_ID } from "./fight.types";
 
 interface Props {
   label: string;
@@ -11,6 +12,7 @@ interface Props {
   onZoneClick?: (idx: number) => void;
   onMonsterClick?: (instanceId: string) => void;
   onModeChange?: (instanceId: string, mode: "attack" | "guard") => void;
+  highlightEmpty?: boolean;
   onSupportRecycle?: (idx: number) => void;
   selectedZone?: number | null;
   recycleEnergy?: number;
@@ -20,12 +22,31 @@ interface Props {
   damagedZones?: Set<number>;
 }
 
+/**
+ * Returns true if this monster CANNOT attack this turn.
+ *
+ * Two cases:
+ *  1. Commandant Quenouille (id=9): blocked the turn it's summoned.
+ *  2. Any other monster: summonedThisTurn has NO bearing — standard monsters
+ *     CAN attack the turn they are summoned. The flag is only kept for
+ *     Quenouille's special rule and for the doubleAtkNextTurn mechanic.
+ */
+function isBlockedFromAttacking(zone: any): boolean {
+  if (!zone) return false;
+  // Quenouille specifically cannot attack the turn it's summoned
+  if (zone.summonedThisTurn && zone.card?.baseCard?.id === QUENOUILLE_CARD_ID) {
+    return true;
+  }
+  return false;
+}
+
 export default function ZoneRow({
   label,
   zones,
   isSupport = false,
   isOpponent = false,
   dim = false,
+  highlightEmpty = false,
   onZoneClick,
   onMonsterClick,
   onModeChange,
@@ -39,7 +60,6 @@ export default function ZoneRow({
   const [summoningZones, setSummoningZones] = useState<Set<number>>(new Set());
 
   // ── Mode change detection ─────────────────────────────────────────────────
-  // Store previous mode per zone index
   const prevModesRef = useRef<(string | undefined)[]>(
     zones.map((z) => z?.mode as string | undefined),
   );
@@ -53,18 +73,12 @@ export default function ZoneRow({
     const newFlipping = new Set<number>();
 
     zones.forEach((zone, idx) => {
-      // Summon: was null, now filled
-      if (!prevZones[idx] && zone) {
-        newSummoning.add(idx);
-      }
+      if (!prevZones[idx] && zone) newSummoning.add(idx);
 
-      // Mode change (monsters only)
       if (!isSupport && prevZones[idx] && zone) {
         const prevMode = prevModes[idx];
         const curMode = zone.mode as string | undefined;
-        if (prevMode && curMode && prevMode !== curMode) {
-          newFlipping.add(idx);
-        }
+        if (prevMode && curMode && prevMode !== curMode) newFlipping.add(idx);
       }
     });
 
@@ -80,14 +94,11 @@ export default function ZoneRow({
       return () => clearTimeout(t);
     }
 
-    // Update refs after comparison
     prevZonesRef.current = [...zones];
     prevModesRef.current = zones.map((z) => z?.mode as string | undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zones]);
 
-  // Keep refs in sync every render (after the effect guard above)
-  // so stale closures don't cause missed detections
   useEffect(() => {
     prevZonesRef.current = [...zones];
     prevModesRef.current = zones.map((z) => z?.mode as string | undefined);
@@ -107,6 +118,7 @@ export default function ZoneRow({
           const isDamaged = damagedZones?.has(idx) ?? false;
           const isSummoning = summoningZones.has(idx);
           const isFlipping = flippingZones.has(idx);
+          const blocked = !isSupport && isBlockedFromAttacking(zone);
 
           return (
             <div
@@ -119,6 +131,7 @@ export default function ZoneRow({
                 onZoneClick || (zone && onMonsterClick)
                   ? "zr-zone--clickable"
                   : "",
+                highlightEmpty && !zone ? "zr-zone--pulse-target" : "",
                 isSummoning ? "zr-zone--summon-in" : "",
                 isFlipping ? "zr-zone--mode-flip" : "",
                 isAttacking ? "zr-zone--attacking" : "",
@@ -167,10 +180,11 @@ export default function ZoneRow({
                           ✨
                         </span>
                       )}
-                      {zone.summonedThisTurn && (
+                      {/* 💤 uniquement sur Quenouille invoqué ce tour */}
+                      {blocked && (
                         <span
                           className="zr-badge zr-badge--sleep"
-                          title="Ne peut pas attaquer"
+                          title="Ne peut pas attaquer ce tour"
                         >
                           💤
                         </span>
@@ -183,7 +197,7 @@ export default function ZoneRow({
                           ⚡
                         </span>
                       )}
-                      {zone.attacksPerTurn > 1 && !zone.summonedThisTurn && (
+                      {zone.attacksPerTurn > 1 && !blocked && (
                         <span
                           className="zr-badge zr-badge--multi"
                           title="Double attaque"
@@ -192,22 +206,27 @@ export default function ZoneRow({
                         </span>
                       )}
                     </div>
+
                     <div className={`zr-mode-chip zr-mode-chip--${zone.mode}`}>
                       {zone.mode === "attack" ? "⚔️" : "🛡️"}
                     </div>
+
                     <div className="zr-monster-name">
                       {zone.card.baseCard.name}
                     </div>
+
                     <div className="zr-monster-stats">
                       {zone.card.baseCard.atk +
                         zone.atkBuff +
                         (zone.tempAtkBuff ?? 0)}
                       ⚔ {zone.currentHp}/{zone.card.baseCard.hp + zone.hpBuff}❤
                     </div>
+
                     {zone.hasAttackedThisTurn &&
                       zone.attacksUsedThisTurn >= zone.attacksPerTurn && (
                         <div className="zr-attacked">attaqué</div>
                       )}
+
                     {!isOpponent && onModeChange && !zone.forcedAttackMode && (
                       <div className="zr-mode-btns">
                         <button
