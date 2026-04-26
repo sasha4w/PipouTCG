@@ -2,7 +2,10 @@ import { Server } from 'socket.io';
 import { GameState, ClientGameState } from '../interfaces/game-state.interface';
 import { getPlayerState, getOpponentState } from './game-state.helper';
 
-export function buildClientState(game: GameState, userId: number): ClientGameState {
+export function buildClientState(
+  game: GameState,
+  userId: number,
+): ClientGameState {
   const me = getPlayerState(game, userId);
   const opp = getOpponentState(game, userId);
 
@@ -43,6 +46,7 @@ export function buildClientState(game: GameState, userId: number): ClientGameSta
       monsterZones: me.monsterZones,
       supportZones: me.supportZones,
       recycleEnergy: me.recycleEnergy,
+      freeSummonAvailable: me.freeSummonAvailable, // ← ajoute ça
     },
     opponent: {
       userId: opp.userId,

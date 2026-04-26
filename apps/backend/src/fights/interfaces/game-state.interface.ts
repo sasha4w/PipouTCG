@@ -117,6 +117,7 @@ export interface MyClientState {
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
+  freeSummonAvailable?: boolean;
 }
 
 export interface OpponentClientState {
