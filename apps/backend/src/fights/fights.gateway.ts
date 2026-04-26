@@ -301,7 +301,23 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('fight:error', { message: result.error });
     }
   }
+  // Picking cards (for effects that require player choice)
 
+  @SubscribeMessage('fight:pick_cards')
+  async pickCards(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { matchId: number; instanceIds: string[] },
+  ): Promise<void> {
+    const result = await this.fightsService.pickCards(
+      data.matchId,
+      client.data.userId,
+      data.instanceIds,
+      this.server,
+    );
+    if (result?.error) {
+      client.emit('fight:error', { message: result.error });
+    }
+  }
   // ── Surrender ──────────────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:surrender')
