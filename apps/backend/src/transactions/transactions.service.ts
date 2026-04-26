@@ -140,14 +140,12 @@ export class TransactionService {
       });
     });
 
-    // ✨ On rassure TypeScript ici : si ça a échoué, on bloque l'exécution.
     if (!saved) {
       throw new BadRequestException(
         "Erreur critique : impossible de récupérer l'annonce après sa création.",
       );
     }
 
-    // ✅ TS sait maintenant que "saved" n'est pas null, plus d'erreur !
     this.eventEmitter.emit('listing.created', {
       id: saved.id,
       productType: saved.productType,
@@ -179,7 +177,6 @@ export class TransactionService {
       return manager.save(listing);
     });
 
-    // ✅ Notifie tous les clients qu'une annonce a été retirée
     this.eventEmitter.emit('listing.cancelled', {
       transactionId: saved.id,
     });
@@ -188,10 +185,14 @@ export class TransactionService {
   }
 
   // ============================================================
-  // 🟢 ACHETER
+  // 🟢 ACHETER — supporte l'achat partiel
   // ============================================================
 
-  async buyListing(transactionId: number, buyerId: number) {
+  async buyListing(
+    transactionId: number,
+    buyerId: number,
+    requestedQty?: number,
+  ) {
     const result = await this.dataSource.transaction(async (manager) => {
       const listing = await manager.findOne(Transaction, {
         where: { id: transactionId },
@@ -201,6 +202,14 @@ export class TransactionService {
 
       if (!listing || listing.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Annonce indisponible.');
+
+      // ── Validation de la quantité demandée ──
+      const qty = requestedQty ?? listing.quantity;
+      if (qty < 1 || qty > listing.quantity) {
+        throw new BadRequestException(
+          `Quantité invalide. Disponible : ${listing.quantity}.`,
+        );
+      }
 
       const buyer = await manager.findOne(User, {
         where: { id: buyerId },
@@ -217,19 +226,21 @@ export class TransactionService {
       if (buyer.id === seller.id)
         throw new BadRequestException('Achat de sa propre annonce interdit');
 
-      const totalPriceNum = Number(listing.totalPrice);
-      if (Number(buyer.gold) < totalPriceNum)
+      const totalPrice = Number(listing.unitPrice) * qty;
+
+      if (Number(buyer.gold) < totalPrice)
         throw new BadRequestException('Or insuffisant.');
 
-      buyer.gold = Number(buyer.gold) - totalPriceNum;
-      buyer.moneySpent = Number(buyer.moneySpent) + totalPriceNum;
-      seller.gold = Number(seller.gold) + totalPriceNum;
-      seller.moneyEarned = Number(seller.moneyEarned) + totalPriceNum;
+      buyer.gold = Number(buyer.gold) - totalPrice;
+      buyer.moneySpent = Number(buyer.moneySpent) + totalPrice;
+      seller.gold = Number(seller.gold) + totalPrice;
+      seller.moneyEarned = Number(seller.moneyEarned) + totalPrice;
 
-      const setId = await this.giveItemToBuyer(manager, listing, buyerId);
+      const setId = await this.giveItemToBuyer(manager, listing, buyerId, qty);
 
       await manager.save([buyer, seller]);
-      const qty = listing.quantity;
+
+      // ── Incrément stats ──
       if (listing.productType === ProductType.CARD) {
         await manager.increment(User, { id: buyerId }, 'cardsBought', qty);
         await manager.increment(
@@ -256,27 +267,48 @@ export class TransactionService {
         );
       }
 
-      await manager.update(Transaction, transactionId, {
-        status: TransactionStatus.COMPLETED,
-        buyer: { id: buyerId } as any,
-        updatedAt: new Date(),
-      });
+      // ── Achat partiel : on réduit la quantité sans compléter ──
+      const isFullBuy = qty === listing.quantity;
 
-      listing.status = TransactionStatus.COMPLETED;
+      if (isFullBuy) {
+        await manager.update(Transaction, transactionId, {
+          status: TransactionStatus.COMPLETED,
+          buyer: { id: buyerId } as any,
+          totalPrice,
+          updatedAt: new Date(),
+        });
+        listing.status = TransactionStatus.COMPLETED;
+      } else {
+        await manager.update(Transaction, transactionId, {
+          quantity: listing.quantity - qty,
+          totalPrice: Number(listing.unitPrice) * (listing.quantity - qty),
+          updatedAt: new Date(),
+        });
+        listing.quantity -= qty;
+      }
+
       listing.buyer = buyer;
 
-      return { listing, seller, buyer, setId };
+      return { listing, seller, buyer, setId, qty, totalPrice, isFullBuy };
     });
 
     this.eventEmitter.emit('listing.sold', {
       sellerId: result.seller.id,
       buyerUsername: result.buyer.username,
       itemName: result.listing.itemName ?? `Objet #${result.listing.productId}`,
-      totalPrice: Number(result.listing.totalPrice),
+      totalPrice: result.totalPrice,
       transactionId,
     });
 
-    const qty = result.listing.quantity;
+    // Si achat partiel, on notifie que le listing a été modifié (quantité réduite)
+    if (!result.isFullBuy) {
+      this.eventEmitter.emit('listing.updated', {
+        transactionId,
+        newQuantity: result.listing.quantity,
+      });
+    }
+
+    const qty = result.qty;
     const type = result.listing.productType;
 
     if (type === ProductType.CARD) {
@@ -314,7 +346,11 @@ export class TransactionService {
       });
     }
 
-    return result.listing;
+    return {
+      ...result.listing,
+      purchasedQty: qty,
+      totalPrice: result.totalPrice,
+    };
   }
 
   // ============================================================
@@ -325,6 +361,7 @@ export class TransactionService {
     manager: EntityManager,
     listing: Transaction,
     buyerId: number,
+    qty: number, // quantité achetée (peut être partielle)
   ): Promise<number | null> {
     const { Entity, relationKey } = this.mapProductType(listing.productType);
     let buyerItem = await manager.findOne(Entity, {
@@ -335,12 +372,12 @@ export class TransactionService {
       lock: { mode: 'pessimistic_write' },
     });
     if (buyerItem) {
-      buyerItem.quantity += listing.quantity;
+      buyerItem.quantity += qty;
     } else {
       buyerItem = manager.create(Entity, {
         user: { id: buyerId },
         [relationKey]: { id: listing.productId },
-        quantity: listing.quantity,
+        quantity: qty,
       });
     }
     await manager.save(buyerItem);

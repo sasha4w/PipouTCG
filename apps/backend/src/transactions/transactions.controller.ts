@@ -20,13 +20,18 @@ import { CreateListingDto } from './dto/create-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { IsInt, IsOptional, Min } from 'class-validator';
+
+class BuyListingDto {
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  quantity?: number;
+}
 
 @Controller('transactions')
 export class TransactionController {
-  // Subject pour les events privés (vendeur uniquement)
   private readonly sseSubject = new Subject<ListingSoldPayload>();
-
-  // Subject pour les events publics (tout le monde : création, annulation)
   private readonly sseMarketSubject = new Subject<{
     type: string;
     [key: string]: any;
@@ -41,7 +46,6 @@ export class TransactionController {
   @Sse('events')
   sseEvents(@Req() req: any): Observable<MessageEvent> {
     const userId: number = req.user.userId;
-
     return this.sseSubject.asObservable().pipe(
       filter((payload) => payload.sellerId === userId),
       map(
@@ -54,7 +58,7 @@ export class TransactionController {
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // 📡 SSE public — listing.created / listing.cancelled → tout le monde
+  // 📡 SSE public — listing.created / listing.cancelled / listing.updated
   // ─────────────────────────────────────────────────────────────────
   @UseGuards(JwtAuthGuard)
   @Sse('events/new-listings')
@@ -70,7 +74,7 @@ export class TransactionController {
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // 🔔 Handlers EventEmitter → push dans les subjects SSE
+  // 🔔 Handlers EventEmitter
   // ─────────────────────────────────────────────────────────────────
   @OnEvent('listing.sold')
   handleListingSold(payload: ListingSoldPayload) {
@@ -87,8 +91,14 @@ export class TransactionController {
     this.sseMarketSubject.next({ type: 'listing.cancelled', ...payload });
   }
 
+  // Achat partiel : le listing reste visible avec quantité réduite
+  @OnEvent('listing.updated')
+  handleListingUpdated(payload: any) {
+    this.sseMarketSubject.next({ type: 'listing.updated', ...payload });
+  }
+
   // ─────────────────────────────────────────────────────────────────
-  // ROUTES CLASSIQUES
+  // ROUTES
   // ─────────────────────────────────────────────────────────────────
 
   @UseGuards(AdminGuard)
@@ -123,8 +133,16 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/buy')
-  buyListing(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
-    return this.transactionService.buyListing(id, req.user.userId);
+  buyListing(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
+    @Body() body: BuyListingDto,
+  ) {
+    return this.transactionService.buyListing(
+      id,
+      req.user.userId,
+      body.quantity,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
