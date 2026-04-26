@@ -1,6 +1,20 @@
+/* ══════════════════════════════════════════════
+   SELL TAB
+══════════════════════════════════════════════ */
+.marketplace-sell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.marketplace-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 /* ── Bouton créer une annonce ── */
 .marketplace-create-listing-btn {
-  margin-bottom: 1rem;
   padding: 0.75rem 1.25rem;
   border-radius: 12px;
   border: none;
@@ -9,10 +23,9 @@
   font-weight: 600;
   cursor: pointer;
   font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.88rem;
   box-shadow: 0 4px 12px rgba(122, 28, 59, 0.25);
   transition: all 0.2s ease;
-  position: relative;
-  z-index: 1;
 }
 
 .marketplace-create-listing-btn:hover {
@@ -29,18 +42,21 @@
   font-weight: 600;
   cursor: pointer;
   font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.82rem;
   transition: all 0.2s ease;
   white-space: nowrap;
-  background: #f27aaa;
-  color: white;
+  background: rgba(242, 122, 170, 0.15);
+  color: #f27aaa;
+  border: 1px solid rgba(242, 122, 170, 0.25);
 }
 
 .marketplace-cancel-btn:hover:not(:disabled) {
-  opacity: 0.9;
+  background: rgba(242, 122, 170, 0.25);
+  border-color: rgba(242, 122, 170, 0.45);
   transform: translateY(-1px);
 }
 
 .marketplace-cancel-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }

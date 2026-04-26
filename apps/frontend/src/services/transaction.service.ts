@@ -79,8 +79,11 @@ export const transactionService = {
   },
 
   // Acheter une annonce
-  async buy(id: number): Promise<Transaction> {
-    const res = await api.post(`/transactions/${id}/buy`);
+  async buy(id: number, quantity?: number): Promise<Transaction> {
+    const res = await api.post(
+      `/transactions/${id}/buy`,
+      quantity ? { quantity } : {},
+    );
     return res.data;
   },
 

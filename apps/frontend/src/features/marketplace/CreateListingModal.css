@@ -1,131 +1,540 @@
-/* ── Overlay ── */
+/* ══════════════════════════════════════════════
+   MODAL WRAPPER
+══════════════════════════════════════════════ */
 .marketplace-modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(10, 5, 15, 0.75);
+  backdrop-filter: blur(4px);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 100;
-  backdrop-filter: blur(2px);
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
 }
 
-/* ── Contenu ── */
 .marketplace-modal-content {
-  position: relative;
-  z-index: 101;
+  background: #1a0e1f;
+  border: 1px solid rgba(122, 28, 59, 0.35);
+  border-radius: 18px;
   width: 100%;
-  max-width: 400px;
-  background: #fff;
-  border-radius: 24px;
-  border: 1.5px solid rgba(61, 16, 32, 0.1);
-  padding: 2rem 1.75rem;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.75rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  box-shadow: 0 8px 32px rgba(61, 16, 32, 0.15);
-  animation: modalIn 0.35s ease both;
+  gap: 1.25rem;
 }
 
-.marketplace-modal-content h3 {
-  font-family: "Lilita One", cursive;
-  font-size: 1.4rem;
-  color: #7a1c3b;
+/* ── Header ── */
+.marketplace-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.marketplace-modal-header h3 {
   margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f5e6d0;
+  letter-spacing: 0.03em;
 }
 
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.marketplace-modal-close {
+  background: none;
+  border: none;
+  color: rgba(245, 230, 208, 0.45);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+  line-height: 1;
 }
 
-/* ── Champs de formulaire ── */
+.marketplace-modal-close:hover {
+  color: #f5e6d0;
+  background: rgba(122, 28, 59, 0.25);
+}
+
+/* ── Form group ── */
 .marketplace-form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.6rem;
 }
 
 .marketplace-form-group label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #7a1c3b;
-  letter-spacing: 0.3px;
+  font-size: 0.78rem;
+  font-weight: 600;
   text-transform: uppercase;
-}
-
-.marketplace-form-group input,
-.marketplace-form-group select {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: #fdfbf6;
+  letter-spacing: 0.08em;
+  color: rgba(245, 230, 208, 0.55);
   font-family: "Comfortaa", system-ui, sans-serif;
-  font-size: 0.95rem;
-  color: #491021;
-  outline: none;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-  box-sizing: border-box;
-}
-
-.marketplace-form-group input:focus,
-.marketplace-form-group select:focus {
-  border-color: #f27aaa;
-  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
 }
 
 .marketplace-form-hint {
-  font-size: 0.78rem;
-  color: #a08070;
   margin: 0;
-  padding-left: 4px;
+  font-size: 0.78rem;
+  color: rgba(245, 230, 208, 0.45);
+  font-family: "Comfortaa", system-ui, sans-serif;
 }
 
-/* ── Actions ── */
-.marketplace-modal-actions {
-  display: flex;
-  justify-content: flex-end;
+.marketplace-form-hint strong {
+  color: #d4a85c;
+}
+
+/* ── Row (quantité + prix côte à côte) ── */
+.marketplace-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.marketplace-modal-actions button {
-  padding: 0.65rem 1.25rem;
-  border-radius: 12px;
-  border: none;
+@media (max-width: 480px) {
+  .marketplace-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   TYPE SELECTOR
+══════════════════════════════════════════════ */
+.marketplace-type-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.marketplace-type-btn {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid rgba(122, 28, 59, 0.3);
+  background: rgba(122, 28, 59, 0.1);
+  color: rgba(245, 230, 208, 0.6);
+  font-size: 0.82rem;
   font-weight: 600;
   font-family: "Comfortaa", system-ui, sans-serif;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
+}
+
+.marketplace-type-btn:hover {
+  border-color: rgba(122, 28, 59, 0.6);
+  color: #f5e6d0;
+  background: rgba(122, 28, 59, 0.2);
+}
+
+.marketplace-type-btn--active {
+  background: #7a1c3b;
+  border-color: #7a1c3b;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(122, 28, 59, 0.4);
+}
+
+/* ══════════════════════════════════════════════
+   PICKER HEADER (compteur + recherche)
+══════════════════════════════════════════════ */
+.marketplace-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.marketplace-picker-count {
+  font-size: 0.78rem;
+  color: rgba(245, 230, 208, 0.45);
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.marketplace-picker-search {
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(122, 28, 59, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5e6d0;
+  font-size: 0.82rem;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  outline: none;
+  width: 180px;
+  transition: border-color 0.15s ease;
+}
+
+.marketplace-picker-search:focus {
+  border-color: rgba(122, 28, 59, 0.7);
+}
+
+.marketplace-picker-search::placeholder {
+  color: rgba(245, 230, 208, 0.3);
+}
+
+/* ══════════════════════════════════════════════
+   GRILLE CARTES — CardDisplay
+══════════════════════════════════════════════ */
+.marketplace-picker-grid--cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 0.25rem;
+  /* scrollbar discrète */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 28, 59, 0.4) transparent;
+}
+
+.marketplace-picker-grid--cards::-webkit-scrollbar {
+  width: 4px;
+}
+.marketplace-picker-grid--cards::-webkit-scrollbar-thumb {
+  background: rgba(122, 28, 59, 0.4);
+  border-radius: 4px;
+}
+
+/* Bouton wrapper autour d'une CardDisplay */
+.marketplace-card-pick {
+  position: relative;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
+  outline: none;
+  /* Empêche le bouton de squeezer la card */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.marketplace-card-pick:hover {
+  border-color: rgba(122, 28, 59, 0.5);
+  transform: translateY(-2px);
+}
+
+.marketplace-card-pick--selected {
+  border-color: #7a1c3b;
+  box-shadow:
+    0 0 0 2px rgba(122, 28, 59, 0.35),
+    0 6px 18px rgba(122, 28, 59, 0.3);
+}
+
+/* Badge stock sous la carte */
+.marketplace-card-pick__stock {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(245, 230, 208, 0.55);
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.03em;
+}
+
+.marketplace-card-pick--selected .marketplace-card-pick__stock {
+  color: #d4a85c;
+}
+
+/* Overlay sélection (checkmark doré centré) */
+.marketplace-card-pick__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(122, 28, 59, 0.18);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.marketplace-card-pick__check {
+  width: 28px;
+  height: 28px;
+  background: #7a1c3b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ══════════════════════════════════════════════
+   GRILLE ITEMS (boosters / bundles)
+══════════════════════════════════════════════ */
+.marketplace-picker-grid--items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.6rem;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 28, 59, 0.4) transparent;
+}
+
+.marketplace-item-pick {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.9rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(122, 28, 59, 0.25);
+  background: rgba(122, 28, 59, 0.07);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.marketplace-item-pick:hover {
+  border-color: rgba(122, 28, 59, 0.55);
+  background: rgba(122, 28, 59, 0.14);
+  transform: translateY(-2px);
+}
+
+.marketplace-item-pick--selected {
+  border-color: #7a1c3b;
+  background: rgba(122, 28, 59, 0.2);
+  box-shadow: 0 4px 14px rgba(122, 28, 59, 0.3);
+}
+
+.marketplace-item-pick__icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.marketplace-item-pick__name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #f5e6d0;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.marketplace-item-pick__stock {
+  font-size: 0.72rem;
+  color: rgba(245, 230, 208, 0.45);
+  font-family: "JetBrains Mono", monospace;
+}
+
+.marketplace-item-pick--selected .marketplace-item-pick__stock {
+  color: #d4a85c;
+}
+
+.marketplace-item-pick__check {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 0.75rem;
+  color: #7a1c3b;
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════════════════
+   RECAP ITEM SÉLECTIONNÉ
+══════════════════════════════════════════════ */
+.marketplace-selected-recap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.85rem;
+  background: rgba(122, 28, 59, 0.12);
+  border: 1px solid rgba(122, 28, 59, 0.25);
+  border-radius: 10px;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.82rem;
+  color: #f5e6d0;
+}
+
+.marketplace-selected-recap__tag {
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(122, 28, 59, 0.3);
+  border: 1px solid rgba(122, 28, 59, 0.4);
+  font-size: 0.72rem;
+  color: rgba(245, 230, 208, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.marketplace-selected-recap__stock {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #d4a85c;
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ══════════════════════════════════════════════
+   QUANTITÉ SELECTOR (modal)
+══════════════════════════════════════════════ */
+.marketplace-qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.marketplace-qty-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(122, 28, 59, 0.4);
+  background: rgba(122, 28, 59, 0.15);
+  color: #f5e6d0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.marketplace-qty-btn:hover:not(:disabled) {
+  background: rgba(122, 28, 59, 0.35);
+  border-color: rgba(122, 28, 59, 0.7);
+}
+
+.marketplace-qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.marketplace-qty-input {
+  width: 56px;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(122, 28, 59, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5e6d0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s ease;
+  /* Supprime les flèches natives */
+  -moz-appearance: textfield;
+}
+
+.marketplace-qty-input::-webkit-inner-spin-button,
+.marketplace-qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.marketplace-qty-input:focus {
+  border-color: rgba(122, 28, 59, 0.7);
+}
+
+.marketplace-qty-max {
+  padding: 0.35rem 0.65rem;
+  border-radius: 7px;
+  border: 1px solid rgba(212, 168, 92, 0.3);
+  background: rgba(212, 168, 92, 0.08);
+  color: #d4a85c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  transition: all 0.15s ease;
+}
+
+.marketplace-qty-max:hover {
+  background: rgba(212, 168, 92, 0.18);
+  border-color: rgba(212, 168, 92, 0.55);
+}
+
+/* ── Input prix ── */
+.marketplace-price-input {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(122, 28, 59, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5e6d0;
+  font-size: 0.9rem;
+  font-family: "JetBrains Mono", monospace;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s ease;
+  -moz-appearance: textfield;
+}
+
+.marketplace-price-input::-webkit-inner-spin-button,
+.marketplace-price-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.marketplace-price-input:focus {
+  border-color: rgba(122, 28, 59, 0.7);
+}
+
+.marketplace-price-input::placeholder {
+  color: rgba(245, 230, 208, 0.25);
+}
+
+/* ══════════════════════════════════════════════
+   ACTIONS MODAL
+══════════════════════════════════════════════ */
+.marketplace-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(122, 28, 59, 0.15);
 }
 
 .marketplace-modal-actions button[type="button"] {
-  background: rgba(122, 28, 59, 0.1);
-  color: #7a1c3b;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  border: 1px solid rgba(245, 230, 208, 0.15);
+  background: transparent;
+  color: rgba(245, 230, 208, 0.55);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  transition: all 0.15s ease;
+}
+
+.marketplace-modal-actions button[type="button"]:hover:not(:disabled) {
+  border-color: rgba(245, 230, 208, 0.3);
+  color: #f5e6d0;
 }
 
 .marketplace-modal-actions button[type="submit"] {
+  padding: 0.6rem 1.25rem;
+  border-radius: 10px;
+  border: none;
   background: #7a1c3b;
-  color: white;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.35);
+  transition: all 0.18s ease;
 }
 
-.marketplace-modal-actions button:hover:not(:disabled) {
-  opacity: 0.9;
+.marketplace-modal-actions button[type="submit"]:hover:not(:disabled) {
+  background: #9b2349;
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(122, 28, 59, 0.45);
 }
 
 .marketplace-modal-actions button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }

@@ -17,16 +17,12 @@ import SellTab from "../features/marketplace/SellTab";
 import BuyTab from "../features/marketplace/BuyTab";
 import CreateListingModal from "../features/marketplace/CreateListingModal";
 
-// ─────────────────────────────────────────────
-// 🏪 PAGE MARKETPLACE
-// ─────────────────────────────────────────────
 const Marketplace = () => {
   const [selectedTab, setSelectedTab] = useState<"sell" | "buy">("buy");
   const [showCreateListingForm, setShowCreateListingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingAction, setLoadingAction] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-
   const [formProductType, setFormProductType] = useState<ProductType>(
     ProductType.CARD,
   );
@@ -37,12 +33,31 @@ const Marketplace = () => {
   const queryClient = useQueryClient();
   const { toasts, addToast, removeToast } = useToast();
 
-  // ── SSE : tout le monde voit les nouvelles annonces et annulations ──
-  useSseNewListings(() => {
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.offers });
-  });
+  useSseNewListings(
+    (event?: {
+      type?: string;
+      transactionId?: number;
+      newQuantity?: number;
+    }) => {
+      if (event?.type === "listing.updated" && event.transactionId != null) {
+        queryClient.setQueryData(QUERY_KEYS.offers, (old: any) =>
+          old
+            ? {
+                ...old,
+                data: old.data.map((l: any) =>
+                  l.id === event.transactionId
+                    ? { ...l, quantity: event.newQuantity }
+                    : l,
+                ),
+              }
+            : old,
+        );
+      } else {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.offers });
+      }
+    },
+  );
 
-  // --- QUERIES ---
   const { data: listings } = useQuery({
     queryKey: QUERY_KEYS.offers,
     queryFn: () => transactionService.findOffers(),
@@ -56,7 +71,6 @@ const Marketplace = () => {
     queryFn: () => userService.getMyInventory(),
   });
 
-  // --- LOGIQUE INVENTAIRE ---
   const availableItems = useMemo(() => {
     if (!inventory) return [];
     if (formProductType === ProductType.CARD) return inventory.cards.data || [];
@@ -71,11 +85,9 @@ const Marketplace = () => {
     return availableItems.find((item: any) => item.id === selectedInventoryId);
   }, [availableItems, selectedInventoryId]);
 
-  // --- HELPERS ---
   const getDisplayName = (listing: Transaction) =>
     listing.itemName || `Objet #${listing.productId}`;
 
-  // --- HANDLERS ---
   const handleCreateListing = async (data: CreateListingData) => {
     if (!data.productId || data.productId <= 0) {
       addToast("Veuillez sélectionner un objet à vendre.", "warning");
@@ -96,16 +108,13 @@ const Marketplace = () => {
       );
       return;
     }
-
     setIsCreating(true);
     try {
       const newListing = await transactionService.createListing(data);
-
       queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
         old ? { ...old, data: [newListing, ...old.data] } : old,
       );
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
-
       setShowCreateListingForm(false);
       setSelectedInventoryId("");
       addToast("✨ Mise en vente réussie !", "success");
@@ -121,11 +130,9 @@ const Marketplace = () => {
   const handleCancelListing = async (id: number) => {
     setLoadingAction(id);
     const snapshot = queryClient.getQueryData(QUERY_KEYS.myListings);
-
     queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
       old ? { ...old, data: old.data.filter((l: any) => l.id !== id) } : old,
     );
-
     try {
       await transactionService.cancel(id);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
@@ -143,18 +150,16 @@ const Marketplace = () => {
     }
   };
 
-  const handleBuyListing = async (id: number) => {
+  const handleBuyListing = async (id: number, quantity: number) => {
     setLoadingAction(id);
     try {
-      const transaction = await transactionService.buy(id);
+      const transaction = await transactionService.buy(id, quantity);
 
-      queryClient.setQueryData(QUERY_KEYS.offers, (old: any) =>
-        old ? { ...old, data: old.data.filter((l: any) => l.id !== id) } : old,
-      );
+      // Seul le gold est mis à jour immédiatement (valeur fiable depuis l'API)
+      // Les offers sont gérés exclusivement par le SSE → pas de double déduction
       queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
         old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
       );
-      // ✅ Invalide toutes les données impactées par l'achat
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
@@ -170,29 +175,26 @@ const Marketplace = () => {
       if (
         raw.toLowerCase().includes("gold") ||
         raw.toLowerCase().includes("or")
-      ) {
+      )
         userMessage = "Achat impossible : vous n'avez pas assez de gold. 💰";
-      } else if (
+      else if (
         raw.toLowerCase().includes("propre") ||
         raw.toLowerCase().includes("own")
-      ) {
+      )
         userMessage =
           "Achat impossible : vous ne pouvez pas acheter votre propre annonce.";
-      } else if (
+      else if (
         raw.toLowerCase().includes("disponible") ||
         raw.toLowerCase().includes("available")
-      ) {
+      )
         userMessage = "Achat impossible : cette annonce n'est plus disponible.";
-      } else if (raw) {
-        userMessage = `Achat impossible : ${raw}`;
-      }
+      else if (raw) userMessage = `Achat impossible : ${raw}`;
       addToast(userMessage, "error");
     } finally {
       setLoadingAction(null);
     }
   };
 
-  // --- FILTRES & RECHERCHE ---
   const filterConfig = [
     {
       key: "type",
@@ -227,9 +229,6 @@ const Marketplace = () => {
     });
   }, [listings, filterValues, searchTerm]);
 
-  // ─────────────────────────────────────────────
-  // RENDU
-  // ─────────────────────────────────────────────
   return (
     <div className="marketplace-page">
       <div className="marketplace-bubble marketplace-bubble--1" />
@@ -237,7 +236,6 @@ const Marketplace = () => {
       <div className="marketplace-bubble marketplace-bubble--3" />
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />
-
       <MarketplaceTabs selectedTab={selectedTab} onTabChange={setSelectedTab} />
 
       {selectedTab === "sell" && (

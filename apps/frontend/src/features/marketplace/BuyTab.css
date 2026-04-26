@@ -1,3 +1,12 @@
+/* ══════════════════════════════════════════════
+   BUY TAB
+══════════════════════════════════════════════ */
+.marketplace-buy {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
 /* ── Bouton acheter ── */
 .marketplace-buy-btn {
   padding: 0.5rem 1rem;
@@ -6,6 +15,7 @@
   font-weight: 600;
   cursor: pointer;
   font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.82rem;
   transition: all 0.2s ease;
   white-space: nowrap;
   background: #7a1c3b;
@@ -20,4 +30,123 @@
 .marketplace-buy-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════
+   SÉLECTEUR DE QUANTITÉ (sur chaque listing)
+══════════════════════════════════════════════ */
+.marketplace-listing__qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid rgba(122, 28, 59, 0.12);
+  border-bottom: 1px solid rgba(122, 28, 59, 0.12);
+}
+
+.marketplace-qty-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid rgba(122, 28, 59, 0.35);
+  background: rgba(122, 28, 59, 0.12);
+  color: #f5e6d0;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  line-height: 1;
+}
+
+.marketplace-qty-btn:hover:not(:disabled) {
+  background: rgba(122, 28, 59, 0.3);
+  border-color: rgba(122, 28, 59, 0.6);
+}
+
+.marketplace-qty-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.marketplace-qty-input {
+  width: 44px;
+  padding: 0.3rem 0.4rem;
+  border-radius: 7px;
+  border: 1px solid rgba(122, 28, 59, 0.3);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5e6d0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s ease;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.marketplace-qty-input::-webkit-inner-spin-button,
+.marketplace-qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.marketplace-qty-input:focus {
+  border-color: rgba(122, 28, 59, 0.65);
+}
+
+.marketplace-qty-input:disabled {
+  opacity: 0.4;
+}
+
+.marketplace-qty-max {
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 168, 92, 0.3);
+  background: rgba(212, 168, 92, 0.07);
+  color: #d4a85c;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.marketplace-qty-max:hover:not(:disabled) {
+  background: rgba(212, 168, 92, 0.16);
+  border-color: rgba(212, 168, 92, 0.5);
+}
+
+.marketplace-qty-max:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════
+   PRIX (bloc inférieur du listing)
+══════════════════════════════════════════════ */
+.marketplace-listing__price-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.marketplace-listing__unit-price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #d4a85c;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.marketplace-listing__total-price {
+  font-size: 0.72rem;
+  color: rgba(245, 230, 208, 0.5);
+  font-family: "Comfortaa", system-ui, sans-serif;
 }
