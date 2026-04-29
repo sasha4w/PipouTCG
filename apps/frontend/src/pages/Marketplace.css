@@ -171,37 +171,3 @@
   padding: 2rem;
   grid-column: 1 / -1;
 }
-
-/* ══════════════════════════════════════════════
-   TABS
-══════════════════════════════════════════════ */
-.marketplace-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.marketplace-tab {
-  padding: 0.6rem 1.5rem;
-  border-radius: 12px;
-  border: 1px solid rgba(122, 28, 59, 0.25);
-  background: rgba(122, 28, 59, 0.08);
-  color: rgba(245, 230, 208, 0.5);
-  font-weight: 600;
-  font-size: 0.88rem;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.marketplace-tab:hover {
-  border-color: rgba(122, 28, 59, 0.5);
-  color: #f5e6d0;
-}
-
-.marketplace-tab--active {
-  background: #7a1c3b;
-  border-color: #7a1c3b;
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(122, 28, 59, 0.35);
-}

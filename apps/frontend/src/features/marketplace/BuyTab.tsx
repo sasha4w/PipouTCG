@@ -6,6 +6,7 @@ import {
   type FilterConfig,
   type FilterValues,
 } from "../../components/FilterPanel";
+import TransactionHistory from "./TransactionHistory";
 import "./BuyTab.css";
 import "./ListingCard.css";
 
@@ -14,6 +15,14 @@ import "./ListingCard.css";
 // ─────────────────────────────────────────────
 interface BuyTabProps {
   filteredListings: Transaction[] | undefined;
+  /**
+   * Historique global des transactions COMPLETED.
+   * ⚠️ Note backend : GET /transactions/completed est AdminGuard.
+   * Pour un feed public "tout le monde", ajouter un endpoint
+   * GET /transactions/recent-sales sans guard côté NestJS.
+   * Pour l'instant, c'est l'historique de l'utilisateur connecté.
+   */
+  buyHistory: Transaction[] | undefined;
   loadingAction: number | null;
   searchTerm: string;
   filterConfig: FilterConfig[];
@@ -27,6 +36,7 @@ interface BuyTabProps {
 
 const BuyTab = ({
   filteredListings,
+  buyHistory,
   loadingAction,
   searchTerm,
   filterConfig,
@@ -37,7 +47,6 @@ const BuyTab = ({
   onFilterChange,
   onBuyListing,
 }: BuyTabProps) => {
-  // Quantité sélectionnée par listing (clé = listing.id)
   const [quantities, setQuantities] = useState<Record<number, number>>({});
 
   const getQty = (id: number) => quantities[id] ?? 1;
@@ -49,6 +58,7 @@ const BuyTab = ({
 
   return (
     <div className="marketplace-buy">
+      {/* ── Annonces actives ── */}
       <h2 className="marketplace-section__title">Marché</h2>
       <SearchBar
         value={searchTerm}
@@ -71,7 +81,6 @@ const BuyTab = ({
 
           return (
             <div key={listing.id} className="marketplace-listing">
-              {/* Zone Image / Nom + Badge */}
               <div className="marketplace-listing__top">
                 <svg
                   width="36"
@@ -93,7 +102,6 @@ const BuyTab = ({
                 </div>
               </div>
 
-              {/* Sélecteur de quantité */}
               <div className="marketplace-listing__qty-selector">
                 <button
                   className="marketplace-qty-btn"
@@ -135,7 +143,6 @@ const BuyTab = ({
                 )}
               </div>
 
-              {/* Zone Info / Action */}
               <div className="marketplace-listing__bottom">
                 <span className="marketplace-listing__seller">
                   Par: <strong>{listing.seller?.username || "Inconnu"}</strong>
@@ -164,6 +171,15 @@ const BuyTab = ({
           );
         })}
       </div>
+
+      {/* ── Historique des ventes récentes ── */}
+      <h2 className="marketplace-section__title marketplace-section__title--history">
+        Ventes Récentes du Marché
+      </h2>
+      <TransactionHistory
+        history={buyHistory}
+        emptyMessage="Aucune transaction récente."
+      />
     </div>
   );
 };

@@ -3,8 +3,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   transactionService,
   ProductType,
+  TransactionStatus,
   type Transaction,
   type CreateListingData,
+  type UpdateListingData,
 } from "../services/transaction.service";
 import { userService, type UserInventory } from "../services/user.service";
 import { useFilters } from "../components/FilterPanel";
@@ -22,6 +24,7 @@ const Marketplace = () => {
   const [showCreateListingForm, setShowCreateListingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingAction, setLoadingAction] = useState<number | null>(null);
+  const [loadingUpdate, setLoadingUpdate] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formProductType, setFormProductType] = useState<ProductType>(
     ProductType.CARD,
@@ -71,6 +74,38 @@ const Marketplace = () => {
     queryFn: () => userService.getMyInventory(),
   });
 
+  // Historique de l'utilisateur connecté (achats + ventes COMPLETED)
+  // Note : getUserHistory backend ne filtre pas par status → on filtre côté client
+  const { data: userHistory } = useQuery({
+    queryKey: QUERY_KEYS.history,
+    queryFn: () => transactionService.getHistory(),
+  });
+
+  // Filtrage côté client de l'historique
+  const completedHistory = useMemo(
+    () =>
+      userHistory?.data.filter(
+        (tx: Transaction) => tx.status === TransactionStatus.COMPLETED,
+      ) ?? [],
+    [userHistory],
+  );
+
+  // BuyTab : transactions où l'user est acheteur
+  // ⚠️ Pour "tout le monde" : ajouter GET /transactions/recent-sales (public, sans guard)
+  const buyHistory = useMemo(
+    () => completedHistory.filter((tx: Transaction) => tx.buyer != null),
+    [completedHistory],
+  );
+
+  // SellTab : transactions où l'user est vendeur
+  const sellHistory = useMemo(
+    () =>
+      completedHistory.filter(
+        (tx: Transaction) => tx.seller != null && tx.buyer != null,
+      ),
+    [completedHistory],
+  );
+
   const availableItems = useMemo(() => {
     if (!inventory) return [];
     if (formProductType === ProductType.CARD) return inventory.cards.data || [];
@@ -87,6 +122,10 @@ const Marketplace = () => {
 
   const getDisplayName = (listing: Transaction) =>
     listing.itemName || `Objet #${listing.productId}`;
+
+  // ─────────────────────────────────────────────
+  // Handlers
+  // ─────────────────────────────────────────────
 
   const handleCreateListing = async (data: CreateListingData) => {
     if (!data.productId || data.productId <= 0) {
@@ -150,13 +189,66 @@ const Marketplace = () => {
     }
   };
 
+  const handleUpdateListing = async (id: number, data: UpdateListingData) => {
+    if (
+      (data.quantity !== undefined && data.quantity < 1) ||
+      (data.unitPrice !== undefined && data.unitPrice < 1)
+    ) {
+      addToast("Quantité et prix doivent être supérieurs à 0.", "warning");
+      return;
+    }
+    setLoadingUpdate(id);
+    const snapshot = queryClient.getQueryData(QUERY_KEYS.myListings);
+    // Optimistic update
+    queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
+      old
+        ? {
+            ...old,
+            data: old.data.map((l: any) =>
+              l.id === id
+                ? {
+                    ...l,
+                    ...(data.quantity !== undefined && {
+                      quantity: data.quantity,
+                    }),
+                    ...(data.unitPrice !== undefined && {
+                      unitPrice: data.unitPrice,
+                      totalPrice:
+                        data.unitPrice * (data.quantity ?? l.quantity),
+                    }),
+                  }
+                : l,
+            ),
+          }
+        : old,
+    );
+    try {
+      const updated = await transactionService.updateListing(id, data);
+      // Sync avec la réponse serveur (source de vérité)
+      queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
+        old
+          ? {
+              ...old,
+              data: old.data.map((l: any) => (l.id === id ? updated : l)),
+            }
+          : old,
+      );
+      addToast("Annonce mise à jour.", "success");
+    } catch (error: any) {
+      queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
+      const message =
+        error.response?.data?.message || "Impossible de modifier l'annonce.";
+      addToast(message, "error");
+    } finally {
+      setLoadingUpdate(null);
+    }
+  };
+
   const handleBuyListing = async (id: number, quantity: number) => {
     setLoadingAction(id);
     try {
       const transaction = await transactionService.buy(id, quantity);
 
-      // Seul le gold est mis à jour immédiatement (valeur fiable depuis l'API)
-      // Les offers sont gérés exclusivement par le SSE → pas de double déduction
       queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
         old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
       );
@@ -164,6 +256,7 @@ const Marketplace = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.history });
 
       addToast(
         "🎉 Achat réussi ! L'objet est dans votre inventaire.",
@@ -194,6 +287,10 @@ const Marketplace = () => {
       setLoadingAction(null);
     }
   };
+
+  // ─────────────────────────────────────────────
+  // Filtres BuyTab
+  // ─────────────────────────────────────────────
 
   const filterConfig = [
     {
@@ -241,16 +338,20 @@ const Marketplace = () => {
       {selectedTab === "sell" && (
         <SellTab
           userListings={userListings?.data}
+          userSellHistory={sellHistory}
           loadingAction={loadingAction}
+          loadingUpdate={loadingUpdate}
           getDisplayName={getDisplayName}
           onCreateListing={() => setShowCreateListingForm(true)}
           onCancelListing={handleCancelListing}
+          onUpdateListing={handleUpdateListing}
         />
       )}
 
       {selectedTab === "buy" && (
         <BuyTab
           filteredListings={filteredListings}
+          buyHistory={buyHistory}
           loadingAction={loadingAction}
           searchTerm={searchTerm}
           filterConfig={filterConfig}
