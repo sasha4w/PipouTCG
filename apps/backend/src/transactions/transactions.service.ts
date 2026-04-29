@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager, Not } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -9,6 +13,7 @@ import { UserBooster } from '../users/user-booster.entity';
 import { UserBundle } from '../users/user-bundle.entity';
 import { Card } from '../cards/card.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
+import { UpdateListingDto } from './dto/update-listing.dto';
 import { TransactionStatus } from './enums/transaction-status.enum';
 import { ProductType } from './enums/product-type.enum';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -98,7 +103,41 @@ export class TransactionService {
   }
 
   // ============================================================
-  // 🟡 CRÉER / ANNULER
+  // 🟣 COMPLETED — admin & detail
+  // ============================================================
+
+  async findCompleted(pagination: PaginationDto = {}) {
+    const { page = 1, limit = 20 } = pagination;
+    const [transactions, total] = await this.transactionRepository.findAndCount(
+      {
+        where: { status: TransactionStatus.COMPLETED },
+        order: { updatedAt: 'DESC' },
+        relations: ['buyer', 'seller'],
+        skip: (page - 1) * limit,
+        take: limit,
+      },
+    );
+    return {
+      data: transactions,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async findCompletedById(transactionId: number) {
+    const transaction = await this.transactionRepository.findOne({
+      where: { id: transactionId, status: TransactionStatus.COMPLETED },
+      relations: ['buyer', 'seller'],
+    });
+    if (!transaction) {
+      throw new NotFoundException(
+        `Transaction #${transactionId} introuvable ou non complétée.`,
+      );
+    }
+    return transaction;
+  }
+
+  // ============================================================
+  // 🟡 CRÉER / ANNULER / MODIFIER
   // ============================================================
 
   async createListing(dto: CreateListingDto, sellerId: number) {
@@ -158,6 +197,96 @@ export class TransactionService {
     return saved;
   }
 
+  async updateListing(
+    transactionId: number,
+    dto: UpdateListingDto,
+    sellerId: number,
+  ) {
+    if (dto.unitPrice === undefined && dto.quantity === undefined) {
+      throw new BadRequestException(
+        'Au moins unitPrice ou quantity doit être fourni.',
+      );
+    }
+
+    const saved = await this.dataSource.transaction(async (manager) => {
+      const listing = await manager.findOne(Transaction, {
+        where: { id: transactionId },
+        relations: ['seller'],
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!listing) throw new NotFoundException('Annonce introuvable.');
+      if (listing.status !== TransactionStatus.PENDING)
+        throw new BadRequestException(
+          'Impossible de modifier une annonce non active.',
+        );
+      if (listing.seller.id !== sellerId)
+        throw new BadRequestException('Action non autorisée.');
+
+      // ── Gestion du changement de quantité ──
+      if (dto.quantity !== undefined && dto.quantity !== listing.quantity) {
+        const diff = dto.quantity - listing.quantity; // positif = on veut plus, négatif = on réduit
+        const { Entity, relationKey } = this.mapProductType(
+          listing.productType,
+        );
+
+        const inventoryItem = await manager.findOne(Entity, {
+          where: {
+            user: { id: sellerId },
+            [relationKey]: { id: listing.productId },
+          },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!inventoryItem)
+          throw new BadRequestException('Inventaire introuvable.');
+
+        if (diff > 0) {
+          // On augmente la quantité en vente → on vérifie le stock dispo
+          if (inventoryItem.quantity < diff) {
+            throw new BadRequestException(
+              `Stock insuffisant. Disponible : ${inventoryItem.quantity}.`,
+            );
+          }
+          inventoryItem.quantity -= diff;
+        } else {
+          // On réduit la quantité en vente → on restitue la différence
+          inventoryItem.quantity += Math.abs(diff);
+        }
+
+        await manager.save(inventoryItem);
+        listing.quantity = dto.quantity;
+      }
+
+      if (dto.unitPrice !== undefined) {
+        listing.unitPrice = dto.unitPrice;
+      }
+
+      listing.totalPrice = Number(listing.unitPrice) * listing.quantity;
+
+      const updated = await manager.save(listing);
+      return manager.findOne(Transaction, {
+        where: { id: updated.id },
+        relations: ['seller'],
+      });
+    });
+
+    if (!saved) {
+      throw new BadRequestException(
+        "Erreur critique : impossible de récupérer l'annonce après la mise à jour.",
+      );
+    }
+
+    this.eventEmitter.emit('listing.updated', {
+      transactionId: saved.id,
+      newQuantity: saved.quantity,
+      newUnitPrice: saved.unitPrice,
+      newTotalPrice: saved.totalPrice,
+    });
+
+    return saved;
+  }
+
   async cancelListing(transactionId: number, sellerId: number) {
     const saved = await this.dataSource.transaction(async (manager) => {
       const listing = await manager.findOne(Transaction, {
@@ -203,7 +332,6 @@ export class TransactionService {
       if (!listing || listing.status !== TransactionStatus.PENDING)
         throw new BadRequestException('Annonce indisponible.');
 
-      // ── Validation de la quantité demandée ──
       const qty = requestedQty ?? listing.quantity;
       if (qty < 1 || qty > listing.quantity) {
         throw new BadRequestException(
@@ -240,7 +368,6 @@ export class TransactionService {
 
       await manager.save([buyer, seller]);
 
-      // ── Incrément stats ──
       if (listing.productType === ProductType.CARD) {
         await manager.increment(User, { id: buyerId }, 'cardsBought', qty);
         await manager.increment(
@@ -267,7 +394,6 @@ export class TransactionService {
         );
       }
 
-      // ── Achat partiel : on réduit la quantité sans compléter ──
       const isFullBuy = qty === listing.quantity;
 
       if (isFullBuy) {
@@ -300,7 +426,6 @@ export class TransactionService {
       transactionId,
     });
 
-    // Si achat partiel, on notifie que le listing a été modifié (quantité réduite)
     if (!result.isFullBuy) {
       this.eventEmitter.emit('listing.updated', {
         transactionId,
@@ -361,7 +486,7 @@ export class TransactionService {
     manager: EntityManager,
     listing: Transaction,
     buyerId: number,
-    qty: number, // quantité achetée (peut être partielle)
+    qty: number,
   ): Promise<number | null> {
     const { Entity, relationKey } = this.mapProductType(listing.productType);
     let buyerItem = await manager.findOne(Entity, {

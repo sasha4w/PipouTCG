@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   Param,
   Get,
@@ -17,6 +18,7 @@ import { filter, map } from 'rxjs/operators';
 import { TransactionService } from './transactions.service';
 import type { ListingSoldPayload } from './transactions.service';
 import { CreateListingDto } from './dto/create-listing.dto';
+import { UpdateListingDto } from './dto/update-listing.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -91,14 +93,13 @@ export class TransactionController {
     this.sseMarketSubject.next({ type: 'listing.cancelled', ...payload });
   }
 
-  // Achat partiel : le listing reste visible avec quantité réduite
   @OnEvent('listing.updated')
   handleListingUpdated(payload: any) {
     this.sseMarketSubject.next({ type: 'listing.updated', ...payload });
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // ROUTES
+  // ROUTES — listings actifs
   // ─────────────────────────────────────────────────────────────────
 
   @UseGuards(AdminGuard)
@@ -126,9 +127,58 @@ export class TransactionController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('history')
+  getHistory(@Req() req: any, @Query() pagination: PaginationDto) {
+    return this.transactionService.getUserHistory(req.user.userId, pagination);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // ROUTES — transactions complétées
+  // ─────────────────────────────────────────────────────────────────
+
+  /**
+   * GET /transactions/completed
+   * Toutes les transactions COMPLETED — admin uniquement
+   */
+  @UseGuards(AdminGuard)
+  @Get('completed')
+  findCompleted(@Query() pagination: PaginationDto) {
+    return this.transactionService.findCompleted(pagination);
+  }
+
+  /**
+   * GET /transactions/completed/:id
+   * Détail d'une transaction COMPLETED par ID — auth requis
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('completed/:id')
+  findCompletedById(@Param('id', ParseIntPipe) id: number) {
+    return this.transactionService.findCompletedById(id);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // ROUTES — actions sur un listing
+  // ─────────────────────────────────────────────────────────────────
+
+  @UseGuards(JwtAuthGuard)
   @Post('listing')
   createListing(@Body() dto: CreateListingDto, @Req() req: any) {
     return this.transactionService.createListing(dto, req.user.userId);
+  }
+
+  /**
+   * PATCH /transactions/:id
+   * Modifier le prix unitaire et/ou la quantité d'un listing PENDING
+   * Seul le vendeur peut modifier sa propre annonce
+   */
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  updateListing(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateListingDto,
+    @Req() req: any,
+  ) {
+    return this.transactionService.updateListing(id, dto, req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -149,11 +199,5 @@ export class TransactionController {
   @Post(':id/cancel')
   cancelListing(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.transactionService.cancelListing(id, req.user.userId);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('history')
-  getHistory(@Req() req: any, @Query() pagination: PaginationDto) {
-    return this.transactionService.getUserHistory(req.user.userId, pagination);
   }
 }
