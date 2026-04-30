@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   transactionService,
   ProductType,
-  TransactionStatus,
   type Transaction,
   type CreateListingData,
   type UpdateListingData,
@@ -65,46 +64,28 @@ const Marketplace = () => {
     queryKey: QUERY_KEYS.offers,
     queryFn: () => transactionService.findOffers(),
   });
+
   const { data: userListings } = useQuery({
     queryKey: QUERY_KEYS.myListings,
     queryFn: () => transactionService.findMyListings(),
   });
+
   const { data: inventory } = useQuery<UserInventory>({
     queryKey: QUERY_KEYS.inventory,
     queryFn: () => userService.getMyInventory(),
   });
 
-  // Historique de l'utilisateur connecté (achats + ventes COMPLETED)
-  // Note : getUserHistory backend ne filtre pas par status → on filtre côté client
-  const { data: userHistory } = useQuery({
-    queryKey: QUERY_KEYS.history,
-    queryFn: () => transactionService.getHistory(),
+  // Ventes récentes de tout le marché → BuyTab
+  const { data: recentSalesData } = useQuery({
+    queryKey: ["transactions", "recent-sales"],
+    queryFn: () => transactionService.getRecentSales(),
   });
 
-  // Filtrage côté client de l'historique
-  const completedHistory = useMemo(
-    () =>
-      userHistory?.data.filter(
-        (tx: Transaction) => tx.status === TransactionStatus.COMPLETED,
-      ) ?? [],
-    [userHistory],
-  );
-
-  // BuyTab : transactions où l'user est acheteur
-  // ⚠️ Pour "tout le monde" : ajouter GET /transactions/recent-sales (public, sans guard)
-  const buyHistory = useMemo(
-    () => completedHistory.filter((tx: Transaction) => tx.buyer != null),
-    [completedHistory],
-  );
-
-  // SellTab : transactions où l'user est vendeur
-  const sellHistory = useMemo(
-    () =>
-      completedHistory.filter(
-        (tx: Transaction) => tx.seller != null && tx.buyer != null,
-      ),
-    [completedHistory],
-  );
+  // Mes ventes complétées → SellTab
+  const { data: mySalesData } = useQuery({
+    queryKey: ["transactions", "history", "seller"],
+    queryFn: () => transactionService.getHistory(1, 20, "seller"),
+  });
 
   const availableItems = useMemo(() => {
     if (!inventory) return [];
@@ -199,7 +180,6 @@ const Marketplace = () => {
     }
     setLoadingUpdate(id);
     const snapshot = queryClient.getQueryData(QUERY_KEYS.myListings);
-    // Optimistic update
     queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
       old
         ? {
@@ -224,7 +204,6 @@ const Marketplace = () => {
     );
     try {
       const updated = await transactionService.updateListing(id, data);
-      // Sync avec la réponse serveur (source de vérité)
       queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
         old
           ? {
@@ -256,7 +235,9 @@ const Marketplace = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.history });
+      queryClient.invalidateQueries({
+        queryKey: ["transactions", "recent-sales"],
+      });
 
       addToast(
         "🎉 Achat réussi ! L'objet est dans votre inventaire.",
@@ -338,7 +319,7 @@ const Marketplace = () => {
       {selectedTab === "sell" && (
         <SellTab
           userListings={userListings?.data}
-          userSellHistory={sellHistory}
+          userSellHistory={mySalesData?.data}
           loadingAction={loadingAction}
           loadingUpdate={loadingUpdate}
           getDisplayName={getDisplayName}
@@ -351,7 +332,7 @@ const Marketplace = () => {
       {selectedTab === "buy" && (
         <BuyTab
           filteredListings={filteredListings}
-          buyHistory={buyHistory}
+          buyHistory={recentSalesData?.data}
           loadingAction={loadingAction}
           searchTerm={searchTerm}
           filterConfig={filterConfig}

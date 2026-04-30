@@ -84,12 +84,23 @@ export const transactionService = {
     return res.data;
   },
 
-  // Historique global de l'utilisateur (achats et ventes)
   async getHistory(
     page = 1,
     limit = 20,
+    role?: "seller" | "buyer",
   ): Promise<PaginatedResponse<Transaction>> {
     const res = await api.get("/transactions/history", {
+      params: { page, limit, ...(role ? { role } : {}) },
+    });
+    return res.data;
+  },
+
+  // Ajouter
+  async getRecentSales(
+    page = 1,
+    limit = 20,
+  ): Promise<PaginatedResponse<Transaction>> {
+    const res = await api.get("/transactions/recent-sales", {
       params: { page, limit },
     });
     return res.data;

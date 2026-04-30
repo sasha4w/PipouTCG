@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { type Transaction } from "../../services/transaction.service";
+import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import "./TransactionHistory.css";
 
 interface TransactionHistoryProps {
@@ -72,7 +73,7 @@ const TransactionHistory = ({
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
-            ←
+            <IconArrowLeft size={16} color="currentColor" />
           </button>
 
           <span>
@@ -83,7 +84,7 @@ const TransactionHistory = ({
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
           >
-            →
+            <IconArrowRight size={16} color="currentColor" />
           </button>
         </div>
       )}

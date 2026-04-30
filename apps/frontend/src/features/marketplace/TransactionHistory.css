@@ -121,25 +121,20 @@
   border: none;
   border-radius: 10px;
 
-  background: rgba(255, 255, 255, 0.06);
-  color: #7a1c3b;
+  background: #7a1c3b;
+  color: #f5e6d0;
 
   cursor: pointer;
   transition: 0.15s ease;
 }
 
 .tx-history__pagination button:hover:not(:disabled) {
-  background: rgba(212, 168, 92, 0.18);
+  background: rgba(122, 28, 59, 0.7);
 }
 
 .tx-history__pagination button:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-}
-
-.tx-history__pagination span {
-  font-size: 0.8rem;
-  color: #7a1c3b;
 }
 
 .tx-history__empty {
