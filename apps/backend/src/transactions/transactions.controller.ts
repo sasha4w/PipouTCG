@@ -23,7 +23,7 @@ import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { IsInt, IsOptional, Min } from 'class-validator';
-
+import { HistoryQueryDto } from './dto/history-query.dto';
 class BuyListingDto {
   @IsOptional()
   @IsInt()
@@ -128,15 +128,11 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  getHistory(
-    @Req() req: any,
-    @Query() pagination: PaginationDto, // ?page=1&limit=20
-    @Query('role') role?: 'seller' | 'buyer', // ?role=seller
-  ) {
+  getHistory(@Req() req: any, @Query() query: HistoryQueryDto) {
     return this.transactionService.getUserHistory(
       req.user.userId,
-      pagination,
-      role,
+      query,
+      query.role,
     );
   }
   // ─────────────────────────────────────────────────────────────────
