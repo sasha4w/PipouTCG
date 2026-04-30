@@ -128,10 +128,17 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  getHistory(@Req() req: any, @Query() pagination: PaginationDto) {
-    return this.transactionService.getUserHistory(req.user.userId, pagination);
+  getHistory(
+    @Req() req: any,
+    @Query() pagination: PaginationDto, // ?page=1&limit=20
+    @Query('role') role?: 'seller' | 'buyer', // ?role=seller
+  ) {
+    return this.transactionService.getUserHistory(
+      req.user.userId,
+      pagination,
+      role,
+    );
   }
-
   // ─────────────────────────────────────────────────────────────────
   // ROUTES — transactions complétées
   // ─────────────────────────────────────────────────────────────────
@@ -154,6 +161,13 @@ export class TransactionController {
   @Get('completed/:id')
   findCompletedById(@Param('id', ParseIntPipe) id: number) {
     return this.transactionService.findCompletedById(id);
+  }
+
+  // GET /transactions/recent-sales — toutes les completed, pour tous les users connectés
+  @UseGuards(JwtAuthGuard)
+  @Get('recent-sales')
+  getRecentSales(@Query() pagination: PaginationDto) {
+    return this.transactionService.getRecentSales(pagination);
   }
 
   // ─────────────────────────────────────────────────────────────────

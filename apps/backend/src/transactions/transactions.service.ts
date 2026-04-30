@@ -85,23 +85,52 @@ export class TransactionService {
     };
   }
 
-  async getUserHistory(userId: number, pagination: PaginationDto = {}) {
+  async getUserHistory(
+    userId: number,
+    pagination: PaginationDto = {},
+    role?: 'seller' | 'buyer',
+  ) {
     const { page = 1, limit = 20 } = pagination;
+
+    const where =
+      role === 'seller'
+        ? { seller: { id: userId }, status: TransactionStatus.COMPLETED }
+        : role === 'buyer'
+          ? { buyer: { id: userId }, status: TransactionStatus.COMPLETED }
+          : [
+              { seller: { id: userId }, status: TransactionStatus.COMPLETED },
+              { buyer: { id: userId }, status: TransactionStatus.COMPLETED },
+            ];
+
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
-        where: [{ buyer: { id: userId } }, { seller: { id: userId } }],
-        order: { createdAt: 'DESC' },
+        where,
+        order: { updatedAt: 'DESC' },
         relations: ['buyer', 'seller'],
         skip: (page - 1) * limit,
         take: limit,
       },
     );
+
     return {
       data: transactions,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
-
+  async getRecentSales(pagination: PaginationDto) {
+    const { page = 1, limit = 20 } = pagination;
+    const [data, total] = await this.transactionRepository.findAndCount({
+      where: { status: TransactionStatus.COMPLETED },
+      relations: ['seller', 'buyer'],
+      order: { updatedAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return {
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
   // ============================================================
   // 🟣 COMPLETED — admin & detail
   // ============================================================
