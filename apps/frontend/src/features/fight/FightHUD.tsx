@@ -19,12 +19,16 @@ function PrimesRow({ primes }: { primes: number }) {
       title={`${primes} prime${primes > 1 ? "s" : ""}`}
     >
       {Array.from({ length: 6 }).map((_, i) => (
-        <IconChest key={i} size={13} color={i < primes ? "#7a1c3b" : "#ddd"} />
+        <span
+          key={i}
+          className={`hud-prime${i < primes ? " hud-prime--earned" : ""}`}
+        >
+          <IconChest size={13} color={i < primes ? "#7a1c3b" : "#ccc"} />
+        </span>
       ))}
     </span>
   );
 }
-
 export default function FightHUD({
   me,
   opponent,

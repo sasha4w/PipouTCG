@@ -13,22 +13,18 @@
   border: 1.5px solid #f0ddd0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
-
 /* ── Lignes joueur ── */
 .hud-row {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .hud-row--opp {
   opacity: 0.75;
 }
-
 .hud-row--me {
   font-weight: 600;
 }
-
 /* ── Nom ── */
 .hud-name {
   font-family: "Lilita One", sans-serif;
@@ -40,17 +36,30 @@
   text-overflow: ellipsis;
   max-width: 90px;
 }
-
 .hud-name--opp {
   opacity: 0.8;
 }
-
 /* ── Primes ── */
 .hud-primes {
   display: flex;
   align-items: center;
   gap: 1px;
   flex: 1;
+}
+
+.hud-prime {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.22;
+  filter: grayscale(1);
+  transition:
+    opacity 0.35s,
+    filter 0.35s;
+}
+
+.hud-prime--earned {
+  opacity: 1;
+  filter: none;
 }
 
 /* ── Stats (deck / main) ── */
@@ -62,7 +71,6 @@
   color: #aaa;
   white-space: nowrap;
 }
-
 /* ── Centre : phase + timer ── */
 .hud-center {
   display: flex;
@@ -73,7 +81,6 @@
   border-top: 1px solid #f0ddd0;
   border-bottom: 1px solid #f0ddd0;
 }
-
 .hud-phase-chip {
   background: #7a1c3b;
   color: #fff;
@@ -82,12 +89,10 @@
   font-size: 11px;
   font-family: "Lilita One", sans-serif;
 }
-
 .hud-turn-num {
   font-size: 11px;
   color: #aaa;
 }
-
 /* ── Timer ── */
 .hud-timer {
   display: flex;
@@ -104,22 +109,18 @@
     background 0.4s,
     border-color 0.4s;
 }
-
 .hud-timer--urgent {
   color: #e74c3c;
   background: rgba(231, 76, 60, 0.12);
   border-color: #e74c3c;
   animation: hud-timer-pulse 0.8s ease-in-out infinite;
 }
-
 .hud-timer-icon {
   animation: hud-timer-tick 1s steps(1) infinite;
 }
-
 .hud-timer--urgent .hud-timer-icon {
   animation: hud-timer-tick-fast 0.5s steps(1) infinite;
 }
-
 @keyframes hud-timer-pulse {
   0%,
   100% {
@@ -129,7 +130,6 @@
     box-shadow: 0 4px 24px rgba(231, 76, 60, 0.45);
   }
 }
-
 @keyframes hud-timer-tick {
   0% {
     opacity: 1;
@@ -138,7 +138,6 @@
     opacity: 0.4;
   }
 }
-
 @keyframes hud-timer-tick-fast {
   0% {
     opacity: 1;

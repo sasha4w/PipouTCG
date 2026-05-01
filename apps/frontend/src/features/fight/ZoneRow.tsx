@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import "./ZoneRow.css";
-import { QUENOUILLE_CARD_ID } from "./fight.types";
+import { QUENOUILLE_CARD_ID, RARITY_COLOR } from "./fight.types";
 
 interface Props {
   label: string;
@@ -22,22 +22,24 @@ interface Props {
   damagedZones?: Set<number>;
 }
 
-/**
- * Returns true if this monster CANNOT attack this turn.
- *
- * Two cases:
- *  1. Commandant Quenouille (id=9): blocked the turn it's summoned.
- *  2. Any other monster: summonedThisTurn has NO bearing — standard monsters
- *     CAN attack the turn they are summoned. The flag is only kept for
- *     Quenouille's special rule and for the doubleAtkNextTurn mechanic.
- */
 function isBlockedFromAttacking(zone: any): boolean {
   if (!zone) return false;
-  // Quenouille specifically cannot attack the turn it's summoned
   if (zone.summonedThisTurn && zone.card?.baseCard?.id === QUENOUILLE_CARD_ID) {
     return true;
   }
   return false;
+}
+
+/** Extracts the rarity color for a zone (monster or support) */
+function getRarityBorderColor(
+  zone: any,
+  isSupport: boolean,
+): string | undefined {
+  if (!zone) return undefined;
+  const rarity = isSupport
+    ? zone.baseCard?.rarity
+    : zone.card?.baseCard?.rarity;
+  return rarity ? RARITY_COLOR[rarity] : undefined;
 }
 
 export default function ZoneRow({
@@ -65,6 +67,10 @@ export default function ZoneRow({
   );
   const [flippingZones, setFlippingZones] = useState<Set<number>>(new Set());
 
+  // ── Destruction detection (filled → null) ────────────────────────────────
+  // Stores the last-known zone data so we can render it during the shatter anim
+  const [dyingZones, setDyingZones] = useState<Map<number, any>>(new Map());
+
   useEffect(() => {
     const prevZones = prevZonesRef.current;
     const prevModes = prevModesRef.current;
@@ -73,8 +79,23 @@ export default function ZoneRow({
     const newFlipping = new Set<number>();
 
     zones.forEach((zone, idx) => {
+      // null → filled : summon anim
       if (!prevZones[idx] && zone) newSummoning.add(idx);
 
+      // filled → null : destruction anim — keep a snapshot of the dead card
+      if (prevZones[idx] && !zone) {
+        const snapshot = prevZones[idx];
+        setDyingZones((prev) => new Map([...prev, [idx, snapshot]]));
+        setTimeout(() => {
+          setDyingZones((prev) => {
+            const next = new Map(prev);
+            next.delete(idx);
+            return next;
+          });
+        }, 900);
+      }
+
+      // mode change
       if (!isSupport && prevZones[idx] && zone) {
         const prevMode = prevModes[idx];
         const curMode = zone.mode as string | undefined;
@@ -84,21 +105,17 @@ export default function ZoneRow({
 
     if (newSummoning.size > 0) {
       setSummoningZones(newSummoning);
-      const t = setTimeout(() => setSummoningZones(new Set()), 500);
-      return () => clearTimeout(t);
+      setTimeout(() => setSummoningZones(new Set()), 500);
     }
 
     if (newFlipping.size > 0) {
       setFlippingZones(newFlipping);
-      const t = setTimeout(() => setFlippingZones(new Set()), 450);
-      return () => clearTimeout(t);
+      setTimeout(() => setFlippingZones(new Set()), 450);
     }
-
-    prevZonesRef.current = [...zones];
-    prevModesRef.current = zones.map((z) => z?.mode as string | undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zones]);
 
+  // Always keep refs in sync after every render
   useEffect(() => {
     prevZonesRef.current = [...zones];
     prevModesRef.current = zones.map((z) => z?.mode as string | undefined);
@@ -120,18 +137,34 @@ export default function ZoneRow({
           const isFlipping = flippingZones.has(idx);
           const blocked = !isSupport && isBlockedFromAttacking(zone);
 
+          // If zone is empty but we have a dying snapshot → render shatter
+          const dyingData = dyingZones.get(idx);
+          const effectiveZone = zone ?? null;
+          const isShattering = !zone && !!dyingData;
+
+          // Rarity border color (live zone takes priority, else dying snapshot)
+          const rarityColor =
+            getRarityBorderColor(effectiveZone, isSupport) ??
+            getRarityBorderColor(dyingData, isSupport);
+
           return (
             <div
               key={idx}
               className={[
                 "zr-zone",
                 dim ? "zr-zone--dim" : "",
-                zone ? "zr-zone--filled" : "zr-zone--empty",
+                zone
+                  ? "zr-zone--filled"
+                  : isShattering
+                    ? "zr-zone--shattering"
+                    : "zr-zone--empty",
                 selectedZone === idx ? "zr-zone--selected" : "",
                 onZoneClick || (zone && onMonsterClick)
                   ? "zr-zone--clickable"
                   : "",
-                highlightEmpty && !zone ? "zr-zone--pulse-target" : "",
+                highlightEmpty && !zone && !isShattering
+                  ? "zr-zone--pulse-target"
+                  : "",
                 isSummoning ? "zr-zone--summon-in" : "",
                 isFlipping ? "zr-zone--mode-flip" : "",
                 isAttacking ? "zr-zone--attacking" : "",
@@ -139,6 +172,7 @@ export default function ZoneRow({
               ]
                 .filter(Boolean)
                 .join(" ")}
+              style={rarityColor ? { borderColor: rarityColor } : undefined}
               onClick={() => {
                 if (zone && onMonsterClick && zone.instanceId)
                   onMonsterClick(zone.instanceId);
@@ -180,7 +214,6 @@ export default function ZoneRow({
                           ✨
                         </span>
                       )}
-                      {/* 💤 uniquement sur Quenouille invoqué ce tour */}
                       {blocked && (
                         <span
                           className="zr-badge zr-badge--sleep"
@@ -249,6 +282,33 @@ export default function ZoneRow({
                         </button>
                       </div>
                     )}
+                  </div>
+                )
+              ) : isShattering && dyingData ? (
+                /* ── Dying zone: render snapshot with shatter anim ── */
+                isSupport ? (
+                  <div className="zr-support zr-dying-content">
+                    <div className="zr-support-name">
+                      {dyingData.baseCard?.name}
+                    </div>
+                    <div className="zr-support-type">
+                      {dyingData.baseCard?.supportType ?? ""}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="zr-monster zr-dying-content">
+                    <div
+                      className={`zr-mode-chip zr-mode-chip--${dyingData.mode}`}
+                    >
+                      {dyingData.mode === "attack" ? "⚔️" : "🛡️"}
+                    </div>
+                    <div className="zr-monster-name">
+                      {dyingData.card?.baseCard?.name}
+                    </div>
+                    <div className="zr-monster-stats">
+                      {dyingData.card?.baseCard?.atk}⚔ 0/
+                      {dyingData.card?.baseCard?.hp}❤
+                    </div>
                   </div>
                 )
               ) : (
