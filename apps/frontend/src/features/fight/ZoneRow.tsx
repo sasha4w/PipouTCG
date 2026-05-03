@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import "./ZoneRow.css";
 import "./BuffDebuffList.css";
 import { QUENOUILLE_CARD_ID, RARITY_COLOR } from "./fight.types";
-import BuffDebuffList, { type BuffEntry } from "./Buffdebufflist";
-
+import BuffDebuffList, { type BuffEntry } from "./BuffDebuffList";
 interface Props {
   label: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
