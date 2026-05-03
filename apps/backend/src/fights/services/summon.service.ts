@@ -14,6 +14,9 @@ import {
 } from '../helpers/game-state.helper';
 import { emitGameState } from '../helpers/client-state.builder';
 
+/** Seul ID autorisé à être posé sur le terrain adverse */
+const ZETA_CARD_ID = 122;
+
 @Injectable()
 export class SummonService {
   constructor(
@@ -21,6 +24,7 @@ export class SummonService {
     private buffsCalc: BuffsCalculatorService,
   ) {}
 
+  /** Invocation normale — pose sur le terrain du joueur courant */
   async summonMonster(
     game: GameState,
     userId: number,
@@ -29,18 +33,70 @@ export class SummonService {
     paymentHandIndices: number[],
     server: Server,
   ): Promise<{ error?: string }> {
-    if (!isCurrentPlayer(game, userId)) return { error: "Ce n'est pas ton tour" };
+    return this.doSummon(
+      game,
+      userId,
+      handIndex,
+      zoneIndex,
+      paymentHandIndices,
+      false,
+      server,
+    );
+  }
+
+  /** Invocation Zeta — pose sur une zone adverse vide */
+  async summonZetaOnOpponent(
+    game: GameState,
+    userId: number,
+    handIndex: number,
+    zoneIndex: number,
+    paymentHandIndices: number[],
+    server: Server,
+  ): Promise<{ error?: string }> {
+    const player = getPlayerState(game, userId);
+    if (handIndex < 0 || handIndex >= player.hand.length)
+      return { error: 'Index main invalide' };
+    if (player.hand[handIndex].baseCard.id !== ZETA_CARD_ID)
+      return { error: 'Seul Noyau Zeta peut être posé sur le terrain adverse' };
+
+    return this.doSummon(
+      game,
+      userId,
+      handIndex,
+      zoneIndex,
+      paymentHandIndices,
+      true,
+      server,
+    );
+  }
+
+  // ── Logique commune ────────────────────────────────────────────────────────
+
+  private async doSummon(
+    game: GameState,
+    userId: number,
+    handIndex: number,
+    zoneIndex: number,
+    paymentHandIndices: number[],
+    onOpponentZone: boolean,
+    server: Server,
+  ): Promise<{ error?: string }> {
+    if (!isCurrentPlayer(game, userId))
+      return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
 
     const player = getPlayerState(game, userId);
+    const opponent = getOpponentState(game, userId);
+    const target = onOpponentZone ? opponent : player;
 
     if (zoneIndex < 0 || zoneIndex > 2) return { error: 'Zone invalide (0-2)' };
-    if (player.monsterZones[zoneIndex]) return { error: 'Zone occupée' };
+    if (target.monsterZones[zoneIndex]) return { error: 'Zone occupée' };
     if (handIndex < 0 || handIndex >= player.hand.length)
       return { error: 'Index main invalide' };
 
     const card = player.hand[handIndex];
-    if (card.baseCard.type !== CardType.MONSTER) return { error: 'Pas un Monstre' };
+    if (card.baseCard.type !== CardType.MONSTER)
+      return { error: 'Pas un Monstre' };
 
     const isFree = player.freeSummonAvailable && card.baseCard.id === 29;
     if (isFree) player.freeSummonAvailable = false;
@@ -50,7 +106,9 @@ export class SummonService {
     const handPayNeeded = isFree ? 0 : Math.max(0, cost - player.recycleEnergy);
 
     if (uniquePayment.length < handPayNeeded)
-      return { error: `Pas assez de cartes défaussées (besoin: ${handPayNeeded})` };
+      return {
+        error: `Pas assez de cartes défaussées (besoin: ${handPayNeeded})`,
+      };
     if (uniquePayment.includes(handIndex))
       return { error: 'La carte invoquée ne peut pas payer son propre coût' };
     for (const i of uniquePayment) {
@@ -90,12 +148,18 @@ export class SummonService {
       forcedAttackMode: false,
       summonedThisTurn: true,
       doubleAtkNextTurn: false,
+      turnCounter: undefined,
+      // Mémorise le poseur quand c'est une zone adverse (Zeta)
+      ownerUserId: onOpponentZone ? userId : undefined,
     };
-    player.monsterZones[zoneIndex] = instance;
+
+    target.monsterZones[zoneIndex] = instance;
 
     addLog(
       game,
-      `${player.username} invoque ${monster.baseCard.name} (${monster.baseCard.atk}ATK / ${monster.baseCard.hp}HP)`,
+      onOpponentZone
+        ? `🦠 ${player.username} implante ${monster.baseCard.name} sur le terrain de ${opponent.username} !`
+        : `${player.username} invoque ${monster.baseCard.name} (${monster.baseCard.atk}ATK / ${monster.baseCard.hp}HP)`,
     );
 
     const summonLog: string[] = [];
@@ -108,7 +172,7 @@ export class SummonService {
     summonLog.forEach((l) => addLog(game, l));
 
     this.buffsCalc.recalculate(player);
-    this.buffsCalc.recalculate(getOpponentState(game, userId));
+    this.buffsCalc.recalculate(opponent);
 
     for (const handCard of player.hand) {
       const allyLog: string[] = [];

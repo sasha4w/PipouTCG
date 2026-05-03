@@ -12,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FightsService } from './fights.service';
 import * as cookie from 'cookie';
+
 // ─── Payload shapes received from client ─────────────────────────────────────
 
 interface SubmitDeckPayload {
@@ -25,20 +26,15 @@ interface EndPhasePayload {
 
 interface SummonPayload {
   matchId: number;
-  /** Index of the monster in the player's hand. */
   handIndex: number;
-  /** Board zone to place the monster (0-2). */
   zoneIndex: number;
-  /** Indices in hand used as cost payment (excluding the monster itself). */
   paymentHandIndices: number[];
 }
 
 interface PlaySupportPayload {
   matchId: number;
   handIndex: number;
-  /** For Terrain: zone index (0-2). */
   zoneIndex?: number;
-  /** For Equipment: target monster instanceId. */
   targetInstanceId?: string;
 }
 
@@ -56,7 +52,6 @@ interface ChangeModePayload {
 interface AttackPayload {
   matchId: number;
   attackerInstanceId: string;
-  /** Omit for direct attack. */
   targetInstanceId?: string;
   direct?: boolean;
 }
@@ -89,7 +84,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(client: Socket): void {
     try {
       const rawCookies = client.handshake.headers.cookie ?? '';
-      const cookies = cookie.parse(rawCookies); // ✅ parsing robuste
+      const cookies = cookie.parse(rawCookies);
       const token = cookies['token'];
 
       if (!token) throw new Error('No token');
@@ -125,7 +120,6 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // ── Matchmaking ────────────────────────────────────────────────────────────
 
-  /** Enter the matchmaking queue. */
   @SubscribeMessage('fight:queue')
   async joinQueue(@ConnectedSocket() client: Socket): Promise<void> {
     const match = await this.fightsService.joinQueue(
@@ -140,7 +134,6 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    // Notify both players
     this.server.to(match.p1.socketId).emit('fight:matched', {
       matchId: match.matchId,
       opponentName: match.p2.username,
@@ -151,7 +144,6 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
   }
 
-  /** Leave the matchmaking queue without starting a game. */
   @SubscribeMessage('fight:dequeue')
   leaveQueue(@ConnectedSocket() client: Socket): void {
     this.fightsService.leaveQueue(client.data.userId);
@@ -201,6 +193,25 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: SummonPayload,
   ): Promise<void> {
     const result = await this.fightsService.summonMonster(
+      data.matchId,
+      client.data.userId,
+      data.handIndex,
+      data.zoneIndex,
+      data.paymentHandIndices ?? [],
+      this.server,
+    );
+    if (result?.error) {
+      client.emit('fight:error', { message: result.error });
+    }
+  }
+
+  /** Invoque Noyau Zeta sur une zone adverse vide */
+  @SubscribeMessage('fight:summon_opponent')
+  async summonZetaOnOpponent(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: SummonPayload,
+  ): Promise<void> {
+    const result = await this.fightsService.summonZetaOnOpponent(
       data.matchId,
       client.data.userId,
       data.handIndex,
@@ -301,7 +312,6 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('fight:error', { message: result.error });
     }
   }
-  // Picking cards (for effects that require player choice)
 
   @SubscribeMessage('fight:pick_cards')
   async pickCards(
@@ -318,6 +328,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('fight:error', { message: result.error });
     }
   }
+
   // ── Surrender ──────────────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:surrender')

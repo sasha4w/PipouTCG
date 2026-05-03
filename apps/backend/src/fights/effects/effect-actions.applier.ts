@@ -1,7 +1,6 @@
 import {
   CardEffect,
   ActionType,
-  EffectTrigger,
 } from '../../cards/interfaces/card-effect.interface';
 import {
   CardInstance,
@@ -12,16 +11,25 @@ import {
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
 
-/**
- * Applies all actions of a single CardEffect.
- * Calls `resolveOnDeath` recursively for kills triggered by effects.
- */
 export function applyActions(
   effect: CardEffect,
   card: CardInstance,
   ctx: EffectContext,
-  resolveOnDeath: (instanceId: string, owner: PlayerGameState, ctx: EffectContext) => void,
+  resolveOnDeath: (
+    instanceId: string,
+    owner: PlayerGameState,
+    ctx: EffectContext,
+  ) => void,
 ): void {
+  const owner =
+    ctx.game.player1.userId === ctx.ownerUserId
+      ? ctx.game.player1
+      : ctx.game.player2;
+  const opponent =
+    ctx.game.player1.userId === ctx.ownerUserId
+      ? ctx.game.player2
+      : ctx.game.player1;
+
   for (const action of effect.actions) {
     const targets = resolveTargets(action.target, ctx);
 
@@ -34,9 +42,15 @@ export function applyActions(
             ? Math.ceil(dmg / target.damageReduction)
             : dmg;
           target.currentHp -= reduced;
-          ctx.log.push(`✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`);
+          ctx.log.push(
+            `✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`,
+          );
           if (target.currentHp <= 0) {
-            resolveOnDeath(target.instanceId, targets.ownerOfMonster(target), ctx);
+            resolveOnDeath(
+              target.instanceId,
+              targets.ownerOfMonster(target),
+              ctx,
+            );
           }
         }
         for (const p of targets.players) {
@@ -44,26 +58,31 @@ export function applyActions(
             const prime = p.primeDeck.shift()!;
             p.primes--;
             p.banished.push(prime);
-            ctx.log.push(`💥 ${card.baseCard.name} détruit une Prime de ${p.username}`);
+            ctx.log.push(
+              `💥 ${card.baseCard.name} détruit une Prime de ${p.username}`,
+            );
           }
         }
         break;
       }
 
-      // ── Heal ─────────────────────────────────────────────────────────────
+      // ── Heal ──────────────────────────────────────────────────────────────
       case ActionType.HEAL: {
         const value = action.value ?? 0;
         for (const target of targets.monsters) {
           const maxHp = target.card.baseCard.hp + target.hpBuff;
           target.currentHp = Math.min(target.currentHp + value, maxHp);
-          ctx.log.push(`💚 ${card.baseCard.name} soigne ${target.card.baseCard.name}`);
+          ctx.log.push(
+            `💚 ${card.baseCard.name} soigne ${target.card.baseCard.name}`,
+          );
         }
         break;
       }
 
       // ── Stat buffs ────────────────────────────────────────────────────────
       case ActionType.BUFF_ATK:
-        for (const target of targets.monsters) target.atkBuff += action.value ?? 0;
+        for (const target of targets.monsters)
+          target.atkBuff += action.value ?? 0;
         break;
 
       case ActionType.BUFF_HP:
@@ -93,19 +112,144 @@ export function applyActions(
         break;
 
       // ── Destroy ───────────────────────────────────────────────────────────
-      case ActionType.DESTROY_MONSTER:
-        for (const target of targets.monsters) {
-          resolveOnDeath(target.instanceId, targets.ownerOfMonster(target), ctx);
+      // DESTROY_MONSTER + SELF/ALL_ENEMIES/ENEMY_MONSTER → direct
+      // DESTROY_MONSTER + TARGET_ALLY → pendingChoice (joueur choisit l'allié)
+      case ActionType.DESTROY_MONSTER: {
+        if (targets.monsters.length > 0) {
+          for (const target of targets.monsters) {
+            resolveOnDeath(
+              target.instanceId,
+              targets.ownerOfMonster(target),
+              ctx,
+            );
+          }
+        } else {
+          // TARGET_ALLY — choix interactif
+          const allies = owner.monsterZones.filter(
+            (m): m is MonsterOnBoard => m !== null,
+          );
+          if (allies.length === 0) {
+            ctx.log.push(`⚠️ ${card.baseCard.name} — aucun allié à détruire`);
+            break;
+          }
+          const candidates: ChoiceCandidate[] = allies.map((m) => ({
+            instanceId: m.instanceId,
+            baseCard: m.card.baseCard,
+            source: 'board' as const,
+          }));
+          ctx.game.pendingChoice = {
+            forUserId: owner.userId,
+            candidates,
+            count: 1,
+            prompt: 'Choisissez un allié à détruire',
+            resolution: 'destroy_ally',
+          };
+          ctx.log.push(
+            `💥 ${owner.username} doit choisir un allié à détruire…`,
+          );
+        }
+        break;
+      }
+
+      // ── Return to hand ────────────────────────────────────────────────────
+      // RETURN_TO_HAND + SELF → retourne sourceMonster directement
+      // RETURN_TO_HAND + TARGET_ALLY → pendingChoice (joueur choisit)
+      case ActionType.RETURN_TO_HAND: {
+        if (targets.monsters.length > 0) {
+          for (const target of targets.monsters) {
+            returnMonsterToHand(
+              target,
+              targets.ownerOfMonster(target),
+              ctx,
+              card,
+            );
+          }
+        } else {
+          const allies = owner.monsterZones.filter(
+            (m): m is MonsterOnBoard => m !== null,
+          );
+          if (allies.length === 0) {
+            ctx.log.push(
+              `⚠️ ${card.baseCard.name} — aucun allié à retourner en main`,
+            );
+            break;
+          }
+          const candidates: ChoiceCandidate[] = allies.map((m) => ({
+            instanceId: m.instanceId,
+            baseCard: m.card.baseCard,
+            source: 'board' as const,
+          }));
+          ctx.game.pendingChoice = {
+            forUserId: owner.userId,
+            candidates,
+            count: 1,
+            prompt: 'Choisissez un allié à retourner en main',
+            resolution: 'return_to_hand',
+          };
+          ctx.log.push(
+            `↩️ ${owner.username} doit choisir un allié à retourner en main…`,
+          );
+        }
+        break;
+      }
+
+      // ── Compteur de tour (Noyau Zeta) ─────────────────────────────────────
+      // Initialise un countdown sur sourceMonster.
+      // La décrémentation + mort se font dans phase.service.ts.
+      case ActionType.SET_TURN_COUNTER:
+        if (ctx.sourceMonster) {
+          ctx.sourceMonster.turnCounter = action.value ?? 3;
+          ctx.log.push(
+            `⏳ ${card.baseCard.name} s'autodétruira dans ${ctx.sourceMonster.turnCounter} tour(s)`,
+          );
         }
         break;
 
+      // ── Forcer mode attaque ennemi (Rootkit de Transmission) ─────────────
+      // Si un seul ennemi → appliqué directement.
+      // Si plusieurs → pendingChoice pour que le joueur choisisse.
+      case ActionType.FORCE_ATTACK_MODE_ENEMY: {
+        const enemies = opponent.monsterZones.filter(
+          (m): m is MonsterOnBoard => m !== null,
+        );
+        if (enemies.length === 0) {
+          ctx.log.push(
+            `⚠️ ${card.baseCard.name} — aucun monstre adverse à cibler`,
+          );
+          break;
+        }
+        if (enemies.length === 1) {
+          const target = enemies[0];
+          target.forcedAttackMode = true;
+          target.mode = 'attack';
+          ctx.log.push(
+            `🔒 ${card.baseCard.name} force ${target.card.baseCard.name} en mode Attaque`,
+          );
+          break;
+        }
+        const candidates: ChoiceCandidate[] = enemies.map((m) => ({
+          instanceId: m.instanceId,
+          baseCard: m.card.baseCard,
+          source: 'board' as const,
+        }));
+        ctx.game.pendingChoice = {
+          forUserId: owner.userId,
+          candidates,
+          count: 1,
+          prompt: 'Choisissez un monstre adverse à verrouiller en mode Attaque',
+          resolution: 'force_attack_enemy',
+        };
+        ctx.log.push(
+          `🔒 ${owner.username} choisit un monstre adverse à verrouiller…`,
+        );
+        break;
+      }
+
       // ── Steal prime ───────────────────────────────────────────────────────
       case ActionType.STEAL_PRIME: {
-        const owner = ctx.game.player1.userId === ctx.ownerUserId ? ctx.game.player1 : ctx.game.player2;
-        const opp = ctx.game.player1.userId === ctx.ownerUserId ? ctx.game.player2 : ctx.game.player1;
-        if (opp.primes > 0 && opp.primeDeck.length > 0) {
-          const prime = opp.primeDeck.shift()!;
-          opp.primes--;
+        if (opponent.primes > 0 && opponent.primeDeck.length > 0) {
+          const prime = opponent.primeDeck.shift()!;
+          opponent.primes--;
           owner.hand.push(prime);
           ctx.log.push(`🏆 ${card.baseCard.name} vole une Prime`);
         }
@@ -130,7 +274,9 @@ export function applyActions(
       case ActionType.SET_ATTACKS_PER_TURN:
         if (ctx.sourceMonster) {
           ctx.sourceMonster.attacksPerTurn = action.value ?? 1;
-          ctx.log.push(`🏹 ${card.baseCard.name} peut attaquer ${action.value} fois par tour`);
+          ctx.log.push(
+            `🏹 ${card.baseCard.name} peut attaquer ${action.value} fois par tour`,
+          );
         }
         break;
 
@@ -174,7 +320,9 @@ export function applyActions(
       case ActionType.GAIN_RECYCLE_ENERGY:
         for (const p of targets.players) {
           p.recycleEnergy += action.value ?? 0;
-          ctx.log.push(`♻️ ${p.username} gagne ${action.value} énergie de recyclage`);
+          ctx.log.push(
+            `♻️ ${p.username} gagne ${action.value} énergie de recyclage`,
+          );
         }
         break;
 
@@ -185,24 +333,41 @@ export function applyActions(
         for (const p of targets.players) {
           const candidates: ChoiceCandidate[] = p.graveyard
             .filter((c) => {
-              if (filter?.archetype && c.baseCard.archetype !== filter.archetype) return false;
-              if (filter?.rarities && !filter.rarities.includes(c.baseCard.rarity)) return false;
+              if (
+                filter?.archetype &&
+                c.baseCard.archetype !== filter.archetype
+              )
+                return false;
+              if (
+                filter?.rarities &&
+                !filter.rarities.includes(c.baseCard.rarity)
+              )
+                return false;
               if (filter?.name && c.baseCard.name !== filter.name) return false;
               if (filter?.type && c.baseCard.type !== filter.type) return false;
               return true;
             })
-            .map((c) => ({ instanceId: c.instanceId, baseCard: c.baseCard, source: 'graveyard' as const }));
+            .map((c) => ({
+              instanceId: c.instanceId,
+              baseCard: c.baseCard,
+              source: 'graveyard' as const,
+            }));
 
           if (candidates.length === 0) {
-            ctx.log.push(`📥 ${p.username} — cimetière vide, aucune carte récupérable`);
+            ctx.log.push(
+              `📥 ${p.username} — cimetière vide, aucune carte récupérable`,
+            );
           } else {
             ctx.game.pendingChoice = {
               forUserId: p.userId,
               candidates,
               count: Math.min(count, candidates.length),
               prompt: `Choisissez ${Math.min(count, candidates.length)} carte(s) à récupérer du cimetière`,
+              resolution: 'pick_to_hand',
             };
-            ctx.log.push(`📥 ${p.username} doit choisir une carte dans son cimetière…`);
+            ctx.log.push(
+              `📥 ${p.username} doit choisir une carte dans son cimetière…`,
+            );
           }
         }
         break;
@@ -213,22 +378,44 @@ export function applyActions(
         for (const p of targets.players) {
           const matchFn = (c: CardInstance) => {
             if (filter?.name && c.baseCard.name !== filter.name) return false;
-            if (filter?.archetype && c.baseCard.archetype !== filter.archetype) return false;
-            if (filter?.rarities && !filter.rarities.includes(c.baseCard.rarity)) return false;
+            if (filter?.archetype && c.baseCard.archetype !== filter.archetype)
+              return false;
+            if (
+              filter?.rarities &&
+              !filter.rarities.includes(c.baseCard.rarity)
+            )
+              return false;
             return true;
           };
           const candidates: ChoiceCandidate[] = [
-            ...p.graveyard.filter(matchFn).map((c) => ({ instanceId: c.instanceId, baseCard: c.baseCard, source: 'graveyard' as const })),
-            ...p.deck.filter(matchFn).map((c) => ({ instanceId: c.instanceId, baseCard: c.baseCard, source: 'deck' as const })),
+            ...p.graveyard
+              .filter(matchFn)
+              .map((c) => ({
+                instanceId: c.instanceId,
+                baseCard: c.baseCard,
+                source: 'graveyard' as const,
+              })),
+            ...p.deck
+              .filter(matchFn)
+              .map((c) => ({
+                instanceId: c.instanceId,
+                baseCard: c.baseCard,
+                source: 'deck' as const,
+              })),
           ];
           if (candidates.length === 0) {
             ctx.log.push(`📥 ${p.username} — aucune carte récupérable`);
           } else {
             ctx.game.pendingChoice = {
-              forUserId: p.userId, candidates, count: 1,
+              forUserId: p.userId,
+              candidates,
+              count: 1,
               prompt: 'Choisissez une carte à récupérer (cimetière ou deck)',
+              resolution: 'pick_to_hand',
             };
-            ctx.log.push(`📥 ${p.username} doit choisir une carte à récupérer…`);
+            ctx.log.push(
+              `📥 ${p.username} doit choisir une carte à récupérer…`,
+            );
           }
         }
         break;
@@ -240,19 +427,36 @@ export function applyActions(
           const candidates: ChoiceCandidate[] = p.deck
             .filter((c) => {
               if (filter?.type && c.baseCard.type !== filter.type) return false;
-              if (filter?.archetype && c.baseCard.archetype !== filter.archetype) return false;
-              if (filter?.rarities && !filter.rarities.includes(c.baseCard.rarity)) return false;
+              if (
+                filter?.archetype &&
+                c.baseCard.archetype !== filter.archetype
+              )
+                return false;
+              if (
+                filter?.rarities &&
+                !filter.rarities.includes(c.baseCard.rarity)
+              )
+                return false;
               if (filter?.name && c.baseCard.name !== filter.name) return false;
               return true;
             })
-            .map((c) => ({ instanceId: c.instanceId, baseCard: c.baseCard, source: 'deck' as const }));
+            .map((c) => ({
+              instanceId: c.instanceId,
+              baseCard: c.baseCard,
+              source: 'deck' as const,
+            }));
 
           if (candidates.length === 0) {
-            ctx.log.push(`🔮 ${card.baseCard.name} — aucune carte trouvée dans le deck`);
+            ctx.log.push(
+              `🔮 ${card.baseCard.name} — aucune carte trouvée dans le deck`,
+            );
           } else {
             ctx.game.pendingChoice = {
-              forUserId: p.userId, candidates, count: 1,
+              forUserId: p.userId,
+              candidates,
+              count: 1,
               prompt: 'Cherchez une carte dans votre deck',
+              resolution: 'pick_to_hand',
             };
             ctx.log.push(`🔮 ${p.username} cherche dans son deck…`);
           }
@@ -261,4 +465,31 @@ export function applyActions(
       }
     }
   }
+}
+
+// ─── Helper ──────────────────────────────────────────────────────────────────
+
+function returnMonsterToHand(
+  monster: MonsterOnBoard,
+  owner: PlayerGameState,
+  ctx: EffectContext,
+  sourceCard: CardInstance,
+): void {
+  const idx = owner.monsterZones.findIndex(
+    (m) => m?.instanceId === monster.instanceId,
+  );
+  if (idx === -1) return;
+
+  for (const eq of monster.equipments) {
+    owner.hand.push(eq);
+  }
+  owner.hand.push(monster.card);
+  owner.monsterZones[idx] = null;
+
+  ctx.log.push(
+    `↩️ ${sourceCard.baseCard.name} retourne ${monster.card.baseCard.name} en main` +
+      (monster.equipments.length > 0
+        ? ` (+ ${monster.equipments.length} équipement(s))`
+        : ''),
+  );
 }

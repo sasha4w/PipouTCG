@@ -1,6 +1,4 @@
-import {
-  EffectTarget,
-} from '../../cards/interfaces/card-effect.interface';
+import { EffectTarget } from '../../cards/interfaces/card-effect.interface';
 import {
   PlayerGameState,
   MonsterOnBoard,
@@ -13,14 +11,25 @@ export interface ResolvedTargets {
   ownerOfMonster: (m: MonsterOnBoard) => PlayerGameState;
 }
 
-export function resolveTargets(target: EffectTarget, ctx: EffectContext): ResolvedTargets {
+export function resolveTargets(
+  target: EffectTarget,
+  ctx: EffectContext,
+): ResolvedTargets {
   const owner =
-    ctx.game.player1.userId === ctx.ownerUserId ? ctx.game.player1 : ctx.game.player2;
+    ctx.game.player1.userId === ctx.ownerUserId
+      ? ctx.game.player1
+      : ctx.game.player2;
   const opponent =
-    ctx.game.player1.userId === ctx.ownerUserId ? ctx.game.player2 : ctx.game.player1;
+    ctx.game.player1.userId === ctx.ownerUserId
+      ? ctx.game.player2
+      : ctx.game.player1;
 
-  const allies = owner.monsterZones.filter((m): m is MonsterOnBoard => m !== null);
-  const enemies = opponent.monsterZones.filter((m): m is MonsterOnBoard => m !== null);
+  const allies = owner.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null,
+  );
+  const enemies = opponent.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null,
+  );
 
   const map = new Map<string, PlayerGameState>();
   const register = (list: MonsterOnBoard[], p: PlayerGameState) =>
@@ -47,10 +56,15 @@ export function resolveTargets(target: EffectTarget, ctx: EffectContext): Resolv
       register(monsters, opponent);
       break;
 
+    // ALLY_MONSTER and ENEMY_MONSTER both resolve from ctx.targetMonster
+    case EffectTarget.ALLY_MONSTER:
     case EffectTarget.ENEMY_MONSTER:
       if (ctx.targetMonster) {
+        const isAlly = allies.some(
+          (m) => m.instanceId === ctx.targetMonster!.instanceId,
+        );
         monsters = [ctx.targetMonster];
-        register(monsters, opponent);
+        register(monsters, isAlly ? owner : opponent);
       }
       break;
 
@@ -72,15 +86,19 @@ export function resolveTargets(target: EffectTarget, ctx: EffectContext): Resolv
     }
 
     case EffectTarget.ALLIES_EXCEPT_SELF:
-      monsters = allies.filter((m) => m.instanceId !== ctx.sourceMonster?.instanceId);
+      monsters = allies.filter(
+        (m) => m.instanceId !== ctx.sourceMonster?.instanceId,
+      );
       register(monsters, owner);
       break;
 
+    // TARGET_ALLY: interactive pick deferred to PickService via pendingChoice.
+    // monsters stays empty so no action fires immediately.
+    // All allies are registered so ownerOfMonster() resolves after pick.
     case EffectTarget.TARGET_ALLY:
-      if (allies.length > 0) {
-        monsters = [allies[0]];
-        register(monsters, owner);
-      }
+      register(allies, owner);
+      monsters = [];
+      players = [];
       break;
   }
 

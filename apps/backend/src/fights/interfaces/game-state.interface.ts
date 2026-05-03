@@ -35,6 +35,20 @@ export interface MonsterOnBoard {
   summonedThisTurn: boolean;
   doubleAtkNextTurn: boolean;
   damageReduction?: number;
+  /**
+   * Countdown pour les monstres à autodestruction (ex: Noyau Zeta).
+   * Décrémenté au début du tour du joueur propriétaire.
+   * Quand il atteint 0 : Prime gagnée + destruction.
+   * undefined = pas de compteur.
+   */
+  turnCounter?: number;
+  /**
+   * Identifiant du joueur qui a posé ce monstre.
+   * Nécessaire pour Noyau Zeta : posé sur le terrain adverse mais le compteur
+   * décrémente au tour du POSEUR, et c'est lui qui reçoit la Prime.
+   * Undefined = propriétaire = le joueur dont c'est la zone (comportement normal).
+   */
+  ownerUserId?: number;
 }
 
 // ─── Per-player state ────────────────────────────────────────────────────────
@@ -63,15 +77,27 @@ export interface PlayerGameState {
 export interface ChoiceCandidate {
   instanceId: string;
   baseCard: Card;
-  source: 'graveyard' | 'deck';
+  source: 'graveyard' | 'deck' | 'board';
 }
+
+/**
+ * - 'pick_to_hand'      : récupère depuis cimetière/deck (comportement existant)
+ * - 'destroy_ally'      : détruit le monstre allié choisi (Formatage, Recyclage)
+ * - 'return_to_hand'    : retourne le monstre allié + équipements en main (Migration)
+ * - 'force_attack_enemy': force un monstre adverse en mode Attaque (Rootkit)
+ */
+export type PendingChoiceResolution =
+  | 'pick_to_hand'
+  | 'destroy_ally'
+  | 'return_to_hand'
+  | 'force_attack_enemy';
 
 export interface PendingChoice {
   forUserId: number;
   candidates: ChoiceCandidate[];
-  /** How many cards the player must pick */
   count: number;
   prompt: string;
+  resolution?: PendingChoiceResolution;
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────
@@ -100,7 +126,6 @@ export interface GameState {
   winner?: number;
   endReason?: GameEndReason;
   log: string[];
-  /** Set when an effect requires the player to interactively pick a card */
   pendingChoice?: PendingChoice;
 }
 
@@ -132,7 +157,6 @@ export interface OpponentClientState {
   supportZones: (CardInstance | null)[];
 }
 
-/** Stripped-down candidate sent to the client (no full Card entity needed) */
 export interface ClientChoiceCandidate {
   instanceId: string;
   baseCard: {
@@ -144,13 +168,14 @@ export interface ClientChoiceCandidate {
     rarity: string;
     supportType?: string | null;
   };
-  source: 'graveyard' | 'deck';
+  source: 'graveyard' | 'deck' | 'board';
 }
 
 export interface ClientPendingChoice {
   candidates: ClientChoiceCandidate[];
   count: number;
   prompt: string;
+  resolution?: PendingChoiceResolution;
 }
 
 export interface ClientGameState {
@@ -163,6 +188,5 @@ export interface ClientGameState {
   log: string[];
   winner?: number;
   endReason?: GameEndReason;
-  /** Only present when this player has a card pick pending */
   pendingChoice?: ClientPendingChoice;
 }

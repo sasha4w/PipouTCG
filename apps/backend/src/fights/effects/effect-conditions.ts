@@ -7,19 +7,27 @@ import { EffectContext } from './effect-context.interface';
 /**
  * Pure function — returns true if the effect's condition is met (or absent).
  */
-export function checkCondition(effect: CardEffect, ctx: EffectContext): boolean {
+export function checkCondition(
+  effect: CardEffect,
+  ctx: EffectContext,
+): boolean {
   if (!effect.condition) return true;
 
   const owner =
-    ctx.game.player1.userId === ctx.ownerUserId ? ctx.game.player1 : ctx.game.player2;
+    ctx.game.player1.userId === ctx.ownerUserId
+      ? ctx.game.player1
+      : ctx.game.player2;
   const opponent =
-    ctx.game.player1.userId === ctx.ownerUserId ? ctx.game.player2 : ctx.game.player1;
+    ctx.game.player1.userId === ctx.ownerUserId
+      ? ctx.game.player2
+      : ctx.game.player1;
 
   switch (effect.condition.type) {
     case ConditionType.ARCHETYPE_ON_BOARD: {
       const arch = effect.condition.value as string;
       return owner.monsterZones.some(
-        (m) => m && m.card.baseCard.archetype?.toLowerCase() === arch.toLowerCase(),
+        (m) =>
+          m && m.card.baseCard.archetype?.toLowerCase() === arch.toLowerCase(),
       );
     }
 
@@ -34,6 +42,26 @@ export function checkCondition(effect: CardEffect, ctx: EffectContext): boolean 
 
     case ConditionType.OPPONENT_HAS_NO_MONSTERS:
       return opponent.monsterZones.every((z) => z === null);
+
+    // ── NEW ──────────────────────────────────────────────────────────────────
+    case ConditionType.SPECIFIC_CARD_ON_BOARD: {
+      const cardName = (effect.condition.value as string).toLowerCase();
+
+      // Check monsters in zones
+      const inZone = owner.monsterZones.some(
+        (m) => m && m.card.baseCard.name.toLowerCase() === cardName,
+      );
+      if (inZone) return true;
+
+      // Also check equipments on monsters (for equipment-on-equipment conditions)
+      const inEquipment = owner.monsterZones.some(
+        (m) =>
+          m &&
+          m.equipments.some((e) => e.baseCard.name.toLowerCase() === cardName),
+      );
+      return inEquipment;
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     default:
       return true;

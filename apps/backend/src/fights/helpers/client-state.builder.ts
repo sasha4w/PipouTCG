@@ -27,6 +27,8 @@ export function buildClientState(
           })),
           count: game.pendingChoice.count,
           prompt: game.pendingChoice.prompt,
+          // ── NEW: forward resolution so the client can render the right UI ──
+          resolution: game.pendingChoice.resolution,
         }
       : undefined;
 
@@ -46,7 +48,7 @@ export function buildClientState(
       monsterZones: me.monsterZones,
       supportZones: me.supportZones,
       recycleEnergy: me.recycleEnergy,
-      freeSummonAvailable: me.freeSummonAvailable, // ← ajoute ça
+      freeSummonAvailable: me.freeSummonAvailable,
     },
     opponent: {
       userId: opp.userId,

@@ -27,13 +27,6 @@ import {
 } from './helpers/game-state.helper';
 import { emitGameState } from './helpers/client-state.builder';
 
-/**
- * FightsService — thin orchestrator.
- *
- * Owns the in-memory maps (games, userToMatch) and wires the
- * sub-services together by passing callbacks. All business logic
- * lives in the dedicated service files.
- */
 @Injectable()
 export class FightsService {
   private games = new Map<number, GameState>();
@@ -157,6 +150,30 @@ export class FightsService {
     if (!game) return { error: 'Match introuvable' };
 
     const result = await this.summon.summonMonster(
+      game,
+      userId,
+      handIndex,
+      zoneIndex,
+      paymentHandIndices,
+      server,
+    );
+    if (!result.error) this.resetTimeout(game, server);
+    return result;
+  }
+
+  /** Invoque Noyau Zeta sur une zone adverse vide */
+  async summonZetaOnOpponent(
+    matchId: number,
+    userId: number,
+    handIndex: number,
+    zoneIndex: number,
+    paymentHandIndices: number[],
+    server: Server,
+  ): Promise<{ error?: string }> {
+    const game = this.getGame(matchId);
+    if (!game) return { error: 'Match introuvable' };
+
+    const result = await this.summon.summonZetaOnOpponent(
       game,
       userId,
       handIndex,
@@ -381,10 +398,6 @@ export class FightsService {
     };
   }
 
-  /**
-   * Wraps endPhase so it returns Promise<void> — required by TurnTimeoutService
-   * which expects a fire-and-forget callback (errors are logged, not bubbled).
-   */
   private timeoutEndPhase(tg: GameState, ts: Server): Promise<void> {
     return this.phase
       .endPhase(tg, tg.currentTurnUserId, ts, this.endGameCallback(), () => {})
