@@ -34,3 +34,28 @@
   flex: 1;
   min-width: 0;
 }
+/* ── Ajoute ces règles à la fin de FightBoard.css ─────────────────────────── */
+
+/* Bannière d'instruction quand Noyau Zeta est sélectionné */
+.fb-zeta-hint {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8e44ad;
+  background: rgba(142, 68, 173, 0.08);
+  border: 1.5px dashed rgba(142, 68, 173, 0.35);
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 4px 0;
+  animation: fb-zeta-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fb-zeta-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

@@ -2,7 +2,7 @@ import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import "./FightBoard.css";
 import type { GameState, MonsterOnBoard } from "./fight.types";
-import { FREE_SUMMON_CARD_ID } from "./fight.types";
+import { FREE_SUMMON_CARD_ID, NOYAU_ZETA_CARD_ID } from "./fight.types";
 import FightHUD from "./FightHUD";
 import ZoneRow from "./ZoneRow";
 import FightHand from "./FightHand";
@@ -24,6 +24,8 @@ interface Props {
   onAttackMonster: (instanceId: string) => void;
   onDirectAttack: () => void;
   onSummon: () => void;
+  /** Invoque Noyau Zeta sur la zone adverse zoneIndex */
+  onSummonZeta: (zoneIndex: number) => void;
   onPlaySupport: (
     handIndex: number,
     zoneIndex?: number,
@@ -48,6 +50,7 @@ export default function FightBoard({
   onAttackMonster,
   onDirectAttack,
   onSummon,
+  onSummonZeta,
   onPlaySupport,
   onChangeMode,
   onRecycleSupport,
@@ -57,8 +60,10 @@ export default function FightBoard({
 }: Props) {
   const phase = gs.phase;
 
-  // ── Modal invocation rapide ───────────────────────────────────────────────
   const [showSummonModal, setShowSummonModal] = useState(false);
+
+  // Zone adverse choisie pour Zeta (distinct de selectedZone qui est côté allié)
+  const [selectedOppZone, setSelectedOppZone] = useState<number | null>(null);
 
   // ── Attack animation ──────────────────────────────────────────────────────
   const [attackingZoneIdx, setAttackingZoneIdx] = useState<number | null>(null);
@@ -117,22 +122,27 @@ export default function FightBoard({
     supportType: ci.baseCard.supportType ?? undefined,
   }));
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
   const selectedHandCard =
     selectedCard !== null ? mappedHand[selectedCard] : null;
 
-  // La carte sélectionnée est-elle un terrain ?
   const isTerrain =
     selectedHandCard?.type === "support" &&
     selectedHandCard.supportType === "TERRAIN";
 
-  // La carte sélectionnée est-elle un monstre qui nécessite un paiement ?
+  // Zeta sélectionné → mode placement sur zone adverse
+  const isZeta =
+    selectedHandCard?.type === "monster" &&
+    selectedHandCard.id === NOYAU_ZETA_CARD_ID;
+
+  // Reset selectedOppZone quand Zeta est désélectionné
+  useEffect(() => {
+    if (!isZeta) setSelectedOppZone(null);
+  }, [isZeta]);
+
   const monsterNeedsPayment = (card: HandCard): boolean => {
     const cost = card.cost ?? 0;
     if (cost === 0) return false;
-    const needToPay = Math.max(0, cost - gs.me.recycleEnergy);
-    return needToPay > 0;
+    return Math.max(0, cost - gs.me.recycleEnergy) > 0;
   };
 
   // ── Event handlers ────────────────────────────────────────────────────────
@@ -141,18 +151,16 @@ export default function FightBoard({
     if (!gs.isMyTurn) return;
 
     if (phase === "main") {
-      // Désélectionner si déjà sélectionné
       if (selectedCard === idx) {
         onSetSelectedCard(null);
         onSetPayIndices([]);
+        setSelectedOppZone(null);
         return;
       }
-      // Première sélection → carte principale
       if (selectedCard === null) {
         onSetSelectedCard(idx);
         return;
       }
-      // Deuxième sélection → toggle comme carte de paiement
       onSetPayIndices((prev) =>
         prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
       );
@@ -161,29 +169,23 @@ export default function FightBoard({
     }
   };
 
-  // Clic sur zone monstre
+  // Clic sur zone monstre ALLIÉE
   const handleZoneClick = (idx: number) => {
     if (phase === "main") {
       if (selectedCard !== null) {
+        if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée
         const card = mappedHand[selectedCard];
-
-        // Les terrains utilisent les zones support — ignorer les zones monstres
-        if (isTerrain) return;
-        // Dans les helpers, après isTerrain
         const isFreeCard =
           gs.me.freeSummonAvailable === true &&
           selectedHandCard?.id === FREE_SUMMON_CARD_ID;
 
-        // Dans handleZoneClick, remplace le bloc monster
         if (card?.type === "monster") {
           onSetSelectedZone(idx);
           if (!isFreeCard && monsterNeedsPayment(card)) {
             onSetPayIndices([]);
             setShowSummonModal(true);
           }
-          // si isFreeCard ou coût 0 → pas de modal, ActionBar gère directement
         } else {
-          // Équipement → sélectionner le monstre cible
           onSetSelectedZone(idx);
         }
       } else if (gs.me.monsterZones[idx]) {
@@ -196,11 +198,31 @@ export default function FightBoard({
     }
   };
 
-  // ── Feature 1 — Clic sur zone support (terrain uniquement) ───────────────
+  // Clic sur zone monstre ADVERSE
+  const handleOpponentZoneClick = (idx: number) => {
+    if (!gs.isMyTurn || phase !== "main") return;
+
+    // Zeta : placement sur zone adverse vide
+    if (isZeta && selectedCard !== null && !gs.opponent.monsterZones[idx]) {
+      setSelectedOppZone(idx);
+      const card = mappedHand[selectedCard];
+      const isFreeCard =
+        gs.me.freeSummonAvailable === true && card.id === FREE_SUMMON_CARD_ID;
+
+      if (!isFreeCard && monsterNeedsPayment(card)) {
+        onSetPayIndices([]);
+        setShowSummonModal(true);
+      } else {
+        onSummonZeta(idx);
+        onSetSelectedCard(null);
+        setSelectedOppZone(null);
+      }
+    }
+  };
+
   const handleSupportZoneClick = (idx: number) => {
     if (!gs.isMyTurn || phase !== "main" || selectedCard === null) return;
     if (!isTerrain) return;
-    // Zone déjà occupée → refus côté backend de toute façon, mais on bloque ici
     if (gs.me.supportZones[idx]) return;
 
     onPlaySupport(selectedCard, idx);
@@ -209,15 +231,22 @@ export default function FightBoard({
     onSetPayIndices([]);
   };
 
-  // ── Feature 3 — Modal confirm/cancel ─────────────────────────────────────
+  // Modal confirm : selon contexte, invocation normale ou Zeta adverse
   const handleModalConfirm = () => {
     setShowSummonModal(false);
-    onSummon();
+    if (isZeta && selectedOppZone !== null) {
+      onSummonZeta(selectedOppZone);
+      onSetSelectedCard(null);
+      setSelectedOppZone(null);
+    } else {
+      onSummon();
+    }
   };
 
   const handleModalClose = () => {
     setShowSummonModal(false);
     onSetSelectedZone(null);
+    setSelectedOppZone(null);
     onSetPayIndices([]);
   };
 
@@ -227,7 +256,6 @@ export default function FightBoard({
     );
   };
 
-  // ── Attack animation ──────────────────────────────────────────────────────
   const triggerAttackAnim = (zoneIdx: number) => {
     if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
     setAttackingZoneIdx(zoneIdx);
@@ -274,6 +302,12 @@ export default function FightBoard({
             zones={gs.opponent.monsterZones}
             isOpponent
             damagedZones={damagedOppZones}
+            highlightOpponentEmpty={gs.isMyTurn && phase === "main" && isZeta}
+            onZoneClick={
+              gs.isMyTurn && phase === "main" && isZeta
+                ? handleOpponentZoneClick
+                : undefined
+            }
             onMonsterClick={
               phase === "battle" && gs.isMyTurn && selectedZone !== null
                 ? handleAttackMonster
@@ -291,27 +325,32 @@ export default function FightBoard({
         </div>
       )}
 
+      {isZeta && gs.isMyTurn && phase === "main" && (
+        <div className="fb-zeta-hint">
+          🦠 Sélectionne une zone adverse vide pour implanter Noyau Zeta
+        </div>
+      )}
+
       <div className="fb-side-row">
         <div className="fb-zones-col">
           <ZoneRow
             label="Mes Monstres"
             zones={gs.me.monsterZones}
-            onZoneClick={gs.isMyTurn ? handleZoneClick : undefined}
+            onZoneClick={gs.isMyTurn && !isZeta ? handleZoneClick : undefined}
             onModeChange={
               phase === "main" && gs.isMyTurn ? onChangeMode : undefined
             }
             selectedZone={selectedZone}
             attackingZone={attackingZoneIdx}
             damagedZones={damagedMyZones}
-            // ✨ Ajout de la prop pour clignoter si on a sélectionné un monstre
             highlightEmpty={
               gs.isMyTurn &&
               phase === "main" &&
-              selectedHandCard?.type === "monster"
+              selectedHandCard?.type === "monster" &&
+              !isZeta
             }
           />
 
-          {/* Feature 1 — zone support cliquable si terrain sélectionné */}
           <ZoneRow
             label="Mes Supports"
             zones={gs.me.supportZones}
@@ -322,7 +361,6 @@ export default function FightBoard({
                 ? handleSupportZoneClick
                 : undefined
             }
-            // ✨ Ajout de la prop pour clignoter si on a sélectionné un terrain
             highlightEmpty={gs.isMyTurn && phase === "main" && isTerrain}
             dim={
               gs.isMyTurn &&
@@ -349,14 +387,10 @@ export default function FightBoard({
         phase={phase}
         isMyTurn={gs.isMyTurn}
         selectedCard={selectedCard}
-        selectedZone={selectedZone}
+        selectedZone={isZeta ? selectedOppZone : selectedZone}
         hand={mappedHand}
         monsterZones={gs.me.monsterZones}
-        onSummon={() => {
-          // This is the fallback for monsters with 0 cost or already paid
-          onSummon();
-        }}
-        // Add this line to fix the error:
+        onSummon={onSummon}
         onOpenSummonModal={() => {
           onSetPayIndices([]);
           setShowSummonModal(true);
@@ -372,7 +406,6 @@ export default function FightBoard({
         freeSummonAvailable={gs.me.freeSummonAvailable}
       />
 
-      {/* Feature 3 — Modal d'invocation rapide */}
       {showSummonModal &&
         selectedHandCard !== null &&
         selectedCard !== null && (

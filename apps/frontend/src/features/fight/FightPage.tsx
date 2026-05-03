@@ -109,7 +109,6 @@ export default function FightPage({
       showToast("Deck accepté — en attente de l'adversaire…"),
     );
     socket.on("fight:state", (state: GameState) => {
-      console.log("STATE RECU 👉", state);
       setGameState(state);
       setStatus("playing");
       setSelectedCard(null);
@@ -144,7 +143,6 @@ export default function FightPage({
   // ── Emit helper ───────────────────────────────────────────────────────────
 
   const emit = useCallback((event: string, data: object) => {
-    console.log("emit →", event, data); // ← ajoute ça
     socketRef.current?.emit(event, data);
   }, []);
 
@@ -168,13 +166,30 @@ export default function FightPage({
     emit("fight:surrender", { matchId });
   };
 
-  /** Called after the cost modal confirms payment indices */
+  /** Invocation normale (zones alliées) */
   const summon = (paymentIndices: number[] = payIndices) => {
     if (selectedCard === null || selectedZone === null || !matchId) return;
     emit("fight:summon", {
       matchId,
       handIndex: selectedCard,
       zoneIndex: selectedZone,
+      paymentHandIndices: paymentIndices,
+    });
+    setSelectedCard(null);
+    setSelectedZone(null);
+    setPayIndices([]);
+  };
+
+  /** Invocation Noyau Zeta sur zone adverse */
+  const summonZeta = (
+    zoneIndex: number,
+    paymentIndices: number[] = payIndices,
+  ) => {
+    if (selectedCard === null || !matchId) return;
+    emit("fight:summon_opponent", {
+      matchId,
+      handIndex: selectedCard,
+      zoneIndex,
       paymentHandIndices: paymentIndices,
     });
     setSelectedCard(null);
@@ -234,12 +249,11 @@ export default function FightPage({
     emit("fight:discard", { matchId, handIndex });
   };
 
-  /** Confirm a pendingChoice card pick */
   const pickCards = (instanceIds: string[]) => {
-    console.log("pickCards →", { matchId, instanceIds }); // ← ajoute ça
     if (!matchId) return;
     emit("fight:pick_cards", { matchId, instanceIds });
   };
+
   const handleReplay = () => {
     setStatus("idle");
     setGameState(null);
@@ -307,6 +321,7 @@ export default function FightPage({
                 onAttackMonster={attackMonster}
                 onDirectAttack={directAttack}
                 onSummon={summon}
+                onSummonZeta={summonZeta}
                 onPlaySupport={playSupport}
                 onChangeMode={changeMode}
                 onRecycleSupport={recycleFromHand}
@@ -315,7 +330,6 @@ export default function FightPage({
                 onSurrender={surrender}
               />
 
-              {/* ── Card pick modal (pendingChoice) ── */}
               {gameState.pendingChoice && (
                 <CardPickModal
                   choice={gameState.pendingChoice}

@@ -82,16 +82,57 @@
   transform: translateY(-2px);
 }
 
+/* ── Board picks — styles spécifiques par résolution ─────────────────────── */
+
+/* destroy_ally — teinte rouge */
+.cpm-card--board-destroy_ally:hover {
+  border-color: #c0392b;
+  background: #fff5f5;
+}
+.cpm-card--board-destroy_ally.cpm-card--selected {
+  background: #fff0f0;
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.2);
+}
+
+/* return_to_hand — teinte bleue */
+.cpm-card--board-return_to_hand:hover {
+  border-color: #2471a3;
+  background: #f0f5ff;
+}
+.cpm-card--board-return_to_hand.cpm-card--selected {
+  background: #eaf2ff;
+  border-color: #2471a3;
+  box-shadow: 0 0 0 2px rgba(36, 113, 163, 0.2);
+}
+
+/* force_attack_enemy — teinte orange */
+.cpm-card--board-force_attack_enemy:hover {
+  border-color: #d35400;
+  background: #fff8f0;
+}
+.cpm-card--board-force_attack_enemy.cpm-card--selected {
+  background: #fff3e6;
+  border-color: #d35400;
+  box-shadow: 0 0 0 2px rgba(211, 84, 0, 0.2);
+}
+
+/* ── Carte plus large pour les monstres board (plus d'infos à afficher) ───── */
+.cpm-card--board {
+  width: 100px;
+  min-height: 90px;
+}
+
 .cpm-check {
   position: absolute;
   top: -6px;
   right: -6px;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   background: #7a1c3b;
   color: #fff;
   border-radius: 50%;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -122,6 +163,16 @@
   color: #aaa;
 }
 
+/* ── Hint d'action (destroy, retour, forcer) ─────────────────────────────── */
+.cpm-action-hint {
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
+}
+
 /* ── Actions ──────────────────────────────────────────────────────────────── */
 .cpm-actions {
   padding: 12px 16px;
@@ -145,11 +196,11 @@
 }
 
 .cpm-btn-confirm:hover:not(:disabled) {
-  background: #9b2349;
+  filter: brightness(1.1);
   transform: translateY(-1px);
 }
 
 .cpm-btn-confirm:disabled {
-  background: #ccc;
+  background: #ccc !important;
   cursor: not-allowed;
 }

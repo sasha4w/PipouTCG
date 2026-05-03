@@ -518,3 +518,64 @@
     box-shadow: 0 0 0 3px rgba(122, 28, 59, 0.15);
   }
 }
+/* ── Ajoute ces règles à la fin de ZoneRow.css ─────────────────────────────── */
+
+/* turnCounter badge — Noyau Zeta */
+.zr-badge--counter {
+  background: rgba(52, 152, 219, 0.2);
+  color: #2471a3;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Urgent : 1 tour restant — clignote en rouge */
+.zr-badge--counter-urgent {
+  background: rgba(231, 76, 60, 0.2);
+  color: #c0392b;
+  animation: zr-counter-blink 0.8s ease-in-out infinite;
+}
+
+@keyframes zr-counter-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Zone adverse vide ciblable pour Zeta */
+.zr-zone--zeta-target {
+  border-color: #8e44ad !important;
+}
+
+.zr-zone--zeta-target .zr-zeta-hint {
+  font-size: 11px;
+  color: #8e44ad;
+  font-weight: 700;
+  opacity: 0.85;
+  text-align: center;
+}
+
+.zr-zeta-hint {
+  font-size: 11px;
+  color: #8e44ad;
+  font-weight: 700;
+}
+
+@keyframes zr-pulse-zeta {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.25);
+  }
+}
+
+.zr-zone--zeta-target {
+  animation:
+    zr-pulse-target 1.2s ease-in-out infinite,
+    zr-pulse-zeta 1.2s ease-in-out infinite;
+}
