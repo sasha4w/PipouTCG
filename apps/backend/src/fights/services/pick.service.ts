@@ -40,6 +40,10 @@ export class PickService {
         return this.resolveReturnToHand(game, userId, instanceIds, server);
       case 'force_attack_enemy':
         return this.resolveForceAttackEnemy(game, userId, instanceIds, server);
+      case 'block_attack_enemy':
+        return this.resolveBlockAttackEnemy(game, userId, instanceIds, server);
+      case 'force_guard_enemy':
+        return this.resolveForceGuardEnemy(game, userId, instanceIds, server);
       default:
         return { error: `Résolution inconnue : ${resolution}` };
     }
@@ -202,6 +206,70 @@ export class PickService {
     addLog(
       game,
       `🔒 ${player.username} force ${monster.card.baseCard.name} en mode Attaque`,
+    );
+
+    game.pendingChoice = undefined;
+    emitGameState(game, server);
+    return {};
+  }
+  // ── block_attack_enemy — Protocole de Gel ────────────────────────────────
+
+  private async resolveBlockAttackEnemy(
+    game: GameState,
+    userId: number,
+    instanceIds: string[],
+    server: Server,
+  ): Promise<{ error?: string }> {
+    const opponent =
+      game.player1.userId === userId ? game.player2 : game.player1;
+    const player = getPlayerState(game, userId);
+    const [instanceId] = instanceIds;
+
+    const monster = opponent.monsterZones.find(
+      (m): m is MonsterOnBoard => m?.instanceId === instanceId,
+    );
+    if (!monster) {
+      game.pendingChoice = undefined;
+      return { error: 'Monstre adverse introuvable' };
+    }
+
+    monster.blockAttackTurns = 3;
+    addLog(
+      game,
+      `🧊 ${player.username} bloque les attaques de ${monster.card.baseCard.name} pendant 3 tour(s)`,
+    );
+
+    game.pendingChoice = undefined;
+    emitGameState(game, server);
+    return {};
+  }
+
+  // ── force_guard_enemy — Verrou de Position ────────────────────────────────
+
+  private async resolveForceGuardEnemy(
+    game: GameState,
+    userId: number,
+    instanceIds: string[],
+    server: Server,
+  ): Promise<{ error?: string }> {
+    const opponent =
+      game.player1.userId === userId ? game.player2 : game.player1;
+    const player = getPlayerState(game, userId);
+    const [instanceId] = instanceIds;
+
+    const monster = opponent.monsterZones.find(
+      (m): m is MonsterOnBoard => m?.instanceId === instanceId,
+    );
+    if (!monster) {
+      game.pendingChoice = undefined;
+      return { error: 'Monstre adverse introuvable' };
+    }
+
+    monster.guardLocked = true;
+    monster.mode = 'guard';
+    addLog(
+      game,
+      `🔒 ${player.username} verrouille ${monster.card.baseCard.name} en mode Garde`,
     );
 
     game.pendingChoice = undefined;

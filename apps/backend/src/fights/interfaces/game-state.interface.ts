@@ -35,20 +35,10 @@ export interface MonsterOnBoard {
   summonedThisTurn: boolean;
   doubleAtkNextTurn: boolean;
   damageReduction?: number;
-  /**
-   * Countdown pour les monstres à autodestruction (ex: Noyau Zeta).
-   * Décrémenté au début du tour du joueur propriétaire.
-   * Quand il atteint 0 : Prime gagnée + destruction.
-   * undefined = pas de compteur.
-   */
   turnCounter?: number;
-  /**
-   * Identifiant du joueur qui a posé ce monstre.
-   * Nécessaire pour Noyau Zeta : posé sur le terrain adverse mais le compteur
-   * décrémente au tour du POSEUR, et c'est lui qui reçoit la Prime.
-   * Undefined = propriétaire = le joueur dont c'est la zone (comportement normal).
-   */
   ownerUserId?: number;
+  blockAttackTurns?: number;
+  guardLocked?: boolean;
 }
 
 // ─── Per-player state ────────────────────────────────────────────────────────
@@ -90,7 +80,9 @@ export type PendingChoiceResolution =
   | 'pick_to_hand'
   | 'destroy_ally'
   | 'return_to_hand'
-  | 'force_attack_enemy';
+  | 'force_attack_enemy'
+  | 'block_attack_enemy'
+  | 'force_guard_enemy';
 
 export interface PendingChoice {
   forUserId: number;

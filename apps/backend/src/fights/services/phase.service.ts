@@ -127,6 +127,14 @@ export class PhaseService {
     // Compteurs traités EN PREMIER : un monstre qui meurt au compteur 0
     // ne déclenche pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);
+    for (const zone of player.monsterZones) {
+      if (!zone || zone.blockAttackTurns === undefined) continue;
+      zone.blockAttackTurns--;
+      if (zone.blockAttackTurns <= 0) {
+        zone.blockAttackTurns = undefined;
+        log.push(`🧊 ${zone.card.baseCard.name} peut à nouveau attaquer`);
+      }
+    }
 
     for (const zone of player.monsterZones) {
       if (!zone) continue;

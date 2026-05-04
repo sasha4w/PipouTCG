@@ -343,7 +343,13 @@ export function applyActions(
                 !filter.rarities.includes(c.baseCard.rarity)
               )
                 return false;
-              if (filter?.name && c.baseCard.name !== filter.name) return false;
+              if (
+                filter?.name &&
+                !c.baseCard.name
+                  .toLowerCase()
+                  .includes(filter.name.toLowerCase())
+              )
+                return false;
               if (filter?.type && c.baseCard.type !== filter.type) return false;
               return true;
             })
@@ -377,7 +383,11 @@ export function applyActions(
         const filter = action.filter;
         for (const p of targets.players) {
           const matchFn = (c: CardInstance) => {
-            if (filter?.name && c.baseCard.name !== filter.name) return false;
+            if (
+              filter?.name &&
+              !c.baseCard.name.toLowerCase().includes(filter.name.toLowerCase())
+            )
+              return false;
             if (filter?.archetype && c.baseCard.archetype !== filter.archetype)
               return false;
             if (
@@ -388,20 +398,16 @@ export function applyActions(
             return true;
           };
           const candidates: ChoiceCandidate[] = [
-            ...p.graveyard
-              .filter(matchFn)
-              .map((c) => ({
-                instanceId: c.instanceId,
-                baseCard: c.baseCard,
-                source: 'graveyard' as const,
-              })),
-            ...p.deck
-              .filter(matchFn)
-              .map((c) => ({
-                instanceId: c.instanceId,
-                baseCard: c.baseCard,
-                source: 'deck' as const,
-              })),
+            ...p.graveyard.filter(matchFn).map((c) => ({
+              instanceId: c.instanceId,
+              baseCard: c.baseCard,
+              source: 'graveyard' as const,
+            })),
+            ...p.deck.filter(matchFn).map((c) => ({
+              instanceId: c.instanceId,
+              baseCard: c.baseCard,
+              source: 'deck' as const,
+            })),
           ];
           if (candidates.length === 0) {
             ctx.log.push(`📥 ${p.username} — aucune carte récupérable`);
@@ -437,7 +443,13 @@ export function applyActions(
                 !filter.rarities.includes(c.baseCard.rarity)
               )
                 return false;
-              if (filter?.name && c.baseCard.name !== filter.name) return false;
+              if (
+                filter?.name &&
+                !c.baseCard.name
+                  .toLowerCase()
+                  .includes(filter.name.toLowerCase())
+              )
+                return false;
               return true;
             })
             .map((c) => ({
@@ -461,6 +473,77 @@ export function applyActions(
             ctx.log.push(`🔮 ${p.username} cherche dans son deck…`);
           }
         }
+        break;
+      }
+
+      // ── Bloquer les attaques d'un ennemi (Protocole de Gel) ──────────────
+      case ActionType.BLOCK_ATTACK: {
+        const enemies = opponent.monsterZones.filter(
+          (m): m is MonsterOnBoard => m !== null,
+        );
+        if (enemies.length === 0) {
+          ctx.log.push(
+            `⚠️ ${card.baseCard.name} — aucun monstre adverse à cibler`,
+          );
+          break;
+        }
+        if (enemies.length === 1) {
+          enemies[0].blockAttackTurns = action.value ?? 3;
+          ctx.log.push(
+            `🧊 ${card.baseCard.name} bloque les attaques de ${enemies[0].card.baseCard.name} pendant ${action.value ?? 3} tour(s)`,
+          );
+          break;
+        }
+        const candidates: ChoiceCandidate[] = enemies.map((m) => ({
+          instanceId: m.instanceId,
+          baseCard: m.card.baseCard,
+          source: 'board' as const,
+        }));
+        ctx.game.pendingChoice = {
+          forUserId: owner.userId,
+          candidates,
+          count: 1,
+          prompt: 'Choisissez un monstre adverse à bloquer',
+          resolution: 'block_attack_enemy',
+        };
+        ctx.log.push(`🧊 ${owner.username} doit choisir un monstre à bloquer…`);
+        break;
+      }
+
+      // ── Forcer garde verrouillée sur un ennemi (Verrou de Position) ───────
+      case ActionType.FORCE_GUARD_LOCK_ENEMY: {
+        const enemies = opponent.monsterZones.filter(
+          (m): m is MonsterOnBoard => m !== null,
+        );
+        if (enemies.length === 0) {
+          ctx.log.push(
+            `⚠️ ${card.baseCard.name} — aucun monstre adverse à cibler`,
+          );
+          break;
+        }
+        if (enemies.length === 1) {
+          enemies[0].guardLocked = true;
+          enemies[0].mode = 'guard';
+          ctx.log.push(
+            `🔒 ${card.baseCard.name} verrouille ${enemies[0].card.baseCard.name} en mode Garde`,
+          );
+          break;
+        }
+        const candidates: ChoiceCandidate[] = enemies.map((m) => ({
+          instanceId: m.instanceId,
+          baseCard: m.card.baseCard,
+          source: 'board' as const,
+        }));
+        ctx.game.pendingChoice = {
+          forUserId: owner.userId,
+          candidates,
+          count: 1,
+          prompt: 'Choisissez un monstre adverse à verrouiller en Garde',
+          resolution: 'force_guard_enemy',
+        };
+        ctx.log.push(
+          `🔒 ${owner.username} doit choisir un monstre à verrouiller…`,
+        );
         break;
       }
     }

@@ -31,40 +31,65 @@ export class BattleService {
     server: Server,
     checkWinAndEmit: (game: GameState, server: Server) => Promise<void>,
   ): Promise<{ error?: string }> {
-    if (!isCurrentPlayer(game, userId)) return { error: "Ce n'est pas ton tour" };
+    if (!isCurrentPlayer(game, userId))
+      return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'battle') return { error: 'Phase de combat uniquement' };
 
     const player = getPlayerState(game, userId);
     const opponent = getOpponentState(game, userId);
 
-    const attacker = player.monsterZones.find((m) => m?.instanceId === attackerInstanceId);
+    const attacker = player.monsterZones.find(
+      (m) => m?.instanceId === attackerInstanceId,
+    );
     if (!attacker) return { error: 'Attaquant introuvable' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
 
     if (attacker.summonedThisTurn && attacker.card.baseCard.id === 9)
-      return { error: "Commandant Quenouille ne peut pas attaquer son tour d'invocation" };
+      return {
+        error:
+          "Commandant Quenouille ne peut pas attaquer son tour d'invocation",
+      };
 
     const maxAttacks = attacker.attacksPerTurn ?? 1;
     if (attacker.attacksUsedThisTurn >= maxAttacks)
       return { error: 'Ce monstre a déjà utilisé toutes ses attaques ce tour' };
-
+    if (
+      attacker.blockAttackTurns !== undefined &&
+      attacker.blockAttackTurns > 0
+    ) {
+      return {
+        error: `${attacker.card.baseCard.name} ne peut pas attaquer (bloqué encore ${attacker.blockAttackTurns} tour(s))`,
+      };
+    }
     if (!direct) {
       const tauntMonsters = opponent.monsterZones.filter((m) => m?.hasTaunt);
-      if (tauntMonsters.length > 0 && !tauntMonsters.find((m) => m?.instanceId === targetInstanceId))
-        return { error: '⚠️ Vous devez attaquer le monstre avec Provocation !' };
+      if (
+        tauntMonsters.length > 0 &&
+        !tauntMonsters.find((m) => m?.instanceId === targetInstanceId)
+      )
+        return {
+          error: '⚠️ Vous devez attaquer le monstre avec Provocation !',
+        };
     }
 
     attacker.attacksUsedThisTurn += 1;
-    attacker.hasAttackedThisTurn = attacker.attacksUsedThisTurn >= (attacker.attacksPerTurn ?? 1);
+    attacker.hasAttackedThisTurn =
+      attacker.attacksUsedThisTurn >= (attacker.attacksPerTurn ?? 1);
 
     if (direct) {
-      if (game.turnNumber === 1) return { error: 'Attaque directe interdite au premier tour' };
+      if (game.turnNumber === 1)
+        return { error: 'Attaque directe interdite au premier tour' };
       if (opponent.monsterZones.some((z) => z !== null))
-        return { error: "Attaque directe impossible : l'adversaire a des monstres" };
+        return {
+          error: "Attaque directe impossible : l'adversaire a des monstres",
+        };
 
       const onAttackLog: string[] = [];
       this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
-        game, ownerUserId: userId, sourceMonster: attacker, log: onAttackLog,
+        game,
+        ownerUserId: userId,
+        sourceMonster: attacker,
+        log: onAttackLog,
       });
       onAttackLog.forEach((l) => addLog(game, l));
 
@@ -74,23 +99,41 @@ export class BattleService {
     }
 
     // Monster vs Monster
-    const attackerAtk = attacker.card.baseCard.atk + attacker.atkBuff + (attacker.tempAtkBuff ?? 0);
+    const attackerAtk =
+      attacker.card.baseCard.atk +
+      attacker.atkBuff +
+      (attacker.tempAtkBuff ?? 0);
 
     const onAttackLog: string[] = [];
     this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
-      game, ownerUserId: userId, sourceMonster: attacker, log: onAttackLog,
+      game,
+      ownerUserId: userId,
+      sourceMonster: attacker,
+      log: onAttackLog,
     });
     onAttackLog.forEach((l) => addLog(game, l));
 
     if (!targetInstanceId) return { error: 'Cible requise' };
-    const target = opponent.monsterZones.find((m) => m?.instanceId === targetInstanceId);
+    const target = opponent.monsterZones.find(
+      (m) => m?.instanceId === targetInstanceId,
+    );
     if (!target) return { error: 'Cible introuvable' };
 
     const targetAtk = target.card.baseCard.atk + target.atkBuff;
-
+    if (target.guardLocked) {
+      target.guardLocked = false;
+      addLog(
+        game,
+        `🔓 ${target.card.baseCard.name} est libéré de son verrou de Garde`,
+      );
+    }
     const onDefendLog: string[] = [];
     this.effectsResolver.resolve(target.card, EffectTrigger.ON_DEFEND, {
-      game, ownerUserId: opponent.userId, sourceMonster: target, targetMonster: attacker, log: onDefendLog,
+      game,
+      ownerUserId: opponent.userId,
+      sourceMonster: target,
+      targetMonster: attacker,
+      log: onDefendLog,
     });
     onDefendLog.forEach((l) => addLog(game, l));
 
@@ -102,7 +145,10 @@ export class BattleService {
       const tDied = target.currentHp <= 0;
 
       if (aDied && tDied) {
-        addLog(game, `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name} — chacun récupère une Prime`);
+        addLog(
+          game,
+          `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name} — chacun récupère une Prime`,
+        );
         removeMonster(player, attackerInstanceId, game, this.effectsResolver);
         removeMonster(opponent, targetInstanceId, game, this.effectsResolver);
         gainPrime(game, userId, attacker.card.baseCard.name);
@@ -110,17 +156,26 @@ export class BattleService {
         drawCard(game, userId);
         drawCard(game, opponent.userId);
       } else if (tDied) {
-        addLog(game, `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`);
+        addLog(
+          game,
+          `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`,
+        );
         removeMonster(opponent, targetInstanceId, game, this.effectsResolver);
         gainPrime(game, userId, attacker.card.baseCard.name);
         drawCard(game, opponent.userId);
       } else if (aDied) {
-        addLog(game, `⚔️ ${target.card.baseCard.name} détruit ${attacker.card.baseCard.name}`);
+        addLog(
+          game,
+          `⚔️ ${target.card.baseCard.name} détruit ${attacker.card.baseCard.name}`,
+        );
         removeMonster(player, attackerInstanceId, game, this.effectsResolver);
         gainPrime(game, opponent.userId, target.card.baseCard.name);
         drawCard(game, userId);
       } else {
-        addLog(game, `⚔️ Duel : ${attacker.card.baseCard.name} (${attacker.currentHp}HP) vs ${target.card.baseCard.name} (${target.currentHp}HP)`);
+        addLog(
+          game,
+          `⚔️ Duel : ${attacker.card.baseCard.name} (${attacker.currentHp}HP) vs ${target.card.baseCard.name} (${target.currentHp}HP)`,
+        );
       }
     } else {
       // ATK vs GUARD
@@ -131,12 +186,21 @@ export class BattleService {
         drawCard(game, opponent.userId);
         if (attacker.hasPiercing) {
           gainPrime(game, userId, attacker.card.baseCard.name);
-          addLog(game, `⚔️ Attaque Perçante ! ${attacker.card.baseCard.name} perce la Garde et gagne une Prime`);
+          addLog(
+            game,
+            `⚔️ Attaque Perçante ! ${attacker.card.baseCard.name} perce la Garde et gagne une Prime`,
+          );
         } else {
-          addLog(game, `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`);
+          addLog(
+            game,
+            `🛡️ ${attacker.card.baseCard.name} brise la Garde de ${target.card.baseCard.name} — aucune Prime`,
+          );
         }
       } else {
-        addLog(game, `🛡️ ${attacker.card.baseCard.name} attaque ${target.card.baseCard.name} (${target.currentHp}HP) — Garde tient`);
+        addLog(
+          game,
+          `🛡️ ${attacker.card.baseCard.name} attaque ${target.card.baseCard.name} (${target.currentHp}HP) — Garde tient`,
+        );
       }
     }
 
