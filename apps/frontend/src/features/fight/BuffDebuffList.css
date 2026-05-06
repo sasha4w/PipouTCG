@@ -144,3 +144,99 @@
   background: #5a1228;
   box-shadow: 0 0 0 2px rgba(122, 28, 59, 0.25);
 }
+
+.bdl-entry--recap {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 3px 6px !important;
+  font-family: monospace;
+}
+
+.bdl-entry--recap {
+  background: rgba(122, 28, 59, 0.05);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-family: monospace;
+}
+
+/* ── Séparateur de section (ex: "Effets de la carte", "🔧 Épée de feu") ── */
+.bdl-separator {
+  list-style: none;
+  padding: 5px 6px 2px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bdl-separator-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #aaa;
+}
+/* ── Accordion sections ───────────────────────────────────────────────────── */
+.bdl-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.bdl-section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 3px 8px 3px 6px;
+  background: transparent;
+  border: 1px solid #e0cfc8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.bdl-section-header:hover:not(:disabled) {
+  background: rgba(122, 28, 59, 0.06);
+  border-color: #c4a8a0;
+}
+
+.bdl-section-header--open {
+  background: rgba(122, 28, 59, 0.07);
+  border-color: #c4a8a0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: none;
+}
+
+.bdl-section-header:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.bdl-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #7a1c3b;
+}
+
+.bdl-section-chevron {
+  font-size: 8px;
+  color: #7a1c3b;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* La liste s'encadre avec le header quand ouverte */
+.bdl-section--open .bdl-list,
+.bdl-section-header--open + .bdl-list {
+  border: 1px solid #c4a8a0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 4px 6px 6px;
+  background: rgba(122, 28, 59, 0.03);
+}

@@ -10,6 +10,8 @@ import "./CardPickModal.css";
 interface Props {
   choice: PendingChoice;
   onConfirm: (instanceIds: string[]) => void;
+  /** Optionnel — affiché uniquement quand fourni (ex: modal de ciblage interne) */
+  onCancel?: () => void;
 }
 
 // ── Helpers par résolution ────────────────────────────────────────────────────
@@ -19,6 +21,8 @@ const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
   destroy_ally: "💥",
   return_to_hand: "↩️",
   force_attack_enemy: "🔒",
+  block_attack_enemy: "🧊",
+  force_guard_enemy: "🔒",
 };
 
 const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
@@ -26,6 +30,8 @@ const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
   destroy_ally: "💥 Détruire",
   return_to_hand: "↩️ Retourner en main",
   force_attack_enemy: "🔒 Verrouiller en Attaque",
+  block_attack_enemy: "🧊 Bloquer",
+  force_guard_enemy: "🔒 Verrouiller en Garde",
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
@@ -34,6 +40,8 @@ const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   destroy_ally: "#fff5f5",
   return_to_hand: "#f5f8ff",
   force_attack_enemy: "#fffbf0",
+  block_attack_enemy: "#f0f8ff",
+  force_guard_enemy: "#f5f0ff",
 };
 
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
@@ -41,6 +49,8 @@ const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   destroy_ally: "#c0392b",
   return_to_hand: "#2471a3",
   force_attack_enemy: "#d35400",
+  block_attack_enemy: "#1a6b9a",
+  force_guard_enemy: "#6b1a9a",
 };
 
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
@@ -48,6 +58,8 @@ const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   destroy_ally: "#c0392b",
   return_to_hand: "#2471a3",
   force_attack_enemy: "#d35400",
+  block_attack_enemy: "#1a6b9a",
+  force_guard_enemy: "#6b1a9a",
 };
 
 function sourceLabel(
@@ -60,19 +72,23 @@ function sourceLabel(
   if (resolution === "destroy_ally") return "🗡 Terrain allié";
   if (resolution === "return_to_hand") return "↩️ Terrain allié";
   if (resolution === "force_attack_enemy") return "⚔️ Terrain ennemi";
+  if (resolution === "block_attack_enemy") return "⚔️ Terrain ennemi";
+  if (resolution === "force_guard_enemy") return "🛡 Terrain ennemi";
   return "🎴 Terrain";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function CardPickModal({ choice, onConfirm }: Props) {
+export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
 
   const resolution = choice.resolution ?? "pick_to_hand";
   const isBoardPick =
     resolution === "destroy_ally" ||
     resolution === "return_to_hand" ||
-    resolution === "force_attack_enemy";
+    resolution === "force_attack_enemy" ||
+    resolution === "block_attack_enemy" ||
+    resolution === "force_guard_enemy";
 
   const toggle = (instanceId: string) => {
     setSelected((prev) => {
@@ -162,6 +178,8 @@ export default function CardPickModal({ choice, onConfirm }: Props) {
                     {resolution === "destroy_ally" && "→ sera détruit"}
                     {resolution === "return_to_hand" && "→ retour en main"}
                     {resolution === "force_attack_enemy" && "→ forcé ⚔️"}
+                    {resolution === "block_attack_enemy" && "→ bloqué 🧊"}
+                    {resolution === "force_guard_enemy" && "→ forcé 🛡"}
                   </div>
                 )}
               </div>
@@ -171,6 +189,11 @@ export default function CardPickModal({ choice, onConfirm }: Props) {
 
         {/* ── Actions ── */}
         <div className="cpm-actions">
+          {onCancel && (
+            <button className="cpm-btn-cancel" onClick={onCancel}>
+              ✕ Annuler
+            </button>
+          )}
           <button
             className="cpm-btn-confirm"
             style={canConfirm ? { background: btnBg } : undefined}

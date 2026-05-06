@@ -204,3 +204,17 @@
   background: #ccc !important;
   cursor: not-allowed;
 }
+.cpm-btn-cancel {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(180, 60, 60, 0.4);
+  background: transparent;
+  color: #c0392b;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cpm-btn-cancel:hover {
+  background: rgba(180, 60, 60, 0.1);
+}

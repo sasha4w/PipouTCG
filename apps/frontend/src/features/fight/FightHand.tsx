@@ -1,6 +1,10 @@
+import { useState, useRef } from "react";
 import "./FightHand.css";
+import "./BuffDebuffList.css";
 import type { Phase, CardInstance } from "./fight.types";
 import { RARITY_COLOR, FREE_SUMMON_CARD_ID } from "./fight.types";
+import BuffDebuffList from "./BuffDebuffList";
+import { getCardEffectEntries, type RawEffect } from "./fight.effects";
 
 export interface HandCard {
   id: number;
@@ -11,6 +15,9 @@ export interface HandCard {
   cost: number;
   rarity: string;
   supportType?: string;
+  // ── Enrichis pour le tooltip d'info ──────────────────────────────────────
+  effects?: RawEffect[] | null;
+  description?: string | null;
 }
 
 /** Converts a CardInstance (from server) to the flat HandCard shape */
@@ -24,6 +31,8 @@ export function toHandCard(c: CardInstance): HandCard {
     cost: c.baseCard.cost,
     rarity: c.baseCard.rarity,
     supportType: c.baseCard.supportType ?? undefined,
+    effects: (c.baseCard as any).effects ?? null,
+    description: (c.baseCard as any).description ?? null,
   };
 }
 
@@ -33,7 +42,6 @@ interface Props {
   isMyTurn: boolean;
   selectedCard: number | null;
   payIndices: number[];
-  /** When true, card id=29 (Chevalier Touille) shows a FREE badge */
   freeSummonAvailable?: boolean;
   onCardClick: (idx: number, card: HandCard) => void;
 }
@@ -50,6 +58,25 @@ export default function FightHand({
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
   const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
+  // ── Info tooltip ──────────────────────────────────────────────────────────
+  const [openInfoIdx, setOpenInfoIdx] = useState<number | null>(null);
+  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const handleInfoClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    idx: number,
+  ) => {
+    e.stopPropagation();
+    if (openInfoIdx === idx) {
+      setOpenInfoIdx(null);
+      setAnchorRect(null);
+    } else {
+      setOpenInfoIdx(idx);
+      setAnchorRect(e.currentTarget.getBoundingClientRect());
+    }
+  };
+
   return (
     <div className="fhand">
       {hand.map((card, idx) => {
@@ -58,6 +85,7 @@ export default function FightHand({
         const isPayable =
           !isSelected && selectedCard !== null && phase === "main";
         const isFree = freeSummonAvailable && card.id === FREE_SUMMON_CARD_ID;
+        const isInfoOpen = openInfoIdx === idx;
 
         return (
           <div
@@ -77,6 +105,18 @@ export default function FightHand({
             style={{ borderColor: RARITY_COLOR[card.rarity] ?? "#666" }}
             onClick={() => isInteractive && onCardClick(idx, card)}
           >
+            {/* ── Badge info ─────────────────────────────────────────────── */}
+            <button
+              ref={(el) => {
+                btnRefs.current[idx] = el;
+              }}
+              className={`bdl-trigger fhand-info-btn${isInfoOpen ? " bdl-trigger--active" : ""}`}
+              onClick={(e) => handleInfoClick(e, idx)}
+              title="Voir les effets"
+            >
+              i
+            </button>
+
             <div className="fhand-card-cost">
               {isFree ? (
                 <span className="fhand-free-label">GRATUIT ⚡</span>
@@ -90,11 +130,9 @@ export default function FightHand({
                 💰
               </div>
             )}
-
             {isSelected && <div className="fhand-selected-badge">✓</div>}
 
             <div className="fhand-card-name">{card.name}</div>
-
             <div className="fhand-card-sub">
               {card.type === "monster"
                 ? `${card.atk}⚔ ${card.hp}❤`
@@ -107,6 +145,24 @@ export default function FightHand({
           </div>
         );
       })}
+
+      {/* Tooltip rendu hors du flux des cartes ─────────────────────────── */}
+      {openInfoIdx !== null && anchorRect && hand[openInfoIdx] && (
+        <BuffDebuffList
+          entries={getCardEffectEntries(
+            hand[openInfoIdx].effects,
+            hand[openInfoIdx].description,
+            hand[openInfoIdx].supportType,
+          )}
+          cardName={hand[openInfoIdx].name}
+          supportType={hand[openInfoIdx].supportType}
+          anchorRect={anchorRect}
+          onClose={() => {
+            setOpenInfoIdx(null);
+            setAnchorRect(null);
+          }}
+        />
+      )}
     </div>
   );
 }

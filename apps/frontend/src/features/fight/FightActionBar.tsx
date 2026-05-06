@@ -70,44 +70,38 @@ export default function FightActionBar({
             </button>
           )}
 
-          {card.type === "support" &&
-            (!card.supportType || card.supportType === "EPHEMERAL") && (
-              <button
-                onClick={() => onPlaySupport(selectedCard!)}
-                className="fab-btn"
-              >
-                ✨ Jouer
-              </button>
-            )}
+          {/* Carte EPHEMERAL : jouée sans cible ou avec cible monstre */}
+          {card.type === "support" && card.supportType === "EPHEMERAL" && (
+            <button
+              onClick={() =>
+                selectedZone !== null && monsterZones[selectedZone]
+                  ? onPlaySupport(
+                      selectedCard!,
+                      undefined,
+                      monsterZones[selectedZone!]!.instanceId,
+                    )
+                  : onPlaySupport(selectedCard!)
+              }
+              className="fab-btn"
+            >
+              ✨ Jouer
+              {selectedZone !== null && monsterZones[selectedZone]
+                ? ` → ${monsterZones[selectedZone]!.card?.baseCard?.name ?? "monstre"}`
+                : ""}
+            </button>
+          )}
 
-          {card.type === "support" &&
-            card.supportType === "TERRAIN" &&
-            selectedZone !== null && (
-              <button
-                onClick={() => onPlaySupport(selectedCard!, selectedZone)}
-                className="fab-btn"
-              >
-                🌍 Poser le Terrain
-              </button>
-            )}
-
-          {card.type === "support" &&
-            card.supportType === "EQUIPMENT" &&
-            selectedZone !== null &&
-            monsterZones[selectedZone] && (
-              <button
-                onClick={() =>
-                  onPlaySupport(
-                    selectedCard!,
-                    undefined,
-                    monsterZones[selectedZone!]!.instanceId,
-                  )
-                }
-                className="fab-btn"
-              >
-                🔧 Équiper
-              </button>
-            )}
+          {/* Rappel visuel pour TERRAIN et EQUIPMENT (action sur la zone) */}
+          {card.type === "support" && card.supportType === "TERRAIN" && (
+            <span className="fab-hint">
+              🌍 Clique sur une zone support vide
+            </span>
+          )}
+          {card.type === "support" && card.supportType === "EQUIPMENT" && (
+            <span className="fab-hint">
+              🔧 Clique sur un monstre allié à équiper
+            </span>
+          )}
 
           <button
             onClick={() => onRecycleFromHand(selectedCard!)}

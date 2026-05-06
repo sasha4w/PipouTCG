@@ -11,6 +11,8 @@ import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
 import SummonCostModal from "./SummonCostModal";
+import CardPickModal from "./CardPickModal";
+import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
 
 interface Props {
   gs: GameState;
@@ -61,6 +63,13 @@ export default function FightBoard({
   const phase = gs.phase;
 
   const [showSummonModal, setShowSummonModal] = useState(false);
+
+  // ── Support ciblé sur monstre (CardPickModal interne) ────────────────────
+  const [targetSupportHandIdx, setTargetSupportHandIdx] = useState<
+    number | null
+  >(null);
+  const [targetSupportChoice, setTargetSupportChoice] =
+    useState<PendingChoice | null>(null);
 
   // Zone adverse choisie pour Zeta (distinct de selectedZone qui est côté allié)
   const [selectedOppZone, setSelectedOppZone] = useState<number | null>(null);
@@ -120,6 +129,8 @@ export default function FightBoard({
     cost: ci.baseCard.cost,
     rarity: ci.baseCard.rarity,
     supportType: ci.baseCard.supportType ?? undefined,
+    effects: ci.baseCard.effects ?? null,
+    description: ci.baseCard.description ?? null,
   }));
 
   const selectedHandCard =
@@ -128,6 +139,10 @@ export default function FightBoard({
   const isTerrain =
     selectedHandCard?.type === "support" &&
     selectedHandCard.supportType === "TERRAIN";
+
+  const isEquipment =
+    selectedHandCard?.type === "support" &&
+    selectedHandCard.supportType === "EQUIPMENT";
 
   // Zeta sélectionné → mode placement sur zone adverse
   const isZeta =
@@ -143,6 +158,70 @@ export default function FightBoard({
     const cost = card.cost ?? 0;
     if (cost === 0) return false;
     return Math.max(0, cost - gs.me.recycleEnergy) > 0;
+  };
+
+  /** Détecte si une carte support éphémère doit cibler un monstre spécifique */
+  const ephemeralNeedsMonsterTarget = (
+    card: HandCard,
+  ): "ally" | "enemy" | null => {
+    if (card.type !== "support" || card.supportType !== "EPHEMERAL")
+      return null;
+    const effects = card.effects ?? [];
+    for (const eff of effects) {
+      for (const action of eff.actions ?? []) {
+        if (
+          action.target === "ALLY_MONSTER" ||
+          action.target === "TARGET_ALLY" ||
+          action.target === "ARCHETYPE_ALLIES"
+        )
+          return "ally";
+        if (action.target === "ENEMY_MONSTER") return "enemy";
+      }
+    }
+    return null;
+  };
+
+  /** Ouvre le CardPickModal pour choisir la cible d'un support éphémère */
+  const openTargetPick = (
+    handIdx: number,
+    card: HandCard,
+    targetSide: "ally" | "enemy",
+  ) => {
+    const zones =
+      targetSide === "ally" ? gs.me.monsterZones : gs.opponent.monsterZones;
+    const candidates: ClientChoiceCandidate[] = zones
+      .filter((z): z is NonNullable<typeof z> => z !== null)
+      .map((z) => ({
+        instanceId: z.instanceId,
+        baseCard: {
+          id: z.card.baseCard.id,
+          name: z.card.baseCard.name,
+          type: z.card.baseCard.type,
+          atk: z.card.baseCard.atk,
+          hp: z.card.baseCard.hp,
+          rarity: z.card.baseCard.rarity,
+        },
+        source: "board" as const,
+      }));
+
+    if (candidates.length === 0) {
+      // Aucune cible dispo → jouer sans cible
+      onPlaySupport(handIdx);
+      onSetSelectedCard(null);
+      return;
+    }
+
+    setTargetSupportHandIdx(handIdx);
+    setTargetSupportChoice({
+      candidates,
+      count: 1,
+      prompt:
+        targetSide === "ally"
+          ? `Choisir le monstre allié à cibler avec « ${card.name} »`
+          : `Choisir le monstre ennemi à cibler avec « ${card.name} »`,
+      resolution:
+        targetSide === "enemy" ? "force_attack_enemy" : "pick_to_hand",
+    });
   };
 
   // ── Event handlers ────────────────────────────────────────────────────────
@@ -173,7 +252,7 @@ export default function FightBoard({
   const handleZoneClick = (idx: number) => {
     if (phase === "main") {
       if (selectedCard !== null) {
-        if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée
+        if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
         const card = mappedHand[selectedCard];
         const isFreeCard =
           gs.me.freeSummonAvailable === true &&
@@ -185,6 +264,17 @@ export default function FightBoard({
             onSetPayIndices([]);
             setShowSummonModal(true);
           }
+        } else if (
+          card?.type === "support" &&
+          card.supportType === "EQUIPMENT"
+        ) {
+          // EQUIPMENT : équiper directement le monstre sur cette zone
+          const target = gs.me.monsterZones[idx];
+          if (!target) return; // zone vide, pas de cible
+          onPlaySupport(selectedCard, undefined, target.instanceId);
+          onSetSelectedCard(null);
+          onSetSelectedZone(null);
+          onSetPayIndices([]);
         } else {
           onSetSelectedZone(idx);
         }
@@ -349,6 +439,7 @@ export default function FightBoard({
               selectedHandCard?.type === "monster" &&
               !isZeta
             }
+            highlightFilled={gs.isMyTurn && phase === "main" && isEquipment}
           />
 
           <ZoneRow
@@ -395,7 +486,29 @@ export default function FightBoard({
           onSetPayIndices([]);
           setShowSummonModal(true);
         }}
-        onPlaySupport={onPlaySupport}
+        onPlaySupport={(handIdx, zoneIndex, targetInstanceId) => {
+          // Si déjà une cible fournie (depuis la barre), jouer directement
+          if (targetInstanceId !== undefined || zoneIndex !== undefined) {
+            onPlaySupport(handIdx, zoneIndex, targetInstanceId);
+            onSetSelectedCard(null);
+            onSetSelectedZone(null);
+            onSetPayIndices([]);
+            return;
+          }
+          // Vérifier si la carte nécessite une cible monstre
+          const card = mappedHand[handIdx];
+          if (card) {
+            const needsTarget = ephemeralNeedsMonsterTarget(card);
+            if (needsTarget) {
+              openTargetPick(handIdx, card, needsTarget);
+              return;
+            }
+          }
+          onPlaySupport(handIdx);
+          onSetSelectedCard(null);
+          onSetSelectedZone(null);
+          onSetPayIndices([]);
+        }}
         onEndPhase={onEndPhase}
         onSurrender={onSurrender}
         onRecycleFromHand={(idx) => {
@@ -420,6 +533,26 @@ export default function FightBoard({
             onClose={handleModalClose}
           />
         )}
+
+      {/* Modal de choix de cible pour support éphémère ciblé ──────────── */}
+      {targetSupportChoice !== null && targetSupportHandIdx !== null && (
+        <CardPickModal
+          choice={targetSupportChoice}
+          onConfirm={(instanceIds) => {
+            const [targetId] = instanceIds;
+            onPlaySupport(targetSupportHandIdx, undefined, targetId);
+            onSetSelectedCard(null);
+            onSetSelectedZone(null);
+            onSetPayIndices([]);
+            setTargetSupportChoice(null);
+            setTargetSupportHandIdx(null);
+          }}
+          onCancel={() => {
+            setTargetSupportChoice(null);
+            setTargetSupportHandIdx(null);
+          }}
+        />
+      )}
 
       <FightLog log={gs.log} />
     </div>

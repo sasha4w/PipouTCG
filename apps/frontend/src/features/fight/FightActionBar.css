@@ -55,3 +55,13 @@
   font-size: 13px;
   cursor: pointer;
 }
+/* ── Hint textuel pour TERRAIN / EQUIPMENT ── */
+.fab-hint {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+}

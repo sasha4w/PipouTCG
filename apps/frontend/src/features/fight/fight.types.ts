@@ -14,6 +14,13 @@ export interface CardInstance {
     supportType?: string | null;
     archetype?: string | null;
     image?: { url: string } | null;
+    effects?:
+      | {
+          trigger: string;
+          actions: { type: string; target: string; value?: number }[];
+        }[]
+      | null;
+    description?: string | null;
   };
   ownerId: number;
 }
@@ -23,7 +30,11 @@ export interface MonsterOnBoard {
   card: CardInstance;
   currentHp: number;
   mode: "attack" | "guard";
-  equipments: { id: number; name: string }[];
+  /**
+   * Le backend envoie des CardInstance[] complets (avec baseCard.effects, etc.)
+   * L'ancien type { id, name }[] était trop restrictif.
+   */
+  equipments: CardInstance[];
   atkBuff: number;
   hpBuff: number;
   tempAtkBuff: number;
@@ -37,8 +48,9 @@ export interface MonsterOnBoard {
   summonedThisTurn: boolean;
   doubleAtkNextTurn: boolean;
   damageReduction?: number;
-  /** Countdown pour autodestruction (Noyau Zeta). Undefined = pas de compteur. */
   turnCounter?: number;
+  blockAttackTurns?: number;
+  guardLocked?: boolean;
 }
 
 export interface MyState {
@@ -94,7 +106,9 @@ export type PendingChoiceResolution =
   | "pick_to_hand"
   | "destroy_ally"
   | "return_to_hand"
-  | "force_attack_enemy";
+  | "force_attack_enemy"
+  | "block_attack_enemy"
+  | "force_guard_enemy";
 
 export interface PendingChoice {
   candidates: ClientChoiceCandidate[];
