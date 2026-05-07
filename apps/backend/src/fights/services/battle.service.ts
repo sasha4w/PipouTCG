@@ -31,6 +31,7 @@ export class BattleService {
     server: Server,
     checkWinAndEmit: (game: GameState, server: Server) => Promise<void>,
   ): Promise<{ error?: string }> {
+    // ── Validations communes ─────────────────────────────────────────────────
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'battle') return { error: 'Phase de combat uniquement' };
@@ -53,6 +54,7 @@ export class BattleService {
     const maxAttacks = attacker.attacksPerTurn ?? 1;
     if (attacker.attacksUsedThisTurn >= maxAttacks)
       return { error: 'Ce monstre a déjà utilisé toutes ses attaques ce tour' };
+
     if (
       attacker.blockAttackTurns !== undefined &&
       attacker.blockAttackTurns > 0
@@ -61,7 +63,18 @@ export class BattleService {
         error: `${attacker.card.baseCard.name} ne peut pas attaquer (bloqué encore ${attacker.blockAttackTurns} tour(s))`,
       };
     }
-    if (!direct) {
+
+    // ── Validations spécifiques au mode ─────────────────────────────────────
+    if (direct) {
+      // FIX 1 : ces checks AVANT l'incrément du compteur d'attaques
+      if (game.turnNumber === 1)
+        return { error: 'Attaque directe interdite au premier tour' };
+      if (opponent.monsterZones.some((z) => z !== null))
+        return {
+          error:
+            "Attaque directe impossible : détruisez d'abord les monstres adverses",
+        };
+    } else {
       const tauntMonsters = opponent.monsterZones.filter((m) => m?.hasTaunt);
       if (
         tauntMonsters.length > 0 &&
@@ -70,40 +83,20 @@ export class BattleService {
         return {
           error: '⚠️ Vous devez attaquer le monstre avec Provocation !',
         };
+
+      if (!targetInstanceId) return { error: 'Cible requise' };
+      const targetCheck = opponent.monsterZones.find(
+        (m) => m?.instanceId === targetInstanceId,
+      );
+      if (!targetCheck) return { error: 'Cible introuvable' };
     }
 
+    // ── Compteur d'attaques (seulement si toutes les validations passent) ───
     attacker.attacksUsedThisTurn += 1;
     attacker.hasAttackedThisTurn =
       attacker.attacksUsedThisTurn >= (attacker.attacksPerTurn ?? 1);
 
-    if (direct) {
-      if (game.turnNumber === 1)
-        return { error: 'Attaque directe interdite au premier tour' };
-      if (opponent.monsterZones.some((z) => z !== null))
-        return {
-          error: "Attaque directe impossible : l'adversaire a des monstres",
-        };
-
-      const onAttackLog: string[] = [];
-      this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
-        game,
-        ownerUserId: userId,
-        sourceMonster: attacker,
-        log: onAttackLog,
-      });
-      onAttackLog.forEach((l) => addLog(game, l));
-
-      gainPrime(game, userId, attacker.card.baseCard.name);
-      await checkWinAndEmit(game, server);
-      return {};
-    }
-
-    // Monster vs Monster
-    const attackerAtk =
-      attacker.card.baseCard.atk +
-      attacker.atkBuff +
-      (attacker.tempAtkBuff ?? 0);
-
+    // ── Résolution ON_ATTACK ─────────────────────────────────────────────────
     const onAttackLog: string[] = [];
     this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
       game,
@@ -113,13 +106,28 @@ export class BattleService {
     });
     onAttackLog.forEach((l) => addLog(game, l));
 
-    if (!targetInstanceId) return { error: 'Cible requise' };
+    // ── Attaque directe ──────────────────────────────────────────────────────
+    if (direct) {
+      gainPrime(game, userId, attacker.card.baseCard.name);
+      // FIX 2 : l'adversaire perd une prime → il pioche une carte
+      drawCard(game, opponent.userId);
+      await checkWinAndEmit(game, server);
+      return {};
+    }
+
+    // ── Monstre vs Monstre ───────────────────────────────────────────────────
+    const attackerAtk =
+      attacker.card.baseCard.atk +
+      attacker.atkBuff +
+      (attacker.tempAtkBuff ?? 0);
+
+    // targetInstanceId est garanti défini ici (vérifié plus haut)
     const target = opponent.monsterZones.find(
       (m) => m?.instanceId === targetInstanceId,
-    );
-    if (!target) return { error: 'Cible introuvable' };
+    )!;
 
     const targetAtk = target.card.baseCard.atk + target.atkBuff;
+
     if (target.guardLocked) {
       target.guardLocked = false;
       addLog(
@@ -127,6 +135,7 @@ export class BattleService {
         `🔓 ${target.card.baseCard.name} est libéré de son verrou de Garde`,
       );
     }
+
     const onDefendLog: string[] = [];
     this.effectsResolver.resolve(target.card, EffectTrigger.ON_DEFEND, {
       game,
@@ -150,7 +159,7 @@ export class BattleService {
           `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name} — chacun récupère une Prime`,
         );
         removeMonster(player, attackerInstanceId, game, this.effectsResolver);
-        removeMonster(opponent, targetInstanceId, game, this.effectsResolver);
+        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
         gainPrime(game, userId, attacker.card.baseCard.name);
         gainPrime(game, opponent.userId, target.card.baseCard.name);
         drawCard(game, userId);
@@ -160,7 +169,7 @@ export class BattleService {
           game,
           `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`,
         );
-        removeMonster(opponent, targetInstanceId, game, this.effectsResolver);
+        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
         gainPrime(game, userId, attacker.card.baseCard.name);
         drawCard(game, opponent.userId);
       } else if (aDied) {
@@ -182,7 +191,7 @@ export class BattleService {
       applyDamage(target, attackerAtk);
 
       if (target.currentHp <= 0) {
-        removeMonster(opponent, targetInstanceId, game, this.effectsResolver);
+        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
         drawCard(game, opponent.userId);
         if (attacker.hasPiercing) {
           gainPrime(game, userId, attacker.card.baseCard.name);
