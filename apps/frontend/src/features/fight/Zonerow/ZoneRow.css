@@ -1,3 +1,4 @@
+/* ── Layout ─────────────────────────────────────────────────────────────── */
 .zr-wrap {
   margin-bottom: 8px;
 }
@@ -19,6 +20,7 @@
   gap: 10px;
 }
 
+/* ── Zone base ───────────────────────────────────────────────────────────── */
 .zr-zone {
   flex: 1;
   min-height: 100px;
@@ -41,21 +43,17 @@
 
 .zr-zone--filled {
   background: #fdf6f0;
-  border: 2px solid; /* color comes from inline style (rarity) */
-}
-
-/* Fallback if no inline rarity color is set */
-.zr-zone--filled:not([style]) {
-  border-color: #e0cfc8;
-}
-
-/* Rarity glow on filled zones — amplifies the border color via box-shadow */
-.zr-zone--filled {
+  border: 2px solid;
   box-shadow: 0 0 0 1px transparent;
   transition:
     border-color 0.3s,
     box-shadow 0.3s;
 }
+
+.zr-zone--filled:not([style]) {
+  border-color: #e0cfc8;
+}
+
 .zr-zone--filled:hover {
   box-shadow: 0 0 8px 0px currentColor;
 }
@@ -72,18 +70,21 @@
   cursor: pointer;
 }
 
+.zr-zone--clickable:hover {
+  border-color: #7a1c3b;
+  background: #f8edf2;
+}
+
 .zr-empty-plus {
   font-size: 22px;
   opacity: 0.2;
 }
 
-/* ── Summon animation — slide in + holo sweep ───────────────── */
-
+/* ── Summon ──────────────────────────────────────────────────────────────── */
 .zr-zone--summon-in {
   animation: zr-summon 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Holo shimmer overlay on summon */
 .zr-zone--summon-in::before {
   content: "";
   position: absolute;
@@ -104,18 +105,6 @@
   overflow: hidden;
 }
 
-@keyframes zr-holo-sweep {
-  0% {
-    transform: translateX(-160%) skewX(-18deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(260%) skewX(-18deg);
-    opacity: 0;
-  }
-}
-
-/* Glow pulse right after summon */
 .zr-zone--summon-in::after {
   content: "";
   position: absolute;
@@ -127,15 +116,6 @@
   animation: zr-summon-glow 0.5s 0.3s ease-out forwards;
   pointer-events: none;
   z-index: 3;
-}
-
-@keyframes zr-summon-glow {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
 }
 
 @keyframes zr-summon {
@@ -152,9 +132,26 @@
     opacity: 1;
   }
 }
+@keyframes zr-holo-sweep {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(260%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+@keyframes zr-summon-glow {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 
-/* ── Mode flip animation ────────────────────────────────────── */
-
+/* ── Mode flip ───────────────────────────────────────────────────────────── */
 .zr-zone--mode-flip {
   animation: zr-mode-flip 0.4s ease-in-out;
 }
@@ -174,8 +171,7 @@
   }
 }
 
-/* ── Attack lunge animation ──────────────────────────────────── */
-
+/* ── Attack lunge ────────────────────────────────────────────────────────── */
 .zr-zone--attacking {
   animation: zr-lunge 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 10;
@@ -201,8 +197,7 @@
   }
 }
 
-/* ── Damage flash ────────────────────────────────────────────── */
-
+/* ── Damage flash ────────────────────────────────────────────────────────── */
 .zr-zone--damaged {
   animation: zr-damage 0.6s ease-out;
 }
@@ -238,8 +233,7 @@
   }
 }
 
-/* ── DESTRUCTION — glass shatter ─────────────────────────────── */
-
+/* ── Destruction / shatter ───────────────────────────────────────────────── */
 .zr-zone--shattering {
   animation: zr-shatter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
@@ -249,7 +243,6 @@
   overflow: hidden;
 }
 
-/* Impact flash */
 .zr-zone--shattering::before {
   content: "";
   position: absolute;
@@ -272,22 +265,6 @@
   z-index: 5;
 }
 
-@keyframes zr-flash {
-  0% {
-    opacity: 0;
-  }
-  8% {
-    opacity: 1;
-  }
-  40% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Shard particles bursting outward */
 .zr-zone--shattering::after {
   content: "";
   position: absolute;
@@ -311,6 +288,20 @@
   z-index: 6;
 }
 
+@keyframes zr-flash {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 @keyframes zr-shards {
   0% {
     transform: translate(-50%, -50%) scale(0);
@@ -329,8 +320,6 @@
     opacity: 0;
   }
 }
-
-/* Zone body shatter keyframe */
 @keyframes zr-shatter {
   0% {
     transform: scale(1) rotate(0deg) skewX(0deg);
@@ -369,141 +358,12 @@
   }
 }
 
-/* Snapshot content fades with the zone */
 .zr-dying-content {
   opacity: inherit;
   pointer-events: none;
 }
 
-/* Support zone */
-.zr-support {
-  text-align: center;
-}
-
-.zr-support-name {
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.zr-support-type {
-  font-size: 10px;
-  color: #aaa;
-}
-
-.zr-btn-recycle {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  margin-top: 4px;
-}
-
-/* Monster zone */
-.zr-monster {
-  text-align: center;
-  width: 100%;
-}
-
-.zr-mode-chip {
-  border-radius: 99px;
-  font-size: 14px;
-  padding: 2px 8px;
-  display: inline-block;
-  margin-bottom: 4px;
-  transition: background 0.2s;
-}
-
-.zr-mode-chip--attack {
-  background: #fce4d4;
-}
-.zr-mode-chip--guard {
-  background: #e4f0fc;
-}
-
-.zr-monster-name {
-  font-size: 11px;
-  font-weight: 700;
-  margin-bottom: 2px;
-  word-break: break-word;
-}
-
-.zr-monster-stats {
-  font-size: 10px;
-  color: #888;
-}
-
-.zr-attacked {
-  font-size: 9px;
-  color: #aaa;
-}
-
-.zr-mode-btns {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-  margin-top: 4px;
-}
-
-.zr-mode-btn {
-  border: none;
-  border-radius: 6px;
-  padding: 3px 7px;
-  cursor: pointer;
-  font-size: 13px;
-  background: #f0ddd0;
-  color: #7a1c3b;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-
-.zr-mode-btn--active {
-  background: #7a1c3b;
-  color: #fff;
-}
-
-.zr-monster-badges {
-  display: flex;
-  gap: 2px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 2px;
-}
-
-.zr-badge {
-  font-size: 10px;
-  padding: 1px 4px;
-  border-radius: 99px;
-  background: rgba(0, 0, 0, 0.08);
-  cursor: default;
-}
-
-.zr-badge--taunt {
-  background: rgba(122, 28, 59, 0.15);
-}
-.zr-badge--piercing {
-  background: rgba(231, 76, 60, 0.15);
-}
-.zr-badge--immune {
-  background: rgba(155, 89, 182, 0.15);
-}
-.zr-badge--sleep {
-  background: rgba(100, 100, 100, 0.15);
-}
-.zr-badge--charge {
-  background: rgba(243, 156, 18, 0.15);
-}
-.zr-badge--multi {
-  background: rgba(39, 174, 96, 0.2);
-  font-weight: 700;
-}
-
-/* Hover sur zones cliquables */
-.zr-zone--clickable:hover {
-  border-color: #7a1c3b;
-  background: #f8edf2;
-}
-
+/* ── Pulse targets ───────────────────────────────────────────────────────── */
 .zr-zone--pulse-target {
   border: 2px dashed #c97a9a;
   animation: zr-pulse-target 1.2s ease-in-out infinite;
@@ -518,9 +378,50 @@
     box-shadow: 0 0 0 3px rgba(122, 28, 59, 0.15);
   }
 }
-/* ── Ajoute ces règles à la fin de ZoneRow.css ─────────────────────────────── */
 
-/* turnCounter badge — Noyau Zeta */
+.zr-zone--pulse-equipment {
+  animation: zr-pulse-equipment 1.2s ease-in-out infinite;
+  border-color: rgba(80, 200, 120, 0.7) !important;
+  cursor: pointer;
+}
+
+@keyframes zr-pulse-equipment {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(80, 200, 120, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(80, 200, 120, 0);
+  }
+}
+
+/* ── Noyau Zeta target ───────────────────────────────────────────────────── */
+.zr-zone--zeta-target {
+  border-color: #8e44ad !important;
+  animation:
+    zr-pulse-target 1.2s ease-in-out infinite,
+    zr-pulse-zeta 1.2s ease-in-out infinite;
+}
+
+.zr-zeta-hint {
+  font-size: 11px;
+  color: #8e44ad;
+  font-weight: 700;
+  opacity: 0.85;
+  text-align: center;
+}
+
+@keyframes zr-pulse-zeta {
+  0%,
+  100% {
+    box-shadow: none;
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.25);
+  }
+}
+
+/* ── Turn counter badge ──────────────────────────────────────────────────── */
 .zr-badge--counter {
   background: rgba(52, 152, 219, 0.2);
   color: #2471a3;
@@ -528,7 +429,6 @@
   letter-spacing: -0.5px;
 }
 
-/* Urgent : 1 tour restant — clignote en rouge */
 .zr-badge--counter-urgent {
   background: rgba(231, 76, 60, 0.2);
   color: #c0392b;
@@ -543,77 +443,4 @@
   50% {
     opacity: 0.3;
   }
-}
-
-/* Zone adverse vide ciblable pour Zeta */
-.zr-zone--zeta-target {
-  border-color: #8e44ad !important;
-}
-
-.zr-zone--zeta-target .zr-zeta-hint {
-  font-size: 11px;
-  color: #8e44ad;
-  font-weight: 700;
-  opacity: 0.85;
-  text-align: center;
-}
-
-.zr-zeta-hint {
-  font-size: 11px;
-  color: #8e44ad;
-  font-weight: 700;
-}
-
-@keyframes zr-pulse-zeta {
-  0%,
-  100% {
-    box-shadow: none;
-  }
-  50% {
-    box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.25);
-  }
-}
-
-.zr-zone--zeta-target {
-  animation:
-    zr-pulse-target 1.2s ease-in-out infinite,
-    zr-pulse-zeta 1.2s ease-in-out infinite;
-}
-/* ── Équipements toujours visibles sous la carte ── */
-.zr-equipment-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  margin-top: 3px;
-  justify-content: center;
-}
-
-.zr-equipment-chip {
-  font-size: 0.6rem;
-  background: rgba(255, 200, 80, 0.18);
-  border: 1px solid rgba(255, 200, 80, 0.45);
-  border-radius: 3px;
-  padding: 1px 4px;
-  color: #d4a017;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 90%;
-  cursor: help;
-}
-/* ── Pulse vert pour ciblage EQUIPMENT (zones occupées) ── */
-@keyframes pulse-equipment {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(80, 200, 120, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(80, 200, 120, 0);
-  }
-}
-
-.zr-zone--pulse-equipment {
-  animation: pulse-equipment 1.2s ease-in-out infinite;
-  border-color: rgba(80, 200, 120, 0.7) !important;
-  cursor: pointer;
 }

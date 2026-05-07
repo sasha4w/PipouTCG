@@ -4,7 +4,7 @@ import "./FightBoard.css";
 import type { GameState, MonsterOnBoard } from "./fight.types";
 import { FREE_SUMMON_CARD_ID, NOYAU_ZETA_CARD_ID } from "./fight.types";
 import FightHUD from "./FightHUD";
-import ZoneRow from "./ZoneRow";
+import ZoneRow from "./Zonerow/ZoneRow";
 import FightHand from "./FightHand";
 import type { HandCard } from "./FightHand";
 import FightActionBar from "./FightActionBar";
