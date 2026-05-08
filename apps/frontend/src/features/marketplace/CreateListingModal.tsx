@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ProductType,
   type CreateListingData,
@@ -7,16 +8,12 @@ import CardDisplay from "../cards/CardDisplay";
 import type { Card } from "../../services/card.service";
 import "./CreateListingModal.css";
 
-// ─────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────
-const TYPE_LABELS: Record<ProductType, string> = {
-  [ProductType.CARD]: "Cartes",
-  [ProductType.BOOSTER]: "Boosters",
-  [ProductType.BUNDLE]: "Bundles",
+const TYPE_KEYS: Record<ProductType, string> = {
+  [ProductType.CARD]: "marketplace.modal.type_cards",
+  [ProductType.BOOSTER]: "marketplace.modal.type_boosters",
+  [ProductType.BUNDLE]: "marketplace.modal.type_bundles",
 };
 
-/** Convertit un item d'inventaire en Card pour CardDisplay */
 function toCard(item: any): Card {
   return {
     id: item.id,
@@ -33,9 +30,6 @@ function toCard(item: any): Card {
   };
 }
 
-// ─────────────────────────────────────────────
-// Props
-// ─────────────────────────────────────────────
 interface CreateListingModalProps {
   isCreating: boolean;
   formProductType: ProductType;
@@ -49,9 +43,6 @@ interface CreateListingModalProps {
   addToast: (message: string, type: "success" | "error" | "warning") => void;
 }
 
-// ─────────────────────────────────────────────
-// 📝 COMPOSANT : CreateListingModal
-// ─────────────────────────────────────────────
 const CreateListingModal = ({
   isCreating,
   formProductType,
@@ -64,6 +55,7 @@ const CreateListingModal = ({
   onClose,
   addToast,
 }: CreateListingModalProps) => {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [unitPrice, setUnitPrice] = useState<number | "">("");
@@ -90,27 +82,25 @@ const CreateListingModal = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!selectedInventoryId) {
-      addToast("Veuillez sélectionner un objet.", "warning");
+      addToast(t("marketplace.modal.warn_no_item"), "warning");
       return;
     }
     if (!quantity || quantity < 1) {
-      addToast("La quantité doit être d'au moins 1.", "warning");
+      addToast(t("marketplace.modal.warn_qty"), "warning");
       return;
     }
     if (selectedItem && quantity > selectedItem.quantity) {
       addToast(
-        `Stock insuffisant. Vous avez ${selectedItem.quantity} exemplaire(s).`,
+        t("marketplace.modal.warn_stock", { count: selectedItem.quantity }),
         "warning",
       );
       return;
     }
     if (!unitPrice || unitPrice < 1) {
-      addToast("Le prix doit être d'au moins 1 gold.", "warning");
+      addToast(t("marketplace.modal.warn_price"), "warning");
       return;
     }
-
     onSubmit({
       productType: formProductType,
       productId: Number(selectedInventoryId),
@@ -118,6 +108,8 @@ const CreateListingModal = ({
       unitPrice: Number(unitPrice),
     });
   };
+
+  const typeLabel = (type: ProductType) => t(TYPE_KEYS[type]).toLowerCase();
 
   return (
     <div
@@ -128,19 +120,18 @@ const CreateListingModal = ({
     >
       <div className="marketplace-modal-content">
         <div className="marketplace-modal-header">
-          <h3>Mettre en vente</h3>
+          <h3>{t("marketplace.modal.title")}</h3>
           <button
             className="marketplace-modal-close"
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("marketplace.modal.close")}
           >
             ✕
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* ── Sélection du type ── */}
           <div className="marketplace-form-group">
             <div className="marketplace-type-selector">
               {Object.values(ProductType).map((type) => (
@@ -150,25 +141,29 @@ const CreateListingModal = ({
                   className={`marketplace-type-btn${formProductType === type ? " marketplace-type-btn--active" : ""}`}
                   onClick={() => handleTypeChange(type)}
                 >
-                  {TYPE_LABELS[type]}
+                  {t(TYPE_KEYS[type])}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* ── Grille de sélection ── */}
           <div className="marketplace-form-group">
             <div className="marketplace-picker-header">
               <span className="marketplace-picker-count">
                 {availableItems.length > 0
-                  ? `${availableItems.length} ${TYPE_LABELS[formProductType].toLowerCase()} en stock`
-                  : `Aucun(e) ${TYPE_LABELS[formProductType].toLowerCase()} disponible`}
+                  ? t("marketplace.modal.stock_count", {
+                      count: availableItems.length,
+                      type: typeLabel(formProductType),
+                    })
+                  : t("marketplace.modal.stock_empty", {
+                      type: typeLabel(formProductType),
+                    })}
               </span>
               {availableItems.length > 0 && (
                 <input
                   className="marketplace-picker-search"
                   type="text"
-                  placeholder="Rechercher..."
+                  placeholder={t("marketplace.modal.search_placeholder")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -177,7 +172,7 @@ const CreateListingModal = ({
 
             {availableItems.length === 0 ? (
               <p className="marketplace-form-hint">
-                Votre inventaire est vide pour ce type d'objet.
+                {t("marketplace.modal.inventory_empty")}
               </p>
             ) : (
               <div
@@ -189,10 +184,9 @@ const CreateListingModal = ({
               >
                 {filteredItems.length === 0 && (
                   <p className="marketplace-form-hint">
-                    Aucun résultat pour « {search} ».
+                    {t("marketplace.modal.no_results", { search })}
                   </p>
                 )}
-
                 {formProductType === ProductType.CARD
                   ? filteredItems.map((item) => {
                       const isSelected = selectedInventoryId === item.id;
@@ -202,7 +196,7 @@ const CreateListingModal = ({
                           type="button"
                           className={`marketplace-card-pick${isSelected ? " marketplace-card-pick--selected" : ""}`}
                           onClick={() => handleSelectItem(item.id)}
-                          title={`${item.name} — ×${item.quantity} en stock`}
+                          title={`${item.name} — ×${item.quantity}`}
                         >
                           <CardDisplay
                             card={toCard(item)}
@@ -254,7 +248,6 @@ const CreateListingModal = ({
               </div>
             )}
 
-            {/* Récap item sélectionné */}
             {selectedItem && (
               <div className="marketplace-selected-recap">
                 <strong>{selectedItem.name}</strong>
@@ -269,17 +262,18 @@ const CreateListingModal = ({
                   </span>
                 )}
                 <span className="marketplace-selected-recap__stock">
-                  {selectedItem.quantity} en stock
+                  {t("marketplace.modal.in_stock", {
+                    count: selectedItem.quantity,
+                  })}
                 </span>
               </div>
             )}
           </div>
 
-          {/* ── Quantité + Prix — apparaît après sélection ── */}
           {selectedItem && (
             <div className="marketplace-form-row">
               <div className="marketplace-form-group">
-                <label>Quantité</label>
+                <label>{t("marketplace.modal.quantity")}</label>
                 <div className="marketplace-qty-selector">
                   <button
                     type="button"
@@ -320,14 +314,14 @@ const CreateListingModal = ({
                       className="marketplace-qty-max"
                       onClick={() => setQuantity(selectedItem.quantity)}
                     >
-                      Max
+                      {t("marketplace.qty.max")}
                     </button>
                   )}
                 </div>
               </div>
 
               <div className="marketplace-form-group">
-                <label>Prix unitaire (Gold)</label>
+                <label>{t("marketplace.modal.unit_price")}</label>
                 <input
                   className="marketplace-price-input"
                   type="number"
@@ -342,28 +336,31 @@ const CreateListingModal = ({
                 />
                 {unitPrice && quantity > 0 && (
                   <p className="marketplace-form-hint">
-                    Total annonce :{" "}
-                    <strong>{Number(unitPrice) * quantity} G</strong>
+                    {t("marketplace.modal.total_hint", {
+                      total: Number(unitPrice) * quantity,
+                    })}
                   </p>
                 )}
               </div>
             </div>
           )}
 
-          {/* ── Actions ── */}
           <div className="marketplace-modal-actions">
             <button type="button" onClick={onClose} disabled={isCreating}>
-              Annuler
+              {t("marketplace.modal.btn_cancel")}
             </button>
             <button
               type="submit"
               disabled={!selectedInventoryId || !unitPrice || isCreating}
             >
               {isCreating
-                ? "Mise en vente..."
+                ? t("marketplace.modal.btn_selling")
                 : selectedItem && unitPrice
-                  ? `Vendre ×${quantity} — ${Number(unitPrice) * quantity} G`
-                  : "Vendre"}
+                  ? t("marketplace.modal.btn_sell", {
+                      qty: quantity,
+                      total: Number(unitPrice) * quantity,
+                    })
+                  : t("marketplace.modal.btn_sell_default")}
             </button>
           </div>
         </form>

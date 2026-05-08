@@ -102,12 +102,17 @@
     "empty": "Aucune mission dans cette catégorie.",
     "claim": "Réclamer",
     "claimed": "Réclamé",
+    "claim_all": "Tout réclamer",
     "permanent": "Permanent",
     "expired": "Expiré",
     "remaining_days": "{{d}}j {{h}}h restantes",
     "remaining_hours": "{{h}}h {{m}}min restantes",
     "remaining_mins": "{{m}}min {{s}}s restantes",
-    "remaining_secs": "{{s}}s restantes"
+    "remaining_secs": "{{s}}s restantes",
+    "inbox_label": "Quêtes disponibles",
+    "inbox_title": "⚔️ Quêtes à réclamer",
+    "nothing_to_claim": "Aucune quête à réclamer 🎉",
+    "see_all": "Voir toutes les quêtes"
   },
   "profile": {
     "gold": "Gold",
@@ -146,5 +151,95 @@
     "all_rarities": "Toutes",
     "type": "Type",
     "rarity": "Rareté"
+  },
+  "marketplace": {
+    "tabs": {
+      "buy": "Achat",
+      "sell": "Vente"
+    },
+    "buy": {
+      "title": "Marché",
+      "search_placeholder": "Rechercher un objet ou un vendeur...",
+      "seller": "Par :",
+      "unit_price": "{{price}} G / unité",
+      "total_price": "Total : {{total}} G",
+      "btn_buy": "Acheter ({{total}} G)",
+      "loading": "...",
+      "history_title": "Ventes Récentes du Marché",
+      "history_empty": "Aucune transaction récente."
+    },
+    "sell": {
+      "title": "Mes Annonces En Cours",
+      "btn_create": "+ Créer une annonce",
+      "empty": "Aucune vente en cours.",
+      "total": "Total : {{total}} G",
+      "unit_price": "{{price}} G / u",
+      "btn_edit": "Modifier",
+      "btn_cancel": "Annuler",
+      "btn_save": "Sauvegarder",
+      "edit_quantity": "Quantité",
+      "edit_price": "Prix unitaire (G)",
+      "edit_total": "Total estimé : {{total}} G",
+      "history_title": "Mes Ventes Récentes",
+      "history_empty": "Aucune vente complétée."
+    },
+    "modal": {
+      "title": "Mettre en vente",
+      "close": "Fermer",
+      "type_cards": "Cartes",
+      "type_boosters": "Boosters",
+      "type_bundles": "Bundles",
+      "stock_count": "{{count}} {{type}} en stock",
+      "stock_empty": "Aucun(e) {{type}} disponible",
+      "inventory_empty": "Votre inventaire est vide pour ce type d'objet.",
+      "no_results": "Aucun résultat pour « {{search}} ».",
+      "search_placeholder": "Rechercher...",
+      "in_stock": "{{count}} en stock",
+      "quantity": "Quantité",
+      "unit_price": "Prix unitaire (Gold)",
+      "total_hint": "Total annonce : {{total}} G",
+      "btn_cancel": "Annuler",
+      "btn_sell": "Vendre ×{{qty}} — {{total}} G",
+      "btn_sell_default": "Vendre",
+      "btn_selling": "Mise en vente...",
+      "warn_no_item": "Veuillez sélectionner un objet.",
+      "warn_qty": "La quantité doit être d'au moins 1.",
+      "warn_stock": "Stock insuffisant. Vous avez {{count}} exemplaire(s).",
+      "warn_price": "Le prix doit être d'au moins 1 gold."
+    },
+    "filter": {
+      "all": "Tous",
+      "cards": "Cartes",
+      "boosters": "Boosters",
+      "bundles": "Bundles"
+    },
+    "history": {
+      "empty": "Aucun historique.",
+      "pagination": "{{page}} / {{total}}"
+    },
+    "toast": {
+      "buy_success": "🎉 Achat réussi ! L'objet est dans votre inventaire.",
+      "buy_no_gold": "Achat impossible : vous n'avez pas assez de gold. 💰",
+      "buy_own": "Achat impossible : vous ne pouvez pas acheter votre propre annonce.",
+      "buy_unavailable": "Achat impossible : cette annonce n'est plus disponible.",
+      "buy_error": "Achat impossible : {{message}}",
+      "buy_error_default": "Achat impossible.",
+      "sell_success": "✨ Mise en vente réussie !",
+      "sell_error": "Mise en vente impossible : {{message}}",
+      "cancel_success": "Annonce annulée. L'objet a été remis dans votre inventaire.",
+      "cancel_error": "Impossible d'annuler l'annonce.",
+      "update_success": "Annonce mise à jour.",
+      "update_error": "Impossible de modifier l'annonce.",
+      "update_warn": "Quantité et prix doivent être supérieurs à 0.",
+      "warn_no_item": "Veuillez sélectionner un objet à vendre.",
+      "warn_qty": "La quantité doit être supérieure à 0.",
+      "warn_price": "Le prix doit être supérieur à 0.",
+      "warn_stock": "Stock insuffisant. Vous avez seulement {{count}} exemplaire(s)."
+    },
+    "qty": {
+      "reduce": "Réduire la quantité",
+      "increase": "Augmenter la quantité",
+      "max": "Max"
+    }
   }
 }

@@ -102,12 +102,17 @@
     "empty": "이 카테고리에 퀘스트가 없습니다.",
     "claim": "수령",
     "claimed": "수령 완료",
+    "claim_all": "모두 수령",
     "permanent": "영구",
     "expired": "만료됨",
     "remaining_days": "{{d}}일 {{h}}시간 남음",
     "remaining_hours": "{{h}}시간 {{m}}분 남음",
     "remaining_mins": "{{m}}분 {{s}}초 남음",
-    "remaining_secs": "{{s}}초 남음"
+    "remaining_secs": "{{s}}초 남음",
+    "inbox_label": "수령 가능한 퀘스트",
+    "inbox_title": "⚔️ 수령할 퀘스트",
+    "nothing_to_claim": "수령할 퀘스트가 없습니다 🎉",
+    "see_all": "퀘스트 전체 보기"
   },
   "profile": {
     "gold": "골드",
@@ -146,5 +151,95 @@
     "all_rarities": "모든 등급",
     "type": "유형",
     "rarity": "등급"
+  },
+  "marketplace": {
+    "tabs": {
+      "buy": "구매",
+      "sell": "판매"
+    },
+    "buy": {
+      "title": "마켓",
+      "search_placeholder": "아이템 또는 판매자 검색...",
+      "seller": "판매자:",
+      "unit_price": "{{price}} G / 개",
+      "total_price": "합계: {{total}} G",
+      "btn_buy": "구매 ({{total}} G)",
+      "loading": "...",
+      "history_title": "최근 거래 내역",
+      "history_empty": "최근 거래가 없습니다."
+    },
+    "sell": {
+      "title": "내 판매 목록",
+      "btn_create": "+ 판매 등록",
+      "empty": "진행 중인 판매가 없습니다.",
+      "total": "합계: {{total}} G",
+      "unit_price": "{{price}} G / 개",
+      "btn_edit": "수정",
+      "btn_cancel": "취소",
+      "btn_save": "저장",
+      "edit_quantity": "수량",
+      "edit_price": "단가 (G)",
+      "edit_total": "예상 합계: {{total}} G",
+      "history_title": "최근 판매 내역",
+      "history_empty": "완료된 판매가 없습니다."
+    },
+    "modal": {
+      "title": "판매 등록",
+      "close": "닫기",
+      "type_cards": "카드",
+      "type_boosters": "부스터",
+      "type_bundles": "번들",
+      "stock_count": "재고 {{type}} {{count}}개",
+      "stock_empty": "{{type}} 재고 없음",
+      "inventory_empty": "이 유형의 아이템이 인벤토리에 없습니다.",
+      "no_results": "\"{{search}}\" 검색 결과 없음.",
+      "search_placeholder": "검색...",
+      "in_stock": "재고 {{count}}개",
+      "quantity": "수량",
+      "unit_price": "단가 (골드)",
+      "total_hint": "판매 합계: {{total}} G",
+      "btn_cancel": "취소",
+      "btn_sell": "판매 ×{{qty}} — {{total}} G",
+      "btn_sell_default": "판매",
+      "btn_selling": "등록 중...",
+      "warn_no_item": "아이템을 선택해주세요.",
+      "warn_qty": "수량은 최소 1개 이상이어야 합니다.",
+      "warn_stock": "재고 부족. 보유 수량: {{count}}개.",
+      "warn_price": "가격은 최소 1골드 이상이어야 합니다."
+    },
+    "filter": {
+      "all": "전체",
+      "cards": "카드",
+      "boosters": "부스터",
+      "bundles": "번들"
+    },
+    "history": {
+      "empty": "내역 없음.",
+      "pagination": "{{page}} / {{total}}"
+    },
+    "toast": {
+      "buy_success": "🎉 구매 성공! 아이템이 인벤토리에 추가되었습니다.",
+      "buy_no_gold": "구매 실패: 골드가 부족합니다. 💰",
+      "buy_own": "구매 실패: 본인 판매 목록은 구매할 수 없습니다.",
+      "buy_unavailable": "구매 실패: 해당 판매 목록이 더 이상 존재하지 않습니다.",
+      "buy_error": "구매 실패: {{message}}",
+      "buy_error_default": "구매 실패.",
+      "sell_success": "✨ 판매 등록 완료!",
+      "sell_error": "판매 등록 실패: {{message}}",
+      "cancel_success": "판매 취소 완료. 아이템이 인벤토리로 반환되었습니다.",
+      "cancel_error": "판매 취소 불가.",
+      "update_success": "판매 목록이 업데이트되었습니다.",
+      "update_error": "판매 목록 수정 불가.",
+      "update_warn": "수량과 가격은 0보다 커야 합니다.",
+      "warn_no_item": "판매할 아이템을 선택해주세요.",
+      "warn_qty": "수량은 0보다 커야 합니다.",
+      "warn_price": "가격은 0보다 커야 합니다.",
+      "warn_stock": "재고 부족. 보유 수량: {{count}}개."
+    },
+    "qty": {
+      "reduce": "수량 감소",
+      "increase": "수량 증가",
+      "max": "최대"
+    }
   }
 }

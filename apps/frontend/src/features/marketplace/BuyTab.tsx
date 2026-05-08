@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
 import { type Transaction } from "../../services/transaction.service";
@@ -10,18 +11,8 @@ import TransactionHistory from "./TransactionHistory";
 import "./BuyTab.css";
 import "./ListingCard.css";
 
-// ─────────────────────────────────────────────
-// 🛒 COMPOSANT : BuyTab
-// ─────────────────────────────────────────────
 interface BuyTabProps {
   filteredListings: Transaction[] | undefined;
-  /**
-   * Historique global des transactions COMPLETED.
-   * ⚠️ Note backend : GET /transactions/completed est AdminGuard.
-   * Pour un feed public "tout le monde", ajouter un endpoint
-   * GET /transactions/recent-sales sans guard côté NestJS.
-   * Pour l'instant, c'est l'historique de l'utilisateur connecté.
-   */
   buyHistory: Transaction[] | undefined;
   loadingAction: number | null;
   searchTerm: string;
@@ -47,10 +38,10 @@ const BuyTab = ({
   onFilterChange,
   onBuyListing,
 }: BuyTabProps) => {
+  const { t } = useTranslation();
   const [quantities, setQuantities] = useState<Record<number, number>>({});
 
   const getQty = (id: number) => quantities[id] ?? 1;
-
   const setQty = (id: number, max: number, value: number) => {
     const clamped = Math.min(Math.max(1, value), max);
     setQuantities((prev) => ({ ...prev, [id]: clamped }));
@@ -58,12 +49,13 @@ const BuyTab = ({
 
   return (
     <div className="marketplace-buy">
-      {/* ── Annonces actives ── */}
-      <h2 className="marketplace-section__title">Marché</h2>
+      <h2 className="marketplace-section__title">
+        {t("marketplace.buy.title")}
+      </h2>
       <SearchBar
         value={searchTerm}
         onChange={onSearchChange}
-        placeholder="Rechercher un objet ou un vendeur..."
+        placeholder={t("marketplace.buy.search_placeholder")}
         filters={
           <FilterPanel
             config={filterConfig}
@@ -90,9 +82,9 @@ const BuyTab = ({
                   stroke="#7a1c3b"
                   strokeWidth="1.5"
                 >
-                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <path d="M20.4 14.5L16 10 4 20"></path>
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="M20.4 14.5L16 10 4 20" />
                 </svg>
                 <div className="marketplace-listing__name">
                   {getDisplayName(listing)}
@@ -107,7 +99,7 @@ const BuyTab = ({
                   className="marketplace-qty-btn"
                   onClick={() => setQty(listing.id, listing.quantity, qty - 1)}
                   disabled={qty <= 1 || isLoading}
-                  aria-label="Réduire la quantité"
+                  aria-label={t("marketplace.qty.reduce")}
                 >
                   −
                 </button>
@@ -126,7 +118,7 @@ const BuyTab = ({
                   className="marketplace-qty-btn"
                   onClick={() => setQty(listing.id, listing.quantity, qty + 1)}
                   disabled={qty >= listing.quantity || isLoading}
-                  aria-label="Augmenter la quantité"
+                  aria-label={t("marketplace.qty.increase")}
                 >
                   +
                 </button>
@@ -138,23 +130,28 @@ const BuyTab = ({
                     }
                     disabled={isLoading}
                   >
-                    Max
+                    {t("marketplace.qty.max")}
                   </button>
                 )}
               </div>
 
               <div className="marketplace-listing__bottom">
                 <span className="marketplace-listing__seller">
-                  Par: <strong>{listing.seller?.username || "Inconnu"}</strong>
+                  {t("marketplace.buy.seller")}{" "}
+                  <strong>{listing.seller?.username || "—"}</strong>
                 </span>
                 <div className="marketplace-listing__price">
                   <div className="marketplace-listing__price-info">
                     <span className="marketplace-listing__unit-price">
-                      {listing.unitPrice} G / unité
+                      {t("marketplace.buy.unit_price", {
+                        price: listing.unitPrice,
+                      })}
                     </span>
                     {qty > 1 && (
                       <span className="marketplace-listing__total-price">
-                        Total : {totalForQty} G
+                        {t("marketplace.buy.total_price", {
+                          total: totalForQty,
+                        })}
                       </span>
                     )}
                   </div>
@@ -163,7 +160,9 @@ const BuyTab = ({
                     onClick={() => onBuyListing(listing.id, qty)}
                     disabled={isLoading}
                   >
-                    {isLoading ? "..." : `Acheter (${totalForQty} G)`}
+                    {isLoading
+                      ? t("marketplace.buy.loading")
+                      : t("marketplace.buy.btn_buy", { total: totalForQty })}
                   </button>
                 </div>
               </div>
@@ -172,13 +171,12 @@ const BuyTab = ({
         })}
       </div>
 
-      {/* ── Historique des ventes récentes ── */}
       <h2 className="marketplace-section__title marketplace-section__title--history">
-        Ventes Récentes du Marché
+        {t("marketplace.buy.history_title")}
       </h2>
       <TransactionHistory
         history={buyHistory}
-        emptyMessage="Aucune transaction récente."
+        emptyMessage={t("marketplace.buy.history_empty")}
       />
     </div>
   );

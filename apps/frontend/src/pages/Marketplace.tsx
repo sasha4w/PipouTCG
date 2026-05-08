@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   transactionService,
   ProductType,
@@ -19,6 +20,8 @@ import BuyTab from "../features/marketplace/BuyTab";
 import CreateListingModal from "../features/marketplace/CreateListingModal";
 
 const Marketplace = () => {
+  const { t } = useTranslation();
+
   const [selectedTab, setSelectedTab] = useState<"sell" | "buy">("buy");
   const [showCreateListingForm, setShowCreateListingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,13 +78,11 @@ const Marketplace = () => {
     queryFn: () => userService.getMyInventory(),
   });
 
-  // Ventes récentes de tout le marché → BuyTab
   const { data: recentSalesData } = useQuery({
     queryKey: ["transactions", "recent-sales"],
     queryFn: () => transactionService.getRecentSales(),
   });
 
-  // Mes ventes complétées → SellTab
   const { data: mySalesData } = useQuery({
     queryKey: ["transactions", "history", "seller"],
     queryFn: () => transactionService.getHistory(1, 20, "seller"),
@@ -110,20 +111,20 @@ const Marketplace = () => {
 
   const handleCreateListing = async (data: CreateListingData) => {
     if (!data.productId || data.productId <= 0) {
-      addToast("Veuillez sélectionner un objet à vendre.", "warning");
+      addToast(t("marketplace.toast.warn_no_item"), "warning");
       return;
     }
     if (!data.quantity || data.quantity <= 0) {
-      addToast("La quantité doit être supérieure à 0.", "warning");
+      addToast(t("marketplace.toast.warn_qty"), "warning");
       return;
     }
     if (!data.unitPrice || data.unitPrice <= 0) {
-      addToast("Le prix doit être supérieur à 0.", "warning");
+      addToast(t("marketplace.toast.warn_price"), "warning");
       return;
     }
     if (selectedItem && data.quantity > selectedItem.quantity) {
       addToast(
-        `Stock insuffisant. Vous avez seulement ${selectedItem.quantity} exemplaire(s).`,
+        t("marketplace.toast.warn_stock", { count: selectedItem.quantity }),
         "warning",
       );
       return;
@@ -137,11 +138,17 @@ const Marketplace = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       setShowCreateListingForm(false);
       setSelectedInventoryId("");
-      addToast("✨ Mise en vente réussie !", "success");
+      addToast(t("marketplace.toast.sell_success"), "success");
     } catch (error: any) {
-      const message =
-        error.response?.data?.message || "Impossible de créer l'annonce.";
-      addToast(`Mise en vente impossible : ${message}`, "error");
+      const message = error.response?.data?.message || "";
+      addToast(
+        message
+          ? t("marketplace.toast.sell_error", { message })
+          : t("marketplace.toast.sell_error", {
+              message: t("marketplace.toast.buy_error_default"),
+            }),
+        "error",
+      );
     } finally {
       setIsCreating(false);
     }
@@ -156,15 +163,10 @@ const Marketplace = () => {
     try {
       await transactionService.cancel(id);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
-      addToast(
-        "Annonce annulée. L'objet a été remis dans votre inventaire.",
-        "success",
-      );
+      addToast(t("marketplace.toast.cancel_success"), "success");
     } catch (error: any) {
       queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
-      const message =
-        error.response?.data?.message || "Impossible d'annuler l'annonce.";
-      addToast(message, "error");
+      addToast(t("marketplace.toast.cancel_error"), "error");
     } finally {
       setLoadingAction(null);
     }
@@ -175,7 +177,7 @@ const Marketplace = () => {
       (data.quantity !== undefined && data.quantity < 1) ||
       (data.unitPrice !== undefined && data.unitPrice < 1)
     ) {
-      addToast("Quantité et prix doivent être supérieurs à 0.", "warning");
+      addToast(t("marketplace.toast.update_warn"), "warning");
       return;
     }
     setLoadingUpdate(id);
@@ -212,12 +214,10 @@ const Marketplace = () => {
             }
           : old,
       );
-      addToast("Annonce mise à jour.", "success");
+      addToast(t("marketplace.toast.update_success"), "success");
     } catch (error: any) {
       queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
-      const message =
-        error.response?.data?.message || "Impossible de modifier l'annonce.";
-      addToast(message, "error");
+      addToast(t("marketplace.toast.update_error"), "error");
     } finally {
       setLoadingUpdate(null);
     }
@@ -227,7 +227,6 @@ const Marketplace = () => {
     setLoadingAction(id);
     try {
       const transaction = await transactionService.buy(id, quantity);
-
       queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
         old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
       );
@@ -238,31 +237,27 @@ const Marketplace = () => {
       queryClient.invalidateQueries({
         queryKey: ["transactions", "recent-sales"],
       });
-
-      addToast(
-        "🎉 Achat réussi ! L'objet est dans votre inventaire.",
-        "success",
-      );
+      addToast(t("marketplace.toast.buy_success"), "success");
     } catch (error: any) {
       const raw = error.response?.data?.message || "";
-      let userMessage = "Achat impossible.";
+      let userMessage = t("marketplace.toast.buy_error_default");
       if (
         raw.toLowerCase().includes("gold") ||
         raw.toLowerCase().includes("or")
       )
-        userMessage = "Achat impossible : vous n'avez pas assez de gold. 💰";
+        userMessage = t("marketplace.toast.buy_no_gold");
       else if (
         raw.toLowerCase().includes("propre") ||
         raw.toLowerCase().includes("own")
       )
-        userMessage =
-          "Achat impossible : vous ne pouvez pas acheter votre propre annonce.";
+        userMessage = t("marketplace.toast.buy_own");
       else if (
         raw.toLowerCase().includes("disponible") ||
         raw.toLowerCase().includes("available")
       )
-        userMessage = "Achat impossible : cette annonce n'est plus disponible.";
-      else if (raw) userMessage = `Achat impossible : ${raw}`;
+        userMessage = t("marketplace.toast.buy_unavailable");
+      else if (raw)
+        userMessage = t("marketplace.toast.buy_error", { message: raw });
       addToast(userMessage, "error");
     } finally {
       setLoadingAction(null);
@@ -276,12 +271,12 @@ const Marketplace = () => {
   const filterConfig = [
     {
       key: "type",
-      label: "Type",
+      label: t("filter.type"),
       options: [
-        { value: "all", label: "Tous" },
-        { value: ProductType.CARD, label: "Cartes" },
-        { value: ProductType.BOOSTER, label: "Boosters" },
-        { value: ProductType.BUNDLE, label: "Bundles" },
+        { value: "all", label: t("marketplace.filter.all") },
+        { value: ProductType.CARD, label: t("marketplace.filter.cards") },
+        { value: ProductType.BOOSTER, label: t("marketplace.filter.boosters") },
+        { value: ProductType.BUNDLE, label: t("marketplace.filter.bundles") },
       ],
       defaultValue: "all",
     },

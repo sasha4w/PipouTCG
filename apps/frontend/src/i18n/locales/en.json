@@ -102,12 +102,17 @@
     "empty": "No quests in this category.",
     "claim": "Claim",
     "claimed": "Claimed",
+    "claim_all": "Claim all",
     "permanent": "Permanent",
     "expired": "Expired",
-    "remaining_days": "{{d}}d {{h}}h left",
-    "remaining_hours": "{{h}}h {{m}}min left",
-    "remaining_mins": "{{m}}min {{s}}s left",
-    "remaining_secs": "{{s}}s left"
+    "remaining_days": "{{d}}d {{h}}h remaining",
+    "remaining_hours": "{{h}}h {{m}}min remaining",
+    "remaining_mins": "{{m}}min {{s}}s remaining",
+    "remaining_secs": "{{s}}s remaining",
+    "inbox_label": "Available quests",
+    "inbox_title": "⚔️ Quests to claim",
+    "nothing_to_claim": "No quests to claim 🎉",
+    "see_all": "See all quests"
   },
   "profile": {
     "gold": "Gold",
@@ -146,5 +151,95 @@
     "all_rarities": "All rarities",
     "type": "Type",
     "rarity": "Rarity"
+  },
+  "marketplace": {
+    "tabs": {
+      "buy": "Buy",
+      "sell": "Sell"
+    },
+    "buy": {
+      "title": "Market",
+      "search_placeholder": "Search an item or seller...",
+      "seller": "By:",
+      "unit_price": "{{price}} G / unit",
+      "total_price": "Total: {{total}} G",
+      "btn_buy": "Buy ({{total}} G)",
+      "loading": "...",
+      "history_title": "Recent Market Sales",
+      "history_empty": "No recent transactions."
+    },
+    "sell": {
+      "title": "My Active Listings",
+      "btn_create": "+ Create listing",
+      "empty": "No active listings.",
+      "total": "Total: {{total}} G",
+      "unit_price": "{{price}} G / u",
+      "btn_edit": "Edit",
+      "btn_cancel": "Cancel",
+      "btn_save": "Save",
+      "edit_quantity": "Quantity",
+      "edit_price": "Unit price (G)",
+      "edit_total": "Estimated total: {{total}} G",
+      "history_title": "My Recent Sales",
+      "history_empty": "No completed sales."
+    },
+    "modal": {
+      "title": "List for sale",
+      "close": "Close",
+      "type_cards": "Cards",
+      "type_boosters": "Boosters",
+      "type_bundles": "Bundles",
+      "stock_count": "{{count}} {{type}} in stock",
+      "stock_empty": "No {{type}} available",
+      "inventory_empty": "Your inventory is empty for this item type.",
+      "no_results": "No results for \"{{search}}\".",
+      "search_placeholder": "Search...",
+      "in_stock": "{{count}} in stock",
+      "quantity": "Quantity",
+      "unit_price": "Unit price (Gold)",
+      "total_hint": "Listing total: {{total}} G",
+      "btn_cancel": "Cancel",
+      "btn_sell": "Sell ×{{qty}} — {{total}} G",
+      "btn_sell_default": "Sell",
+      "btn_selling": "Listing...",
+      "warn_no_item": "Please select an item.",
+      "warn_qty": "Quantity must be at least 1.",
+      "warn_stock": "Insufficient stock. You have {{count}} copy(ies).",
+      "warn_price": "Price must be at least 1 gold."
+    },
+    "filter": {
+      "all": "All",
+      "cards": "Cards",
+      "boosters": "Boosters",
+      "bundles": "Bundles"
+    },
+    "history": {
+      "empty": "No history.",
+      "pagination": "{{page}} / {{total}}"
+    },
+    "toast": {
+      "buy_success": "🎉 Purchase successful! The item is in your inventory.",
+      "buy_no_gold": "Purchase failed: not enough gold. 💰",
+      "buy_own": "Purchase failed: you cannot buy your own listing.",
+      "buy_unavailable": "Purchase failed: this listing is no longer available.",
+      "buy_error": "Purchase failed: {{message}}",
+      "buy_error_default": "Purchase failed.",
+      "sell_success": "✨ Listing created successfully!",
+      "sell_error": "Listing failed: {{message}}",
+      "cancel_success": "Listing cancelled. The item has been returned to your inventory.",
+      "cancel_error": "Unable to cancel listing.",
+      "update_success": "Listing updated.",
+      "update_error": "Unable to update listing.",
+      "update_warn": "Quantity and price must be greater than 0.",
+      "warn_no_item": "Please select an item to sell.",
+      "warn_qty": "Quantity must be greater than 0.",
+      "warn_price": "Price must be greater than 0.",
+      "warn_stock": "Insufficient stock. You only have {{count}} copy(ies)."
+    },
+    "qty": {
+      "reduce": "Decrease quantity",
+      "increase": "Increase quantity",
+      "max": "Max"
+    }
   }
 }

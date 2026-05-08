@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   type Transaction,
   type UpdateListingData,
@@ -7,12 +8,9 @@ import TransactionHistory from "./TransactionHistory";
 import "./SellTab.css";
 import "./ListingCard.css";
 
-// ─────────────────────────────────────────────
-// 🏷️ COMPOSANT : SellTab
-// ─────────────────────────────────────────────
 interface SellTabProps {
   userListings: Transaction[] | undefined;
-  userSellHistory: Transaction[] | undefined; // historique ventes COMPLETED de l'user
+  userSellHistory: Transaction[] | undefined;
   loadingAction: number | null;
   loadingUpdate: number | null;
   getDisplayName: (listing: Transaction) => string;
@@ -36,6 +34,7 @@ const SellTab = ({
   onCancelListing,
   onUpdateListing,
 }: SellTabProps) => {
+  const { t } = useTranslation();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<EditForm>({
     quantity: 1,
@@ -46,11 +45,7 @@ const SellTab = ({
     setEditingId(listing.id);
     setEditForm({ quantity: listing.quantity, unitPrice: listing.unitPrice });
   };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-  };
-
+  const cancelEdit = () => setEditingId(null);
   const submitEdit = (id: number) => {
     onUpdateListing(id, {
       quantity: editForm.quantity,
@@ -61,19 +56,21 @@ const SellTab = ({
 
   return (
     <div className="marketplace-sell">
-      {/* ── Annonces actives ── */}
-      <h2 className="marketplace-section__title">Mes Annonces En Cours</h2>
+      <h2 className="marketplace-section__title">
+        {t("marketplace.sell.title")}
+      </h2>
       <div className="marketplace-header-actions">
         <button
           className="marketplace-create-listing-btn"
           onClick={onCreateListing}
         >
-          + Créer une annonce
+          {t("marketplace.sell.btn_create")}
         </button>
       </div>
+
       <div className="marketplace-listings">
         {userListings?.length === 0 ? (
-          <p className="marketplace-empty">Aucune vente en cours.</p>
+          <p className="marketplace-empty">{t("marketplace.sell.empty")}</p>
         ) : (
           userListings?.map((listing: Transaction) => {
             const isEditing = editingId === listing.id;
@@ -83,7 +80,6 @@ const SellTab = ({
 
             return (
               <div key={listing.id} className="marketplace-listing">
-                {/* Zone Image / Nom + Badge quantité */}
                 <div className="marketplace-listing__top">
                   <svg
                     width="36"
@@ -107,11 +103,10 @@ const SellTab = ({
                   )}
                 </div>
 
-                {/* ── Mode édition ── */}
                 {isEditing ? (
                   <div className="marketplace-listing__edit-form">
                     <label className="marketplace-listing__edit-label">
-                      Quantité
+                      {t("marketplace.sell.edit_quantity")}
                       <input
                         className="marketplace-listing__edit-input"
                         type="number"
@@ -127,7 +122,7 @@ const SellTab = ({
                       />
                     </label>
                     <label className="marketplace-listing__edit-label">
-                      Prix unitaire (G)
+                      {t("marketplace.sell.edit_price")}
                       <input
                         className="marketplace-listing__edit-input"
                         type="number"
@@ -143,10 +138,9 @@ const SellTab = ({
                       />
                     </label>
                     <div className="marketplace-listing__edit-preview">
-                      Total estimé :{" "}
-                      <strong>
-                        {editForm.quantity * editForm.unitPrice} G
-                      </strong>
+                      {t("marketplace.sell.edit_total", {
+                        total: editForm.quantity * editForm.unitPrice,
+                      })}
                     </div>
                     <div className="marketplace-listing__edit-actions">
                       <button
@@ -154,28 +148,30 @@ const SellTab = ({
                         onClick={() => submitEdit(listing.id)}
                         disabled={busy}
                       >
-                        {isUpdating ? "..." : "Sauvegarder"}
+                        {isUpdating ? "..." : t("marketplace.sell.btn_save")}
                       </button>
                       <button
                         className="marketplace-cancel-btn"
                         onClick={cancelEdit}
                         disabled={busy}
                       >
-                        Annuler
+                        {t("marketplace.sell.btn_cancel")}
                       </button>
                     </div>
                   </div>
                 ) : (
-                  /* ── Mode affichage ── */
                   <div className="marketplace-listing__bottom">
                     <span className="marketplace-listing__seller">
-                      Total :{" "}
-                      <strong>{listing.unitPrice * listing.quantity} G</strong>
+                      {t("marketplace.sell.total", {
+                        total: listing.unitPrice * listing.quantity,
+                      })}
                     </span>
                     <div className="marketplace-listing__price">
                       <div className="marketplace-listing__price-info">
                         <span className="marketplace-listing__unit-price">
-                          {listing.unitPrice} G / u
+                          {t("marketplace.sell.unit_price", {
+                            price: listing.unitPrice,
+                          })}
                         </span>
                       </div>
                       <div className="marketplace-listing__actions">
@@ -184,14 +180,16 @@ const SellTab = ({
                           onClick={() => startEdit(listing)}
                           disabled={busy}
                         >
-                          Modifier
+                          {t("marketplace.sell.btn_edit")}
                         </button>
                         <button
                           className="marketplace-cancel-btn"
                           onClick={() => onCancelListing(listing.id)}
                           disabled={busy}
                         >
-                          {isActioning ? "..." : "Annuler"}
+                          {isActioning
+                            ? "..."
+                            : t("marketplace.sell.btn_cancel")}
                         </button>
                       </div>
                     </div>
@@ -203,13 +201,12 @@ const SellTab = ({
         )}
       </div>
 
-      {/* ── Historique ventes ── */}
       <h2 className="marketplace-section__title marketplace-section__title--history">
-        Mes Ventes Récentes
+        {t("marketplace.sell.history_title")}
       </h2>
       <TransactionHistory
         history={userSellHistory}
-        emptyMessage="Aucune vente complétée."
+        emptyMessage={t("marketplace.sell.history_empty")}
       />
     </div>
   );
