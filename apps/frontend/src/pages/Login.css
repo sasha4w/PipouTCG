@@ -278,3 +278,9 @@
   border-color: #7a1c3b;
   background: rgba(122, 28, 59, 0.08);
 }
+.login-sound {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}

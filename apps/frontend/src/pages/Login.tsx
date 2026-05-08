@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
+import SoundButton from "../components/SoundButton";
 import { api } from "../api/api";
 import i18n from "../i18n";
 import "./Login.css";
@@ -75,7 +76,9 @@ const Login = () => {
       <div className="login-bubble login-bubble--1" />
       <div className="login-bubble login-bubble--2" />
       <div className="login-bubble login-bubble--3" />
-
+      <div className="login-sound">
+        <SoundButton />
+      </div>
       <div className="login-card">
         {/* ── Sélecteur de langue ── */}
         <div className="login-lang-select">
