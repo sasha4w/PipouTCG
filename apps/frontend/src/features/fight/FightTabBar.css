@@ -1,30 +1,44 @@
 .ftb-bar {
-  display: flex;
-  gap: 4px;
-  padding: 12px 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   background: #fff;
   border-bottom: 1.5px solid #f0ddd0;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.ftb-spacer {
-  flex: 1;
 }
 
 .ftb-tab {
-  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 4px;
   border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   cursor: pointer;
   font-family: Comfortaa, sans-serif;
-  font-size: 13px;
-  color: #aaa;
-  font-weight: 600;
+  font-size: 10px;
+  color: #bbb;
+  font-weight: 700;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  line-height: 1;
+}
+
+.ftb-tab:hover {
+  background: #fdf6f0;
+  color: #a07060;
 }
 
 .ftb-tab--active {
   background: #f8edf2;
   color: #7a1c3b;
+  border-bottom-color: #7a1c3b;
+}
+
+.ftb-tab-icon {
+  font-size: 18px;
+  line-height: 1;
 }

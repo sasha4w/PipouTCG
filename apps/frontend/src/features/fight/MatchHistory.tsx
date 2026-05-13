@@ -40,14 +40,6 @@ export default function MatchHistory({ history, myStats, myUserId }: Props) {
       ) : (
         <div className="mh-list">
           {history.data.map((m) => {
-            console.log(
-              "match:",
-              m.id,
-              "winner:",
-              m.winner,
-              "myUserId:",
-              myUserId,
-            ); // ← ajoute cette ligne
             const won = m.winner?.id === myUserId;
             return (
               <div

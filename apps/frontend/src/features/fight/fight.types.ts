@@ -1,6 +1,5 @@
 export type Phase = "waiting" | "draw" | "main" | "battle" | "end" | "finished";
-export type Tab = "fight" | "history" | "leaderboard";
-
+export type Tab = "fight" | "history" | "leaderboard" | "rules";
 export interface CardInstance {
   instanceId: string;
   baseCard: {

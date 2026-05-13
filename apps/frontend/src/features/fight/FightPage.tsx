@@ -13,6 +13,7 @@ import type { Tab, GameState } from "./fight.types";
 import FightTabBar from "./FightTabBar";
 import FightLobby from "./FightLobby";
 import MatchHistory from "./MatchHistory";
+import FightRules from "./FightRules";
 import FightBoard from "./FightBoard";
 import CardPickModal from "./CardPickModal";
 import "./FightPage.css";
@@ -289,7 +290,11 @@ export default function FightPage({
           myUserId={userId}
         />
       )}
-
+      {tab === "rules" && (
+        <div className="fp-section">
+          <FightRules />
+        </div>
+      )}
       {tab === "fight" && (
         <div className="fp-fight-area">
           {status !== "playing" && (
