@@ -21,7 +21,12 @@ function flagComesfromPassive(
   zone: MonsterOnBoard,
   actionType: ActionType,
 ): boolean {
-  const isPassiveOn = (effects: { trigger: string; actions: { type: string }[] }[] | null | undefined) =>
+  const isPassiveOn = (
+    effects:
+      | { trigger: string; actions: { type: string }[] }[]
+      | null
+      | undefined,
+  ) =>
     effects?.some(
       (e) =>
         e.trigger === EffectTrigger.PASSIVE &&
@@ -29,7 +34,8 @@ function flagComesfromPassive(
     ) ?? false;
 
   if (isPassiveOn(zone.card.baseCard.effects)) return true;
-  if (zone.equipments.some((eq) => isPassiveOn(eq.baseCard.effects))) return true;
+  if (zone.equipments.some((eq) => isPassiveOn(eq.baseCard.effects)))
+    return true;
   return false;
 }
 
@@ -49,6 +55,7 @@ export class BuffsCalculatorService {
 
       // Buffs numériques — toujours reset
       zone.atkBuff = 0;
+      zone.currentHp -= zone.hpBuff;
       zone.hpBuff = 0;
       // tempAtkBuff intentionnellement NON resetté ici — géré en fin de tour
 
@@ -98,7 +105,9 @@ export class BuffsCalculatorService {
                 monster.atkBuff += action.value ?? 0;
                 break;
               case ActionType.BUFF_HP:
-                monster.hpBuff += action.value ?? 0;
+                const v = action.value ?? 0;
+                monster.hpBuff += v;
+                monster.currentHp += v;
                 break;
               case ActionType.SET_TAUNT:
                 monster.hasTaunt = true;
@@ -149,7 +158,9 @@ export class BuffsCalculatorService {
                 zone.atkBuff += action.value ?? 0;
                 break;
               case ActionType.BUFF_HP:
-                zone.hpBuff += action.value ?? 0;
+                const v = action.value ?? 0;
+                zone.hpBuff += v;
+                zone.currentHp += v;
                 break;
               case ActionType.SET_TAUNT:
                 zone.hasTaunt = true;
@@ -201,7 +212,9 @@ export class BuffsCalculatorService {
               zone.atkBuff += action.value ?? 0;
               break;
             case ActionType.BUFF_HP:
-              zone.hpBuff += action.value ?? 0;
+              const v = action.value ?? 0;
+              zone.hpBuff += v;
+              zone.currentHp += v;
               break;
             case ActionType.SET_TAUNT:
               zone.hasTaunt = true;
@@ -258,7 +271,9 @@ export class BuffsCalculatorService {
                 ally.atkBuff += action.value ?? 0;
                 break;
               case ActionType.BUFF_HP:
-                ally.hpBuff += action.value ?? 0;
+                const v = action.value ?? 0;
+                ally.hpBuff += v;
+                ally.currentHp += v;
                 break;
               case ActionType.SET_TAUNT:
                 ally.hasTaunt = true;
@@ -290,7 +305,9 @@ export class BuffsCalculatorService {
               ? player.monsterZones[idx + 1]
               : null;
           const adjacentCount = (left ? 1 : 0) + (right ? 1 : 0);
-          zone.hpBuff += (action.value ?? 0) * adjacentCount;
+          const bonus = (action.value ?? 0) * adjacentCount;
+          zone.hpBuff += bonus;
+          zone.currentHp += bonus;
         }
       }
     }
