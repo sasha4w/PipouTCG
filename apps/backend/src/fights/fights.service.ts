@@ -345,36 +345,28 @@ export class FightsService {
   ): Promise<void> {
     const game = this.getGame(matchId);
     if (!game) return;
+
     const opp = getOpponentState(game, userId);
     addLog(game, `🏳️ ${getPlayerState(game, userId).username} abandonne`);
-    await this.gameEnd.endGame(
-      game,
-      opp.userId,
-      'surrender',
-      server,
-      this.cleanupGame.bind(this),
-    );
-    this.turnTimeout.clear(matchId);
+
+    // Utilisation du helper centralisé
+    await this.executeEndGame(game, opp.userId, 'surrender', server);
   }
 
   async handleDisconnect(userId: number, server: Server): Promise<void> {
     this.leaveQueue(userId);
     const matchId = this.userToMatch.get(userId);
     if (!matchId) return;
+
     const game = this.getGame(matchId);
     if (!game || game.phase === 'finished') return;
+
     const opp = getOpponentState(game, userId);
     addLog(game, `🔌 ${getPlayerState(game, userId).username} déconnecté`);
-    await this.gameEnd.endGame(
-      game,
-      opp.userId,
-      'disconnect',
-      server,
-      this.cleanupGame.bind(this),
-    );
-    this.turnTimeout.clear(matchId);
-  }
 
+    // Utilisation du helper centralisé
+    await this.executeEndGame(game, opp.userId, 'disconnect', server);
+  }
   // ═══════════════════════════════════════════════════════════════════════════
   // REST
   // ═══════════════════════════════════════════════════════════════════════════
@@ -407,27 +399,13 @@ export class FightsService {
   }
 
   private endGameCallback() {
-    return async (
+    return (
       game: GameState,
       winnerId: number,
       reason: GameEndReason,
       server: Server,
-    ): Promise<void> => {
-      this.turnTimeout.clear(game.matchId);
-
-      if (this.testMatches.has(game.matchId)) {
-        // Partie test : pas de sauvegarde DB, juste cleanup
-        this.cleanupGame(game);
-        return; // Renvoie automatiquement une Promise<void> car la fonction est async
-      }
-
-      return this.gameEnd.endGame(
-        game,
-        winnerId,
-        reason,
-        server,
-        this.cleanupGame.bind(this),
-      );
+    ) => {
+      return this.executeEndGame(game, winnerId, reason, server);
     };
   }
 
@@ -440,6 +418,30 @@ export class FightsService {
   private resetTimeout(game: GameState, server: Server): void {
     this.turnTimeout.reset(game, server, (tg, ts) =>
       this.timeoutEndPhase(tg, ts),
+    );
+  }
+  private async executeEndGame(
+    game: GameState,
+    winnerId: number,
+    reason: GameEndReason,
+    server: Server,
+  ): Promise<void> {
+    // 1. On coupe toujours le timer
+    this.turnTimeout.clear(game.matchId);
+
+    // 2. Si c'est un match de test, on nettoie juste la mémoire sans toucher à la DB
+    if (this.testMatches.has(game.matchId)) {
+      this.cleanupGame(game);
+      return;
+    }
+
+    // 3. Sinon, match normal -> sauvegarde en base de données via le service dédié
+    return this.gameEnd.endGame(
+      game,
+      winnerId,
+      reason,
+      server,
+      this.cleanupGame.bind(this),
     );
   }
 }
