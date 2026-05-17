@@ -48,6 +48,7 @@ export class FightsService {
   // ═══════════════════════════════════════════════════════════════════════════
   // MATCHMAKING
   // ═══════════════════════════════════════════════════════════════════════════
+  private testMatches = new Set<number>();
   async createTestMatch(
     userId: number,
     username: string,
@@ -61,14 +62,14 @@ export class FightsService {
       socketId,
     };
 
-    const matchId = await this.matchmaking.createMatch(userId, p2UserId);
+    const matchId = await this.matchmaking.createMatch(userId, p2UserId, true);
     const game = this.matchmaking.buildInitialGameState(matchId, p1, p2);
 
     this.games.set(matchId, game);
     this.userToMatch.set(userId, matchId);
     // On n'enregistre PAS p2UserId dans userToMatch pour éviter
     // que handleDisconnect cherche une partie pour un userId fantôme
-
+    this.testMatches.add(matchId);
     return { matchId, p2UserId };
   }
 
@@ -402,16 +403,24 @@ export class FightsService {
     this.games.delete(game.matchId);
     this.userToMatch.delete(game.player1.userId);
     this.userToMatch.delete(game.player2.userId);
+    this.testMatches.delete(game.matchId); // ← nettoyage
   }
 
   private endGameCallback() {
-    return (
+    return async (
       game: GameState,
       winnerId: number,
       reason: GameEndReason,
       server: Server,
-    ) => {
+    ): Promise<void> => {
       this.turnTimeout.clear(game.matchId);
+
+      if (this.testMatches.has(game.matchId)) {
+        // Partie test : pas de sauvegarde DB, juste cleanup
+        this.cleanupGame(game);
+        return; // Renvoie automatiquement une Promise<void> car la fonction est async
+      }
+
       return this.gameEnd.endGame(
         game,
         winnerId,

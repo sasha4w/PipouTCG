@@ -86,7 +86,15 @@ export class MatchmakingService {
       log: [],
     };
   }
-  async createMatch(p1Id: number, p2Id: number): Promise<number> {
+  async createMatch(
+    p1Id: number,
+    p2Id: number,
+    isTest = false,
+  ): Promise<number> {
+    if (isTest) {
+      // ID fictif négatif, jamais en DB
+      return -Math.floor(Math.random() * 1_000_000) - 1;
+    }
     const match = await this.matchRepo.save(
       this.matchRepo.create({
         player1Id: p1Id,
