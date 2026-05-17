@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { DecksService } from '../../decks/decks.service';
 import { GameState } from '../interfaces/game-state.interface';
-import { addLog, getPlayerState, shuffle, drawCard } from '../helpers/game-state.helper';
+import {
+  addLog,
+  getPlayerState,
+  shuffle,
+  drawCard,
+} from '../helpers/game-state.helper';
 import { emitGameState } from '../helpers/client-state.builder';
 
 const STARTING_PRIMES = 6;
@@ -26,12 +31,20 @@ export class DeckSubmissionService {
 
     let cards;
     try {
-      cards = await this.decksService.loadDeckCards(deckId, userId);
+      const effectiveUserId =
+        userId < 0
+          ? game.player1.userId > 0
+            ? game.player1.userId
+            : game.player2.userId
+          : userId;
+
+      cards = await this.decksService.loadDeckCards(deckId, effectiveUserId);
     } catch {
       return { error: 'Deck invalide ou inaccessible' };
     }
 
-    if (cards.length < 20) return { error: 'Le deck doit contenir au moins 20 cartes' };
+    if (cards.length < 20)
+      return { error: 'Le deck doit contenir au moins 20 cartes' };
 
     const shuffled = shuffle(cards);
     player.primeDeck = shuffled.splice(0, STARTING_PRIMES);
@@ -43,11 +56,14 @@ export class DeckSubmissionService {
     }
     player.ready = true;
 
-    const opponent = game.player1.userId === userId ? game.player2 : game.player1;
+    const opponent =
+      game.player1.userId === userId ? game.player2 : game.player1;
     if (opponent.ready) {
       onBothReady(game, server);
     } else {
-      server.to(player.socketId).emit('fight:deck_accepted', { matchId: game.matchId });
+      server
+        .to(player.socketId)
+        .emit('fight:deck_accepted', { matchId: game.matchId });
     }
     return {};
   }
