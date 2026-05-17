@@ -10,6 +10,7 @@ import { PlayerStats } from './entities/player-stats.entity';
 import {
   MatchmakingService,
   MatchFoundInfo,
+  QueueEntry,
 } from './services/matchmaking.service';
 import { DeckSubmissionService } from './services/deck-submission.service';
 import { PhaseService } from './services/phase.service';
@@ -47,6 +48,29 @@ export class FightsService {
   // ═══════════════════════════════════════════════════════════════════════════
   // MATCHMAKING
   // ═══════════════════════════════════════════════════════════════════════════
+  async createTestMatch(
+    userId: number,
+    username: string,
+    socketId: string,
+  ): Promise<{ matchId: number; p2UserId: number }> {
+    const p2UserId = -userId; // userId négatif, jamais en conflit
+    const p1: QueueEntry = { userId, username, socketId };
+    const p2: QueueEntry = {
+      userId: p2UserId,
+      username: `${username} (Test)`,
+      socketId,
+    };
+
+    const matchId = await this.matchmaking.createMatch(userId, p2UserId);
+    const game = this.matchmaking.buildInitialGameState(matchId, p1, p2);
+
+    this.games.set(matchId, game);
+    this.userToMatch.set(userId, matchId);
+    // On n'enregistre PAS p2UserId dans userToMatch pour éviter
+    // que handleDisconnect cherche une partie pour un userId fantôme
+
+    return { matchId, p2UserId };
+  }
 
   async joinQueue(
     userId: number,

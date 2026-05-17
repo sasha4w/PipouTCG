@@ -14,6 +14,10 @@ import { FightsService } from './fights.service';
 import * as cookie from 'cookie';
 
 // ─── Payload shapes received from client ─────────────────────────────────────
+interface TestMatchPayload {
+  deckId: number; // deck pour P1
+  deckIdP2?: number; // deck pour P2 (peut être le même)
+}
 
 interface SubmitDeckPayload {
   matchId: number;
@@ -119,7 +123,42 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // ── Matchmaking ────────────────────────────────────────────────────────────
+  @SubscribeMessage('fight:test_match')
+  async createTestMatch(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { deckId: number },
+  ): Promise<void> {
+    const { userId, username } = client.data;
 
+    const { matchId, p2UserId } = await this.fightsService.createTestMatch(
+      userId,
+      username,
+      client.id,
+    );
+
+    // On envoie fight:matched avec les deux userIds pour que le frontend sache
+    client.emit('fight:test_matched', {
+      matchId,
+      p2UserId,
+      opponentName: `${username} (Test)`,
+    });
+  }
+  @SubscribeMessage('fight:submit_deck_test_p2')
+  async submitDeckTestP2(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: SubmitDeckPayload,
+  ): Promise<void> {
+    const p2UserId = -client.data.userId;
+    const result = await this.fightsService.submitDeck(
+      data.matchId,
+      p2UserId, // userId négatif = P2
+      data.deckId,
+      this.server,
+    );
+    if (result.error) {
+      client.emit('fight:error', { message: result.error });
+    }
+  }
   @SubscribeMessage('fight:queue')
   async joinQueue(@ConnectedSocket() client: Socket): Promise<void> {
     const match = await this.fightsService.joinQueue(

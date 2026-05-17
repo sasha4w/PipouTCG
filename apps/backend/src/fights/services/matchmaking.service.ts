@@ -20,9 +20,7 @@ export interface MatchFoundInfo {
 export class MatchmakingService {
   private queue = new Map<number, QueueEntry>();
 
-  constructor(
-    @InjectRepository(Match) private matchRepo: Repository<Match>,
-  ) {}
+  constructor(@InjectRepository(Match) private matchRepo: Repository<Match>) {}
 
   async joinQueue(
     userId: number,
@@ -73,7 +71,11 @@ export class MatchmakingService {
     };
   }
 
-  buildInitialGameState(matchId: number, p1: QueueEntry, p2: QueueEntry): GameState {
+  buildInitialGameState(
+    matchId: number,
+    p1: QueueEntry,
+    p2: QueueEntry,
+  ): GameState {
     return {
       matchId,
       player1: this.createEmptyPlayerState(p1),
@@ -83,5 +85,15 @@ export class MatchmakingService {
       turnNumber: 0,
       log: [],
     };
+  }
+  async createMatch(p1Id: number, p2Id: number): Promise<number> {
+    const match = await this.matchRepo.save(
+      this.matchRepo.create({
+        player1Id: p1Id,
+        player2Id: p2Id,
+        status: MatchStatus.IN_PROGRESS,
+      }),
+    );
+    return match.id;
   }
 }
