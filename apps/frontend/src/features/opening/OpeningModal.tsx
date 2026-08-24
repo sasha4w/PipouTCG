@@ -177,7 +177,7 @@ export default function OpeningModal({
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
 
-      let steps: FlashStep[] = getRarityCascade(res.cards).map((color) => ({
+      const steps: FlashStep[] = getRarityCascade(res.cards).map((color) => ({
         color,
         duration: FLASH_STEP_MS,
       }));
