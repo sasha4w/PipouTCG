@@ -1,4 +1,4 @@
-import React, { Component, ReactNode, ErrorInfo } from "react";
+import { Component, type ReactNode, type ErrorInfo } from "react";
 import { logError, AppError } from "../utils/errors";
 import "./ErrorBoundary.css";
 

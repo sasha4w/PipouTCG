@@ -80,20 +80,24 @@ export function parseApiError(error: unknown): AppError {
     "response" in error &&
     "config" in error
   ) {
-    const axiosError = error as Record<string, unknown>;
-    const status = axiosError.response?.status;
-    const data = axiosError.response?.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const axiosError = error as any;
+    const status = axiosError.response?.status as number | undefined;
+    const data = axiosError.response?.data as unknown;
 
     // Extract error message from response
-    let errorMessage = data?.message || data?.error || "API error";
-    if (typeof errorMessage !== "string") {
-      errorMessage = "API error";
-    }
+    const rawMessage =
+      (typeof data === "object" && data !== null
+        ? (data as Record<string, unknown>).message ||
+          (data as Record<string, unknown>).error
+        : null) || "API error";
+    const errorMessage =
+      typeof rawMessage === "string" ? rawMessage : "API error";
 
     const userMessage =
-      HTTP_ERROR_MESSAGES[status] || "Une erreur est survenue";
+      (status && HTTP_ERROR_MESSAGES[status]) || "Une erreur est survenue";
 
-    return new AppError(errorMessage, {
+    return new AppError(errorMessage as string, {
       category: status === 401 ? "Auth" : "API",
       statusCode: status,
       userFriendlyMessage: userMessage,

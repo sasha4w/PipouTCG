@@ -1,4 +1,5 @@
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import axios from "axios";
+import type { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import { parseApiError, logError } from "../utils/errors";
 
 /**
@@ -63,7 +64,8 @@ api.interceptors.response.use(
     }
 
     // Retry logic for 5xx errors (server errors)
-    const config = error.config as Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const config = error.config as any;
     if (
       config &&
       error.response &&
