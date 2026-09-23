@@ -14,7 +14,7 @@ Feature: Gestion des sets de cartes
     And la réponse contient un champ "data"
 
   Scenario: Consulter le détail d'un set
-    When j'envoie une requête GET authentifiée sur "/card-sets/1"
+    When j'envoie une requête GET authentifiée sur "/card-sets/{setId}"
     Then le statut de réponse est 200
     And la réponse contient un champ "id"
     And la réponse contient un champ "name"
@@ -24,7 +24,7 @@ Feature: Gestion des sets de cartes
     Then le statut de réponse est 404
 
   Scenario: Lister les sets sans authentification renvoie 401
-    When j'envoie une requête GET sur "/card-sets"
+    When j'envoie une requête GET sur "/card-sets" sans authentification
     Then le statut de réponse est 401
 
   # ── Admin CRUD ───────────────────────────────────────────────
@@ -96,5 +96,5 @@ Feature: Gestion des sets de cartes
     Then le statut de réponse est 403
 
   Scenario: Un utilisateur ne peut pas supprimer un set renvoie 403
-    When j'envoie une requête DELETE authentifiée sur "/card-sets/1"
+    When j'envoie une requête DELETE authentifiée sur "/card-sets/{setId}"
     Then le statut de réponse est 403

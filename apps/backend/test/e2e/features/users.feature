@@ -31,48 +31,48 @@ Feature: Gestion des utilisateurs
   # ── Profil public d'un autre joueur ──────────────────────────
 
   Scenario: Consulter le profil public d'un joueur
-    When j'envoie une requête GET authentifiée sur "/users/1/profile"
+    When j'envoie une requête GET authentifiée sur "/users/{testUserId}/profile"
     Then le statut de réponse est 200
     And la réponse contient un champ "username"
     And la réponse contient un champ "level"
 
   Scenario: Consulter le portfolio de cartes d'un joueur
-    When j'envoie une requête GET authentifiée sur "/users/1/portfolio"
+    When j'envoie une requête GET authentifiée sur "/users/{testUserId}/portfolio"
     Then le statut de réponse est 200
     And la réponse contient un champ "data"
 
   Scenario: Consulter les boosters d'un joueur
-    When j'envoie une requête GET authentifiée sur "/users/1/boosters"
+    When j'envoie une requête GET authentifiée sur "/users/{testUserId}/boosters"
     Then le statut de réponse est 200
     And la réponse contient un champ "data"
 
   Scenario: Consulter les bundles d'un joueur
-    When j'envoie une requête GET authentifiée sur "/users/1/bundles"
+    When j'envoie une requête GET authentifiée sur "/users/{testUserId}/bundles"
     Then le statut de réponse est 200
     And la réponse contient un champ "data"
 
   # ── Privacy ──────────────────────────────────────────────────
 
   Scenario: Basculer la confidentialité de mon profil
-    When j'envoie une requête PATCH authentifiée sur "/users/1/privacy"
+    When j'envoie une requête PATCH authentifiée sur "/users/{testUserId}/privacy"
     Then le statut de réponse est 200
     And la réponse contient un champ "isPrivate"
-    When j'envoie une requête PATCH authentifiée sur "/users/1/privacy"
+    When j'envoie une requête PATCH authentifiée sur "/users/{testUserId}/privacy"
     Then le statut de réponse est 200
 
   Scenario: Basculer la confidentialité du profil d'un autre renvoie 403
     Given je suis connecté en tant que "other@test.com" avec le mot de passe "Password123!"
-    When j'envoie une requête PATCH authentifiée sur "/users/1/privacy"
+    When j'envoie une requête PATCH authentifiée sur "/users/{testUserId}/privacy"
     Then le statut de réponse est 403
 
   Scenario: Consulter l'inventaire d'un profil privé sans permission renvoie 403
-    Given j'envoie une requête PATCH authentifiée sur "/users/1/privacy"
+    Given j'envoie une requête PATCH authentifiée sur "/users/{testUserId}/privacy"
     And le statut de réponse est 200
     Given je suis connecté en tant que "other@test.com" avec le mot de passe "Password123!"
-    When j'envoie une requête GET authentifiée sur "/users/1/inventory"
+    When j'envoie une requête GET authentifiée sur "/users/{testUserId}/inventory"
     Then le statut de réponse est 403
     Given je suis connecté en tant que joueur test
-    And j'envoie une requête PATCH authentifiée sur "/users/1/privacy"
+    And j'envoie une requête PATCH authentifiée sur "/users/{testUserId}/privacy"
 
   # ── Admin ────────────────────────────────────────────────────
 
@@ -88,6 +88,6 @@ Feature: Gestion des utilisateurs
 
   Scenario: Un admin peut consulter n'importe quel utilisateur
     Given je suis connecté en tant qu'admin
-    When j'envoie une requête GET authentifiée sur "/users/1"
+    When j'envoie une requête GET authentifiée sur "/users/{testUserId}"
     Then le statut de réponse est 200
     And la réponse contient un champ "username"

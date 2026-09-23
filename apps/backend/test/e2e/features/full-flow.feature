@@ -17,6 +17,9 @@ Feature: Flux complet d'un joueur
     And la réponse contient un champ "email"
     And la réponse contient un champ "id"
 
+    # ── Un peu d'or pour acheter (aucune route ne crédite de l'or) ──
+    Given "fullflow3@example.com" possède 10 pièces d'or
+
     # ── Connexion ────────────────────────────────────────────
     Given je suis connecté en tant que "fullflow3@example.com" avec le mot de passe "Password123!"
 
@@ -50,9 +53,9 @@ Feature: Flux complet d'un joueur
       """
       {
         "name": "Booster Full Flow",
-        "price": 0,
+        "price": 1,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 201
@@ -74,7 +77,7 @@ Feature: Flux complet d'un joueur
     And la réponse contient un champ "boosters"
 
     # ── Marketplace ──────────────────────────────────────────
-    When j'envoie une requête GET authentifiée sur "/transactions"
+    When j'envoie une requête GET authentifiée sur "/transactions/offers"
     Then le statut de réponse est 200
     And la réponse contient un champ "data"
 

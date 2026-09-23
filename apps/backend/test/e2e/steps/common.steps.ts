@@ -1,12 +1,22 @@
 import { Given, When, Then } from '@cucumber/cucumber';
-import { expect } from '@playwright/test';
-import { ApiWorld } from '../support/world';
+import { expect, request } from '@playwright/test';
+import { ApiWorld, HttpMethod, tokenFromLogin } from '../support/world';
+import { setGold } from '../support/fixtures';
 
-// Comptes existants en base qui ne doivent pas être re-créés
+// Comptes créés par le BeforeAll (hooks.ts) : ne pas les ré-inscrire
 const EXISTING_ACCOUNTS = [
   process.env.TEST_USER_EMAIL || '',
   process.env.ADMIN_EMAIL || '',
 ].filter(Boolean);
+
+function credentials(emailVar: string, passwordVar: string) {
+  const email = process.env[emailVar];
+  const password = process.env[passwordVar];
+  if (!email || !password) {
+    throw new Error(`${emailVar} et ${passwordVar} doivent être définis`);
+  }
+  return { email, password };
+}
 
 // ─────────────────────────────────────────────
 // GIVEN — Authentification & setup
@@ -15,32 +25,17 @@ const EXISTING_ACCOUNTS = [
 Given(
   'je suis connecté en tant que joueur test',
   async function (this: ApiWorld) {
-    const email = process.env.TEST_USER_EMAIL;
-    const password = process.env.TEST_USER_PASSWORD;
-
-    if (!email || !password) {
-      throw new Error(
-        'TEST_USER_EMAIL et TEST_USER_PASSWORD doivent être définis dans .env',
-      );
-    }
-
-    const res = await this.apiContext.post('/auth/login', {
-      data: { email, password },
-    });
-
-    const body = await res.json();
-    const token = body.access_token;
-    expect(token, `Pas de token pour le joueur test`).toBeTruthy();
-
-    this.authTokens[email] = token;
-    await this.setAuthToken(token);
+    const { email, password } = credentials(
+      'TEST_USER_EMAIL',
+      'TEST_USER_PASSWORD',
+    );
+    await this.loginAs(email, password);
   },
 );
 
 Given(
   'je suis connecté en tant que {string} avec le mot de passe {string}',
   async function (this: ApiWorld, email: string, password: string) {
-    // Skip le register pour les comptes déjà existants en base
     if (!EXISTING_ACCOUNTS.includes(email)) {
       await this.apiContext.post('/auth/register', {
         data: {
@@ -50,42 +45,19 @@ Given(
         },
       });
     }
-
-    const res = await this.apiContext.post('/auth/login', {
-      data: { email, password },
-    });
-
-    const body = await res.json();
-    const token = body.access_token;
-    expect(token, `Pas de token pour ${email}`).toBeTruthy();
-
-    this.authTokens[email] = token;
-    await this.setAuthToken(token);
+    await this.loginAs(email, password);
   },
 );
 
 Given("je suis connecté en tant qu'admin", async function (this: ApiWorld) {
-  const email = process.env.ADMIN_EMAIL;
-  const password = process.env.ADMIN_PASSWORD;
-
-  if (!email || !password) {
-    throw new Error(
-      'ADMIN_EMAIL et ADMIN_PASSWORD doivent être définis dans .env',
-    );
-  }
-
-  const res = await this.apiContext.post('/auth/login', {
-    data: { email, password },
-  });
-
-  const body = await res.json();
-  expect(body.access_token, 'Pas de token admin').toBeTruthy();
-  await this.setAuthToken(body.access_token);
+  const { email, password } = credentials('ADMIN_EMAIL', 'ADMIN_PASSWORD');
+  await this.loginAs(email, password);
 });
 
 Given(
   'un utilisateur {string} avec le mot de passe {string} existe',
   async function (this: ApiWorld, email: string, password: string) {
+    // 409 acceptable (déjà créé)
     await this.apiContext.post('/auth/register', {
       data: {
         username: email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '_'),
@@ -93,13 +65,19 @@ Given(
         password,
       },
     });
-    // 409 acceptable (déjà créé)
+  },
+);
+
+Given(
+  "{string} possède {int} pièces d'or",
+  async function (this: ApiWorld, email: string, gold: number) {
+    await setGold(email, gold);
   },
 );
 
 Given(
   "un booster existe avec l'id sauvegardé sous {string}",
-  async function (this: ApiWorld, key: string) {
+  function (this: ApiWorld, key: string) {
     expect(
       this.createdIds[key],
       `Aucun id sauvegardé sous "${key}"`,
@@ -109,7 +87,7 @@ Given(
 
 Given(
   "j'ai un booster dans mon inventaire avec l'id {string}",
-  async function (this: ApiWorld, key: string) {
+  function (this: ApiWorld, key: string) {
     expect(
       this.createdIds[key],
       `Aucun id sauvegardé sous "${key}"`,
@@ -117,135 +95,83 @@ Given(
   },
 );
 
-Given(
-  "j'ai une carte dans mon inventaire avec l'id {string}",
-  async function (this: ApiWorld, _key: string) {
-    // Ce step suppose que la carte existe dans l'inventaire via des seeds
-    // ou un setup préalable. Pour les tests complets, initialiser ici.
-  },
-);
-
-Given(
-  "j'ai une quête complétée avec l'id {string}",
-  async function (this: ApiWorld, _key: string) {
-    // Suppose qu'une quête est complétée via seed/setup.
-  },
-);
-
 // ─────────────────────────────────────────────
 // WHEN — Requêtes HTTP
 // ─────────────────────────────────────────────
 
+const methodOf = (verb: string) => verb.toLowerCase() as HttpMethod;
+const parseBody = (world: ApiWorld, body: string): unknown =>
+  JSON.parse(resolvePath(body, world.createdIds));
+
 When(
   "j'envoie une requête GET sur {string} sans authentification",
   async function (this: ApiWorld, path: string) {
-    const ctx = await (
-      await import('@playwright/test')
-    ).request.newContext({
-      baseURL: this.baseUrl,
-    });
-    this.response = await ctx.get(path);
-    this.responseBody = await this.response.json().catch(() => null);
-    await ctx.dispose();
+    const anonymous = await request.newContext({ baseURL: this.baseUrl });
+    await this.send(
+      'get',
+      resolvePath(path, this.createdIds),
+      undefined,
+      anonymous,
+    );
+    await anonymous.dispose();
   },
 );
 
 When(
-  "j'envoie une requête GET authentifiée sur {string}",
+  "j'envoie une requête POST sur {string} sans authentification",
   async function (this: ApiWorld, path: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.get(resolvedPath);
-    this.responseBody = await this.response.json().catch(() => null);
+    const anonymous = await request.newContext({ baseURL: this.baseUrl });
+    await this.send(
+      'post',
+      resolvePath(path, this.createdIds),
+      undefined,
+      anonymous,
+    );
+    await anonymous.dispose();
   },
 );
 
 When(
-  "j'envoie une requête POST sur {string} avec le body:",
+  "j'envoie une requête POST non authentifiée sur {string} avec le body:",
   async function (this: ApiWorld, path: string, body: string) {
-    this.response = await this.apiContext.post(path, {
-      data: JSON.parse(body),
-    });
-    this.responseBody = await this.response.json().catch(() => null);
-  },
-);
-
-When(
-  "j'envoie une requête POST authentifiée sur {string}",
-  async function (this: ApiWorld, path: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.post(resolvedPath);
-    this.responseBody = await this.response.json().catch(() => null);
-  },
-);
-
-When(
-  "j'envoie une requête POST authentifiée sur {string} avec le body:",
-  async function (this: ApiWorld, path: string, body: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.post(resolvedPath, {
-      data: JSON.parse(body),
-    });
-    this.responseBody = await this.response.json().catch(() => null);
-  },
-);
-
-When(
-  "j'envoie une requête PUT authentifiée sur {string} avec le body:",
-  async function (this: ApiWorld, path: string, body: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.put(resolvedPath, {
-      data: JSON.parse(body),
-    });
-    this.responseBody = await this.response.json().catch(() => null);
-  },
-);
-
-When(
-  "j'envoie une requête PATCH authentifiée sur {string} avec le body:",
-  async function (this: ApiWorld, path: string, body: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.patch(resolvedPath, {
-      data: JSON.parse(body),
-    });
-    this.responseBody = await this.response.json().catch(() => null);
-  },
-);
-
-When(
-  "j'envoie une requête PATCH authentifiée sur {string}",
-  async function (this: ApiWorld, path: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.patch(resolvedPath);
-    this.responseBody = await this.response.json().catch(() => null);
-  },
-);
-
-When(
-  "j'envoie une requête DELETE authentifiée sur {string}",
-  async function (this: ApiWorld, path: string) {
-    const resolvedPath = resolvePath(path, this.createdIds);
-    this.response = await this.apiContext.delete(resolvedPath);
-    this.responseBody = await this.response.json().catch(() => null);
+    const anonymous = await request.newContext({ baseURL: this.baseUrl });
+    await this.send('post', path, parseBody(this, body), anonymous);
+    await anonymous.dispose();
   },
 );
 
 When(
   "j'envoie une requête GET sur {string}",
   async function (this: ApiWorld, path: string) {
-    this.response = await this.apiContext.get(path);
-    this.responseBody = await this.response.json().catch(() => null);
+    await this.send('get', path);
   },
 );
+
 When(
-  "j'envoie une requête POST non authentifiée sur {string} avec le body:",
+  "j'envoie une requête POST sur {string} avec le body:",
   async function (this: ApiWorld, path: string, body: string) {
-    const { request } = await import('@playwright/test');
-    const ctx = await request.newContext({ baseURL: this.baseUrl });
-    this.response = await ctx.post(path, { data: JSON.parse(body) });
-    this.responseBody = await this.response.json().catch(() => null);
-    await ctx.dispose();
+    await this.send('post', path, parseBody(this, body));
   },
 );
+
+When(
+  /^j'envoie une requête (GET|POST|PATCH|DELETE) authentifiée sur "([^"]*)"$/,
+  async function (this: ApiWorld, verb: string, path: string) {
+    await this.send(methodOf(verb), resolvePath(path, this.createdIds));
+  },
+);
+
+When(
+  /^j'envoie une requête (POST|PUT|PATCH) authentifiée sur "([^"]*)" avec le body:$/,
+  async function (this: ApiWorld, verb: string, path: string, body: string) {
+    await this.send(
+      methodOf(verb),
+      resolvePath(path, this.createdIds),
+      parseBody(this, body),
+    );
+  },
+);
+
 // ─────────────────────────────────────────────
 // THEN — Assertions
 // ─────────────────────────────────────────────
@@ -267,6 +193,10 @@ Then(
   },
 );
 
+Then('la réponse pose le cookie de session', function (this: ApiWorld) {
+  expect(tokenFromLogin(this.response), 'Pas de cookie "token"').toBeTruthy();
+});
+
 Then('la réponse est un tableau', function (this: ApiWorld) {
   expect(Array.isArray(this.responseBody)).toBe(true);
 });
@@ -274,16 +204,18 @@ Then('la réponse est un tableau', function (this: ApiWorld) {
 Then(
   'la réponse contient au moins {int} élément',
   function (this: ApiWorld, count: number) {
-    expect(Array.isArray(this.responseBody)).toBe(true);
-    expect(this.responseBody.length).toBeGreaterThanOrEqual(count);
+    const body = this.responseBody;
+    expect(Array.isArray(body)).toBe(true);
+    expect((body as unknown[]).length).toBeGreaterThanOrEqual(count);
   },
 );
 
 Then(
   "je sauvegarde l'id sous {string}",
   function (this: ApiWorld, key: string) {
-    expect(this.responseBody.id, `Pas d'id dans la réponse`).toBeTruthy();
-    this.createdIds[key] = this.responseBody.id;
+    const { id } = this.bodyObject();
+    expect(typeof id, `Pas d'id numérique dans la réponse`).toBe('number');
+    this.createdIds[key] = id as number;
   },
 );
 
@@ -292,7 +224,7 @@ Then(
 // ─────────────────────────────────────────────
 
 function resolvePath(path: string, ids: Record<string, number>): string {
-  return path.replace(/\{(\w+)\}/g, (_, key) => {
+  return path.replace(/\{(\w+)\}/g, (_, key: string) => {
     const id = ids[key];
     if (!id) throw new Error(`Aucun id sauvegardé sous "${key}"`);
     return String(id);

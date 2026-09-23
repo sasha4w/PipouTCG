@@ -29,8 +29,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "start:test": "cross-env NODE_ENV=test nest start --watch",
-    "test:gherkin": "cross-env NODE_ENV=test npx cucumber-js test/e2e/features/ --require test/e2e/support/*.ts --require test/e2e/steps/*.ts --require-module ts-node/register",
-    "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix"
+    "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
+    "e2e:db": "docker compose up -d db",
+    "e2e:api": "pnpm build && cross-env ENV_FILE=.env.e2e node dist/main",
+    "test:e2e:cucumber": "dotenv -e .env.e2e -- cucumber-js --config test/cucumber.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -5,15 +5,18 @@ import {
   setDefaultTimeout,
 } from '@cucumber/cucumber';
 import { ApiWorld } from './world';
+import { fixtures, seedAll } from './fixtures';
+
 setDefaultTimeout(15000);
-BeforeAll(async function () {
-  const { request } = await import('@playwright/test');
-  const ctx = await request.newContext({ baseURL: 'http://localhost:3000' });
-  // Appelle une route de cleanup si tu en as une
-  await ctx.dispose();
+
+// Comptes + catalogue créés une fois sur la base locale (voir fixtures.ts)
+BeforeAll({ timeout: 60000 }, async function () {
+  await seedAll();
 });
-// Démarre l'API context avant chaque scénario
+
+// Démarre l'API context avant chaque scénario, avec les ids des fixtures
 Before(async function (this: ApiWorld) {
+  this.createdIds = { ...fixtures };
   await this.initApiContext();
 });
 

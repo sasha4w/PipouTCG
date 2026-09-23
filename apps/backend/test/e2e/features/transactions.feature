@@ -8,10 +8,20 @@ Feature: Marketplace et transactions
 
   # ── Consultation ─────────────────────────────────────────────
 
-  Scenario: Lister les annonces du marketplace
+  Scenario: Lister les offres des autres joueurs
+    When j'envoie une requête GET authentifiée sur "/transactions/offers"
+    Then le statut de réponse est 200
+    And la réponse contient un champ "data"
+
+  Scenario: Un admin peut lister toutes les annonces
+    Given je suis connecté en tant qu'admin
     When j'envoie une requête GET authentifiée sur "/transactions"
     Then le statut de réponse est 200
     And la réponse contient un champ "data"
+
+  Scenario: Un joueur ne peut pas lister toutes les annonces renvoie 403
+    When j'envoie une requête GET authentifiée sur "/transactions"
+    Then le statut de réponse est 403
 
   Scenario: Consulter l'historique de mes transactions
     When j'envoie une requête GET authentifiée sur "/transactions/history"
@@ -21,11 +31,13 @@ Feature: Marketplace et transactions
   # ── Créer une annonce ─────────────────────────────────────────
 
   Scenario: Créer une annonce pour vendre un booster
+    When j'envoie une requête POST authentifiée sur "/boosters/{cheapBoosterId}/buy"
+    Then le statut de réponse est 201
     When j'envoie une requête POST authentifiée sur "/transactions/listing" avec le body:
       """
       {
         "productType": "BOOSTER",
-        "productId": 12,
+        "productId": {cheapBoosterId},
         "quantity": 1,
         "unitPrice": 50
       }
@@ -34,12 +46,24 @@ Feature: Marketplace et transactions
     And la réponse contient un champ "id"
     And la réponse contient un champ "status"
 
+  Scenario: Créer une annonce pour un booster non possédé renvoie 400
+    When j'envoie une requête POST authentifiée sur "/transactions/listing" avec le body:
+      """
+      {
+        "productType": "BOOSTER",
+        "productId": {boosterId},
+        "quantity": 1,
+        "unitPrice": 50
+      }
+      """
+    Then le statut de réponse est 400
+
   Scenario: Créer une annonce sans authentification renvoie 401
     When j'envoie une requête POST non authentifiée sur "/transactions/listing" avec le body:
       """
       {
         "productType": "BOOSTER",
-        "productId": 12,
+        "productId": {cheapBoosterId},
         "quantity": 1,
         "unitPrice": 50
       }
@@ -58,11 +82,13 @@ Feature: Marketplace et transactions
   # ── Acheter une annonce ───────────────────────────────────────
 
   Scenario: L'admin achète l'annonce du joueur test
+    When j'envoie une requête POST authentifiée sur "/boosters/{cheapBoosterId}/buy"
+    Then le statut de réponse est 201
     When j'envoie une requête POST authentifiée sur "/transactions/listing" avec le body:
       """
       {
         "productType": "BOOSTER",
-        "productId": 12,
+        "productId": {cheapBoosterId},
         "quantity": 1,
         "unitPrice": 50
       }
@@ -75,11 +101,13 @@ Feature: Marketplace et transactions
     And la réponse contient un champ "status"
 
   Scenario: Acheter sa propre annonce renvoie 400
+    When j'envoie une requête POST authentifiée sur "/boosters/{cheapBoosterId}/buy"
+    Then le statut de réponse est 201
     When j'envoie une requête POST authentifiée sur "/transactions/listing" avec le body:
       """
       {
         "productType": "BOOSTER",
-        "productId": 12,
+        "productId": {cheapBoosterId},
         "quantity": 1,
         "unitPrice": 50
       }

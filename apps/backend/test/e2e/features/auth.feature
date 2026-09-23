@@ -63,7 +63,7 @@ Feature: Authentification
       }
       """
     Then le statut de réponse est 200
-    And la réponse contient un champ "access_token"
+    And la réponse pose le cookie de session
 
   Scenario: Connexion avec un mauvais mot de passe renvoie 401
     Given un utilisateur "logintest2@example.com" avec le mot de passe "GoodPassword!" existe

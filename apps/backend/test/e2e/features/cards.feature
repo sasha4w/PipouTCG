@@ -14,7 +14,7 @@ Feature: Gestion des cartes
     And la réponse contient un champ "data"
 
   Scenario: Consulter le détail d'une carte
-    When j'envoie une requête GET authentifiée sur "/cards/1"
+    When j'envoie une requête GET authentifiée sur "/cards/{cardId}"
     Then le statut de réponse est 200
     And la réponse contient un champ "id"
     And la réponse contient un champ "name"
@@ -26,12 +26,12 @@ Feature: Gestion des cartes
     Then le statut de réponse est 404
 
   Scenario: Lister les cartes d'un set
-    When j'envoie une requête GET authentifiée sur "/cards/set/1"
+    When j'envoie une requête GET authentifiée sur "/cards/set/{setId}"
     Then le statut de réponse est 200
     And la réponse contient un champ "data"
 
   Scenario: Lister les cartes sans authentification renvoie 401
-    When j'envoie une requête GET sur "/cards"
+    When j'envoie une requête GET sur "/cards" sans authentification
     Then le statut de réponse est 401
 
   # ── Admin CRUD ───────────────────────────────────────────────
@@ -46,7 +46,7 @@ Feature: Gestion des cartes
         "type": "monster",
         "atk": 100,
         "hp": 50,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 201
@@ -64,7 +64,7 @@ Feature: Gestion des cartes
         "type": "monster",
         "atk": 10,
         "hp": 10,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     And le statut de réponse est 201
@@ -77,7 +77,7 @@ Feature: Gestion des cartes
         "type": "monster",
         "atk": 10,
         "hp": 10,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 200
@@ -93,7 +93,7 @@ Feature: Gestion des cartes
         "type": "support",
         "atk": 10,
         "hp": 10,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     And le statut de réponse est 201
@@ -122,11 +122,11 @@ Feature: Gestion des cartes
         "type": "monster",
         "atk": 10,
         "hp": 10,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 403
 
   Scenario: Un utilisateur ne peut pas supprimer une carte renvoie 403
-    When j'envoie une requête DELETE authentifiée sur "/cards/1"
+    When j'envoie une requête DELETE authentifiée sur "/cards/{cardId}"
     Then le statut de réponse est 403

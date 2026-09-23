@@ -14,7 +14,7 @@ Feature: Système de boosters
     And la réponse contient un champ "data"
 
   Scenario: Consulter le détail d'un booster
-    When j'envoie une requête GET authentifiée sur "/boosters/1"
+    When j'envoie une requête GET authentifiée sur "/boosters/{boosterId}"
     Then le statut de réponse est 200
     And la réponse contient un champ "id"
     And la réponse contient un champ "name"
@@ -25,7 +25,7 @@ Feature: Système de boosters
     Then le statut de réponse est 404
 
   Scenario: Lister les boosters sans authentification renvoie 401
-    When j'envoie une requête GET sur "/boosters"
+    When j'envoie une requête GET sur "/boosters" sans authentification
     Then le statut de réponse est 401
 
   # ── Joueur ───────────────────────────────────────────────────
@@ -35,11 +35,11 @@ Feature: Système de boosters
     Then le statut de réponse est 404
 
   Scenario: Acheter un booster sans assez de gold renvoie 400
-    When j'envoie une requête POST authentifiée sur "/boosters/1/buy"
+    When j'envoie une requête POST authentifiée sur "/boosters/{boosterId}/buy"
     Then le statut de réponse est 400
 
   Scenario: Ouvrir un booster non possédé renvoie 400
-    When j'envoie une requête POST authentifiée sur "/boosters/1/open"
+    When j'envoie une requête POST authentifiée sur "/boosters/{boosterId}/open"
     Then le statut de réponse est 400
 
   Scenario: Acheter puis ouvrir un booster
@@ -48,9 +48,9 @@ Feature: Système de boosters
       """
       {
         "name": "Booster Achat Test",
-        "price": 0,
+        "price": 1,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     And le statut de réponse est 201
@@ -64,7 +64,7 @@ Feature: Système de boosters
     And la réponse contient un champ "booster"
 
   Scenario: Acheter un booster sans être connecté renvoie 401
-    When j'envoie une requête POST sur "/boosters/1/buy"
+    When j'envoie une requête POST sur "/boosters/{boosterId}/buy" sans authentification
     Then le statut de réponse est 401
 
   # ── Admin CRUD ───────────────────────────────────────────────
@@ -77,7 +77,7 @@ Feature: Système de boosters
         "name": "Booster Test",
         "price": 100,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 201
@@ -93,7 +93,7 @@ Feature: Système de boosters
         "name": "Booster à Modifier",
         "price": 100,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     And le statut de réponse est 201
@@ -116,7 +116,7 @@ Feature: Système de boosters
         "name": "Booster à Supprimer",
         "price": 100,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     And le statut de réponse est 201
@@ -132,7 +132,7 @@ Feature: Système de boosters
         "name": "Booster Invalide",
         "price": 100,
         "cardNumber": 999,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 400
@@ -145,7 +145,7 @@ Feature: Système de boosters
         "name": "A",
         "price": 100,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 400
@@ -159,11 +159,11 @@ Feature: Système de boosters
         "name": "Booster non autorisé",
         "price": 100,
         "cardNumber": 5,
-        "cardSetId": 1
+        "cardSetId": {setId}
       }
       """
     Then le statut de réponse est 403
 
   Scenario: Un utilisateur ne peut pas supprimer un booster renvoie 403
-    When j'envoie une requête DELETE authentifiée sur "/boosters/1"
+    When j'envoie une requête DELETE authentifiée sur "/boosters/{boosterId}"
     Then le statut de réponse est 403
