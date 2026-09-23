@@ -1,0 +1,195 @@
+.quests-panel {
+  background: #3d1020;
+  border-radius: 16px;
+  padding: 1.1rem 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: panelFadeUp 0.4s ease 0.1s both;
+}
+
+@keyframes panelFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Header ── */
+.quests-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quests-panel__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #eebc77;
+  margin: 0;
+}
+
+/* ── Tabs type ── */
+.quests-panel__tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.quests-panel__tab {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+.quests-panel__tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+.quests-panel__tab--active {
+  background: rgba(238, 188, 119, 0.2);
+  border-color: rgba(238, 188, 119, 0.5);
+  color: #eebc77;
+}
+
+/* ── Liste de quêtes ── */
+.quests-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.quests-panel__empty {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+  padding: 0.5rem 0;
+  font-weight: 600;
+}
+
+/* ── Quest item ── */
+.quest-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: background 0.15s;
+}
+.quest-item--completed {
+  border-color: rgba(238, 188, 119, 0.25);
+  background: rgba(238, 188, 119, 0.07);
+}
+
+.quest-item__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.quest-item__title {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+  flex: 1;
+  line-height: 1.3;
+}
+.quest-item--completed .quest-item__title {
+  color: #eebc77;
+}
+
+.quest-item__reward {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #eebc77;
+  white-space: nowrap;
+  background: rgba(238, 188, 119, 0.12);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* Progress bar */
+.quest-item__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.quest-item__bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.quest-item__bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #eebc77, #f27aaa);
+  transition: width 0.6s ease;
+}
+.quest-item__bar-fill--done {
+  background: #eebc77;
+}
+.quest-item__progress-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Claim button */
+.quest-item__claim-btn {
+  align-self: flex-end;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: none;
+  background: #eebc77;
+  color: #3d1020;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    transform 0.12s;
+}
+.quest-item__claim-btn:hover {
+  opacity: 0.85;
+}
+.quest-item__claim-btn:active {
+  transform: scale(0.95);
+}
+.quest-item__claim-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.quest-item__timer {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.2px;
+}
+
+.quest-item__claimed {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  align-self: flex-end;
+}

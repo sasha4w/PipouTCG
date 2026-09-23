@@ -1,0 +1,165 @@
+/* ── Conteneur volume ── */
+.sound-volume {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Ligne mute ── */
+.sound-mute-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(61, 16, 32, 0.06);
+}
+.sound-mute-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #7a1c3b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Checkbox mute custom */
+.sound-mute-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #a08070;
+  user-select: none;
+}
+.sound-mute-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(122, 28, 59, 0.25);
+  background: #fdfbf6;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+  flex-shrink: 0;
+}
+.sound-mute-check input[type="checkbox"]:checked {
+  background: #7a1c3b;
+  border-color: #7a1c3b;
+}
+.sound-mute-check input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* ── Ligne slider ── */
+.sound-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sound-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sound-row__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #7a1c3b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.sound-row__value {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #a08070;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Contrôles +/- + barre */
+.sound-row__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sound-row__btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(122, 28, 59, 0.2);
+  background: rgba(122, 28, 59, 0.06);
+  color: #7a1c3b;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+}
+.sound-row__btn:hover {
+  background: rgba(122, 28, 59, 0.14);
+}
+.sound-row__btn:active {
+  transform: scale(0.9);
+  background: rgba(122, 28, 59, 0.22);
+}
+.sound-row__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Barre de progression cliquable */
+.sound-row__bar-wrap {
+  flex: 1;
+  height: 8px;
+  border-radius: 8px;
+  background: rgba(122, 28, 59, 0.12);
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+.sound-row__bar-fill {
+  height: 100%;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #eebc77, #f27aaa);
+  transition: width 0.1s;
+  pointer-events: none;
+}
+.sound-row__bar-wrap--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Header row avec mute à droite ── */
+.sound-row__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sound-mute-check__text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a08070;
+}

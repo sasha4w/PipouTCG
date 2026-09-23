@@ -1,0 +1,172 @@
+/* ── Widget compact ── */
+.dsw {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1e1e2e;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  overflow: hidden;
+  user-select: none;
+}
+.dsw:hover {
+  background: #252538;
+  border-color: rgba(238, 188, 119, 0.3);
+  transform: translateY(-1px);
+}
+
+.dsw--unclaimed {
+  border-color: rgba(238, 188, 119, 0.35);
+  box-shadow: 0 0 16px rgba(238, 188, 119, 0.08);
+}
+.dsw--claimed {
+  border-color: rgba(112, 184, 112, 0.25);
+}
+
+/* ── Streak info ── */
+.dsw__streak {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.dsw__streak-icon {
+  font-size: 1.1rem;
+}
+.dsw__streak-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dsw__streak-count {
+  font-family: "Lilita One", cursive;
+  font-size: 0.85rem;
+  color: #eebc77;
+  line-height: 1;
+}
+.dsw__streak-label {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1;
+}
+
+/* ── Mini-calendrier semaine ── */
+.dsw__week {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+.dsw__week-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.dsw__week-dow {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.45rem;
+  color: rgba(255, 255, 255, 0.2);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.dsw__week-day {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Lilita One", cursive;
+  font-size: 0.5rem;
+  color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+/* États */
+.dsw__week-day.claimed {
+  background: rgba(112, 184, 112, 0.2);
+  border-color: #70b870;
+  color: #70b870;
+  font-size: 0.55rem;
+}
+.dsw__week-day.today {
+  background: rgba(238, 188, 119, 0.2);
+  border-color: #eebc77;
+  color: #eebc77;
+  box-shadow: 0 0 5px rgba(238, 188, 119, 0.5);
+  font-size: 0.55rem;
+}
+.dsw__week-day.today.claimed {
+  background: rgba(112, 184, 112, 0.2);
+  border-color: #70b870;
+  color: #70b870;
+  box-shadow: none;
+}
+.dsw__week-day.missed {
+  color: rgba(242, 122, 170, 0.3);
+  border-color: rgba(242, 122, 170, 0.15);
+}
+.dsw__week-day.future {
+  opacity: 0.4;
+}
+
+/* ── Prochaine récompense ── */
+.dsw__next {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.dsw__next-label {
+  font-family: "Lilita One", cursive;
+  font-size: 0.72rem;
+  color: #eebc77;
+}
+
+/* ── Milestone proche ── */
+.dsw__milestone {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.58rem;
+  color: rgba(238, 188, 119, 0.6);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Ping animation ── */
+.dsw__ping {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #eebc77;
+}
+.dsw__ping::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(238, 188, 119, 0.4);
+  animation: pingPulse 1.5s ease-out infinite;
+}
+@keyframes pingPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,623 @@
+/* CSS partagé par tous les managers admin */
+
+.manager {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid rgba(61, 16, 32, 0.1);
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: managerFadeUp 0.3s ease both;
+}
+
+@keyframes managerFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.manager__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.manager__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  color: #7a1c3b;
+  margin: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Bouton ajout */
+.manager__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+  background: #7a1c3b;
+  color: #fff;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+  flex-shrink: 0;
+}
+.manager__add-btn:hover {
+  background: #9b2349;
+}
+.manager__add-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Formulaire ── */
+.manager-form {
+  background: rgba(238, 188, 119, 0.08);
+  border: 1.5px solid rgba(238, 188, 119, 0.3);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.manager-form__title {
+  font-family: "Lilita One", cursive;
+  font-size: 0.9rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+.manager-form__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manager-form__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7a1c3b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.manager-form__input,
+.manager-form__select,
+.manager-form__textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.88rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.manager-form__input:focus,
+.manager-form__select:focus,
+.manager-form__textarea:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+.manager-form__textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.manager-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.manager-form__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.manager-form__submit {
+  flex: 1;
+  padding: 0.65rem;
+  border-radius: 12px;
+  border: none;
+  background: #7a1c3b;
+  color: #fff;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    transform 0.12s;
+}
+.manager-form__submit:hover {
+  background: #9b2349;
+}
+.manager-form__submit:active {
+  transform: scale(0.97);
+}
+.manager-form__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.manager-form__cancel {
+  padding: 0.65rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: transparent;
+  color: #a08070;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.manager-form__cancel:hover {
+  background: rgba(61, 16, 32, 0.05);
+}
+
+/* ── Ligne de contenu bundle (type + item + quantité + suppr) ── */
+.manager-content-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.manager-content-row__type {
+  flex: 0 0 90px;
+}
+
+.manager-content-row__item {
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-content-row__qty {
+  flex: 0 0 64px;
+}
+
+.manager-content-row__remove {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(242, 122, 170, 0.1);
+  color: #b03060;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.manager-content-row__remove:hover {
+  background: rgba(242, 122, 170, 0.22);
+}
+.manager-content-row__remove:active {
+  transform: scale(0.9);
+}
+
+/* ── Bouton "Ajouter une ligne" (tirets) ── */
+.manager-form__add-row {
+  background: none;
+  border: 1.5px dashed rgba(61, 16, 32, 0.2);
+  border-radius: 10px;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #a08070;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: 100%;
+  text-align: center;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+.manager-form__add-row:hover {
+  border-color: rgba(122, 28, 59, 0.35);
+  color: #7a1c3b;
+  background: rgba(122, 28, 59, 0.03);
+}
+
+/* ── Liste items ── */
+.manager-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.manager-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: rgba(238, 188, 119, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(61, 16, 32, 0.06);
+  gap: 8px;
+}
+
+.manager-item__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-item__name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #491021;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manager-item__meta {
+  font-size: 0.72rem;
+  color: #a08070;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.manager-item__actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.manager-item__edit-btn,
+.manager-item__delete-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.manager-item__edit-btn {
+  background: rgba(122, 28, 59, 0.08);
+  color: #7a1c3b;
+}
+.manager-item__edit-btn:hover {
+  background: rgba(122, 28, 59, 0.16);
+}
+.manager-item__delete-btn {
+  background: rgba(242, 122, 170, 0.1);
+  color: #b03060;
+}
+.manager-item__delete-btn:hover {
+  background: rgba(242, 122, 170, 0.22);
+}
+.manager-item__edit-btn:active,
+.manager-item__delete-btn:active {
+  transform: scale(0.9);
+}
+
+/* Bouton content (largeur auto) */
+.manager-item__content-btn {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+  background: rgba(238, 188, 119, 0.25);
+  color: #7a4a00;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+  white-space: nowrap;
+}
+.manager-item__content-btn:hover {
+  background: rgba(238, 188, 119, 0.45);
+}
+.manager-item__content-btn:active {
+  transform: scale(0.9);
+}
+
+/* ── États ── */
+.manager-empty {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #a08070;
+  font-weight: 600;
+  padding: 1rem 0;
+}
+
+.manager-error {
+  font-size: 0.82rem;
+  color: #b03060;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ── Pagination ── */
+.manager-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.manager-pagination__btn {
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: transparent;
+  color: #7a1c3b;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.manager-pagination__btn:hover {
+  background: rgba(122, 28, 59, 0.06);
+}
+.manager-pagination__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.manager-pagination__info {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a08070;
+}
+.manager-result-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+}
+
+.manager-set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1.5px solid rgba(61, 16, 32, 0.1);
+  margin-top: 0.25rem;
+}
+
+.manager-set-name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.82rem;
+  color: #7a1c3b;
+}
+
+.manager-set-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a08070;
+  background: rgba(122, 28, 59, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.manager-item__badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-family: "Lilita One", cursive;
+  letter-spacing: 0.2px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  margin-left: 7px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+.manager-item__badge--active {
+  background: rgba(45, 106, 63, 0.12);
+  color: #2d6a3f;
+  border: 1px solid rgba(45, 106, 63, 0.25);
+}
+.manager-item__badge--inactive {
+  background: rgba(160, 128, 112, 0.1);
+  color: #a08070;
+  border: 1px solid rgba(160, 128, 112, 0.2);
+}
+.manager-item__badge--pending {
+  background: rgba(238, 188, 119, 0.18);
+  color: #7a4a00;
+  border: 1px solid rgba(238, 188, 119, 0.4);
+}
+.manager-item__badge--expired {
+  background: rgba(176, 48, 96, 0.08);
+  color: #b03060;
+  border: 1px solid rgba(176, 48, 96, 0.2);
+}
+
+/* ── Stepper ─────────────────────────────────────────────────────────────── */
+
+.bm-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+  position: relative;
+}
+
+.bm-stepper__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  position: relative;
+}
+
+.bm-stepper__line {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: rgba(61, 16, 32, 0.1);
+  z-index: 0;
+}
+.bm-stepper__line--done {
+  background: #7a1c3b;
+}
+
+.bm-stepper__dot {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(61, 16, 32, 0.15);
+  background: #fff;
+  color: #a08070;
+  font-family: "Lilita One", cursive;
+  font-size: 0.75rem;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  flex-shrink: 0;
+}
+.bm-stepper__dot--active {
+  border-color: #7a1c3b;
+  background: #7a1c3b;
+  color: #fff;
+}
+.bm-stepper__dot--done {
+  border-color: #7a1c3b;
+  background: rgba(122, 28, 59, 0.1);
+  color: #7a1c3b;
+  cursor: pointer;
+}
+.bm-stepper__dot--done:hover {
+  background: rgba(122, 28, 59, 0.18);
+}
+
+.bm-stepper__label {
+  font-size: 0.62rem;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  color: #c0a090;
+  text-align: center;
+  white-space: nowrap;
+}
+.bm-stepper__label--active {
+  color: #7a1c3b;
+}
+
+/* ── Navigation bas de wizard ────────────────────────────────────────────── */
+
+.bm-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* ── Checkbox row ────────────────────────────────────────────────────────── */
+
+.bm-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bm-checkbox-row input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: #7a1c3b;
+}
+.bm-checkbox-row .manager-form__label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+/* ── Récap prix ──────────────────────────────────────────────────────────── */
+
+.bm-price-recap {
+  background: rgba(238, 188, 119, 0.12);
+  border: 1px solid rgba(238, 188, 119, 0.35);
+  border-radius: 10px;
+  padding: 0.55rem 0.85rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  color: #7a4a00;
+}
+.bm-price-recap strong {
+  color: #7a1c3b;
+}
+
+/* ── Badge réduction dans le label ──────────────────────────────────────── */
+
+.bm-discount-badge {
+  margin-left: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #9b2349;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Preview image ───────────────────────────────────────────────────────── */
+
+.bm-img-preview {
+  width: 100%;
+  max-height: 110px;
+  object-fit: cover;
+  border-radius: 10px;
+  opacity: 0.88;
+  border: 1.5px solid rgba(61, 16, 32, 0.08);
+}
+
+/* ── Label optionnel ─────────────────────────────────────────────────────── */
+
+.bm-optional {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #a08070;
+  text-transform: none;
+  letter-spacing: 0;
+}

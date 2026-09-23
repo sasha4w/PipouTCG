@@ -1,0 +1,131 @@
+/* QuestManager — reprend le style de manager.css */
+
+/* ── Badge type reset ── */
+.quest-reset-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+  letter-spacing: 0.2px;
+}
+.quest-reset-badge--DAILY {
+  background: rgba(40, 160, 100, 0.12);
+  color: #1a7a4a;
+}
+.quest-reset-badge--WEEKLY {
+  background: rgba(40, 100, 220, 0.12);
+  color: #1a3a8a;
+}
+.quest-reset-badge--MONTHLY {
+  background: rgba(160, 40, 200, 0.12);
+  color: #6a1a8a;
+}
+.quest-reset-badge--EVENT {
+  background: rgba(220, 120, 40, 0.12);
+  color: #8a4a1a;
+}
+.quest-reset-badge--NONE {
+  background: rgba(200, 160, 40, 0.12);
+  color: #7a5a00;
+}
+
+/* ── Badge reward ── */
+.quest-reward-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #7a4a00;
+  background: rgba(238, 188, 119, 0.2);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: "Comfortaa", sans-serif;
+}
+
+/* ── Badge actif/inactif ── */
+.quest-active-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+}
+.quest-active-badge--on {
+  background: rgba(40, 160, 80, 0.12);
+  color: #1a6a30;
+}
+.quest-active-badge--off {
+  background: rgba(200, 50, 50, 0.1);
+  color: #8a1a1a;
+}
+
+/* ── Condition rows dans le formulaire ── */
+.quest-condition-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.quest-condition-row__type {
+  flex: 1;
+  min-width: 130px;
+}
+.quest-condition-row__amount {
+  flex: 0 0 72px;
+}
+.quest-condition-row__remove {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(242, 122, 170, 0.1);
+  color: #b03060;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+.quest-condition-row__remove:hover {
+  background: rgba(242, 122, 170, 0.22);
+}
+.quest-condition-row__remove:active {
+  transform: scale(0.9);
+}
+
+/* ── Section de formulaire ── */
+.quest-form-section {
+  background: rgba(61, 16, 32, 0.03);
+  border: 1px solid rgba(61, 16, 32, 0.08);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.quest-form-section__title {
+  font-family: "Lilita One", cursive;
+  font-size: 0.78rem;
+  color: #7a1c3b;
+  margin: 0;
+}
+
+/* ── Item meta row ── */
+.quest-item-badges {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}

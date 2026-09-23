@@ -1,0 +1,35 @@
+.privacy-btn {
+  width: 100%;
+  padding: 0.65rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(61, 16, 32, 0.12);
+  background: rgba(238, 188, 119, 0.1);
+  color: #7a1c3b;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    transform 0.12s;
+}
+.privacy-btn:hover {
+  background: rgba(238, 188, 119, 0.22);
+  border-color: rgba(61, 16, 32, 0.2);
+}
+.privacy-btn:active {
+  transform: scale(0.97);
+}
+.privacy-btn--private {
+  background: rgba(122, 28, 59, 0.08);
+  border-color: rgba(122, 28, 59, 0.25);
+  color: #7a1c3b;
+}
+.privacy-btn--private:hover {
+  background: rgba(122, 28, 59, 0.14);
+}

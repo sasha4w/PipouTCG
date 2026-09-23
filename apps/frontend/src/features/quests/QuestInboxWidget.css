@@ -1,0 +1,218 @@
+.qi {
+  position: relative;
+}
+
+.qi__btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(122, 28, 59, 0.2);
+  background: rgba(238, 188, 119, 0.15);
+  color: #7a1c3b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    transform 0.12s;
+  padding: 0;
+}
+.qi__btn:hover {
+  background: rgba(238, 188, 119, 0.3);
+}
+.qi__btn:active {
+  transform: scale(0.93);
+}
+
+.qi__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e03060;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #f5efe0;
+  animation: qiBadgePop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes qiBadgePop {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.qi__dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 300px;
+  background: #3d1020;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  animation: qiDropIn 0.2s cubic-bezier(0.34, 1.3, 0.64, 1) both;
+  z-index: 200;
+}
+@keyframes qiDropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.qi__dheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.qi__dheader-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #eebc77;
+}
+.qi__claim-all {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: none;
+  background: #eebc77;
+  color: #3d1020;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    transform 0.12s;
+}
+.qi__claim-all:hover {
+  opacity: 0.85;
+}
+.qi__claim-all:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qi__list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qi__empty {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  padding: 20px 0;
+  font-weight: 600;
+}
+
+.qi__item {
+  background: rgba(238, 188, 119, 0.07);
+  border: 1px solid rgba(238, 188, 119, 0.22);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qi__item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.qi__item-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #eebc77;
+  flex: 1;
+  line-height: 1.3;
+}
+.qi__item-reward {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(238, 188, 119, 0.15);
+  color: #eebc77;
+  border-radius: 20px;
+  padding: 2px 7px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.qi__item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.qi__item-type {
+  font-size: 0.63rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.qi__item-claim {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: none;
+  background: #eebc77;
+  color: #3d1020;
+  cursor: pointer;
+  font-family: "Comfortaa", sans-serif;
+  transition:
+    opacity 0.15s,
+    transform 0.12s;
+}
+.qi__item-claim:hover {
+  opacity: 0.85;
+}
+.qi__item-claim:active {
+  transform: scale(0.95);
+}
+.qi__item-claim:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qi__footer {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  text-align: center;
+}
+.qi__footer-link {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(238, 188, 119, 0.7);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: "Comfortaa", sans-serif;
+  transition: color 0.15s;
+}
+.qi__footer-link:hover {
+  color: #eebc77;
+}

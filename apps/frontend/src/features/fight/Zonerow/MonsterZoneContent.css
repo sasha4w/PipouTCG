@@ -1,0 +1,124 @@
+.zr-monster {
+  text-align: center;
+  width: 100%;
+}
+
+/* Mode chip */
+.zr-mode-chip {
+  border-radius: 99px;
+  font-size: 14px;
+  padding: 2px 8px;
+  display: inline-block;
+  margin-bottom: 4px;
+  transition: background 0.2s;
+}
+.zr-mode-chip--attack {
+  background: #fce4d4;
+}
+.zr-mode-chip--guard {
+  background: #e4f0fc;
+}
+
+/* Name & stats */
+.zr-monster-name {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+
+.zr-monster-stats {
+  font-size: 10px;
+  color: #888;
+}
+
+.zr-attacked {
+  font-size: 9px;
+  color: #aaa;
+}
+
+/* Mode buttons */
+.zr-mode-btns {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.zr-mode-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 3px 7px;
+  cursor: pointer;
+  font-size: 13px;
+  background: #f0ddd0;
+  color: #7a1c3b;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.zr-mode-btn--active {
+  background: #7a1c3b;
+  color: #fff;
+}
+
+/* Badges */
+.zr-monster-badges {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.zr-badge {
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: default;
+}
+
+.zr-badge--taunt {
+  background: rgba(122, 28, 59, 0.15);
+}
+.zr-badge--piercing {
+  background: rgba(231, 76, 60, 0.15);
+}
+.zr-badge--immune {
+  background: rgba(155, 89, 182, 0.15);
+}
+.zr-badge--sleep {
+  background: rgba(100, 100, 100, 0.15);
+}
+.zr-badge--charge {
+  background: rgba(243, 156, 18, 0.15);
+}
+.zr-badge--multi {
+  background: rgba(39, 174, 96, 0.2);
+  font-weight: 700;
+}
+
+/* Equipment chips */
+.zr-equipment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 3px;
+  justify-content: center;
+}
+
+.zr-equipment-chip {
+  font-size: 0.6rem;
+  background: rgba(255, 200, 80, 0.18);
+  border: 1px solid rgba(255, 200, 80, 0.45);
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: #d4a017;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  cursor: help;
+}

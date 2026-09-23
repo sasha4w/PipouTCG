@@ -1,0 +1,61 @@
+.fb-wrap {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.fb-direct-atk {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.fb-btn-direct-atk {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  padding: 8px 24px;
+  font-family: "Lilita One", sans-serif;
+  font-size: 15px;
+  cursor: pointer;
+}
+.fb-side-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fb-zones-col {
+  flex: 1;
+  min-width: 0;
+}
+/* ── Ajoute ces règles à la fin de FightBoard.css ─────────────────────────── */
+
+/* Bannière d'instruction quand Noyau Zeta est sélectionné */
+.fb-zeta-hint {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8e44ad;
+  background: rgba(142, 68, 173, 0.08);
+  border: 1.5px dashed rgba(142, 68, 173, 0.35);
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin: 4px 0;
+  animation: fb-zeta-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fb-zeta-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,156 @@
+/* ── Stepper ─────────────────────────────────────────────────────────────── */
+
+.bm-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0 0.25rem;
+  position: relative;
+}
+
+.bm-stepper__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  position: relative;
+}
+
+/* La ligne de connexion entre les dots */
+.bm-stepper__line {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: rgba(61, 16, 32, 0.1);
+  z-index: 0;
+}
+.bm-stepper__line--done {
+  background: #7a1c3b;
+}
+
+.bm-stepper__dot {
+  position: relative;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(61, 16, 32, 0.15);
+  background: #fff;
+  color: #a08070;
+  font-family: "Lilita One", cursive;
+  font-size: 0.75rem;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  flex-shrink: 0;
+}
+.bm-stepper__dot--active {
+  border-color: #7a1c3b;
+  background: #7a1c3b;
+  color: #fff;
+}
+.bm-stepper__dot--done {
+  border-color: #7a1c3b;
+  background: rgba(122, 28, 59, 0.1);
+  color: #7a1c3b;
+  cursor: pointer;
+}
+.bm-stepper__dot--done:hover {
+  background: rgba(122, 28, 59, 0.18);
+}
+
+.bm-stepper__label {
+  font-size: 0.62rem;
+  font-family: "Comfortaa", sans-serif;
+  font-weight: 700;
+  color: #c0a090;
+  text-align: center;
+  white-space: nowrap;
+}
+.bm-stepper__label--active {
+  color: #7a1c3b;
+}
+
+/* ── Navigation bas de wizard ────────────────────────────────────────────── */
+
+.bm-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* ── Checkbox row ────────────────────────────────────────────────────────── */
+
+.bm-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bm-checkbox-row input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: #7a1c3b;
+}
+.bm-checkbox-row .manager-form__label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+/* ── Récap prix ──────────────────────────────────────────────────────────── */
+
+.bm-price-recap {
+  background: rgba(238, 188, 119, 0.12);
+  border: 1px solid rgba(238, 188, 119, 0.35);
+  border-radius: 10px;
+  padding: 0.55rem 0.85rem;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  color: #7a4a00;
+}
+.bm-price-recap strong {
+  color: #7a1c3b;
+}
+
+/* ── Badge réduction dans le label ──────────────────────────────────────── */
+
+.bm-discount-badge {
+  margin-left: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #9b2349;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Preview image ───────────────────────────────────────────────────────── */
+
+.bm-img-preview {
+  width: 100%;
+  max-height: 110px;
+  object-fit: cover;
+  border-radius: 10px;
+  opacity: 0.88;
+  border: 1.5px solid rgba(61, 16, 32, 0.08);
+}
+
+/* ── Label optionnel ─────────────────────────────────────────────────────── */
+
+.bm-optional {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #a08070;
+  text-transform: none;
+  letter-spacing: 0;
+}

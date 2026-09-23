@@ -1,0 +1,220 @@
+.cpm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 8, 14, 0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 16px;
+}
+
+.cpm-modal {
+  background: #fff;
+  border-radius: 16px;
+  border: 2px solid #f0ddd0;
+  box-shadow: 0 20px 60px rgba(122, 28, 59, 0.25);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cpm-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0ddd0;
+  background: #fdf6f9;
+}
+
+.cpm-title {
+  font-family: "Lilita One", sans-serif;
+  font-size: 15px;
+  color: #7a1c3b;
+}
+
+.cpm-hint {
+  margin: 0;
+  padding: 10px 16px 4px;
+  font-size: 12px;
+  color: #999;
+}
+
+/* ── Grille de cartes ─────────────────────────────────────────────────────── */
+.cpm-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cpm-card {
+  position: relative;
+  width: 90px;
+  min-height: 80px;
+  border-radius: 10px;
+  border: 1.5px solid #f0ddd0;
+  background: #fff;
+  padding: 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.cpm-card:hover {
+  border-color: #7a1c3b;
+  background: #fdf6f9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.12);
+}
+
+.cpm-card--selected {
+  background: #f8edf2;
+  border: 2px solid #7a1c3b;
+  box-shadow: 0 0 0 2px rgba(122, 28, 59, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ── Board picks — styles spécifiques par résolution ─────────────────────── */
+
+/* destroy_ally — teinte rouge */
+.cpm-card--board-destroy_ally:hover {
+  border-color: #c0392b;
+  background: #fff5f5;
+}
+.cpm-card--board-destroy_ally.cpm-card--selected {
+  background: #fff0f0;
+  border-color: #c0392b;
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.2);
+}
+
+/* return_to_hand — teinte bleue */
+.cpm-card--board-return_to_hand:hover {
+  border-color: #2471a3;
+  background: #f0f5ff;
+}
+.cpm-card--board-return_to_hand.cpm-card--selected {
+  background: #eaf2ff;
+  border-color: #2471a3;
+  box-shadow: 0 0 0 2px rgba(36, 113, 163, 0.2);
+}
+
+/* force_attack_enemy — teinte orange */
+.cpm-card--board-force_attack_enemy:hover {
+  border-color: #d35400;
+  background: #fff8f0;
+}
+.cpm-card--board-force_attack_enemy.cpm-card--selected {
+  background: #fff3e6;
+  border-color: #d35400;
+  box-shadow: 0 0 0 2px rgba(211, 84, 0, 0.2);
+}
+
+/* ── Carte plus large pour les monstres board (plus d'infos à afficher) ───── */
+.cpm-card--board {
+  width: 100px;
+  min-height: 90px;
+}
+
+.cpm-check {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  background: #7a1c3b;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #fff;
+}
+
+.cpm-source {
+  font-size: 9px;
+  color: #aaa;
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cpm-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2c1a22;
+  word-break: break-word;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.cpm-sub {
+  font-size: 10px;
+  color: #aaa;
+}
+
+/* ── Hint d'action (destroy, retour, forcer) ─────────────────────────────── */
+.cpm-action-hint {
+  font-size: 9px;
+  font-weight: 700;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
+}
+
+/* ── Actions ──────────────────────────────────────────────────────────────── */
+.cpm-actions {
+  padding: 12px 16px;
+  border-top: 1px solid #f0ddd0;
+  background: #fdf6f9;
+}
+
+.cpm-btn-confirm {
+  width: 100%;
+  padding: 12px;
+  border-radius: 99px;
+  border: none;
+  background: #7a1c3b;
+  color: #fff;
+  font-family: "Lilita One", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+}
+
+.cpm-btn-confirm:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.cpm-btn-confirm:disabled {
+  background: #ccc !important;
+  cursor: not-allowed;
+}
+.cpm-btn-cancel {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(180, 60, 60, 0.4);
+  background: transparent;
+  color: #c0392b;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cpm-btn-cancel:hover {
+  background: rgba(180, 60, 60, 0.1);
+}

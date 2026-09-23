@@ -1,0 +1,44 @@
+.ftb-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #fff;
+  border-bottom: 1.5px solid #f0ddd0;
+}
+
+.ftb-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 4px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: Comfortaa, sans-serif;
+  font-size: 10px;
+  color: #bbb;
+  font-weight: 700;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  line-height: 1;
+}
+
+.ftb-tab:hover {
+  background: #fdf6f0;
+  color: #a07060;
+}
+
+.ftb-tab--active {
+  background: #f8edf2;
+  color: #7a1c3b;
+  border-bottom-color: #7a1c3b;
+}
+
+.ftb-tab-icon {
+  font-size: 18px;
+  line-height: 1;
+}

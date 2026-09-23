@@ -1,0 +1,190 @@
+.own-cardlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+/* ── Barre de recherche ── */
+.own-cardlist__search {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fdfbf6;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  color: #491021;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.own-cardlist__search:focus {
+  border-color: #f27aaa;
+  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
+}
+.own-cardlist__search::placeholder {
+  color: #c0a090;
+}
+
+/* ── Résultat count ── */
+.own-cardlist__result-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+  text-align: left;
+}
+
+/* ── Grille ── */
+.own-cardlist__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* ── Badge quantité ── */
+.own-cardlist__qty-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(122, 28, 59, 1);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-family: "Comfortaa", sans-serif;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ── Pagination ── */
+.own-cardlist__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.own-cardlist__pagination-btn {
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  background: #fff;
+  color: #7a1c3b;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.own-cardlist__pagination-btn:hover {
+  background: rgba(122, 28, 59, 0.06);
+}
+.own-cardlist__pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.own-cardlist__pagination-info {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a08070;
+}
+
+/* ── Empty state ── */
+.own-cardlist__empty {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.82rem;
+  color: #a08070;
+  font-weight: 600;
+}
+/* ── Toggle cartes manquantes ── */
+.own-cardlist__toggle-missing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+  cursor: pointer;
+  user-select: none;
+}
+.own-cardlist__toggle-missing input {
+  cursor: pointer;
+  accent-color: #7a1c3b;
+}
+
+/* ── Header de set ── */
+.own-cardlist__set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1.5px solid rgba(61, 16, 32, 0.1);
+  margin-top: 0.25rem;
+}
+.own-cardlist__set-name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.82rem;
+  color: #7a1c3b;
+}
+.own-cardlist__set-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a08070;
+  background: rgba(122, 28, 59, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.own-cardlist__set-count--complete {
+  background: rgba(60, 160, 60, 0.12);
+  color: #2d6b2d;
+}
+
+/* ── Carte non obtenue ── */
+.own-cardlist__card-missing {
+  opacity: 0.35;
+  filter: grayscale(0.7);
+  pointer-events: none;
+}
+.own-cardlist__card-missing-label {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+}
+.own-cardlist__card-unknown {
+  aspect-ratio: 2 / 3;
+  max-width: 300px;
+  width: 100%;
+  border-radius: 6%;
+  border: 1.5px dashed rgba(160, 128, 112, 0.3);
+  background: rgba(160, 128, 112, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.own-cardlist__card-missing-rarity {
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+  color: rgba(160, 128, 112, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

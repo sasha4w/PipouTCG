@@ -1,0 +1,42 @@
+.fp-root {
+  min-height: 100vh;
+  background: #fdf6f0;
+  font-family: Comfortaa, sans-serif;
+  color: #2c1a12;
+  display: flex;
+  flex-direction: column;
+}
+
+.fp-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  padding: 12px 28px;
+  border-radius: 99px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.fp-toast--ok {
+  background: #27ae60;
+}
+.fp-toast--err {
+  background: #e74c3c;
+}
+
+.fp-fight-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fp-section {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
