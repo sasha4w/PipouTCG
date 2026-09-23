@@ -98,7 +98,7 @@ export class TransactionController {
   // ROUTES — listings actifs
   // ─────────────────────────────────────────────────────────────────
 
-  @UseGuards(AdminGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get()
   findAll(@Query() pagination: PaginationDto) {
     return this.transactionService.findAll(pagination);
@@ -139,7 +139,7 @@ export class TransactionController {
    * GET /transactions/completed
    * Toutes les transactions COMPLETED — admin uniquement
    */
-  @UseGuards(AdminGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('completed')
   findCompleted(@Query() pagination: PaginationDto) {
     return this.transactionService.findCompleted(pagination);
