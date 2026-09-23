@@ -9,8 +9,8 @@ Feature: Authentification
     When j'envoie une requête POST sur "/auth/register" avec le body:
       """
       {
-        "username": "testuser_auth",
-        "email": "testauth@example.com",
+        "username": "testuser_auth_{runId}",
+        "email": "testauth_{runId}@example.com",
         "password": "Password123!"
       }
       """

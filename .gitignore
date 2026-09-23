@@ -32,3 +32,5 @@ logs
 
 # rapports de tests e2e
 reports
+# copies locales de bases distantes (données de joueurs)
+.e2e

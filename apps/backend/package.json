@@ -32,7 +32,8 @@
     "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "e2e:db": "docker compose up -d db",
     "e2e:api": "pnpm build && cross-env ENV_FILE=.env.e2e node dist/main",
-    "test:e2e:cucumber": "dotenv -e .env.e2e -- cucumber-js --config test/cucumber.cjs"
+    "test:e2e:cucumber": "dotenv -e .env.e2e -- cucumber-js --config test/cucumber.cjs",
+    "e2e:copy-aiven": "node scripts/e2e-copy-aiven.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

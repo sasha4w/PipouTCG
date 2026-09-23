@@ -201,6 +201,9 @@ export async function seedAll() {
     );
   }
 
+  // Rend uniques les comptes créés par les scénarios (rejouables sans reset)
+  fixtures.runId = Date.now();
+
   const player = {
     email: requireEnv('TEST_USER_EMAIL'),
     password: requireEnv('TEST_USER_PASSWORD'),
@@ -210,7 +213,8 @@ export async function seedAll() {
     password: requireEnv('ADMIN_PASSWORD'),
   };
 
-  await truncateAllTables();
+  // E2E_RESET=false : garde les données existantes (ex. copie d'Aiven, voir e2e:copy-aiven)
+  if (process.env.E2E_RESET !== 'false') await truncateAllTables();
   await registerAccounts([player, admin]);
   await grantAdmin(admin.email);
   await setGold(player.email, PLAYER_STARTING_GOLD);

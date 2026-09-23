@@ -35,7 +35,8 @@ Given(
 
 Given(
   'je suis connecté en tant que {string} avec le mot de passe {string}',
-  async function (this: ApiWorld, email: string, password: string) {
+  async function (this: ApiWorld, rawEmail: string, password: string) {
+    const email = resolvePath(rawEmail, this.createdIds);
     if (!EXISTING_ACCOUNTS.includes(email)) {
       await this.apiContext.post('/auth/register', {
         data: {
@@ -56,7 +57,8 @@ Given("je suis connecté en tant qu'admin", async function (this: ApiWorld) {
 
 Given(
   'un utilisateur {string} avec le mot de passe {string} existe',
-  async function (this: ApiWorld, email: string, password: string) {
+  async function (this: ApiWorld, rawEmail: string, password: string) {
+    const email = resolvePath(rawEmail, this.createdIds);
     // 409 acceptable (déjà créé)
     await this.apiContext.post('/auth/register', {
       data: {
@@ -71,7 +73,7 @@ Given(
 Given(
   "{string} possède {int} pièces d'or",
   async function (this: ApiWorld, email: string, gold: number) {
-    await setGold(email, gold);
+    await setGold(resolvePath(email, this.createdIds), gold);
   },
 );
 

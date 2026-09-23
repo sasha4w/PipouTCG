@@ -8,8 +8,8 @@ Feature: Flux complet d'un joueur
     When j'envoie une requête POST sur "/auth/register" avec le body:
       """
       {
-        "username": "fullflow_user3",
-        "email": "fullflow3@example.com",
+        "username": "fullflow_{runId}",
+        "email": "fullflow_{runId}@example.com",
         "password": "Password123!"
       }
       """
@@ -18,10 +18,10 @@ Feature: Flux complet d'un joueur
     And la réponse contient un champ "id"
 
     # ── Un peu d'or pour acheter (aucune route ne crédite de l'or) ──
-    Given "fullflow3@example.com" possède 10 pièces d'or
+    Given "fullflow_{runId}@example.com" possède 10 pièces d'or
 
     # ── Connexion ────────────────────────────────────────────
-    Given je suis connecté en tant que "fullflow3@example.com" avec le mot de passe "Password123!"
+    Given je suis connecté en tant que "fullflow_{runId}@example.com" avec le mot de passe "Password123!"
 
     # ── Consultation profil ──────────────────────────────────
     When j'envoie une requête GET authentifiée sur "/users/me"
@@ -62,7 +62,7 @@ Feature: Flux complet d'un joueur
     And je sauvegarde l'id sous "boosterId"
 
     # ── Joueur achète et ouvre le booster ────────────────────
-    Given je suis connecté en tant que "fullflow3@example.com" avec le mot de passe "Password123!"
+    Given je suis connecté en tant que "fullflow_{runId}@example.com" avec le mot de passe "Password123!"
     When j'envoie une requête POST authentifiée sur "/boosters/{boosterId}/buy"
     Then le statut de réponse est 201
 
