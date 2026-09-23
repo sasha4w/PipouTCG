@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -24,11 +24,14 @@ import { Buffer } from 'buffer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DecksModule } from './decks/decks.module';
 import { FightsModule } from './fights/fights.module';
+import { ForeignKeyViolationFilter } from './common/filters/foreign-key.filter';
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
+      // ENV_FILE permet de lancer l'API sur une autre config (ex. .env.e2e)
+      envFilePath: process.env.ENV_FILE ?? '.env',
       validate: validateEnv,
     }),
     ThrottlerModule.forRoot([
@@ -77,6 +80,10 @@ import { FightsModule } from './fights/fights.module';
     FightsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_FILTER, useClass: ForeignKeyViolationFilter },
+  ],
 })
 export class AppModule {}
