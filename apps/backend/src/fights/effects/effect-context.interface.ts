@@ -1,7 +1,4 @@
-import {
-  GameState,
-  MonsterOnBoard,
-} from '../interfaces/game-state.interface';
+import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 
 export interface EffectContext {
   game: GameState;

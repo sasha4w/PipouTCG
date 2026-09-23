@@ -95,18 +95,10 @@ export interface PendingChoice {
 // ─── Game state ──────────────────────────────────────────────────────────────
 
 export type GamePhase =
-  | 'waiting'
-  | 'draw'
-  | 'main'
-  | 'battle'
-  | 'end'
-  | 'finished';
+  'waiting' | 'draw' | 'main' | 'battle' | 'end' | 'finished';
 
 export type GameEndReason =
-  | 'primes_depleted'
-  | 'deck_empty'
-  | 'surrender'
-  | 'disconnect';
+  'primes_depleted' | 'deck_empty' | 'surrender' | 'disconnect';
 
 export interface GameState {
   matchId: number;

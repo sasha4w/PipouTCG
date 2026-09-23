@@ -166,7 +166,7 @@ export class DailyRewardService {
       label?: string | null;
       isMilestone: boolean;
     }> = [];
-    let rescueInfo: {
+    const rescueInfo: {
       daysMissed: number;
       maxRescuable: number;
       costPerScenario: number[];

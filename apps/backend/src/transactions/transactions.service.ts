@@ -191,7 +191,7 @@ export class TransactionService {
       await manager.save(inventoryItem);
 
       const listing = manager.getRepository(Transaction).create({
-        seller: { id: sellerId } as any,
+        seller: { id: sellerId },
         productType: dto.productType,
         productId: dto.productId,
         quantity: dto.quantity,

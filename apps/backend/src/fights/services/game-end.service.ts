@@ -5,7 +5,11 @@ import { Server } from 'socket.io';
 import { Match, MatchStatus, MatchEndReason } from '../entities/match.entity';
 import { PlayerStats } from '../entities/player-stats.entity';
 import { GameState, GameEndReason } from '../interfaces/game-state.interface';
-import { addLog, getPlayerState, checkWinCondition } from '../helpers/game-state.helper';
+import {
+  addLog,
+  getPlayerState,
+  checkWinCondition,
+} from '../helpers/game-state.helper';
 import { emitGameState } from '../helpers/client-state.builder';
 
 const ELO_K = 32;
@@ -37,7 +41,9 @@ export class GameEndService {
     };
 
     const loserId =
-      game.player1.userId === winnerId ? game.player2.userId : game.player1.userId;
+      game.player1.userId === winnerId
+        ? game.player2.userId
+        : game.player1.userId;
     const winner = getPlayerState(game, winnerId);
 
     addLog(game, `🎉 ${winner.username} remporte la victoire !`);
@@ -52,8 +58,12 @@ export class GameEndService {
     await this.updateStats(winnerId, loserId);
 
     emitGameState(game, server);
-    server.to(game.player1.socketId).emit('fight:game_over', { winner: winnerId, endReason: reason });
-    server.to(game.player2.socketId).emit('fight:game_over', { winner: winnerId, endReason: reason });
+    server
+      .to(game.player1.socketId)
+      .emit('fight:game_over', { winner: winnerId, endReason: reason });
+    server
+      .to(game.player2.socketId)
+      .emit('fight:game_over', { winner: winnerId, endReason: reason });
 
     onCleanup(game);
   }
@@ -61,7 +71,12 @@ export class GameEndService {
   async checkWinAndEmit(
     game: GameState,
     server: Server,
-    onEndGame: (game: GameState, winnerId: number, reason: GameEndReason, server: Server) => Promise<void>,
+    onEndGame: (
+      game: GameState,
+      winnerId: number,
+      reason: GameEndReason,
+      server: Server,
+    ) => Promise<void>,
   ): Promise<void> {
     const winner = checkWinCondition(game);
     if (winner !== null) {
@@ -86,7 +101,10 @@ export class GameEndService {
       .take(limit)
       .getManyAndCount();
 
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
 
   async getLeaderboard(limit = 50): Promise<PlayerStats[]> {
@@ -98,7 +116,10 @@ export class GameEndService {
   }
 
   async getMyStats(userId: number): Promise<PlayerStats> {
-    let stats = await this.statsRepo.findOne({ where: { userId }, relations: ['user'] });
+    let stats = await this.statsRepo.findOne({
+      where: { userId },
+      relations: ['user'],
+    });
     if (!stats) {
       stats = this.statsRepo.create({ userId });
       await this.statsRepo.save(stats);
@@ -134,7 +155,10 @@ export class GameEndService {
     const exp = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
     return {
       newWinnerElo: Math.round(winnerElo + ELO_K * (1 - exp)),
-      newLoserElo: Math.max(100, Math.round(loserElo + ELO_K * (0 - (1 - exp)))),
+      newLoserElo: Math.max(
+        100,
+        Math.round(loserElo + ELO_K * (0 - (1 - exp))),
+      ),
     };
   }
 }

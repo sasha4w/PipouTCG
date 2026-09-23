@@ -23,11 +23,11 @@ export class BundleContent {
 
   @ManyToOne(() => Card, { nullable: true })
   @JoinColumn({ name: 'card_id' })
-  card!: Card;
+  card!: Card | null;
 
   @ManyToOne(() => Booster, { nullable: true })
   @JoinColumn({ name: 'booster_id' })
-  booster!: Booster;
+  booster!: Booster | null;
 
   @Column({ default: 1 })
   quantity!: number;

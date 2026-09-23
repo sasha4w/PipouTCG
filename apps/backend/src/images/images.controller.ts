@@ -36,10 +36,7 @@ export class ImagesController {
       fileFilter: (_req, file, cb) => {
         const allowed = ['image/png', 'image/jpeg', 'image/webp'];
         if (!allowed.includes(file.mimetype)) {
-          return cb(
-            new BadRequestException('Unsupported file type'),
-            false,
-          );
+          return cb(new BadRequestException('Unsupported file type'), false);
         }
         cb(null, true);
       },

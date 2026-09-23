@@ -50,12 +50,10 @@ export class TransactionController {
     const userId: number = req.user.userId;
     return this.sseSubject.asObservable().pipe(
       filter((payload) => payload.sellerId === userId),
-      map(
-        (payload): MessageEvent => ({
-          data: JSON.stringify(payload),
-          type: 'listing.sold',
-        }),
-      ),
+      map((payload): MessageEvent => ({
+        data: JSON.stringify(payload),
+        type: 'listing.sold',
+      })),
     );
   }
 
@@ -66,12 +64,10 @@ export class TransactionController {
   @Sse('events/new-listings')
   sseNewListings(): Observable<MessageEvent> {
     return this.sseMarketSubject.asObservable().pipe(
-      map(
-        (payload): MessageEvent => ({
-          data: JSON.stringify(payload),
-          type: 'market.update',
-        }),
-      ),
+      map((payload): MessageEvent => ({
+        data: JSON.stringify(payload),
+        type: 'market.update',
+      })),
     );
   }
 

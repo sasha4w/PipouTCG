@@ -23,9 +23,7 @@ function flagComesfromPassive(
 ): boolean {
   const isPassiveOn = (
     effects:
-      | { trigger: string; actions: { type: string }[] }[]
-      | null
-      | undefined,
+      { trigger: string; actions: { type: string }[] }[] | null | undefined,
   ) =>
     effects?.some(
       (e) =>

@@ -50,7 +50,7 @@ export class CardsService {
 
     const card = this.cardRepository.create({
       ...cardData,
-      cardSet: { id: cardSetId } as any,
+      cardSet: { id: cardSetId },
       image,
     });
     return this.cardRepository.save(card);

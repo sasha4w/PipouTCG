@@ -12,7 +12,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:watch": "vitest",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.94.5",

@@ -94,8 +94,8 @@ export class BundlesService {
       }
       const content = this.bundleContentRepository.create({
         bundle,
-        card: item.cardId ? ({ id: item.cardId } as any) : null,
-        booster: item.boosterId ? ({ id: item.boosterId } as any) : null,
+        card: item.cardId ? { id: item.cardId } : null,
+        booster: item.boosterId ? { id: item.boosterId } : null,
         quantity: item.quantity ?? 1,
       });
       await this.bundleContentRepository.save(content);
@@ -214,9 +214,9 @@ export class BundlesService {
       cards: bundle.contents
         .filter((c) => c.card)
         .flatMap((c) => Array(c.quantity).fill(c.card)),
-      boosters: bundle.contents
-        .filter((c) => c.booster)
-        .map((c) => ({ name: c.booster.name, quantity: c.quantity })),
+      boosters: bundle.contents.flatMap((c) =>
+        c.booster ? [{ name: c.booster.name, quantity: c.quantity }] : [],
+      ),
     };
   }
 }

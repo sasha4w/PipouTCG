@@ -89,7 +89,7 @@ export class BoostersService {
       name: data.name,
       cardNumber: data.cardNumber,
       price: data.price,
-      cardSet: { id: data.cardSetId } as any,
+      cardSet: { id: data.cardSetId },
     });
     return this.boosterRepository.save(booster);
   }

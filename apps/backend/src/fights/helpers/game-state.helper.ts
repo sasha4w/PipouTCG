@@ -15,11 +15,17 @@ export function addLog(game: GameState, msg: string): void {
   if (game.log.length > LOG_MAX) game.log.shift();
 }
 
-export function getPlayerState(game: GameState, userId: number): PlayerGameState {
+export function getPlayerState(
+  game: GameState,
+  userId: number,
+): PlayerGameState {
   return game.player1.userId === userId ? game.player1 : game.player2;
 }
 
-export function getOpponentState(game: GameState, userId: number): PlayerGameState {
+export function getOpponentState(
+  game: GameState,
+  userId: number,
+): PlayerGameState {
   return game.player1.userId === userId ? game.player2 : game.player1;
 }
 
@@ -42,7 +48,11 @@ export function applyDamage(target: MonsterOnBoard, dmg: number): number {
   return reduced;
 }
 
-export function gainPrime(game: GameState, userId: number, monsterName: string): void {
+export function gainPrime(
+  game: GameState,
+  userId: number,
+  monsterName: string,
+): void {
   const player = getPlayerState(game, userId);
   if (player.primeDeck.length === 0) return;
   const prime = player.primeDeck.shift()!;
@@ -60,7 +70,9 @@ export function removeMonster(
   game: GameState,
   effectsResolver: EffectsResolverService,
 ): void {
-  const idx = player.monsterZones.findIndex((m) => m?.instanceId === instanceId);
+  const idx = player.monsterZones.findIndex(
+    (m) => m?.instanceId === instanceId,
+  );
   if (idx === -1) return;
   const monster = player.monsterZones[idx]!;
 
