@@ -75,7 +75,7 @@ describe('TransactionController', () => {
 
   // ======= BUY LISTING =======
   describe('buyListing', () => {
-    it('should call buyListing with transactionId and userId', async () => {
+    it('should call buyListing with transactionId, userId and quantity', async () => {
       const req = { user: { userId: 2 } };
       const fakeCompleted = {
         ...fakeListing,
@@ -83,15 +83,15 @@ describe('TransactionController', () => {
       };
       mockTransactionService.buyListing.mockResolvedValue(fakeCompleted);
 
-      const result = await controller.buyListing(1, req);
-      expect(mockTransactionService.buyListing).toHaveBeenCalledWith(1, 2);
+      const result = await controller.buyListing(1, req, { quantity: 1 });
+      expect(mockTransactionService.buyListing).toHaveBeenCalledWith(1, 2, 1);
       expect(result.status).toBe(TransactionStatus.COMPLETED);
     });
   });
 
   // ======= GET HISTORY =======
   describe('getHistory', () => {
-    it('should return user transaction history', async () => {
+    it('should return user transaction history filtered by role', async () => {
       const req = { user: { userId: 1 } };
       const fake = { data: [fakeListing], meta: { total: 1 } };
       mockTransactionService.getUserHistory.mockResolvedValue(fake);
