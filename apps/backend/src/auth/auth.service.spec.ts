@@ -62,6 +62,7 @@ describe('AuthService', () => {
     it('should return access_token and empty autoClaimedRewards', async () => {
       const fakeUser = {
         id: 1,
+        username: 'john',
         email: 'john@test.com',
         password: 'hashed',
         is_admin: false,
@@ -75,9 +76,25 @@ describe('AuthService', () => {
         access_token: 'jwt_token',
         autoClaimedRewards: [],
       });
-      expect(mockJwtService.sign).toHaveBeenCalledWith({
-        sub: 1,
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        { sub: 1, username: 'john', is_admin: false },
+        { expiresIn: '1d' },
+      );
+    });
+
+    it('should issue a 30 day token when rememberMe is true', async () => {
+      mockUsersService.findByEmail.mockResolvedValue({
+        id: 1,
+        username: 'john',
+        password: 'hashed',
         is_admin: false,
+      });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await service.login('john@test.com', '123456', true);
+
+      expect(mockJwtService.sign).toHaveBeenCalledWith(expect.any(Object), {
+        expiresIn: '30d',
       });
     });
 
@@ -133,7 +150,7 @@ describe('AuthService', () => {
         username: 'john',
         email: 'john@test.com',
         password: 'hashed_password',
-        resetToken: null,
+        resetTokenHash: 'hashed_token',
         resetTokenExpiry: null,
       };
       mockUsersService.findByEmail.mockResolvedValue(null);
@@ -149,7 +166,7 @@ describe('AuthService', () => {
       });
       // Les champs sensibles sont retirés
       expect(result).not.toHaveProperty('password');
-      expect(result).not.toHaveProperty('resetToken');
+      expect(result).not.toHaveProperty('resetTokenHash');
       expect(result).not.toHaveProperty('resetTokenExpiry');
       expect(result).toMatchObject({ id: 1, username: 'john' });
     });

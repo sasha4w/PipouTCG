@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import type { Response } from 'express';
 
 const mockAuthService = {
   register: jest.fn(),
@@ -43,16 +44,29 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('should call authService.login with email and password', async () => {
+    it('should call authService.login and set the token cookie', async () => {
       const dto = { email: 'john@test.com', password: '123456' };
-      mockAuthService.login.mockResolvedValue({ access_token: 'jwt_token' });
+      mockAuthService.login.mockResolvedValue({
+        access_token: 'jwt_token',
+        autoClaimedRewards: [],
+      });
+      const res = { cookie: jest.fn() } as unknown as Response;
 
-      const result = await controller.login(dto);
+      const result = await controller.login(dto, res);
       expect(mockAuthService.login).toHaveBeenCalledWith(
         dto.email,
         dto.password,
+        undefined,
       );
-      expect(result).toEqual({ access_token: 'jwt_token' });
+      expect(res.cookie).toHaveBeenCalledWith(
+        'token',
+        'jwt_token',
+        expect.objectContaining({ httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }),
+      );
+      expect(result).toEqual({
+        message: 'Connexion réussie',
+        autoClaimedRewards: [],
+      });
     });
   });
 
