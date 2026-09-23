@@ -95,11 +95,13 @@ describe('TransactionController', () => {
       const req = { user: { userId: 1 } };
       const fake = { data: [fakeListing], meta: { total: 1 } };
       mockTransactionService.getUserHistory.mockResolvedValue(fake);
+      const query = { ...pagination, role: 'buyer' as const };
 
-      const result = await controller.getHistory(req, pagination);
+      const result = await controller.getHistory(req, query);
       expect(mockTransactionService.getUserHistory).toHaveBeenCalledWith(
         1,
-        pagination,
+        query,
+        'buyer',
       );
       expect(result).toEqual(fake);
     });
