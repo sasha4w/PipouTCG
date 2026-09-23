@@ -123,19 +123,21 @@ describe('BundlesService', () => {
       mockBundleRepo.remove.mockResolvedValue(undefined);
 
       const result = await service.remove(1);
-      expect(result).toEqual({ message: 'Bundle 1 deleted' });
+      expect(result).toEqual({ message: 'Bundle 1 supprimé' });
     });
   });
 
   // ======= ADD CONTENT =======
   describe('addContent', () => {
-    it('should throw if totalQuantity < 2', async () => {
+    it('should accept a single item (the 2-item minimum is checked on open)', async () => {
       const fakeBundle = { id: 1, name: 'Bundle XP' };
       mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
+      mockBundleContentRepo.create.mockReturnValue({});
 
       await expect(
         service.addContent(1, { items: [{ cardId: 1, quantity: 1 }] }),
-      ).rejects.toThrow(BadRequestException);
+      ).resolves.toBeDefined();
+      expect(mockBundleContentRepo.save).toHaveBeenCalledTimes(1);
     });
 
     it('should throw if item has both cardId and boosterId', async () => {
@@ -217,13 +219,12 @@ describe('BundlesService', () => {
 
   // ======= OPEN BUNDLE =======
   describe('openBundle', () => {
-    it('should open bundle and return summary', async () => {
+    it('should open bundle and return one entry per card copy', async () => {
+      const dragon = { id: 1, name: 'Dragon' };
       const fakeBundle = {
         id: 1,
         name: 'Bundle XP',
-        contents: [
-          { card: { id: 1, name: 'Dragon' }, booster: null, quantity: 1 },
-        ],
+        contents: [{ card: dragon, booster: null, quantity: 2 }],
       };
       mockBundleRepo.findOne.mockResolvedValue(fakeBundle);
       mockUsersService.removeBundleFromUser.mockResolvedValue(null);
@@ -232,9 +233,24 @@ describe('BundlesService', () => {
 
       const result = await service.openBundle(1, 1);
 
-      expect(result.cards).toEqual([{ name: 'Dragon', quantity: 1 }]);
+      expect(result.cards).toEqual([dragon, dragon]);
       expect(result.boosters).toEqual([]);
       expect(mockUsersService.addExperience).toHaveBeenCalledWith(1, 100);
+    });
+
+    it('should refuse to open a bundle with fewer than 2 items', async () => {
+      mockBundleRepo.findOne.mockResolvedValue({
+        id: 1,
+        name: 'Bundle XP',
+        contents: [
+          { card: { id: 1, name: 'Dragon' }, booster: null, quantity: 1 },
+        ],
+      });
+
+      await expect(service.openBundle(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockUsersService.removeBundleFromUser).not.toHaveBeenCalled();
     });
 
     it('should distribute boosters if bundle contains boosters', async () => {
