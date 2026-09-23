@@ -5,7 +5,7 @@ import { CardsService } from './cards.service';
 import { Card } from './card.entity';
 import { ImagesService } from '../images/images.service'; // ← remplace UploadService
 import { Rarity } from './enums/rarity.enum';
-import { Type } from './enums/cardtype.enum';
+import { CardType } from './enums/cardtype.enum';
 
 const mockCardRepo = {
   findAndCount: jest.fn(),
@@ -31,7 +31,7 @@ const fakeCard: Partial<Card> = {
   id: 1,
   name: 'Dragon',
   rarity: Rarity.RARE,
-  type: Type.MONSTER,
+  type: CardType.MONSTER,
   atk: 100,
   hp: 200,
   image: fakeImage as any,
@@ -122,7 +122,7 @@ describe('CardsService', () => {
     const dto = {
       name: 'Dragon',
       rarity: Rarity.RARE,
-      type: Type.MONSTER,
+      type: CardType.MONSTER,
       atk: 100,
       hp: 200,
       cardSetId: 1,

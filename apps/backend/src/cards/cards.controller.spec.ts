@@ -4,7 +4,7 @@ import { CardsService } from './cards.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { Rarity } from './enums/rarity.enum';
-import { Type } from './enums/cardtype.enum';
+import { CardType } from './enums/cardtype.enum';
 
 const mockCardsService = {
   findAll: jest.fn(),
@@ -30,7 +30,7 @@ const fakeCard = {
   id: 1,
   name: 'Dragon',
   rarity: Rarity.RARE,
-  type: Type.MONSTER,
+  type: CardType.MONSTER,
   atk: 100,
   hp: 200,
   cardSet: { id: 1 },
@@ -94,7 +94,7 @@ describe('CardsController', () => {
       const dto = {
         name: 'Dragon',
         rarity: Rarity.RARE,
-        type: Type.MONSTER,
+        type: CardType.MONSTER,
         atk: 100,
         hp: 200,
         cardSetId: 1,
@@ -110,7 +110,7 @@ describe('CardsController', () => {
       const dto = {
         name: 'Dragon',
         rarity: Rarity.RARE,
-        type: Type.MONSTER,
+        type: CardType.MONSTER,
         atk: 100,
         hp: 200,
         cardSetId: 1,
@@ -127,7 +127,7 @@ describe('CardsController', () => {
       const dto = {
         name: 'Dragon',
         rarity: Rarity.RARE,
-        type: Type.MONSTER,
+        type: CardType.MONSTER,
         atk: 100,
         hp: 200,
         cardSetId: 1,
