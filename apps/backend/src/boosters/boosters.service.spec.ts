@@ -9,6 +9,7 @@ import { Card } from '../cards/card.entity';
 import { UsersService } from '../users/users.service';
 import { CardNumber } from './enums/cardnumber.enum';
 import { Rarity } from '../cards/enums/rarity.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockBoosterRepo = {
   findAndCount: jest.fn(),
@@ -40,6 +41,8 @@ const mockOpenCardRepo = {
 const mockCardRepo = {
   find: jest.fn(),
 };
+
+const mockEventEmitter = { emit: jest.fn() };
 
 const mockUsersService = {
   findOne: jest.fn(),
@@ -93,6 +96,7 @@ describe('BoostersService', () => {
         },
         { provide: getRepositoryToken(Card), useValue: mockCardRepo },
         { provide: UsersService, useValue: mockUsersService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 

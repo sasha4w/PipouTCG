@@ -61,7 +61,7 @@ describe('BundlesController', () => {
 
   // ======= USER =======
   describe('buyBundle', () => {
-    it('should call buyBundle with bundleId and userId', async () => {
+    it('should call buyBundle with bundleId, userId and quantity', async () => {
       const req = { user: { userId: 1 } };
       const fake = {
         message: 'Bundle acheté',
@@ -70,8 +70,8 @@ describe('BundlesController', () => {
       };
       mockBundlesService.buyBundle.mockResolvedValue(fake);
 
-      const result = await controller.buyBundle(1, req);
-      expect(mockBundlesService.buyBundle).toHaveBeenCalledWith(1, 1);
+      const result = await controller.buyBundle(1, 3, req);
+      expect(mockBundlesService.buyBundle).toHaveBeenCalledWith(1, 1, 3);
       expect(result).toEqual(fake);
     });
   });
