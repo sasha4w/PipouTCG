@@ -1,0 +1,31 @@
+# deps & builds
+node_modules
+dist
+dist-ssr
+dev-dist
+build
+*.tsbuildinfo
+
+# tests
+coverage
+.nyc_output
+
+# env
+.env
+.env.*.local
+*.local
+
+# logs
+logs
+*.log
+
+# editors / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.sw?

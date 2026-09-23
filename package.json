@@ -1,0 +1,20 @@
+{
+  "name": "pipou-tcg",
+  "private": true,
+  "packageManager": "pnpm@12.3.1",
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @pipou/shared build",
+    "build": "pnpm -r build",
+    "dev": "pnpm build:shared && pnpm -r --parallel dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm build:shared && pnpm -r typecheck",
+    "test": "pnpm build:shared && pnpm -r test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "catalog:"
+  }
+}

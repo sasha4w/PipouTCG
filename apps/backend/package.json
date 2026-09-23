@@ -1,11 +1,16 @@
 {
-  "name": "tcg-backend",
+  "name": "@pipou/backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "dev": "nest start --watch",
+    "typecheck": "tsc --noEmit",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -61,7 +66,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^12.7.0",
     "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.18.0",
+    "@eslint/js": "catalog:",
     "@nestjs/cli": "^11.0.16",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.0.1",
@@ -72,27 +77,28 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/multer": "^2.0.0",
-    "@types/node": "^22.10.7",
+    "@types/node": "catalog:",
     "@types/passport-jwt": "^4.0.1",
     "@types/sharp": "^0.31.1",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
     "cross-env": "^10.1.0",
     "dotenv-cli": "^11.0.0",
-    "eslint": "^9.18.0",
+    "eslint": "catalog:",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
-    "globals": "^16.0.0",
+    "globals": "catalog:",
     "jest": "^30.0.0",
-    "prettier": "^3.4.2",
+    "prettier": "catalog:",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "@pipou/tsconfig": "workspace:*"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -111,7 +117,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "transformIgnorePatterns": [
-      "node_modules/(?!(uuid)/)"
+      "node_modules/(?!(\\.pnpm/)?uuid)"
     ]
   }
 }

@@ -1,15 +1,13 @@
 {
+  "extends": "@pipou/tsconfig/base.json",
   "compilerOptions": {
     "rootDir": "./src",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "target": "ES2023",
-    /* --- Rigueur et Sécurité --- */
-    "strict": true,
+    /* --- Rigueur et Sécurité (strict & co dans @pipou/tsconfig) --- */
     "noImplicitAny": true,
     "strictPropertyInitialization": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
 
     /* --- Spécifique NestJS & TypeORM --- */
     "emitDecoratorMetadata": true,
@@ -23,8 +21,6 @@
     "sourceMap": true,
     "declaration": true,
     "incremental": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
     "removeComments": true
   },
   "include": ["src/**/*"],
