@@ -1,11 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
-  private resend = new Resend(process.env.RESEND_API_KEY);
+  private readonly logger = new Logger(MailService.name);
+  // RESEND_API_KEY est optionnelle (env.validation) : sans clé (tests, dev
+  // local), l'API démarre et les emails ne partent pas.
+  private readonly resend = process.env.RESEND_API_KEY
+    ? new Resend(process.env.RESEND_API_KEY)
+    : null;
 
   async sendResetPassword(email: string, token: string) {
+    if (!this.resend) {
+      this.logger.warn(
+        `RESEND_API_KEY absente : email de réinitialisation non envoyé à ${email}`,
+      );
+      return;
+    }
+
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     await this.resend.emails.send({
