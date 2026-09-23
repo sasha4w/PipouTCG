@@ -19,6 +19,7 @@ import { UpdateBundleContentDto } from './dto/update-bundle-content.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @Controller('bundles')
 export class BundlesController {
@@ -45,14 +46,14 @@ export class BundlesController {
   buyBundle(
     @Param('id', ParseIntPipe) id: number,
     @Body('quantity') quantity = 1,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.bundlesService.buyBundle(id, req.user.userId, quantity);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/open')
-  openBundle(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+  openBundle(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     return this.bundlesService.openBundle(id, req.user.userId);
   }
 

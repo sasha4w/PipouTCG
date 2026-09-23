@@ -14,6 +14,7 @@ import { BannersService } from './banners.service';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @Controller('banners')
 export class BannersController {
@@ -32,7 +33,7 @@ export class BannersController {
   buy(
     @Param('id', ParseIntPipe) id: number,
     @Body('quantity') quantity = 1,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.bannersService.buyBanner(id, req.user.userId, quantity);
   }

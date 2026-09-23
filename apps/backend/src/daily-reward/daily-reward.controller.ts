@@ -21,6 +21,7 @@ import {
   UpdateMilestoneRewardDto,
   RescueStreakDto,
 } from './dto/daily-reward.dto';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @Controller('daily-reward')
 export class DailyRewardController {
@@ -31,35 +32,35 @@ export class DailyRewardController {
   /** Statut actuel : streak, prochain claim, rescue dispo... */
   @UseGuards(JwtAuthGuard)
   @Get('status')
-  getStatus(@Req() req: any) {
+  getStatus(@Req() req: AuthenticatedRequest) {
     return this.dailyRewardService.getStatus(req.user.userId);
   }
 
   /** Réclame la récompense du jour */
   @UseGuards(JwtAuthGuard)
   @Post('claim')
-  claimDaily(@Req() req: any) {
+  claimDaily(@Req() req: AuthenticatedRequest) {
     return this.dailyRewardService.claimDaily(req.user.userId);
   }
 
   /** Rachète les jours manqués en gold pour maintenir la streak */
   @UseGuards(JwtAuthGuard)
   @Post('rescue')
-  rescueStreak(@Req() req: any, @Body() dto: RescueStreakDto) {
+  rescueStreak(@Req() req: AuthenticatedRequest, @Body() dto: RescueStreakDto) {
     return this.dailyRewardService.rescueStreak(req.user.userId, dto);
   }
 
   /** Reset volontaire de la streak (si l'user ne veut pas payer) */
   @UseGuards(JwtAuthGuard)
   @Post('reset')
-  resetStreak(@Req() req: any) {
+  resetStreak(@Req() req: AuthenticatedRequest) {
     return this.dailyRewardService.resetStreak(req.user.userId);
   }
 
   /** Historique des claims de l'utilisateur */
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  getHistory(@Req() req: any, @Query('limit') limit?: string) {
+  getHistory(@Req() req: AuthenticatedRequest, @Query('limit') limit?: string) {
     return this.dailyRewardService.getHistory(
       req.user.userId,
       limit ? parseInt(limit) : 30,

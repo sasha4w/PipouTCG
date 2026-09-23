@@ -24,6 +24,7 @@ import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { HistoryQueryDto } from './dto/history-query.dto';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 class BuyListingDto {
   @IsOptional()
   @IsInt()
@@ -46,7 +47,7 @@ export class TransactionController {
   // ─────────────────────────────────────────────────────────────────
   @UseGuards(JwtAuthGuard)
   @Sse('events')
-  sseEvents(@Req() req: any): Observable<MessageEvent> {
+  sseEvents(@Req() req: AuthenticatedRequest): Observable<MessageEvent> {
     const userId: number = req.user.userId;
     return this.sseSubject.asObservable().pipe(
       filter((payload) => payload.sellerId === userId),
@@ -106,7 +107,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('offers')
-  findOtherListings(@Query() pagination: PaginationDto, @Req() req: any) {
+  findOtherListings(@Query() pagination: PaginationDto, @Req() req: AuthenticatedRequest) {
     return this.transactionService.findOtherListings(
       pagination,
       req.user.userId,
@@ -115,7 +116,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  findUserListings(@Query() pagination: PaginationDto, @Req() req: any) {
+  findUserListings(@Query() pagination: PaginationDto, @Req() req: AuthenticatedRequest) {
     return this.transactionService.findUserListings(
       pagination,
       req.user.userId,
@@ -124,7 +125,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  getHistory(@Req() req: any, @Query() query: HistoryQueryDto) {
+  getHistory(@Req() req: AuthenticatedRequest, @Query() query: HistoryQueryDto) {
     return this.transactionService.getUserHistory(
       req.user.userId,
       query,
@@ -168,7 +169,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Post('listing')
-  createListing(@Body() dto: CreateListingDto, @Req() req: any) {
+  createListing(@Body() dto: CreateListingDto, @Req() req: AuthenticatedRequest) {
     return this.transactionService.createListing(dto, req.user.userId);
   }
 
@@ -182,7 +183,7 @@ export class TransactionController {
   updateListing(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateListingDto,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.transactionService.updateListing(id, dto, req.user.userId);
   }
@@ -191,7 +192,7 @@ export class TransactionController {
   @Post(':id/buy')
   buyListing(
     @Param('id', ParseIntPipe) id: number,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
     @Body() body: BuyListingDto,
   ) {
     return this.transactionService.buyListing(
@@ -203,7 +204,7 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/cancel')
-  cancelListing(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+  cancelListing(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     return this.transactionService.cancelListing(id, req.user.userId);
   }
 }

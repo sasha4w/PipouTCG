@@ -15,6 +15,7 @@ import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @Controller('quests')
 export class QuestController {
@@ -24,19 +25,19 @@ export class QuestController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMyQuests(@Request() req: any) {
+  async getMyQuests(@Request() req: AuthenticatedRequest) {
     await this.questService.syncUserQuests(req.user.userId);
     return this.questService.getUserQuests(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/claim')
-  claimReward(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+  claimReward(@Param('id', ParseIntPipe) id: number, @Request() req: AuthenticatedRequest) {
     return this.questService.claimReward(req.user.userId, id);
   }
   @UseGuards(JwtAuthGuard)
   @Post('claim-all')
-  async claimAll(@Request() req: any) {
+  async claimAll(@Request() req: AuthenticatedRequest) {
     return this.questService.claimAllRewards(req.user.userId);
   }
   /* ===================== ADMIN ===================== */

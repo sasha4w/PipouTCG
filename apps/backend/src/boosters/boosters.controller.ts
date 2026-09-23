@@ -17,6 +17,7 @@ import { UpdateBoosterDto } from './dto/update-booster.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 @Controller('boosters')
 export class BoostersController {
   constructor(private readonly boostersService: BoostersService) {}
@@ -40,14 +41,14 @@ export class BoostersController {
   buyBooster(
     @Param('id', ParseIntPipe) id: number,
     @Body('quantity') quantity = 1,
-    @Req() req: any,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.boostersService.buyBooster(id, req.user.userId, quantity);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/open')
-  openBooster(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+  openBooster(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
     return this.boostersService.openBooster(id, req.user.userId);
   }
 

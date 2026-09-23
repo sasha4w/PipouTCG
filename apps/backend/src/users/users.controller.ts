@@ -13,6 +13,7 @@ import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @Controller('users')
 export class UsersController {
@@ -33,18 +34,18 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/profile')
-  async getProfile(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+  async getProfile(@Param('id', ParseIntPipe) id: number, @Request() req: AuthenticatedRequest) {
     await this.assertCanView(req, id);
     return this.usersService.getProfile(id);
   }
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req: any) {
+  getMe(@Request() req: AuthenticatedRequest) {
     return this.usersService.findOne(req.user.userId);
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/inventory')
-  getMyInventory(@Request() req: any, @Query() pagination: PaginationDto) {
+  getMyInventory(@Request() req: AuthenticatedRequest, @Query() pagination: PaginationDto) {
     return this.usersService.getInventory(
       req.user.userId,
       pagination.page,
@@ -53,14 +54,14 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/stats')
-  getMyStats(@Request() req: any) {
+  getMyStats(@Request() req: AuthenticatedRequest) {
     return this.usersService.getProfile(req.user.userId);
   }
   @UseGuards(JwtAuthGuard)
   @Get(':id/inventory')
   async getInventory(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query() pagination: PaginationDto,
   ) {
     await this.assertCanView(req, id);
@@ -75,7 +76,7 @@ export class UsersController {
   @Get(':id/boosters')
   async getUserBoosters(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query() pagination: PaginationDto,
   ) {
     await this.assertCanView(req, id);
@@ -86,7 +87,7 @@ export class UsersController {
   @Get(':id/bundles')
   async getUserBundles(
     @Param('id', ParseIntPipe) id: number,
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query() pagination: PaginationDto,
   ) {
     await this.assertCanView(req, id);
@@ -94,14 +95,14 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/collection')
-  getMyCollection(@Request() req: any) {
+  getMyCollection(@Request() req: AuthenticatedRequest) {
     return this.usersService.getCollection(req.user.userId);
   }
   /* ===================== OWNER ONLY ===================== */
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/privacy')
-  togglePrivacy(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+  togglePrivacy(@Param('id', ParseIntPipe) id: number, @Request() req: AuthenticatedRequest) {
     this.assertOwner(req.user.userId, id);
     return this.usersService.togglePrivacy(id);
   }
@@ -122,7 +123,7 @@ export class UsersController {
 
   /* ===================== HELPERS ===================== */
 
-  private async assertCanView(req: any, targetId: number) {
+  private async assertCanView(req: AuthenticatedRequest, targetId: number) {
     const target = await this.usersService.findOne(targetId);
     if (!target) throw new ForbiddenException('User not found');
 

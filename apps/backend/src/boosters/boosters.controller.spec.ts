@@ -62,7 +62,7 @@ describe('BoostersController', () => {
   // ======= USER =======
   describe('buyBooster', () => {
     it('should call buyBooster with boosterId, userId and quantity', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       const fake = {
         message: 'Booster acheté',
         goldSpent: 100,
@@ -78,7 +78,7 @@ describe('BoostersController', () => {
 
   describe('openBooster', () => {
     it('should call openBooster with boosterId and userId', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       const fake = { historyId: 1, booster: 'Booster Fire', cards: [] };
       mockBoostersService.openBooster.mockResolvedValue(fake);
 

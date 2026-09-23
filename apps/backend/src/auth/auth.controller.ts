@@ -16,6 +16,7 @@ import { LoginDto } from './dto/logindto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './jwt.authguard';
+import type { AuthenticatedRequest } from './auth-user';
 
 const isTest = process.env.NODE_ENV === 'test';
 
@@ -68,7 +69,7 @@ export class AuthController {
   // --- NOUVELLE MÉTHODE AJOUTÉE ---
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  getMe(@Request() req: any) {
+  getMe(@Request() req: AuthenticatedRequest) {
     return req.user;
   }
   // -------------------------------

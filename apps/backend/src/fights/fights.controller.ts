@@ -10,6 +10,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 
 import { FightsService } from './fights.service';
+import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @UseGuards(JwtAuthGuard)
 @Controller('fights')
@@ -19,7 +20,7 @@ export class FightsController {
   /** My match history (paginated, newest first). */
   @Get('history')
   getHistory(
-    @Request() req: any,
+    @Request() req: AuthenticatedRequest,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
@@ -28,7 +29,7 @@ export class FightsController {
 
   /** My personal stats (wins, losses, ELO). */
   @Get('stats')
-  getMyStats(@Request() req: any) {
+  getMyStats(@Request() req: AuthenticatedRequest) {
     return this.fightsService.getMyStats(req.user.userId);
   }
 

@@ -64,7 +64,7 @@ describe('TransactionController', () => {
         quantity: 1,
         unitPrice: 100,
       };
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       mockTransactionService.createListing.mockResolvedValue(fakeListing);
 
       const result = await controller.createListing(dto, req);
@@ -76,7 +76,7 @@ describe('TransactionController', () => {
   // ======= BUY LISTING =======
   describe('buyListing', () => {
     it('should call buyListing with transactionId, userId and quantity', async () => {
-      const req = { user: { userId: 2 } };
+      const req = { user: { userId: 2, isAdmin: false } };
       const fakeCompleted = {
         ...fakeListing,
         status: TransactionStatus.COMPLETED,
@@ -92,7 +92,7 @@ describe('TransactionController', () => {
   // ======= GET HISTORY =======
   describe('getHistory', () => {
     it('should return user transaction history filtered by role', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       const fake = { data: [fakeListing], meta: { total: 1 } };
       mockTransactionService.getUserHistory.mockResolvedValue(fake);
       const query = { ...pagination, role: 'buyer' as const };

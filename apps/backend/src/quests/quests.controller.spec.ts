@@ -66,7 +66,7 @@ describe('QuestController', () => {
   // ======= CONNECTÉ =======
   describe('getMyQuests', () => {
     it('should return quests for current user', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       mockQuestService.getUserQuests.mockResolvedValue([fakeUserQuest]);
 
       const result = await controller.getMyQuests(req);
@@ -77,7 +77,7 @@ describe('QuestController', () => {
 
   describe('claimReward', () => {
     it('should claim reward for completed quest', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       const fake = { ...fakeUserQuest, rewardClaimed: true };
       mockQuestService.claimReward.mockResolvedValue(fake);
 

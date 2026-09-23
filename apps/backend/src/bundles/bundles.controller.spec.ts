@@ -62,7 +62,7 @@ describe('BundlesController', () => {
   // ======= USER =======
   describe('buyBundle', () => {
     it('should call buyBundle with bundleId, userId and quantity', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       const fake = {
         message: 'Bundle acheté',
         goldSpent: 100,
@@ -78,7 +78,7 @@ describe('BundlesController', () => {
 
   describe('openBundle', () => {
     it('should call openBundle with bundleId and userId', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       const fake = { message: 'Bundle ouvert', cards: [], boosters: [] };
       mockBundlesService.openBundle.mockResolvedValue(fake);
 

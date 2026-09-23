@@ -56,7 +56,7 @@ describe('UsersController', () => {
   // ======= ME =======
   describe('getMe', () => {
     it('should return current user', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       mockUsersService.findOne.mockResolvedValue({ id: 1, username: 'john' });
 
       const result = await controller.getMe(req);
@@ -68,7 +68,7 @@ describe('UsersController', () => {
 
   describe('getMyInventory', () => {
     it('should return current user inventory', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       mockUsersService.getInventory.mockResolvedValue({
         cards: [],
         boosters: [],
@@ -87,7 +87,7 @@ describe('UsersController', () => {
 
   describe('getMyStats', () => {
     it('should return current user stats', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       mockUsersService.getProfile.mockResolvedValue({ id: 1, level: 5 });
 
       const result = await controller.getMyStats(req);
@@ -237,7 +237,7 @@ describe('UsersController', () => {
   // ======= TOGGLE PRIVACY =======
   describe('togglePrivacy', () => {
     it('should toggle privacy if owner', async () => {
-      const req = { user: { userId: 1 } };
+      const req = { user: { userId: 1, isAdmin: false } };
       mockUsersService.togglePrivacy.mockResolvedValue({ isPrivate: false });
 
       const result = await controller.togglePrivacy(1, req);
@@ -247,7 +247,7 @@ describe('UsersController', () => {
     });
 
     it('should throw ForbiddenException if not owner', () => {
-      const req = { user: { userId: 2 } };
+      const req = { user: { userId: 2, isAdmin: false } };
 
       expect(() => controller.togglePrivacy(1, req)).toThrow(
         ForbiddenException,

@@ -13,6 +13,7 @@ import { MailService } from './mail.service';
 import { RegisterDto } from './dto/registerdto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import type { JwtPayload } from './auth-user';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +41,7 @@ export class AuthService {
       .syncUserQuests(user.id)
       .catch((err) => console.error('syncUserQuests failed:', err));
 
-    const payload = {
+    const payload: JwtPayload = {
       sub: user.id,
       username: user.username,
       is_admin: user.is_admin,
