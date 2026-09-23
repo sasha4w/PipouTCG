@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ImagesService } from './images.service';
 import { Image } from './image.entity';
@@ -38,8 +38,14 @@ const fakeFile = {
 
 describe('ImagesService', () => {
   let service: ImagesService;
+  const originalApiKey = process.env.IMGBB_API_KEY;
+
+  afterAll(() => {
+    process.env.IMGBB_API_KEY = originalApiKey;
+  });
 
   beforeEach(async () => {
+    process.env.IMGBB_API_KEY = 'test-imgbb-key';
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ImagesService,
@@ -92,6 +98,7 @@ describe('ImagesService', () => {
   describe('uploadAndSave', () => {
     it('should optimize, upload to ImgBB and save in DB', async () => {
       (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
         json: jest.fn().mockResolvedValue({
           data: {
             url: 'https://i.ibb.co/xxx/dragon-inferno.webp',
@@ -120,6 +127,7 @@ describe('ImagesService', () => {
 
     it('should slugify name with accents correctly', async () => {
       (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
         json: jest.fn().mockResolvedValue({
           data: {
             url: 'https://i.ibb.co/xxx/elfe-gardien.webp',
@@ -149,7 +157,7 @@ describe('ImagesService', () => {
   describe('remove', () => {
     it('should delete on ImgBB via deleteUrl and remove from DB', async () => {
       mockImageRepo.findOneBy.mockResolvedValue(fakeImage);
-      (global.fetch as jest.Mock).mockResolvedValue({});
+      (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
       mockImageRepo.remove.mockResolvedValue(undefined);
 
       const result = await service.remove(1);
@@ -160,6 +168,14 @@ describe('ImagesService', () => {
       );
       expect(mockImageRepo.remove).toHaveBeenCalledWith(fakeImage);
       expect(result).toEqual({ message: 'Image 1 deleted' });
+    });
+
+    it('should keep the DB row if ImgBB refuses the delete', async () => {
+      mockImageRepo.findOneBy.mockResolvedValue(fakeImage);
+      (global.fetch as jest.Mock).mockResolvedValue({ ok: false });
+
+      await expect(service.remove(1)).rejects.toThrow(BadRequestException);
+      expect(mockImageRepo.remove).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if image not found', async () => {
