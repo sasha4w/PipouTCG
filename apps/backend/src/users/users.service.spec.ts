@@ -6,6 +6,10 @@ import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
 import { UserBooster } from './user-booster.entity';
 import { UserBundle } from './user-bundle.entity';
+import { createHash } from 'crypto';
+
+const sha256 = (value: string) =>
+  createHash('sha256').update(value).digest('hex');
 
 // ======= MOCKS REPOSITORIES =======
 const mockUserRepo = {
@@ -92,11 +96,10 @@ describe('UsersService', () => {
       expect(result).toMatchObject({ id: 1, level: expect.any(Number) });
     });
 
-    it('should return null if user not found', async () => {
+    it('should throw NotFoundException if user not found', async () => {
       mockUserRepo.findOne.mockResolvedValue(null);
 
-      const result = await service.findOne(999);
-      expect(result).toBeNull();
+      await expect(service.findOne(999)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -218,14 +221,14 @@ describe('UsersService', () => {
 
   // ======= SAVE RESET TOKEN =======
   describe('saveResetToken', () => {
-    it('should update user with token and expiry', async () => {
+    it('should store only the SHA-256 hash of the token', async () => {
       mockUserRepo.update.mockResolvedValue(undefined);
       const expiry = new Date();
 
       await service.saveResetToken(1, 'uuid-token', expiry);
 
       expect(mockUserRepo.update).toHaveBeenCalledWith(1, {
-        resetToken: 'uuid-token',
+        resetTokenHash: sha256('uuid-token'),
         resetTokenExpiry: expiry,
       });
     });
@@ -233,11 +236,14 @@ describe('UsersService', () => {
 
   // ======= FIND BY RESET TOKEN =======
   describe('findByResetToken', () => {
-    it('should return user if token matches', async () => {
-      const fakeUser = { id: 1, resetToken: 'uuid-token' };
+    it('should look the user up by the token hash', async () => {
+      const fakeUser = { id: 1, resetTokenHash: sha256('uuid-token') };
       mockUserRepo.findOneBy.mockResolvedValue(fakeUser);
 
       const result = await service.findByResetToken('uuid-token');
+      expect(mockUserRepo.findOneBy).toHaveBeenCalledWith({
+        resetTokenHash: sha256('uuid-token'),
+      });
       expect(result).toEqual(fakeUser);
     });
 
@@ -258,7 +264,7 @@ describe('UsersService', () => {
 
       expect(mockUserRepo.update).toHaveBeenCalledWith(1, {
         password: 'hashed_newpass',
-        resetToken: null,
+        resetTokenHash: null,
         resetTokenExpiry: null,
       });
     });

@@ -75,9 +75,12 @@ describe('UsersController', () => {
         bundles: [],
       });
 
-      const result = await controller.getMyInventory(req);
+      const result = await controller.getMyInventory(req, {
+        page: 2,
+        limit: 10,
+      });
 
-      expect(mockUsersService.getInventory).toHaveBeenCalledWith(1);
+      expect(mockUsersService.getInventory).toHaveBeenCalledWith(1, 2, 10);
       expect(result).toBeDefined();
     });
   });
@@ -162,7 +165,7 @@ describe('UsersController', () => {
         bundles: [],
       });
 
-      const result = await controller.getInventory(1, req);
+      const result = await controller.getInventory(1, req, {});
       expect(result).toBeDefined();
     });
 
@@ -170,7 +173,7 @@ describe('UsersController', () => {
       const req = { user: { userId: 2, isAdmin: false } };
       mockUsersService.findOne.mockResolvedValue({ id: 1, isPrivate: true });
 
-      await expect(controller.getInventory(1, req)).rejects.toThrow(
+      await expect(controller.getInventory(1, req, {})).rejects.toThrow(
         ForbiddenException,
       );
     });
