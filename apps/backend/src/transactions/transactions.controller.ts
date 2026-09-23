@@ -107,7 +107,10 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('offers')
-  findOtherListings(@Query() pagination: PaginationDto, @Req() req: AuthenticatedRequest) {
+  findOtherListings(
+    @Query() pagination: PaginationDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.transactionService.findOtherListings(
       pagination,
       req.user.userId,
@@ -116,7 +119,10 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  findUserListings(@Query() pagination: PaginationDto, @Req() req: AuthenticatedRequest) {
+  findUserListings(
+    @Query() pagination: PaginationDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.transactionService.findUserListings(
       pagination,
       req.user.userId,
@@ -125,7 +131,10 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Get('history')
-  getHistory(@Req() req: AuthenticatedRequest, @Query() query: HistoryQueryDto) {
+  getHistory(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: HistoryQueryDto,
+  ) {
     return this.transactionService.getUserHistory(
       req.user.userId,
       query,
@@ -169,7 +178,10 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Post('listing')
-  createListing(@Body() dto: CreateListingDto, @Req() req: AuthenticatedRequest) {
+  createListing(
+    @Body() dto: CreateListingDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.transactionService.createListing(dto, req.user.userId);
   }
 
@@ -204,7 +216,10 @@ export class TransactionController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/cancel')
-  cancelListing(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+  cancelListing(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.transactionService.cancelListing(id, req.user.userId);
   }
 }

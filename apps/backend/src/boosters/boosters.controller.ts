@@ -48,7 +48,10 @@ export class BoostersController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/open')
-  openBooster(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+  openBooster(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.boostersService.openBooster(id, req.user.userId);
   }
 

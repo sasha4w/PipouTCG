@@ -3,11 +3,12 @@ import {
   QuestResetType,
   RewardType,
   ConditionOperator,
+  ConditionType,
 } from './enums/quest.enums';
 import { UserQuest } from '../users/user-quest.entity';
 
 export interface QuestCondition {
-  type: string;
+  type: ConditionType;
   amount?: number;
   rarity?: string;
   setId?: number;

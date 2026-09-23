@@ -9,9 +9,10 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Quest } from '../quests/quest.entity';
+import { ConditionOperator, ConditionType } from '../quests/enums/quest.enums';
 
 export interface ConditionProgress {
-  type: string;
+  type: ConditionType;
   current: number;
   target: number;
   completed: boolean;
@@ -21,7 +22,7 @@ export interface ConditionProgress {
 }
 
 export interface QuestProgress {
-  operator: string;
+  operator: ConditionOperator;
   conditions: ConditionProgress[];
   globalCompleted: boolean;
 }

@@ -122,7 +122,7 @@ describe('QuestController', () => {
       };
       mockQuestService.createQuest.mockResolvedValue(fakeQuest);
 
-      const result = await controller.create(dto as any);
+      const result = await controller.create(dto);
       expect(mockQuestService.createQuest).toHaveBeenCalledWith(dto);
       expect(result).toEqual(fakeQuest);
     });
@@ -133,7 +133,7 @@ describe('QuestController', () => {
       const dto = { title: 'Ouvre 5 boosters' };
       mockQuestService.updateQuest.mockResolvedValue({ ...fakeQuest, ...dto });
 
-      const result = await controller.update(1, dto as any);
+      const result = await controller.update(1, dto);
       expect(mockQuestService.updateQuest).toHaveBeenCalledWith(1, dto);
       expect(result.title).toBe('Ouvre 5 boosters');
     });

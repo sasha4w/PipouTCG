@@ -32,7 +32,10 @@ export class QuestController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/claim')
-  claimReward(@Param('id', ParseIntPipe) id: number, @Request() req: AuthenticatedRequest) {
+  claimReward(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
     return this.questService.claimReward(req.user.userId, id);
   }
   @UseGuards(JwtAuthGuard)

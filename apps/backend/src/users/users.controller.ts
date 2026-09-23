@@ -34,7 +34,10 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id/profile')
-  async getProfile(@Param('id', ParseIntPipe) id: number, @Request() req: AuthenticatedRequest) {
+  async getProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
     await this.assertCanView(req, id);
     return this.usersService.getProfile(id);
   }
@@ -45,7 +48,10 @@ export class UsersController {
   }
   @UseGuards(JwtAuthGuard)
   @Get('me/inventory')
-  getMyInventory(@Request() req: AuthenticatedRequest, @Query() pagination: PaginationDto) {
+  getMyInventory(
+    @Request() req: AuthenticatedRequest,
+    @Query() pagination: PaginationDto,
+  ) {
     return this.usersService.getInventory(
       req.user.userId,
       pagination.page,
@@ -102,7 +108,10 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/privacy')
-  togglePrivacy(@Param('id', ParseIntPipe) id: number, @Request() req: AuthenticatedRequest) {
+  togglePrivacy(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
     this.assertOwner(req.user.userId, id);
     return this.usersService.togglePrivacy(id);
   }

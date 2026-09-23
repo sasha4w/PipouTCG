@@ -271,7 +271,6 @@ export class BoostersService {
       boosterId: booster.id,
       setId: booster.cardSet.id,
       amount: 1,
-      cardsDrawn: drawnCards,
     });
     return {
       historyId: historyId!,

@@ -53,7 +53,10 @@ export class BundlesController {
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/open')
-  openBundle(@Param('id', ParseIntPipe) id: number, @Req() req: AuthenticatedRequest) {
+  openBundle(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.bundlesService.openBundle(id, req.user.userId);
   }
 

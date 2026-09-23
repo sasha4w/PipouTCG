@@ -11,6 +11,7 @@ import {
   ConditionOperator,
   ConditionType,
 } from './enums/quest.enums';
+import type { CreateQuestDto } from './dto/create-quest.dto';
 
 // ======= MOCKS =======
 const mockQuestRepo = {
@@ -96,7 +97,17 @@ describe('QuestService', () => {
       mockQuestRepo.create.mockReturnValue(fakeQuest);
       mockQuestRepo.save.mockResolvedValue(fakeQuest);
 
-      const result = await service.createQuest(fakeQuest as any);
+      const dto: CreateQuestDto = {
+        title: 'Ouvre 3 boosters',
+        resetType: QuestResetType.DAILY,
+        conditionGroup: {
+          operator: ConditionOperator.AND,
+          conditions: [{ type: ConditionType.OPEN_BOOSTER, amount: 3 }],
+        },
+        rewardType: RewardType.GOLD,
+        rewardAmount: 100,
+      };
+      const result = await service.createQuest(dto);
       expect(mockQuestRepo.create).toHaveBeenCalled();
       expect(result).toEqual(fakeQuest);
     });
@@ -107,14 +118,14 @@ describe('QuestService', () => {
       mockQuestRepo.findOneBy.mockResolvedValue({ ...fakeQuest });
       mockQuestRepo.save.mockResolvedValue({ ...fakeQuest, title: 'Updated' });
 
-      const result = await service.updateQuest(1, { title: 'Updated' } as any);
+      const result = await service.updateQuest(1, { title: 'Updated' });
       expect(result.title).toBe('Updated');
     });
 
     it('should throw NotFoundException if quest not found', async () => {
       mockQuestRepo.findOneBy.mockResolvedValue(null);
 
-      await expect(service.updateQuest(999, {} as any)).rejects.toThrow(
+      await expect(service.updateQuest(999, {})).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -220,7 +231,7 @@ describe('QuestService', () => {
       resetType: QuestResetType.EVENT,
       endDate,
     } as Quest;
-    const result = (service as any).computeNextReset(quest);
+    const result = service['computeNextReset'](quest);
     expect(result).toEqual(endDate);
   });
 
@@ -230,7 +241,7 @@ describe('QuestService', () => {
       resetType: QuestResetType.EVENT,
       endDate: null,
     } as Quest;
-    const result = (service as any).computeNextReset(quest);
+    const result = service['computeNextReset'](quest);
     expect(result).toBeNull();
   });
 
@@ -431,7 +442,7 @@ describe('QuestService', () => {
   describe('computeNextReset (via resetType)', () => {
     it('should return null for NONE reset type', () => {
       const quest = { ...fakeQuest, resetType: QuestResetType.NONE } as Quest;
-      const result = (service as any).computeNextReset(quest);
+      const result = service['computeNextReset'](quest);
       expect(result).toBeNull();
     });
 
@@ -441,9 +452,9 @@ describe('QuestService', () => {
         resetType: QuestResetType.DAILY,
         resetHour: 4,
       } as Quest;
-      const result = (service as any).computeNextReset(quest);
+      const result = service['computeNextReset'](quest);
       expect(result).toBeInstanceOf(Date);
-      expect(result.getHours()).toBe(4);
+      expect(result?.getHours()).toBe(4);
     });
 
     it('should return next month 1st for MONTHLY reset type', () => {
@@ -452,9 +463,9 @@ describe('QuestService', () => {
         resetType: QuestResetType.MONTHLY,
         resetHour: 4,
       } as Quest;
-      const result = (service as any).computeNextReset(quest);
+      const result = service['computeNextReset'](quest);
       expect(result).toBeInstanceOf(Date);
-      expect(result.getDate()).toBe(1);
+      expect(result?.getDate()).toBe(1);
     });
   });
 });

@@ -28,6 +28,15 @@ export interface AutoClaimedReward {
   rewardAmount: number;
 }
 
+/** Détails d'un événement de jeu, comparés aux filtres des conditions de quête. */
+export interface QuestEventMeta {
+  amount?: number;
+  rarity?: string;
+  setId?: number;
+  boosterId?: number;
+  level?: number;
+}
+
 @Injectable()
 export class QuestService {
   constructor(
@@ -249,8 +258,8 @@ export class QuestService {
 
   async track(
     userId: number,
-    eventType: string,
-    meta: Record<string, any> = {},
+    eventType: ConditionType,
+    meta: QuestEventMeta = {},
   ) {
     const userQuests = await this.userQuestRepository.find({
       where: { user: { id: userId }, isCompleted: false },
@@ -273,21 +282,12 @@ export class QuestService {
     boosterId: number;
     setId: number;
     amount: number;
-    cardsDrawn: any[];
   }) {
     await this.track(payload.userId, ConditionType.OPEN_BOOSTER, {
       boosterId: payload.boosterId,
       setId: payload.setId,
       amount: payload.amount,
     });
-
-    const epicCards = payload.cardsDrawn.filter((c) => c.rarity === 'EPIC');
-    if (epicCards.length > 0) {
-      await this.track(payload.userId, 'DRAW_RARITY', {
-        rarity: 'EPIC',
-        amount: epicCards.length,
-      });
-    }
 
     await this.checkSetCompletion(payload.userId, payload.setId);
   }

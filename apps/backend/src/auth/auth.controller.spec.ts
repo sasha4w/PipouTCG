@@ -61,7 +61,10 @@ describe('AuthController', () => {
       expect(res.cookie).toHaveBeenCalledWith(
         'token',
         'jwt_token',
-        expect.objectContaining({ httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }),
+        expect.objectContaining({
+          httpOnly: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        }),
       );
       expect(result).toEqual({
         message: 'Connexion réussie',
