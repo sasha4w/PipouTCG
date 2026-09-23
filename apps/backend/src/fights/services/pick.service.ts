@@ -10,12 +10,12 @@ import { EffectTrigger } from '../../cards/interfaces/card-effect.interface';
 export class PickService {
   constructor(private effectsResolver: EffectsResolverService) {}
 
-  async pickCards(
+  pickCards(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const choice = game.pendingChoice;
     if (!choice || choice.forUserId !== userId)
       return { error: 'Aucun choix de carte en attente' };
@@ -45,18 +45,18 @@ export class PickService {
       case 'force_guard_enemy':
         return this.resolveForceGuardEnemy(game, userId, instanceIds, server);
       default:
-        return { error: `Résolution inconnue : ${resolution}` };
+        return { error: `Résolution inconnue : ${String(resolution)}` };
     }
   }
 
   // ── pick_to_hand — récupère depuis cimetière / deck ───────────────────────
 
-  private async resolvePickToHand(
+  private resolvePickToHand(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const choice = game.pendingChoice!;
     const player = getPlayerState(game, userId);
     let pickedFromDeck = false;
@@ -101,12 +101,12 @@ export class PickService {
 
   // ── destroy_ally — Formatage .exe, Recyclage .bat ─────────────────────────
 
-  private async resolveDestroyAlly(
+  private resolveDestroyAlly(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const player = getPlayerState(game, userId);
     const [instanceId] = instanceIds;
 
@@ -141,12 +141,12 @@ export class PickService {
 
   // ── return_to_hand — Migration .cloud ─────────────────────────────────────
 
-  private async resolveReturnToHand(
+  private resolveReturnToHand(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const player = getPlayerState(game, userId);
     const [instanceId] = instanceIds;
 
@@ -181,12 +181,12 @@ export class PickService {
 
   // ── force_attack_enemy — Rootkit de Transmission ──────────────────────────
 
-  private async resolveForceAttackEnemy(
+  private resolveForceAttackEnemy(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
     const player = getPlayerState(game, userId);
@@ -214,12 +214,12 @@ export class PickService {
   }
   // ── block_attack_enemy — Protocole de Gel ────────────────────────────────
 
-  private async resolveBlockAttackEnemy(
+  private resolveBlockAttackEnemy(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
     const player = getPlayerState(game, userId);
@@ -246,12 +246,12 @@ export class PickService {
 
   // ── force_guard_enemy — Verrou de Position ────────────────────────────────
 
-  private async resolveForceGuardEnemy(
+  private resolveForceGuardEnemy(
     game: GameState,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
     const player = getPlayerState(game, userId);

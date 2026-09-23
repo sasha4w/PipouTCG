@@ -158,7 +158,6 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.userId,
       client.data.username,
       client.id,
-      this.server,
     );
 
     if (!match) {
@@ -220,11 +219,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ── Main phase actions ─────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:summon')
-  async summonMonster(
+  summonMonster(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
-  ): Promise<void> {
-    const result = await this.fightsService.summonMonster(
+  ): void {
+    const result = this.fightsService.summonMonster(
       data.matchId,
       client.data.userId,
       data.handIndex,
@@ -239,11 +238,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /** Invoque Noyau Zeta sur une zone adverse vide */
   @SubscribeMessage('fight:summon_opponent')
-  async summonZetaOnOpponent(
+  summonZetaOnOpponent(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
-  ): Promise<void> {
-    const result = await this.fightsService.summonZetaOnOpponent(
+  ): void {
+    const result = this.fightsService.summonZetaOnOpponent(
       data.matchId,
       client.data.userId,
       data.handIndex,
@@ -275,11 +274,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:recycle_support')
-  async recycleFromHand(
+  recycleFromHand(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: RecycleSupportPayload,
-  ): Promise<void> {
-    const result = await this.fightsService.recycleFromHand(
+  ): void {
+    const result = this.fightsService.recycleFromHand(
       data.matchId,
       client.data.userId,
       data.handIndex,
@@ -291,11 +290,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:change_mode')
-  async changeMode(
+  changeMode(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: ChangeModePayload,
-  ): Promise<void> {
-    const result = await this.fightsService.changeMode(
+  ): void {
+    const result = this.fightsService.changeMode(
       data.matchId,
       client.data.userId,
       data.instanceId,
@@ -330,11 +329,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ── End phase ──────────────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:discard')
-  async discard(
+  discard(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: DiscardPayload,
-  ): Promise<void> {
-    const result = await this.fightsService.discard(
+  ): void {
+    const result = this.fightsService.discard(
       data.matchId,
       client.data.userId,
       data.handIndex,
@@ -346,11 +345,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:pick_cards')
-  async pickCards(
+  pickCards(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: { matchId: number; instanceIds: string[] },
-  ): Promise<void> {
-    const result = await this.fightsService.pickCards(
+  ): void {
+    const result = this.fightsService.pickCards(
       data.matchId,
       client.data.userId,
       data.instanceIds,

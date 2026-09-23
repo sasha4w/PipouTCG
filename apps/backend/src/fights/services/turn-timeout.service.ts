@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { GameState } from '../interfaces/game-state.interface';
 import { addLog, getPlayerState } from '../helpers/game-state.helper';
@@ -8,6 +8,7 @@ const HAND_LIMIT = 7;
 
 @Injectable()
 export class TurnTimeoutService {
+  private readonly logger = new Logger(TurnTimeoutService.name);
   private timeouts = new Map<number, NodeJS.Timeout>();
 
   /**
@@ -19,7 +20,7 @@ export class TurnTimeoutService {
     server: Server,
     onTimeout: (game: GameState, server: Server) => Promise<void>,
   ): void {
-    const handle = setTimeout(async () => {
+    const handle = setTimeout(() => {
       const player = getPlayerState(game, game.currentTurnUserId);
 
       addLog(game, `⏱️ Timeout — passage de phase automatique`);
@@ -36,7 +37,13 @@ export class TurnTimeoutService {
 
       game.pendingChoice = undefined;
 
-      await onTimeout(game, server);
+      // Rejet non géré dans un setTimeout = arrêt du processus Node : on le rattrape
+      onTimeout(game, server).catch((err: unknown) =>
+        this.logger.error(
+          `Timeout du match ${game.matchId} en échec`,
+          err instanceof Error ? err.stack : String(err),
+        ),
+      );
     }, TURN_TIMEOUT_MS);
 
     this.timeouts.set(game.matchId, handle);

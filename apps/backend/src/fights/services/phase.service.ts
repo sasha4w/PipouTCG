@@ -97,12 +97,12 @@ export class PhaseService {
     return {};
   }
 
-  async discard(
+  discard(
     game: GameState,
     userId: number,
     handIndex: number,
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'end')

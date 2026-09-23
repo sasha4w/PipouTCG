@@ -119,7 +119,7 @@ describe('BundlesController', () => {
         message: 'Bundle 1 deleted',
       });
 
-      const result = await controller.remove(1);
+      await controller.remove(1);
       expect(mockBundlesService.remove).toHaveBeenCalledWith(1);
     });
   });

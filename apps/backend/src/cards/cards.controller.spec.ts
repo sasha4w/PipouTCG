@@ -147,7 +147,7 @@ describe('CardsController', () => {
         name: 'Dragon Updated',
       });
 
-      const result = await controller.update('1', undefined as any, dto); // ✅ cast ajouté
+      await controller.update('1', undefined, dto);
       expect(mockCardsService.update).toHaveBeenCalledWith(1, undefined, dto);
     });
   });

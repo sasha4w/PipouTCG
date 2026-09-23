@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { EffectTrigger } from '../cards/interfaces/card-effect.interface';
 import {
   CardInstance,
-  MonsterOnBoard,
   PlayerGameState,
 } from './interfaces/game-state.interface';
 import type { EffectContext } from './effects/effect-context.interface';

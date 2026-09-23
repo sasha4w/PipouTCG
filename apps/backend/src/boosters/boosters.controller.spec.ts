@@ -124,7 +124,7 @@ describe('BoostersController', () => {
         message: 'Booster with ID 1 deleted',
       });
 
-      const result = await controller.remove(1);
+      await controller.remove(1);
       expect(mockBoostersService.remove).toHaveBeenCalledWith(1);
     });
   });

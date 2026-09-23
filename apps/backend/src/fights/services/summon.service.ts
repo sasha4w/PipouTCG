@@ -25,14 +25,14 @@ export class SummonService {
   ) {}
 
   /** Invocation normale — pose sur le terrain du joueur courant */
-  async summonMonster(
+  summonMonster(
     game: GameState,
     userId: number,
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     return this.doSummon(
       game,
       userId,
@@ -45,14 +45,14 @@ export class SummonService {
   }
 
   /** Invocation Zeta — pose sur une zone adverse vide */
-  async summonZetaOnOpponent(
+  summonZetaOnOpponent(
     game: GameState,
     userId: number,
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const player = getPlayerState(game, userId);
     if (handIndex < 0 || handIndex >= player.hand.length)
       return { error: 'Index main invalide' };
@@ -72,7 +72,7 @@ export class SummonService {
 
   // ── Logique commune ────────────────────────────────────────────────────────
 
-  private async doSummon(
+  private doSummon(
     game: GameState,
     userId: number,
     handIndex: number,
@@ -80,7 +80,7 @@ export class SummonService {
     paymentHandIndices: number[],
     onOpponentZone: boolean,
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'main') return { error: 'Phase principale uniquement' };

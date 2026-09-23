@@ -38,7 +38,7 @@ export class CardsService {
     return card;
   }
 
-  async create(file: Express.Multer.File, dto: CreateCardDto) {
+  async create(file: Express.Multer.File | undefined, dto: CreateCardDto) {
     const { cardSetId, imageId, ...cardData } = dto; // ← destructure les ids
 
     let image: Image | undefined = undefined;
@@ -56,7 +56,11 @@ export class CardsService {
     return this.cardRepository.save(card);
   }
 
-  async update(id: number, file: Express.Multer.File, dto: UpdateCardDto) {
+  async update(
+    id: number,
+    file: Express.Multer.File | undefined,
+    dto: UpdateCardDto,
+  ) {
     const card = await this.findOne(id);
     const { cardSetId, imageId, ...cardData } = dto; // ← destructure les ids
 

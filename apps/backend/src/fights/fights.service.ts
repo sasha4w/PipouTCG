@@ -77,7 +77,6 @@ export class FightsService {
     userId: number,
     username: string,
     socketId: string,
-    server: Server,
   ): Promise<MatchFoundInfo | null> {
     const result = await this.matchmaking.joinQueue(
       userId,
@@ -163,18 +162,18 @@ export class FightsService {
   // SUMMON
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async summonMonster(
+  summonMonster(
     matchId: number,
     userId: number,
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
 
-    const result = await this.summon.summonMonster(
+    const result = this.summon.summonMonster(
       game,
       userId,
       handIndex,
@@ -187,18 +186,18 @@ export class FightsService {
   }
 
   /** Invoque Noyau Zeta sur une zone adverse vide */
-  async summonZetaOnOpponent(
+  summonZetaOnOpponent(
     matchId: number,
     userId: number,
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
 
-    const result = await this.summon.summonZetaOnOpponent(
+    const result = this.summon.summonZetaOnOpponent(
       game,
       userId,
       handIndex,
@@ -238,16 +237,16 @@ export class FightsService {
     return result;
   }
 
-  async recycleFromHand(
+  recycleFromHand(
     matchId: number,
     userId: number,
     handIndex: number,
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
 
-    const result = await this.support.recycleFromHand(
+    const result = this.support.recycleFromHand(
       game,
       userId,
       handIndex,
@@ -258,17 +257,17 @@ export class FightsService {
     return result;
   }
 
-  async changeMode(
+  changeMode(
     matchId: number,
     userId: number,
     instanceId: string,
     mode: CombatMode,
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
 
-    const result = await this.support.changeMode(
+    const result = this.support.changeMode(
       game,
       userId,
       instanceId,
@@ -308,12 +307,12 @@ export class FightsService {
     return result;
   }
 
-  async discard(
+  discard(
     matchId: number,
     userId: number,
     handIndex: number,
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
     return this.phase.discard(game, userId, handIndex, server);
@@ -323,12 +322,12 @@ export class FightsService {
   // CARD PICK
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async pickCards(
+  pickCards(
     matchId: number,
     userId: number,
     instanceIds: string[],
     server: Server,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
     return this.pick.pickCards(game, userId, instanceIds, server);

@@ -2,13 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { DecksService } from '../../decks/decks.service';
 import { GameState } from '../interfaces/game-state.interface';
-import {
-  addLog,
-  getPlayerState,
-  shuffle,
-  drawCard,
-} from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
+import { getPlayerState, shuffle } from '../helpers/game-state.helper';
 
 const STARTING_PRIMES = 6;
 const STARTING_HAND = 5;

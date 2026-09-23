@@ -60,7 +60,7 @@ export class CardsController {
     }),
   )
   create(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @Body() createCardDto: CreateCardDto,
   ) {
     return this.cardsService.create(file, createCardDto);
@@ -83,7 +83,7 @@ export class CardsController {
   )
   update(
     @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @Body() updateCardDto: UpdateCardDto,
   ) {
     return this.cardsService.update(Number(id), file, updateCardDto);

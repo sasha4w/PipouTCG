@@ -50,7 +50,7 @@ export class SupportService {
       return { error: 'Pas un Support' };
 
     if (card.baseCard.supportType === SupportType.EPHEMERAL) {
-      if (!this.isSupportPlayable(card, player, game))
+      if (!this.isSupportPlayable(card, player))
         return { error: 'Condition non remplie pour jouer cette carte' };
     }
 
@@ -129,13 +129,13 @@ export class SupportService {
     return {};
   }
 
-  async recycleFromHand(
+  recycleFromHand(
     game: GameState,
     userId: number,
     handIndex: number,
     server: Server,
     emitState: (game: GameState, server: Server) => void,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
@@ -165,14 +165,14 @@ export class SupportService {
     return {};
   }
 
-  async changeMode(
+  changeMode(
     game: GameState,
     userId: number,
     instanceId: string,
     mode: CombatMode,
     server: Server,
     emitState: (game: GameState, server: Server) => void,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'main')
@@ -205,7 +205,6 @@ export class SupportService {
   private isSupportPlayable(
     card: CardInstance,
     player: PlayerGameState,
-    game: GameState,
   ): boolean {
     const effects = card.baseCard.effects;
     if (!effects?.length) return true;

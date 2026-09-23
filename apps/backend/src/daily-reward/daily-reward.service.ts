@@ -166,12 +166,6 @@ export class DailyRewardService {
       label?: string | null;
       isMilestone: boolean;
     }> = [];
-    const rescueInfo: {
-      daysMissed: number;
-      maxRescuable: number;
-      costPerScenario: number[];
-    } | null = null;
-
     if (!streak.lastClaimDate) {
       // Premier claim ever
       streak.currentStreak = 1;
