@@ -33,7 +33,6 @@ const mockUsersService = {
   spendGoldAndRecordBundlePurchase: jest.fn(),
   addBundleToUser: jest.fn(),
   removeBundleFromUser: jest.fn(),
-  distributeBundleContents: jest.fn(),
   addExperience: jest.fn(),
   addCardToUser: jest.fn(),
   addBoosterToUser: jest.fn(),

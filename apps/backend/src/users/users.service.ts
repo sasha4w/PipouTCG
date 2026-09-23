@@ -11,7 +11,24 @@ import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
 import { UserBooster } from './user-booster.entity';
 import { UserBundle } from './user-bundle.entity';
+import { Card } from '../cards/card.entity';
 import { PaginationDto } from '../common/dto/pagination.dto';
+
+/** Carte de la collection d'un joueur, avec ce qu'il en possède. */
+export interface PortfolioCard {
+  id: number;
+  name: string;
+  rarity: Card['rarity'];
+  type: Card['type'];
+  supportType: Card['supportType'];
+  atk: number;
+  hp: number;
+  cost: number;
+  description: string | null;
+  image: { id: number; url: string } | null;
+  owned: boolean;
+  quantity: number;
+}
 
 @Injectable()
 export class UsersService {
@@ -316,7 +333,7 @@ export class UsersService {
   async getCollection(userId: number) {
     // 1. Toutes les cartes de tous les sets, avec ce que l'user possède
     const allCards = await this.userCardRepository.manager
-      .getRepository('Card')
+      .getRepository(Card)
       .createQueryBuilder('card')
       .leftJoinAndSelect('card.cardSet', 'cardSet')
       .leftJoinAndSelect('card.image', 'image')
@@ -339,12 +356,14 @@ export class UsersService {
         name: string;
         owned: number;
         total: number;
-        cards: any[];
+        cards: PortfolioCard[];
       }
     >();
+    // Colonne calculée (COALESCE) : TypeORM la renvoie dans raw, non typée
+    const raw = allCards.raw as { quantity: string | number | null }[];
 
     allCards.entities.forEach((card, i) => {
-      const quantity = Number(allCards.raw[i].quantity ?? 0);
+      const quantity = Number(raw[i].quantity ?? 0);
       const setId = card.cardSet.id;
 
       if (!setsMap.has(setId)) {
@@ -403,8 +422,8 @@ export class UsersService {
 
     return repo.save(
       repo.create({
-        user: { id: userId } as any,
-        card: { id: cardId } as any,
+        user: { id: userId },
+        card: { id: cardId },
         quantity,
       }),
     );
@@ -424,8 +443,8 @@ export class UsersService {
 
     return this.userBundleRepository.save(
       this.userBundleRepository.create({
-        user: { id: userId } as any,
-        bundle: { id: bundleId } as any,
+        user: { id: userId },
+        bundle: { id: bundleId },
         quantity,
       }),
     );
@@ -455,38 +474,6 @@ export class UsersService {
     }
     return repo.save(ub);
   }
-  async distributeBundleContents(userId: number, contents: any[]) {
-    const summary = {
-      cards: [] as { name: string; quantity: number }[],
-      boosters: [] as { name: string; quantity: number }[],
-    };
-
-    for (const content of contents) {
-      if (content.card) {
-        // Ajout de la carte (gère déjà l'incrémentation si existante)
-        await this.addCardToUser(userId, content.card.id, content.quantity);
-        summary.cards.push({
-          name: content.card.name,
-          quantity: content.quantity,
-        });
-      }
-
-      if (content.booster) {
-        // Ajout du booster (gère déjà l'incrémentation si existante)
-        await this.addBoosterToUser(
-          userId,
-          content.booster.id,
-          content.quantity,
-        );
-        summary.boosters.push({
-          name: content.booster.name,
-          quantity: content.quantity,
-        });
-      }
-    }
-
-    return summary;
-  }
 
   /* ===================== BOOSTER MANAGEMENT ===================== */
 
@@ -511,8 +498,8 @@ export class UsersService {
 
     return repo.save(
       repo.create({
-        user: { id: userId } as any,
-        booster: { id: boosterId } as any,
+        user: { id: userId },
+        booster: { id: boosterId },
         quantity,
       }),
     );
