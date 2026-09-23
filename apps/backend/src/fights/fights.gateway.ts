@@ -7,18 +7,14 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FightsService } from './fights.service';
 import * as cookie from 'cookie';
+import type { FightSocket } from './fight-socket.types';
 
 // ─── Payload shapes received from client ─────────────────────────────────────
-interface TestMatchPayload {
-  deckId: number; // deck pour P1
-  deckIdP2?: number; // deck pour P2 (peut être le même)
-}
-
 interface SubmitDeckPayload {
   matchId: number;
   deckId: number;
@@ -44,7 +40,7 @@ interface PlaySupportPayload {
 
 interface RecycleSupportPayload {
   matchId: number;
-  zoneIndex: number;
+  handIndex: number;
 }
 
 interface ChangeModePayload {
@@ -85,7 +81,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
-  handleConnection(client: Socket): void {
+  handleConnection(client: FightSocket): void {
     try {
       const rawCookies = client.handshake.headers.cookie ?? '';
       const cookies = cookie.parse(rawCookies);
@@ -113,7 +109,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  async handleDisconnect(client: Socket): Promise<void> {
+  async handleDisconnect(client: FightSocket): Promise<void> {
     if (client.data.userId) {
       await this.fightsService.handleDisconnect(
         client.data.userId,
@@ -124,10 +120,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // ── Matchmaking ────────────────────────────────────────────────────────────
   @SubscribeMessage('fight:test_match')
-  async createTestMatch(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { deckId: number },
-  ): Promise<void> {
+  async createTestMatch(@ConnectedSocket() client: FightSocket): Promise<void> {
     const { userId, username } = client.data;
 
     const { matchId, p2UserId } = await this.fightsService.createTestMatch(
@@ -145,7 +138,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
   @SubscribeMessage('fight:submit_deck_test_p2')
   async submitDeckTestP2(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SubmitDeckPayload,
   ): Promise<void> {
     const p2UserId = -client.data.userId;
@@ -160,7 +153,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
   @SubscribeMessage('fight:queue')
-  async joinQueue(@ConnectedSocket() client: Socket): Promise<void> {
+  async joinQueue(@ConnectedSocket() client: FightSocket): Promise<void> {
     const match = await this.fightsService.joinQueue(
       client.data.userId,
       client.data.username,
@@ -184,7 +177,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:dequeue')
-  leaveQueue(@ConnectedSocket() client: Socket): void {
+  leaveQueue(@ConnectedSocket() client: FightSocket): void {
     this.fightsService.leaveQueue(client.data.userId);
     client.emit('fight:dequeued');
   }
@@ -193,7 +186,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:submit_deck')
   async submitDeck(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SubmitDeckPayload,
   ): Promise<void> {
     const result = await this.fightsService.submitDeck(
@@ -211,7 +204,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:end_phase')
   async endPhase(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: EndPhasePayload,
   ): Promise<void> {
     const result = await this.fightsService.endPhase(
@@ -228,7 +221,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:summon')
   async summonMonster(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
   ): Promise<void> {
     const result = await this.fightsService.summonMonster(
@@ -247,7 +240,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /** Invoque Noyau Zeta sur une zone adverse vide */
   @SubscribeMessage('fight:summon_opponent')
   async summonZetaOnOpponent(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
   ): Promise<void> {
     const result = await this.fightsService.summonZetaOnOpponent(
@@ -265,7 +258,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:play_support')
   async playSupport(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: PlaySupportPayload,
   ): Promise<void> {
     const result = await this.fightsService.playSupport(
@@ -283,8 +276,8 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:recycle_support')
   async recycleFromHand(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { matchId: number; handIndex: number },
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: RecycleSupportPayload,
   ): Promise<void> {
     const result = await this.fightsService.recycleFromHand(
       data.matchId,
@@ -299,7 +292,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:change_mode')
   async changeMode(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: ChangeModePayload,
   ): Promise<void> {
     const result = await this.fightsService.changeMode(
@@ -318,7 +311,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:attack')
   async attack(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: AttackPayload,
   ): Promise<void> {
     const result = await this.fightsService.attack(
@@ -338,7 +331,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:discard')
   async discard(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: DiscardPayload,
   ): Promise<void> {
     const result = await this.fightsService.discard(
@@ -354,7 +347,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:pick_cards')
   async pickCards(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: { matchId: number; instanceIds: string[] },
   ): Promise<void> {
     const result = await this.fightsService.pickCards(
@@ -372,7 +365,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('fight:surrender')
   async surrender(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: FightSocket,
     @MessageBody() data: { matchId: number },
   ): Promise<void> {
     await this.fightsService.surrender(
