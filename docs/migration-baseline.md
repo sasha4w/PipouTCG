@@ -72,3 +72,32 @@ Conséquence pour la CI : le lint n'est **pas** bloquant tant que ces erreurs ex
 - UsersService › findOne › should return null if user not found
 - UsersService › saveResetToken › should update user with token and expiry
 - UsersService › updatePassword › should update password and clear reset token
+
+## Après Task 2b : tout vert (2026-09-24)
+
+Relevé depuis la racine du monorepo (Node 22, pnpm 12) : `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` → exit 0.
+
+| App | lint | typecheck | tests | build |
+|---|---|---|---|---|
+| backend | 0 problème | OK (specs comprises) | 225 / 225 (23 suites) + e2e Cucumber 108 / 108 | OK |
+| frontend | 0 problème | OK | 19 / 19 | OK |
+
+Le front passe de 63 à 19 tests : les 47 tests retirés couvraient uniquement les stores Zustand supprimés (jamais branchés sur l'app). 3 tests ont été ajoutés sur les helpers d'erreurs.
+
+### Bugs corrigés pendant la remise au vert
+
+Backend :
+- `GET /transactions` répondait 403 à tout le monde (AdminGuard sans JwtAuthGuard).
+- Référence inexistante (cardSetId, cardId…) → 500 au lieu de 400.
+- L'API ne démarrait pas sans `RESEND_API_KEY` (déclarée optionnelle).
+- Repli de la récompense quotidienne générique : `weekNumber: null` ignoré par TypeORM (IsNull).
+- Fin de tour automatique : un rejet non géré pouvait arrêter le processus Node.
+- Suivi de quête « cartes épiques » qui ne se déclenchait jamais (supprimé).
+- `nest build` pouvait produire un dist/ incomplet ; docker-compose MySQL 8.4 ne démarrait pas.
+
+Frontend :
+- Messages d'erreur du serveur jamais affichés (marketplace, récompense quotidienne, login) : lecture de `error.response` sur une AppError.
+- Modale de carte du DeckBuilder remontée à chaque rendu (composant déclaré dans un composant).
+- Nom du set jamais affiché dans la modale de mise en vente.
+- Garde « carte retournée » inopérante au toucher (dépendance manquante).
+- Barre de recherche vidée au montage ; URL Render codée en dur dans les SSE.
