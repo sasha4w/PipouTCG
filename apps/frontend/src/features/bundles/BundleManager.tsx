@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { bundleService } from "../../services/bundle.service";
 import { cardService } from "../../services/card.service";
 import { boosterService } from "../../services/booster.service";
@@ -7,8 +12,7 @@ import type {
   BundleContent,
   BundleItem,
 } from "../../services/bundle.service";
-import type { Card } from "../../services/card.service";
-import type { Booster } from "../../services/booster.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
 
 type View = "list" | "edit";
@@ -29,13 +33,9 @@ function newRow(): ContentItemRow {
 }
 
 export default function BundleManager() {
-  const [bundles, setBundles] = useState<Bundle[]>([]);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [boosters, setBoosters] = useState<Booster[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
 
   const [view, setView] = useState<View>("list");
   const [step, setStep] = useState(1);
@@ -54,28 +54,34 @@ export default function BundleManager() {
   const [savingEdit, setSavingEdit] = useState(false);
 
   // ── Chargement ──────────────────────────────────────────────────────────────
-  const load = async (p = page) => {
-    setLoading(true);
-    try {
-      const [bRes, cRes, boRes] = await Promise.all([
-        bundleService.findAll(p, 10),
-        cardService.findAll(1, 100),
-        boosterService.findAll(1, 100),
-      ]);
-      setBundles(bRes.data);
-      setTotal(bRes.meta.totalPages);
-      setCards(cRes.data);
-      setBoosters(boRes.data);
-    } catch {
-      setError("Erreur de chargement");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const bundlesQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.bundles(page),
+    queryFn: () => bundleService.findAll(page, 10),
+    placeholderData: keepPreviousData,
+  });
+  const cardsQuery = useQuery({
+    queryKey: QUERY_KEYS.cardOptions,
+    queryFn: () => cardService.findAll(1, 100),
+  });
+  const boostersQuery = useQuery({
+    queryKey: QUERY_KEYS.boosterOptions,
+    queryFn: () => boosterService.findAll(1, 100),
+  });
+  const bundles = bundlesQuery.data?.data ?? [];
+  const total = bundlesQuery.data?.meta.totalPages ?? 0;
+  const cards = cardsQuery.data?.data ?? [];
+  const boosters = boostersQuery.data?.data ?? [];
+  const loading = bundlesQuery.isPending;
+  const loadError =
+    bundlesQuery.isError || cardsQuery.isError || boostersQuery.isError
+      ? "Erreur de chargement"
+      : "";
 
-  useEffect(() => {
-    load();
-  }, [page]);
+  const refreshList = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin", "bundles"] }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.bundleOptions }),
+    ]);
 
   // ── Navigation ──────────────────────────────────────────────────────────────
   const openCreate = () => {
@@ -125,7 +131,7 @@ export default function BundleManager() {
       }
       setContentBundle(saved);
       setEditing(saved);
-      load();
+      void refreshList();
       return saved;
     } catch {
       setError("Erreur lors de la sauvegarde");
@@ -139,14 +145,18 @@ export default function BundleManager() {
     if (!confirm("Supprimer ce bundle ?")) return;
     try {
       await bundleService.remove(id);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur suppression");
     }
   };
 
   // ── Contenu ─────────────────────────────────────────────────────────────────
-  const setRow = (id: string, key: keyof ContentItemRow, val: any) =>
+  const setRow = <K extends keyof ContentItemRow>(
+    id: string,
+    key: K,
+    val: ContentItemRow[K],
+  ) =>
     setContentRows((rows) =>
       rows.map((r) => (r.id === id ? { ...r, [key]: val } : r)),
     );
@@ -173,7 +183,7 @@ export default function BundleManager() {
       setContentBundle(updated);
       setContentRows([newRow()]);
       setError("");
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de l'ajout du contenu");
     } finally {
@@ -199,7 +209,7 @@ export default function BundleManager() {
       const updated = await bundleService.findOne(contentBundle.id);
       setContentBundle(updated);
       setEditingContent(null);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la modification");
     } finally {
@@ -218,14 +228,16 @@ export default function BundleManager() {
       if (res.warning) setError(res.warning);
       const updated = await bundleService.findOne(contentBundle.id);
       setContentBundle(updated);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la suppression");
     }
   };
 
-  const set = (k: keyof typeof emptyForm, v: any) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof typeof emptyForm>(
+    k: K,
+    v: (typeof emptyForm)[K],
+  ) => setForm((f) => ({ ...f, [k]: v }));
 
   // ── Wizard step actions ──────────────────────────────────────────────────────
   const goNext = async () => {
@@ -255,7 +267,9 @@ export default function BundleManager() {
           </button>
         </div>
 
-        {error && <p className="manager-error">{error}</p>}
+        {(error || loadError) && (
+          <p className="manager-error">{error || loadError}</p>
+        )}
 
         {loading ? (
           <p className="manager-empty">Chargement...</p>

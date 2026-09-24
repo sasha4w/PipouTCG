@@ -1,8 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { boosterService } from "../../services/booster.service";
 import { cardSetService } from "../../services/card-set.service";
 import type { Booster, CardNumber } from "../../services/booster.service";
-import type { CardSet } from "../../services/card-set.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
 
 const CARD_NUMBERS: CardNumber[] = [1, 5, 8, 10];
@@ -19,38 +24,36 @@ const emptyForm = {
 type View = "list" | "edit";
 
 export default function BoosterManager() {
-  const [boosters, setBoosters] = useState<Booster[]>([]);
-  const [sets, setSets] = useState<CardSet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const [view, setView] = useState<View>("list");
   const [step, setStep] = useState(1);
   const [editing, setEditing] = useState<Booster | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const load = async (p = page) => {
-    setLoading(true);
-    try {
-      const [bRes, sRes] = await Promise.all([
-        boosterService.findAll(p, 10),
-        cardSetService.findAll(1, 100),
-      ]);
-      setBoosters(bRes.data);
-      setTotal(bRes.meta.totalPages);
-      setSets(sRes.data);
-    } catch {
-      setError("Erreur de chargement");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const boostersQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.boosters(page),
+    queryFn: () => boosterService.findAll(page, 10),
+    placeholderData: keepPreviousData,
+  });
+  const setsQuery = useQuery({
+    queryKey: QUERY_KEYS.cardSetOptions,
+    queryFn: () => cardSetService.findAll(1, 100),
+  });
+  const boosters = boostersQuery.data?.data ?? [];
+  const total = boostersQuery.data?.meta.totalPages ?? 0;
+  const sets = setsQuery.data?.data ?? [];
+  const loading = boostersQuery.isPending;
+  const loadError =
+    boostersQuery.isError || setsQuery.isError ? "Erreur de chargement" : "";
 
-  useEffect(() => {
-    load();
-  }, [page]);
+  const refreshList = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin", "boosters"] }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.boosterOptions }),
+    ]);
 
   const openCreate = () => {
     setEditing(null);
@@ -108,7 +111,7 @@ export default function BoosterManager() {
       if (editing) await boosterService.update(editing.id, form);
       else await boosterService.create(form);
       backToList();
-      load();
+      await refreshList();
     } catch {
       setError("Erreur lors de la sauvegarde");
     } finally {
@@ -120,14 +123,16 @@ export default function BoosterManager() {
     if (!confirm("Supprimer ce booster ?")) return;
     try {
       await boosterService.remove(id);
-      load();
+      await refreshList();
     } catch {
       setError("Erreur lors de la suppression");
     }
   };
 
-  const set = (k: keyof typeof emptyForm, v: any) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends keyof typeof emptyForm>(
+    k: K,
+    v: (typeof emptyForm)[K],
+  ) => setForm((f) => ({ ...f, [k]: v }));
 
   const isLast = step === STEPS.length;
 
@@ -142,7 +147,9 @@ export default function BoosterManager() {
           </button>
         </div>
 
-        {error && <p className="manager-error">{error}</p>}
+        {(error || loadError) && (
+          <p className="manager-error">{error || loadError}</p>
+        )}
 
         {loading ? (
           <p className="manager-empty">Chargement...</p>

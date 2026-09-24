@@ -1,35 +1,39 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { cardSetService } from "../../services/card-set.service";
 import type { CardSet } from "../../services/card-set.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
 
 export default function CardSetManager() {
-  const [sets, setSets] = useState<CardSet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<CardSet | null>(null);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const load = async (p = page) => {
-    setLoading(true);
-    try {
-      const res = await cardSetService.findAll(p, 10);
-      setSets(res.data);
-      setTotal(res.meta.totalPages);
-    } catch {
-      setError("Erreur de chargement");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const setsQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.cardSets(page),
+    queryFn: () => cardSetService.findAll(page, 10),
+    placeholderData: keepPreviousData,
+  });
+  const sets = setsQuery.data?.data ?? [];
+  const total = setsQuery.data?.meta.totalPages ?? 0;
+  const loading = setsQuery.isPending;
+  const loadError = setsQuery.isError ? "Erreur de chargement" : "";
 
-  useEffect(() => {
-    load();
-  }, [page]);
+  // Les sets alimentent aussi les listes déroulantes des autres écrans
+  const refreshList = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin", "card-sets"] }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cardSetOptions }),
+    ]);
 
   const openCreate = () => {
     setEditing(null);
@@ -54,7 +58,7 @@ export default function CardSetManager() {
       if (editing) await cardSetService.update(editing.id, name);
       else await cardSetService.create(name);
       cancel();
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la sauvegarde");
     } finally {
@@ -66,7 +70,7 @@ export default function CardSetManager() {
     if (!confirm("Supprimer ce set ?")) return;
     try {
       await cardSetService.remove(id);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la suppression");
     }
@@ -81,7 +85,9 @@ export default function CardSetManager() {
         </button>
       </div>
 
-      {error && <p className="manager-error">{error}</p>}
+      {(error || loadError) && (
+        <p className="manager-error">{error || loadError}</p>
+      )}
 
       {showForm && (
         <div className="manager-form">

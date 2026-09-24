@@ -1,10 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cardService } from "../../services/card.service";
 import type { Card } from "../../services/card.service";
 import CardDisplay from "./CardDisplay";
 import Loading from "../../components/Loading";
 import { soundService } from "../../services/sound.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "./CardList.css";
+
+/** Laisse le temps à l'animation de chargement de s'afficher. */
+const MIN_LOADING_MS = 800;
 
 const LIMIT = 9;
 
@@ -19,27 +24,26 @@ export default function CardList({
   setName = `Set #${setId}`,
   onBack,
 }: CardListProps) {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    setLoading(true);
-    setCards([]);
-    const minDelay = new Promise((resolve) => setTimeout(resolve, 800));
-
-    Promise.all([cardService.findBySet(setId, page, LIMIT), minDelay])
-      .then(([res]) => {
-        setCards(res.data);
-        setTotal(res.meta.total);
-        setTotalPages(res.meta.totalPages);
-      })
-      .catch(() => setError("Impossible de charger les cartes"))
-      .finally(() => setLoading(false));
-  }, [setId, page]);
+  const cardsQuery = useQuery({
+    queryKey: QUERY_KEYS.cardsBySet(setId, page),
+    queryFn: async () => {
+      const minDelay = new Promise((resolve) =>
+        setTimeout(resolve, MIN_LOADING_MS),
+      );
+      const [res] = await Promise.all([
+        cardService.findBySet(setId, page, LIMIT),
+        minDelay,
+      ]);
+      return res;
+    },
+  });
+  const cards: Card[] = cardsQuery.data?.data ?? [];
+  const total = cardsQuery.data?.meta.total ?? 0;
+  const totalPages = cardsQuery.data?.meta.totalPages ?? 1;
+  const loading = cardsQuery.isPending;
+  const error = cardsQuery.isError ? "Impossible de charger les cartes" : "";
 
   const handleBack = () => {
     soundService.play("cancel");

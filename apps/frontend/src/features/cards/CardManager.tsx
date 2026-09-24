@@ -1,4 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   cardService,
   Rarity,
@@ -12,7 +17,13 @@ import type { CardSet } from "../../services/card-set.service";
 import type { Image } from "../../services/image.service";
 import SearchBar from "../../components/Searchbar";
 import FilterPanel, { useFilters } from "../../components/FilterPanel";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
+
+// Références stables tant que les requêtes ne sont pas résolues (dépendances de useMemo)
+const NO_CARDS: Card[] = [];
+const NO_SETS: CardSet[] = [];
+const NO_IMAGES: Image[] = [];
 
 const STEPS = [{ label: "Identité" }, { label: "Stats" }, { label: "Image" }];
 
@@ -29,13 +40,14 @@ const emptyForm: CreateCardData = {
 type View = "list" | "edit";
 
 export default function CardManager() {
-  const [cards, setCards] = useState<Card[]>([]);
-  const [sets, setSets] = useState<CardSet[]>([]);
-  const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
+  const setsQuery = useQuery({
+    queryKey: QUERY_KEYS.cardSetOptions,
+    queryFn: () => cardSetService.findAll(1, 100),
+  });
+  const sets = setsQuery.data?.data ?? NO_SETS;
   const [view, setView] = useState<View>("list");
   const [step, setStep] = useState(1);
   const [editing, setEditing] = useState<Card | null>(null);
@@ -84,28 +96,31 @@ export default function CardManager() {
 
   const { filterValues, setFilter } = useFilters(filterConfig);
 
-  const load = async (p = page) => {
-    setLoading(true);
-    try {
-      const [cRes, sRes, iRes] = await Promise.all([
-        cardService.findAll(p, 10),
-        cardSetService.findAll(1, 100),
-        imageService.findAll(),
-      ]);
-      setCards(cRes.data);
-      setTotal(cRes.meta.totalPages);
-      setSets(sRes.data);
-      setImages(iRes);
-    } catch {
-      setError("Erreur de chargement");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const cardsQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.cards(page),
+    queryFn: () => cardService.findAll(page, 10),
+    placeholderData: keepPreviousData,
+  });
+  const imagesQuery = useQuery({
+    queryKey: QUERY_KEYS.imageOptions,
+    queryFn: () => imageService.findAll(),
+  });
+  const cards = cardsQuery.data?.data ?? NO_CARDS;
+  const total = cardsQuery.data?.meta.totalPages ?? 0;
+  const images = imagesQuery.data ?? NO_IMAGES;
+  const loading = cardsQuery.isPending;
+  const loadError =
+    cardsQuery.isError || setsQuery.isError || imagesQuery.isError
+      ? "Erreur de chargement"
+      : "";
 
-  useEffect(() => {
-    load();
-  }, [page]);
+  // Une nouvelle image peut avoir été uploadée avec la carte
+  const refreshList = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin", "cards"] }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.cardOptions }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.imageOptions }),
+    ]);
 
   const filtered = useMemo(() => {
     return cards.filter((c) => {
@@ -217,7 +232,7 @@ export default function CardManager() {
       if (editing) await cardService.update(editing.id, data);
       else await cardService.create(data);
       backToList();
-      load();
+      void refreshList();
     } catch (err) {
       console.error(err);
       setError("Erreur lors de la sauvegarde");
@@ -230,14 +245,16 @@ export default function CardManager() {
     if (!confirm("Supprimer cette carte ?")) return;
     try {
       await cardService.remove(id);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la suppression");
     }
   };
 
-  const setField = (k: keyof CreateCardData, v: any) =>
-    setForm((f) => ({ ...f, [k]: v }));
+  const setField = <K extends keyof CreateCardData>(
+    k: K,
+    v: CreateCardData[K],
+  ) => setForm((f) => ({ ...f, [k]: v }));
 
   const renderCard = (c: Card) => (
     <div key={c.id} className="manager-item">
@@ -287,7 +304,9 @@ export default function CardManager() {
           </button>
         </div>
 
-        {error && <p className="manager-error">{error}</p>}
+        {(error || loadError) && (
+          <p className="manager-error">{error || loadError}</p>
+        )}
 
         <SearchBar
           value={search}
@@ -448,7 +467,7 @@ export default function CardManager() {
               <select
                 className="manager-form__select"
                 value={form.rarity}
-                onChange={(e) => setField("rarity", e.target.value)}
+                onChange={(e) => setField("rarity", e.target.value as Rarity)}
               >
                 {Object.values(Rarity).map((r) => (
                   <option key={r} value={r}>
