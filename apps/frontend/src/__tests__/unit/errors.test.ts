@@ -3,6 +3,8 @@ import {
   AppError,
   parseApiError,
   isUserFacingError,
+  apiErrorMessage,
+  apiErrorStatus,
 } from "../../utils/errors";
 
 describe("AppError", () => {
@@ -62,7 +64,9 @@ describe("parseApiError", () => {
     const error = parseApiError(axiosError);
 
     expect(error.context.category).toBe("Auth");
-    expect(error.getUserMessage()).toBe("Authentification requise. Connectez-vous.");
+    expect(error.getUserMessage()).toBe(
+      "Authentification requise. Connectez-vous.",
+    );
   });
 
   it("should handle network error", () => {
@@ -105,5 +109,34 @@ describe("isUserFacingError", () => {
   it("should return false for unknown type", () => {
     expect(isUserFacingError(null)).toBe(false);
     expect(isUserFacingError("string")).toBe(false);
+  });
+});
+
+describe("apiErrorMessage / apiErrorStatus", () => {
+  // L'intercepteur axios (api.ts) rejette avec une AppError, pas l'erreur axios
+  const fromInterceptor = parseApiError({
+    config: {},
+    response: { status: 400, data: { message: "Or insuffisant." } },
+  });
+
+  it("reads the server message from the AppError thrown by the interceptor", () => {
+    expect(apiErrorMessage(fromInterceptor)).toBe("Or insuffisant.");
+    expect(apiErrorStatus(fromInterceptor)).toBe(400);
+  });
+
+  it("still reads a raw axios error", () => {
+    const raw = {
+      config: {},
+      response: { status: 401, data: { message: "Unauthorized" } },
+    };
+    expect(apiErrorMessage(raw)).toBe("Unauthorized");
+    expect(apiErrorStatus(raw)).toBe(401);
+  });
+
+  it("returns undefined when the server sent no message", () => {
+    const noMessage = parseApiError({ config: {}, response: { status: 500 } });
+    expect(apiErrorMessage(noMessage)).toBeUndefined();
+    expect(apiErrorMessage(new Error("boom"))).toBeUndefined();
+    expect(apiErrorStatus("nope")).toBeUndefined();
   });
 });

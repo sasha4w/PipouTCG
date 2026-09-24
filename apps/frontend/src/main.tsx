@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import App from "./App.tsx";
+import { apiErrorStatus } from "./utils/errors";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -10,8 +11,8 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
       refetchOnWindowFocus: false,
-      retry: (failureCount, error: any) => {
-        if (error.response?.status === 401) return false;
+      retry: (failureCount, error) => {
+        if (apiErrorStatus(error) === 401) return false;
         return failureCount < 1;
       },
     },

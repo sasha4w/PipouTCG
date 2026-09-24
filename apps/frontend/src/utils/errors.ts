@@ -3,7 +3,8 @@
  * Provides structured error types and user-friendly message mapping
  */
 
-export type ErrorCategory = "API" | "Auth" | "Validation" | "Network" | "Unknown";
+export type ErrorCategory =
+  "API" | "Auth" | "Validation" | "Network" | "Unknown";
 
 export interface AppErrorContext {
   category: ErrorCategory;
@@ -46,9 +47,7 @@ export class AppError extends Error {
    */
   getTechnicalDetails(): string {
     return (
-      this.context.technicalDetails ||
-      this.message ||
-      "Unknown error occurred"
+      this.context.technicalDetails || this.message || "Unknown error occurred"
     );
   }
 }
@@ -163,7 +162,7 @@ export function logError(error: AppError | Error): void {
   if (import.meta.env.DEV) {
     console.error(
       `[${error instanceof AppError ? error.context.category : "Error"}]`,
-      error
+      error,
     );
   }
 
@@ -176,4 +175,26 @@ export function logError(error: AppError | Error): void {
  */
 export function isUserFacingError(error: unknown): error is AppError {
   return error instanceof AppError;
+}
+
+/** Message renvoyé par le serveur quand parseApiError n'en trouve aucun. */
+const NO_SERVER_MESSAGE = "API error";
+
+/**
+ * Message d'erreur envoyé par l'API, qu'on ait une AppError (rejet de
+ * l'intercepteur axios) ou une erreur axios brute. undefined s'il n'y en a pas.
+ */
+export function apiErrorMessage(error: unknown): string | undefined {
+  const parsed = error instanceof AppError ? error : parseApiError(error);
+  if (parsed.context.category !== "API" && parsed.context.category !== "Auth")
+    return undefined;
+  return parsed.message && parsed.message !== NO_SERVER_MESSAGE
+    ? parsed.message
+    : undefined;
+}
+
+/** Statut HTTP d'une erreur d'API (AppError ou erreur axios brute). */
+export function apiErrorStatus(error: unknown): number | undefined {
+  const parsed = error instanceof AppError ? error : parseApiError(error);
+  return parsed.context.statusCode;
 }

@@ -5,6 +5,7 @@ import {
   dailyRewardService,
   type ClaimResult,
   type DailyReward,
+  type StreakStatus,
 } from "../services/dailyReward.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import type { ToastType } from "../hooks/useToast";
@@ -19,6 +20,7 @@ import {
   IconPartyHorn,
   IconSkull,
 } from "./Icons";
+import { apiErrorMessage } from "../utils/errors";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -224,7 +226,9 @@ export default function DailyRewardModal({
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
-  const status = queryClient.getQueryData<any>(QUERY_KEYS.dailyRewardStatus);
+  const status = queryClient.getQueryData<StreakStatus>(
+    QUERY_KEYS.dailyRewardStatus,
+  );
 
   // Récupère l'historique des claims du mois courant depuis le cache ou le service
   // Pour simplifier : on déduit les dates depuis streak.totalDays + lastClaimDate
@@ -259,8 +263,8 @@ export default function DailyRewardModal({
         });
         setPhase("result");
       }
-    } catch (e: any) {
-      setError(e.response?.data?.message ?? "Erreur lors du claim.");
+    } catch (e) {
+      setError(apiErrorMessage(e) ?? "Erreur lors du claim.");
       setPhase("idle");
     }
   };
@@ -277,8 +281,8 @@ export default function DailyRewardModal({
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dailyRewardStatus });
       setPhase("result");
-    } catch (e: any) {
-      setError(e.response?.data?.message ?? "Erreur lors du rachat.");
+    } catch (e) {
+      setError(apiErrorMessage(e) ?? "Erreur lors du rachat.");
       setPhase("rescue");
     }
   };
@@ -293,10 +297,8 @@ export default function DailyRewardModal({
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dailyRewardStatus });
       addToast("Streak réinitialisée. Tu repars de J1 !", "warning");
       onClose();
-    } catch (e: any) {
-      setError(
-        e.response?.data?.message ?? "Erreur lors de la réinitialisation.",
-      );
+    } catch (e) {
+      setError(apiErrorMessage(e) ?? "Erreur lors de la réinitialisation.");
       setIsResetting(false);
     }
   };

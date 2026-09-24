@@ -5,10 +5,16 @@ import {
   transactionService,
   ProductType,
   type Transaction,
+  type PaginatedResponse,
   type CreateListingData,
   type UpdateListingData,
 } from "../services/transaction.service";
-import { userService, type UserInventory } from "../services/user.service";
+import {
+  userService,
+  type UserInventory,
+  type UserMe,
+} from "../services/user.service";
+import { apiErrorMessage } from "../utils/errors";
 import { useFilters } from "../components/FilterPanel";
 import "./Marketplace.css";
 import { QUERY_KEYS } from "../utils/querykeys";
@@ -18,6 +24,8 @@ import MarketplaceTabs from "../features/marketplace/MarketplaceTabs";
 import SellTab from "../features/marketplace/SellTab";
 import BuyTab from "../features/marketplace/BuyTab";
 import CreateListingModal from "../features/marketplace/CreateListingModal";
+
+type Listings = PaginatedResponse<Transaction>;
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -45,12 +53,12 @@ const Marketplace = () => {
       newQuantity?: number;
     }) => {
       if (event?.type === "listing.updated" && event.transactionId != null) {
-        queryClient.setQueryData(QUERY_KEYS.offers, (old: any) =>
+        queryClient.setQueryData<Listings>(QUERY_KEYS.offers, (old) =>
           old
             ? {
                 ...old,
-                data: old.data.map((l: any) =>
-                  l.id === event.transactionId
+                data: old.data.map((l) =>
+                  l.id === event.transactionId && event.newQuantity != null
                     ? { ...l, quantity: event.newQuantity }
                     : l,
                 ),
@@ -99,7 +107,7 @@ const Marketplace = () => {
   }, [inventory, formProductType]);
 
   const selectedItem = useMemo(() => {
-    return availableItems.find((item: any) => item.id === selectedInventoryId);
+    return availableItems.find((item) => item.id === selectedInventoryId);
   }, [availableItems, selectedInventoryId]);
 
   const getDisplayName = (listing: Transaction) =>
@@ -132,15 +140,15 @@ const Marketplace = () => {
     setIsCreating(true);
     try {
       const newListing = await transactionService.createListing(data);
-      queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
+      queryClient.setQueryData<Listings>(QUERY_KEYS.myListings, (old) =>
         old ? { ...old, data: [newListing, ...old.data] } : old,
       );
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       setShowCreateListingForm(false);
       setSelectedInventoryId("");
       addToast(t("marketplace.toast.sell_success"), "success");
-    } catch (error: any) {
-      const message = error.response?.data?.message || "";
+    } catch (error) {
+      const message = apiErrorMessage(error) ?? "";
       addToast(
         message
           ? t("marketplace.toast.sell_error", { message })
@@ -157,14 +165,14 @@ const Marketplace = () => {
   const handleCancelListing = async (id: number) => {
     setLoadingAction(id);
     const snapshot = queryClient.getQueryData(QUERY_KEYS.myListings);
-    queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
-      old ? { ...old, data: old.data.filter((l: any) => l.id !== id) } : old,
+    queryClient.setQueryData<Listings>(QUERY_KEYS.myListings, (old) =>
+      old ? { ...old, data: old.data.filter((l) => l.id !== id) } : old,
     );
     try {
       await transactionService.cancel(id);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       addToast(t("marketplace.toast.cancel_success"), "success");
-    } catch (error: any) {
+    } catch {
       queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
       addToast(t("marketplace.toast.cancel_error"), "error");
     } finally {
@@ -182,11 +190,11 @@ const Marketplace = () => {
     }
     setLoadingUpdate(id);
     const snapshot = queryClient.getQueryData(QUERY_KEYS.myListings);
-    queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
+    queryClient.setQueryData<Listings>(QUERY_KEYS.myListings, (old) =>
       old
         ? {
             ...old,
-            data: old.data.map((l: any) =>
+            data: old.data.map((l) =>
               l.id === id
                 ? {
                     ...l,
@@ -206,16 +214,16 @@ const Marketplace = () => {
     );
     try {
       const updated = await transactionService.updateListing(id, data);
-      queryClient.setQueryData(QUERY_KEYS.myListings, (old: any) =>
+      queryClient.setQueryData<Listings>(QUERY_KEYS.myListings, (old) =>
         old
           ? {
               ...old,
-              data: old.data.map((l: any) => (l.id === id ? updated : l)),
+              data: old.data.map((l) => (l.id === id ? updated : l)),
             }
           : old,
       );
       addToast(t("marketplace.toast.update_success"), "success");
-    } catch (error: any) {
+    } catch {
       queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
       addToast(t("marketplace.toast.update_error"), "error");
     } finally {
@@ -227,8 +235,8 @@ const Marketplace = () => {
     setLoadingAction(id);
     try {
       const transaction = await transactionService.buy(id, quantity);
-      queryClient.setQueryData(QUERY_KEYS.profile, (old: any) =>
-        old ? { ...old, gold: old.gold - transaction.totalPrice } : old,
+      queryClient.setQueryData<UserMe>(QUERY_KEYS.profile, (old) =>
+        old ? { ...old, gold: Number(old.gold) - transaction.totalPrice } : old,
       );
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
@@ -238,8 +246,8 @@ const Marketplace = () => {
         queryKey: ["transactions", "recent-sales"],
       });
       addToast(t("marketplace.toast.buy_success"), "success");
-    } catch (error: any) {
-      const raw = error.response?.data?.message || "";
+    } catch (error) {
+      const raw = apiErrorMessage(error) ?? "";
       let userMessage = t("marketplace.toast.buy_error_default");
       if (
         raw.toLowerCase().includes("gold") ||
