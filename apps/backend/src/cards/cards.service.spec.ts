@@ -148,7 +148,7 @@ describe('CardsService', () => {
       mockCardRepo.create.mockReturnValue(fakeCard);
       mockCardRepo.save.mockResolvedValue(fakeCard);
 
-      await service.create(undefined as any, { ...dto, imageId: 1 });
+      await service.create(undefined, { ...dto, imageId: 1 });
 
       expect(mockImagesService.findOne).toHaveBeenCalledWith(1);
       expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
@@ -158,7 +158,7 @@ describe('CardsService', () => {
       mockCardRepo.create.mockReturnValue({ ...fakeCard, image: undefined });
       mockCardRepo.save.mockResolvedValue({ ...fakeCard, image: undefined });
 
-      await service.create(undefined as any, dto);
+      await service.create(undefined, dto);
 
       expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
       expect(mockImagesService.findOne).not.toHaveBeenCalled();
@@ -187,7 +187,7 @@ describe('CardsService', () => {
       mockImagesService.findOne.mockResolvedValue(fakeImage);
       mockCardRepo.save.mockResolvedValue({ ...fakeCard, image: fakeImage });
 
-      await service.update(1, undefined as any, { imageId: 1 });
+      await service.update(1, undefined, { imageId: 1 });
 
       expect(mockImagesService.findOne).toHaveBeenCalledWith(1);
       expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe('CardsService', () => {
       mockCardRepo.findOne.mockResolvedValue({ ...fakeCard });
       mockCardRepo.save.mockResolvedValue({ ...fakeCard, name: 'Dragon V2' });
 
-      const result = await service.update(1, undefined as any, {
+      const result = await service.update(1, undefined, {
         name: 'Dragon V2',
       });
 

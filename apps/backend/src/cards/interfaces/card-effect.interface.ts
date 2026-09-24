@@ -1,3 +1,7 @@
+import { Archetype } from '../enums/archetype.enum';
+import { CardType } from '../enums/cardtype.enum';
+import { Rarity } from '../enums/rarity.enum';
+
 export enum EffectTrigger {
   ON_SUMMON = 'ON_SUMMON',
   ON_DEATH = 'ON_DEATH',
@@ -67,9 +71,9 @@ export interface EffectCondition {
 }
 
 export interface EffectFilter {
-  archetype?: string;
-  rarities?: string[];
-  type?: string;
+  archetype?: Archetype;
+  rarities?: Rarity[];
+  type?: CardType;
   name?: string;
 }
 

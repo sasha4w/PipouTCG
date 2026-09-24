@@ -118,7 +118,7 @@ describe('CardsController', () => {
       };
       mockCardsService.create.mockResolvedValue(fakeCard);
 
-      const result = await controller.create(undefined as any, dto);
+      const result = await controller.create(undefined, dto);
       expect(mockCardsService.create).toHaveBeenCalledWith(undefined, dto);
       expect(result).toEqual(fakeCard);
     });
@@ -134,7 +134,7 @@ describe('CardsController', () => {
       };
       mockCardsService.create.mockResolvedValue(fakeCard);
 
-      await controller.create(undefined as any, dto);
+      await controller.create(undefined, dto);
       expect(mockCardsService.create).toHaveBeenCalledWith(undefined, dto);
     });
   });

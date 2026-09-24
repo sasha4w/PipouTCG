@@ -198,7 +198,7 @@ describe('ImagesService', () => {
       ];
 
       for (const [input, expected] of cases) {
-        expect((service as any).toSlug(input)).toBe(expected);
+        expect(service['toSlug'](input)).toBe(expected);
       }
     });
   });

@@ -5,6 +5,7 @@ import {
 } from './interfaces/game-state.interface';
 import {
   ActionType,
+  CardEffect,
   ConditionType,
   EffectTarget,
   EffectTrigger,
@@ -21,10 +22,7 @@ function flagComesfromPassive(
   zone: MonsterOnBoard,
   actionType: ActionType,
 ): boolean {
-  const isPassiveOn = (
-    effects:
-      { trigger: string; actions: { type: string }[] }[] | null | undefined,
-  ) =>
+  const isPassiveOn = (effects: CardEffect[] | null | undefined) =>
     effects?.some(
       (e) =>
         e.trigger === EffectTrigger.PASSIVE &&
@@ -102,11 +100,12 @@ export class BuffsCalculatorService {
               case ActionType.BUFF_ATK:
                 monster.atkBuff += action.value ?? 0;
                 break;
-              case ActionType.BUFF_HP:
+              case ActionType.BUFF_HP: {
                 const v = action.value ?? 0;
                 monster.hpBuff += v;
                 monster.currentHp += v;
                 break;
+              }
               case ActionType.SET_TAUNT:
                 monster.hasTaunt = true;
                 break;
@@ -155,11 +154,12 @@ export class BuffsCalculatorService {
               case ActionType.BUFF_ATK:
                 zone.atkBuff += action.value ?? 0;
                 break;
-              case ActionType.BUFF_HP:
+              case ActionType.BUFF_HP: {
                 const v = action.value ?? 0;
                 zone.hpBuff += v;
                 zone.currentHp += v;
                 break;
+              }
               case ActionType.SET_TAUNT:
                 zone.hasTaunt = true;
                 break;
@@ -209,11 +209,12 @@ export class BuffsCalculatorService {
             case ActionType.BUFF_ATK:
               zone.atkBuff += action.value ?? 0;
               break;
-            case ActionType.BUFF_HP:
+            case ActionType.BUFF_HP: {
               const v = action.value ?? 0;
               zone.hpBuff += v;
               zone.currentHp += v;
               break;
+            }
             case ActionType.SET_TAUNT:
               zone.hasTaunt = true;
               break;
@@ -268,11 +269,12 @@ export class BuffsCalculatorService {
               case ActionType.BUFF_ATK:
                 ally.atkBuff += action.value ?? 0;
                 break;
-              case ActionType.BUFF_HP:
+              case ActionType.BUFF_HP: {
                 const v = action.value ?? 0;
                 ally.hpBuff += v;
                 ally.currentHp += v;
                 break;
+              }
               case ActionType.SET_TAUNT:
                 ally.hasTaunt = true;
                 break;

@@ -6,7 +6,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Image } from './image.entity';
-import sharp = require('sharp');
+import sharp from 'sharp';
+
+/** Champs utilisés de la réponse de https://api.imgbb.com/1/upload */
+interface ImgbbUploadResponse {
+  data?: { url?: string; delete_url?: string };
+}
 
 @Injectable()
 export class ImagesService {
@@ -61,9 +66,11 @@ export class ImagesService {
       throw new BadRequestException('ImgBB upload failed');
     }
 
-    const data = await response.json().catch(() => null);
-    const url: string | undefined = data?.data?.url;
-    const deleteUrl: string | undefined = data?.data?.delete_url;
+    const data = (await response
+      .json()
+      .catch(() => null)) as ImgbbUploadResponse | null;
+    const url = data?.data?.url;
+    const deleteUrl = data?.data?.delete_url;
     if (!url || !deleteUrl) {
       throw new BadRequestException('ImgBB response is invalid');
     }
