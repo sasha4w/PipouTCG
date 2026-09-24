@@ -14,6 +14,15 @@ export interface PortfolioCard {
   quantity: number;
 }
 
+/** Élément d'inventaire : carte, booster ou bundle possédé. */
+export type InventoryCard = UserInventory["cards"]["data"][number];
+export type InventoryBooster = UserInventory["boosters"]["data"][number];
+export type InventoryBundle = UserInventory["bundles"]["data"][number];
+export type InventoryItem = InventoryCard | InventoryBooster | InventoryBundle;
+
+export const isInventoryCard = (item: InventoryItem): item is InventoryCard =>
+  "userCardId" in item;
+
 export interface UserProfile {
   id: number;
   username: string;

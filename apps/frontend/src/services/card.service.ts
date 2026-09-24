@@ -30,6 +30,18 @@ export const Archetype = {
 } as const;
 export type Archetype = (typeof Archetype)[keyof typeof Archetype];
 
+/** Effet d'une carte (format CardEffect du backend). */
+export interface CardEffect {
+  trigger: string;
+  condition?: { type: string; value?: number | string } | null;
+  actions: {
+    type: string;
+    target: string;
+    value?: number;
+    archetype?: string;
+  }[];
+}
+
 export interface Card {
   id: number;
   name: string;
@@ -41,7 +53,7 @@ export interface Card {
   cost: number;
   supportType?: SupportType | null;
   archetype?: Archetype | null;
-  effects?: any[] | null;
+  effects?: CardEffect[] | null;
   image?: { id: number; url: string } | null;
   cardSet: { id: number; name: string };
 }
@@ -67,7 +79,7 @@ export interface CreateCardData {
   cost?: number;
   supportType?: SupportType;
   archetype?: Archetype;
-  effects?: any[];
+  effects?: CardEffect[];
   image?: File; // upload fichier
   imageId?: number; // utiliser image déjà uploadée
 }

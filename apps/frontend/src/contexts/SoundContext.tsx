@@ -1,23 +1,8 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { SoundContext } from "./sound-context";
 import type { ReactNode } from "react";
 import { soundService } from "../services/sound.service";
 
-interface SoundContextType {
-  masterVolume: number;
-  bgmVolume: number;
-  sfxVolume: number;
-  muted: boolean;
-  bgmMuted: boolean;
-  sfxMuted: boolean;
-  setMasterVolume: (v: number) => void;
-  setBgmVolume: (v: number) => void;
-  setSfxVolume: (v: number) => void;
-  toggleMute: () => void;
-  toggleBgmMute: () => void;
-  toggleSfxMute: () => void;
-}
-
-const SoundContext = createContext<SoundContextType | null>(null);
 
 export function SoundProvider({ children }: { children: ReactNode }) {
   const [masterVolume, setMasterVolumeState] = useState(
@@ -79,11 +64,4 @@ export function SoundProvider({ children }: { children: ReactNode }) {
       {children}
     </SoundContext.Provider>
   );
-}
-
-export function useSoundStore() {
-  const ctx = useContext(SoundContext);
-  if (!ctx)
-    throw new Error("useSoundStore must be used inside <SoundProvider>");
-  return ctx;
 }

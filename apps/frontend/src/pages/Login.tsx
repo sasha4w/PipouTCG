@@ -5,6 +5,7 @@ import { authService } from "../services/auth.service";
 import SoundButton from "../components/SoundButton";
 import { api } from "../api/api";
 import i18n from "../i18n";
+import { apiErrorStatus } from "../utils/errors";
 import "./Login.css";
 
 type Mode = "login" | "register" | "forgot";
@@ -52,9 +53,10 @@ const Login = () => {
         await api.post("/auth/forgot-password", { email });
         setSuccess(t("login.success_reset"));
       }
-    } catch (e: any) {
-      if (e.response?.status === 409) setError(t("login.err_used"));
-      else if (e.response?.status === 401) setError(t("login.err_credentials"));
+    } catch (e) {
+      const status = apiErrorStatus(e);
+      if (status === 409) setError(t("login.err_used"));
+      else if (status === 401) setError(t("login.err_credentials"));
       else setError(t("login.err_generic"));
     }
   };

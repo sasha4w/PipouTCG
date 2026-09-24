@@ -64,15 +64,20 @@ export default function SearchBar({
 
   useEffect(() => {
     if (searchOpen) inputRef.current?.focus();
-    else onChange("");
   }, [searchOpen]);
+
+  // Fermer la recherche la vide (et seulement à ce moment-là, pas au montage)
+  const toggleSearch = () => {
+    if (searchOpen) onChange("");
+    setSearchOpen(!searchOpen);
+  };
 
   return (
     <div className="search-bar">
       <div className="search-bar__row">
         <button
           className={`search-bar__icon-btn${searchOpen ? " search-bar__icon-btn--active" : ""}`}
-          onClick={() => setSearchOpen((o) => !o)}
+          onClick={toggleSearch}
           aria-label={t("search.aria_search")}
         >
           <IconSearch size={16} />

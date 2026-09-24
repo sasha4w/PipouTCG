@@ -159,7 +159,7 @@ export default function CardDisplay({
         }, LONG_PRESS_MS);
       }
     },
-    [interactive, flippable, apply3D],
+    [interactive, flippable, flipped, apply3D],
   );
 
   const handleTouchMove = useCallback(

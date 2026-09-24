@@ -15,11 +15,15 @@ import {
   type UserMe,
 } from "../services/user.service";
 import { apiErrorMessage } from "../utils/errors";
-import { useFilters } from "../components/FilterPanel";
+import { useFilters } from "../hooks/useFilters";
 import "./Marketplace.css";
 import { QUERY_KEYS } from "../utils/querykeys";
-import { useToast, ToastContainer } from "../hooks/useToast";
-import { useSseNewListings } from "../hooks/useSseNotifications";
+import { useToast } from "../hooks/useToast";
+import { ToastContainer } from "../components/ToastContainer";
+import {
+  useSseNewListings,
+  type MarketUpdateEvent,
+} from "../hooks/useSseNotifications";
 import MarketplaceTabs from "../features/marketplace/MarketplaceTabs";
 import SellTab from "../features/marketplace/SellTab";
 import BuyTab from "../features/marketplace/BuyTab";
@@ -47,12 +51,8 @@ const Marketplace = () => {
   const { toasts, addToast, removeToast } = useToast();
 
   useSseNewListings(
-    (event?: {
-      type?: string;
-      transactionId?: number;
-      newQuantity?: number;
-    }) => {
-      if (event?.type === "listing.updated" && event.transactionId != null) {
+    (event: MarketUpdateEvent) => {
+      if (event.type === "listing.updated" && event.transactionId != null) {
         queryClient.setQueryData<Listings>(QUERY_KEYS.offers, (old) =>
           old
             ? {

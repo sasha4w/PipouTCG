@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useSoundStore } from "../contexts/SoundContext";
+import { useSoundStore } from "../contexts/useSoundStore";
 import SoundSettings from "./SoundSettings";
 import "./SoundButton.css";
 

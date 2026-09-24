@@ -6,7 +6,8 @@ import CardDisplay from "../cards/CardDisplay";
 import { soundService } from "../../services/sound.service";
 import SearchBar from "../../components/Searchbar";
 import { IconUnknown } from "../../components/Icons";
-import FilterPanel, { useFilters } from "../../components/FilterPanel";
+import FilterPanel from "../../components/FilterPanel";
+import { useFilters } from "../../hooks/useFilters";
 import "./OwnCardList.css";
 
 function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {

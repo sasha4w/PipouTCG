@@ -4,28 +4,29 @@ import { bannerService } from "../../services/banner.service";
 import { IconGold } from "../../components/Icons";
 import "./BannerCard.css";
 
-function useCountdown(endDate: string | null): string | null {
-  const calc = () => {
-    if (!endDate) return null;
-    const diff = new Date(endDate).getTime() - Date.now();
-    if (diff <= 0) return "Expiré";
-    const d = Math.floor(diff / 86400000);
-    const h = Math.floor((diff % 86400000) / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    if (d > 0) return `${d}j ${h}h restantes`;
-    if (h > 0) return `${h}h ${m}min restantes`;
-    return `${m}min restantes`;
-  };
+function countdownLabel(endDate: string | null, now: number): string | null {
+  if (!endDate) return null;
+  const diff = new Date(endDate).getTime() - now;
+  if (diff <= 0) return "Expiré";
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (d > 0) return `${d}j ${h}h restantes`;
+  if (h > 0) return `${h}h ${m}min restantes`;
+  return `${m}min restantes`;
+}
 
-  const [label, setLabel] = useState<string | null>(calc);
+/** Temps restant, rafraîchi chaque minute (l'horloge avance, le libellé est dérivé). */
+function useCountdown(endDate: string | null): string | null {
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!endDate) return;
-    const id = setInterval(() => setLabel(calc()), 60000);
+    const id = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(id);
   }, [endDate]);
 
-  return label;
+  return countdownLabel(endDate, now);
 }
 
 interface BannerCardProps {

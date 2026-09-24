@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { OpeningTarget } from "./OpeningModal";
+import type { UserInventory } from "../../services/user.service";
 import "./OpeningQuickAccess.css";
 
 interface OpeningItem {
@@ -10,7 +11,7 @@ interface OpeningItem {
 }
 
 interface OpeningQuickAccessProps {
-  inventory: any;
+  inventory: UserInventory | undefined;
   onOpen: (target: OpeningTarget) => void;
 }
 
@@ -20,16 +21,16 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
 
   const items: OpeningItem[] = [
     ...boosters
-      .filter((b: any) => b.quantity > 0)
-      .map((b: any) => ({
+      .filter((b) => b.quantity > 0)
+      .map((b) => ({
         type: "booster" as const,
         id: b.id,
         name: b.name,
         qty: b.quantity,
       })),
     ...bundles
-      .filter((b: any) => b.quantity > 0)
-      .map((b: any) => ({
+      .filter((b) => b.quantity > 0)
+      .map((b) => ({
         type: "bundle" as const,
         id: b.id,
         name: b.name,

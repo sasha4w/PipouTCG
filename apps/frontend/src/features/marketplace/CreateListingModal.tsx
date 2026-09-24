@@ -6,6 +6,11 @@ import {
 } from "../../services/transaction.service";
 import CardDisplay from "../cards/CardDisplay";
 import type { Card } from "../../services/card.service";
+import {
+  isInventoryCard,
+  type InventoryCard,
+  type InventoryItem,
+} from "../../services/user.service";
 import "./CreateListingModal.css";
 
 const TYPE_KEYS: Record<ProductType, string> = {
@@ -14,19 +19,19 @@ const TYPE_KEYS: Record<ProductType, string> = {
   [ProductType.BUNDLE]: "marketplace.modal.type_bundles",
 };
 
-function toCard(item: any): Card {
+function toCard(item: InventoryCard): Card {
   return {
     id: item.id,
     name: item.name,
-    rarity: item.rarity ?? "COMMON",
-    type: item.type ?? "monster",
+    rarity: item.rarity,
+    type: item.type,
     supportType: item.supportType ?? null,
-    atk: item.atk ?? 0,
-    hp: item.hp ?? 0,
-    cost: item.cost ?? 0,
-    description: item.description ?? undefined,
+    atk: item.atk,
+    hp: item.hp,
+    cost: item.cost,
+    description: item.description,
     image: item.image ?? null,
-    cardSet: item.cardSet ?? { id: 0, name: "" },
+    cardSet: { id: item.setId, name: item.set },
   };
 }
 
@@ -34,8 +39,8 @@ interface CreateListingModalProps {
   isCreating: boolean;
   formProductType: ProductType;
   selectedInventoryId: number | "";
-  availableItems: any[];
-  selectedItem: any;
+  availableItems: InventoryItem[];
+  selectedItem: InventoryItem | undefined;
   onProductTypeChange: (type: ProductType) => void;
   onInventoryIdChange: (id: number) => void;
   onSubmit: (data: CreateListingData) => void;
@@ -188,7 +193,7 @@ const CreateListingModal = ({
                   </p>
                 )}
                 {formProductType === ProductType.CARD
-                  ? filteredItems.map((item) => {
+                  ? filteredItems.filter(isInventoryCard).map((item) => {
                       const isSelected = selectedInventoryId === item.id;
                       return (
                         <button
@@ -251,15 +256,17 @@ const CreateListingModal = ({
             {selectedItem && (
               <div className="marketplace-selected-recap">
                 <strong>{selectedItem.name}</strong>
-                {selectedItem.rarity && (
-                  <span className="marketplace-selected-recap__tag">
-                    {selectedItem.rarity}
-                  </span>
-                )}
-                {selectedItem.cardSet?.name && (
-                  <span className="marketplace-selected-recap__tag">
-                    {selectedItem.cardSet.name}
-                  </span>
+                {isInventoryCard(selectedItem) && (
+                  <>
+                    <span className="marketplace-selected-recap__tag">
+                      {selectedItem.rarity}
+                    </span>
+                    {selectedItem.set && (
+                      <span className="marketplace-selected-recap__tag">
+                        {selectedItem.set}
+                      </span>
+                    )}
+                  </>
                 )}
                 <span className="marketplace-selected-recap__stock">
                   {t("marketplace.modal.in_stock", {

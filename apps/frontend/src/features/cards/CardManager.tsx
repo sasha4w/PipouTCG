@@ -16,7 +16,8 @@ import type { Card, CreateCardData } from "../../services/card.service";
 import type { CardSet } from "../../services/card-set.service";
 import type { Image } from "../../services/image.service";
 import SearchBar from "../../components/Searchbar";
-import FilterPanel, { useFilters } from "../../components/FilterPanel";
+import FilterPanel from "../../components/FilterPanel";
+import { useFilters } from "../../hooks/useFilters";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
 

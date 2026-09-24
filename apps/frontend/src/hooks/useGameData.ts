@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { questService } from "../services/quest.service";
+import {
+  questService,
+  type UserQuestsGrouped,
+} from "../services/quest.service";
 import { api } from "../api/api";
 import { QUERY_KEYS } from "../utils/querykeys";
 // --- Hook pour les données utilisateur (Or, Niveau, etc.) ---
@@ -37,12 +40,12 @@ export const useClaimReward = () => {
       const previousQuests = queryClient.getQueryData(QUERY_KEYS.quests);
 
       // On modifie localement le cache de manière optimiste
-      queryClient.setQueryData(QUERY_KEYS.quests, (old: any) => {
+      queryClient.setQueryData<UserQuestsGrouped>(QUERY_KEYS.quests, (old) => {
         if (!old) return old;
         // On parcourt les catégories (DAILY, WEEKLY...) pour trouver la quête
         const updated = { ...old };
-        for (const key in updated) {
-          updated[key] = updated[key].map((q: any) =>
+        for (const key of Object.keys(updated) as (keyof UserQuestsGrouped)[]) {
+          updated[key] = updated[key].map((q) =>
             q.id === userQuestId ? { ...q, rewardClaimed: true } : q,
           );
         }

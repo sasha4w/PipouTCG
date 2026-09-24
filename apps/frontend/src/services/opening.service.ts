@@ -24,7 +24,11 @@ export interface OpeningResult {
   boosters?: BundleBooster[]; // uniquement pour les bundles
 }
 
-function normalizeCards(rawCards: any[]): OpenedCard[] {
+/** Carte renvoyée par l'ouverture : champs parfois absents, complétés ici. */
+type RawOpenedCard = Pick<OpenedCard, "id" | "name"> &
+  Partial<Omit<OpenedCard, "id" | "name">>;
+
+function normalizeCards(rawCards: RawOpenedCard[]): OpenedCard[] {
   return rawCards.map((c) => ({
     id: c.id,
     name: c.name,
