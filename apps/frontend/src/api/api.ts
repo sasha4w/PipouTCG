@@ -1,8 +1,6 @@
 import axios from "axios";
 import type { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import type { ZodSchema } from "zod";
 import { parseApiError, logError } from "../utils/errors";
-import { safeValidate, validateStrict } from "../types/schemas";
 
 /**
  * Create axios instance with base configuration
@@ -102,50 +100,3 @@ api.interceptors.response.use(
     return Promise.reject(appError);
   }
 );
-
-/**
- * Request deduplication to prevent duplicate API calls
- * Stores pending requests and reuses their promises
- */
-const pendingRequests = new Map<string, Promise<unknown>>();
-
-/**
- * Wrap api calls with deduplication (optional, for get requests mainly)
- */
-export function apiWithDedup<T>(
-  promiseFactory: () => Promise<T>,
-  cacheKey: string
-): Promise<T> {
-  if (pendingRequests.has(cacheKey)) {
-    return pendingRequests.get(cacheKey) as Promise<T>;
-  }
-
-  const promise = promiseFactory().finally(() => {
-    pendingRequests.delete(cacheKey);
-  });
-
-  pendingRequests.set(cacheKey, promise);
-  return promise;
-}
-
-/**
- * Validate API response data against a Zod schema (safe - returns data as-is on validation error)
- * Use this for optional validation where backward compatibility is important
- */
-export function validateResponse<T>(
-  data: unknown,
-  schema: ZodSchema<T>
-): T {
-  return safeValidate(data, schema);
-}
-
-/**
- * Strictly validate API response (throws on validation error)
- * Use this for critical endpoints where data format must be exact
- */
-export function validateResponseStrict<T>(
-  data: unknown,
-  schema: ZodSchema<T>
-): T {
-  return validateStrict(data, schema);
-}

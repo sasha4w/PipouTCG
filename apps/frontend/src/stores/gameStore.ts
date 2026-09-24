@@ -5,7 +5,8 @@
  */
 
 import { create } from "zustand";
-import type { GameState, PlayerStats } from "../types";
+import type { GameState } from "../features/fight/fight.types";
+import type { PlayerStats } from "../services/fight.service";
 
 export interface GameStoreState {
   // Match state

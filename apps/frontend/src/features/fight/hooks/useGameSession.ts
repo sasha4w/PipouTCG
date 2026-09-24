@@ -6,7 +6,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import { useGameStore } from "../../../stores";
-import type { GameState } from "../../../types";
+import type { GameState } from "../fight.types";
 
 export function useGameSession() {
   const {
