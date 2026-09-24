@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   questService,
   type Quest,
@@ -7,7 +8,9 @@ import {
   RewardType,
   ConditionType,
   ConditionOperator,
+  type QuestCondition,
 } from "../../services/quest.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
 import "./QuestManager.css";
 
@@ -65,8 +68,7 @@ type View = "list" | "form";
 
 // ── Composant ─────────────────────────────────────────────────────────────────
 export default function QuestManager() {
-  const [quests, setQuests] = useState<Quest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [view, setView] = useState<View>("list");
   const [step, setStep] = useState(1);
@@ -75,21 +77,16 @@ export default function QuestManager() {
   const [saving, setSaving] = useState(false);
 
   // ── Chargement ────────────────────────────────────────────────────────────
-  const load = async () => {
-    setLoading(true);
-    try {
-      const data = await questService.findAll();
-      setQuests(data);
-    } catch {
-      setError("Erreur de chargement");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const questsQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.quests,
+    queryFn: () => questService.findAll(),
+  });
+  const quests: Quest[] = questsQuery.data ?? [];
+  const loading = questsQuery.isPending;
+  const loadError = questsQuery.isError ? "Erreur de chargement" : "";
 
-  useEffect(() => {
-    load();
-  }, []);
+  const refreshList = () =>
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.quests });
 
   // ── Navigation ───────────────────────────────────────────────────────────
   const openCreate = () => {
@@ -134,7 +131,7 @@ export default function QuestManager() {
       if (editing) await questService.update(editing.id, form);
       else await questService.create(form);
       backToList();
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la sauvegarde");
     } finally {
@@ -146,7 +143,7 @@ export default function QuestManager() {
     if (!confirm("Supprimer cette quête ?")) return;
     try {
       await questService.remove(id);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur suppression");
     }
@@ -155,14 +152,14 @@ export default function QuestManager() {
   const handleToggle = async (id: number) => {
     try {
       await questService.toggleActive(id);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur");
     }
   };
 
   // ── Helpers form ──────────────────────────────────────────────────────────
-  const setF = (k: keyof CreateQuestData, v: any) =>
+  const setF = <K extends keyof CreateQuestData>(k: K, v: CreateQuestData[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
   const addCondition = () =>
@@ -177,7 +174,11 @@ export default function QuestManager() {
       },
     }));
 
-  const updateCondition = (i: number, key: string, val: any) =>
+  const updateCondition = <K extends keyof QuestCondition>(
+    i: number,
+    key: K,
+    val: QuestCondition[K],
+  ) =>
     setForm((f) => ({
       ...f,
       conditionGroup: {
@@ -232,7 +233,9 @@ export default function QuestManager() {
           </button>
         </div>
 
-        {error && <p className="manager-error">{error}</p>}
+        {(error || loadError) && (
+          <p className="manager-error">{error || loadError}</p>
+        )}
 
         {loading ? (
           <p className="manager-empty">Chargement...</p>
@@ -474,7 +477,9 @@ export default function QuestManager() {
               <select
                 className="manager-form__select quest-condition-row__type"
                 value={cond.type}
-                onChange={(e) => updateCondition(i, "type", e.target.value)}
+                onChange={(e) =>
+                  updateCondition(i, "type", e.target.value as ConditionType)
+                }
               >
                 {Object.values(ConditionType).map((t) => (
                   <option key={t} value={t}>

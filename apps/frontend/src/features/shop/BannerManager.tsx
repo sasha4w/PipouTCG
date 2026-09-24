@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { bannerService } from "../../services/banner.service";
 import { shopService } from "../../services/shop.service";
 import { imageService } from "../../services/image.service";
 import type { Banner } from "../../services/banner.service";
 import type { ShopBooster, ShopBundle } from "../../services/shop.service";
 import type { Image } from "../../services/image.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "../../components/manager.css";
 import "./BannerManager.css";
 
@@ -60,11 +62,7 @@ const STEPS = [
 // ── Composant ────────────────────────────────────────────────────────────────
 
 export default function BannerManager() {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [boosters, setBoosters] = useState<ShopBooster[]>([]);
-  const [bundles, setBundles] = useState<ShopBundle[]>([]);
-  const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [view, setView] = useState<View>("list");
   const [step, setStep] = useState(1);
@@ -81,28 +79,34 @@ export default function BannerManager() {
 
   // ── Chargement ──────────────────────────────────────────────────────────────
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [bannerList, catalog, imageList] = await Promise.all([
-        bannerService.findAll(),
-        shopService.getCatalog(),
-        imageService.findAll(),
-      ]);
-      setBanners(bannerList);
-      setBoosters(catalog.boosters);
-      setBundles(catalog.bundles);
-      setImages(imageList);
-    } catch {
-      setError("Erreur de chargement");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const bannersQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.banners,
+    queryFn: () => bannerService.findAll(),
+  });
+  const catalogQuery = useQuery({
+    queryKey: QUERY_KEYS.shopCatalog,
+    queryFn: () => shopService.getCatalog(),
+  });
+  const imagesQuery = useQuery({
+    queryKey: QUERY_KEYS.imageOptions,
+    queryFn: () => imageService.findAll(),
+  });
+  const banners: Banner[] = bannersQuery.data ?? [];
+  const boosters: ShopBooster[] = catalogQuery.data?.boosters ?? [];
+  const bundles: ShopBundle[] = catalogQuery.data?.bundles ?? [];
+  const images: Image[] = imagesQuery.data ?? [];
+  const loading = bannersQuery.isPending;
+  const loadError =
+    bannersQuery.isError || catalogQuery.isError || imagesQuery.isError
+      ? "Erreur de chargement"
+      : "";
 
-  useEffect(() => {
-    load();
-  }, []);
+  // Une image peut avoir été uploadée avec la bannière
+  const refreshList = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.banners }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.imageOptions }),
+    ]);
 
   // ── Navigation ──────────────────────────────────────────────────────────────
 
@@ -254,7 +258,7 @@ export default function BannerManager() {
       else await bannerService.create(payload as Omit<Banner, "id">);
 
       backToList();
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la sauvegarde.");
     } finally {
@@ -266,7 +270,7 @@ export default function BannerManager() {
     if (!confirm("Supprimer cette bannière ?")) return;
     try {
       await bannerService.remove(id);
-      load();
+      void refreshList();
     } catch {
       setError("Erreur lors de la suppression.");
     }
@@ -275,8 +279,8 @@ export default function BannerManager() {
   const handleToggle = async (id: number) => {
     try {
       const updated = await bannerService.toggleActive(id);
-      setBanners((prev) =>
-        prev.map((b) => (b.id === updated.id ? updated : b)),
+      queryClient.setQueryData<Banner[]>(QUERY_KEYS.admin.banners, (prev) =>
+        prev?.map((b) => (b.id === updated.id ? updated : b)),
       );
     } catch {
       setError("Erreur lors du toggle.");
@@ -326,7 +330,9 @@ export default function BannerManager() {
           </button>
         </div>
 
-        {error && <p className="manager-error">{error}</p>}
+        {(error || loadError) && (
+          <p className="manager-error">{error || loadError}</p>
+        )}
 
         {loading ? (
           <p className="manager-empty">Chargement...</p>

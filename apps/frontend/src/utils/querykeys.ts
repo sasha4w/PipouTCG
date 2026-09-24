@@ -30,6 +30,7 @@ export const QUERY_KEYS = {
   boosterOptions: ["boosters", "options"] as const,
   cardOptions: ["cards", "options"] as const,
   imageOptions: ["images", "options"] as const,
+  shopCatalog: ["shop", "catalog"] as const,
   cardsBySet: (setId: number, page: number) =>
     ["cards", "set", setId, page] as const,
   bundleOptions: ["bundles", "options"] as const,
