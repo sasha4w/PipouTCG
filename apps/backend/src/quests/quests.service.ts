@@ -395,8 +395,8 @@ export class QuestService {
 
   private updateProgress(
     uq: UserQuest,
-    eventType: string,
-    meta: Record<string, any>,
+    eventType: ConditionType,
+    meta: QuestEventMeta,
   ): boolean {
     let changed = false;
 

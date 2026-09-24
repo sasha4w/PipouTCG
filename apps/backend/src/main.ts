@@ -51,4 +51,7 @@ async function bootstrap() {
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
-bootstrap();
+bootstrap().catch((err: unknown) => {
+  console.error("Démarrage de l'API impossible :", err);
+  process.exit(1);
+});

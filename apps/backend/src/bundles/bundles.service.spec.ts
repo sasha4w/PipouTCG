@@ -18,7 +18,7 @@ const mockBundleContentRepo = {
   create: jest.fn(),
   save: jest.fn(),
   manager: {
-    transaction: jest.fn().mockImplementation(async (cb: any) => {
+    transaction: jest.fn((cb: (manager: unknown) => unknown) => {
       const fakeManager = {
         save: jest.fn().mockResolvedValue({ id: 1 }),
         create: jest.fn().mockReturnValue({}),

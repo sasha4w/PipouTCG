@@ -43,7 +43,7 @@ export class CreateBannerDto {
   startDate!: string;
 
   /** Obligatoire uniquement si isPermanent est false/absent */
-  @ValidateIf((o) => !o.isPermanent)
+  @ValidateIf((o: CreateBannerDto) => !o.isPermanent)
   @IsDateString()
   endDate?: string;
 

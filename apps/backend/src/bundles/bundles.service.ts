@@ -211,9 +211,9 @@ export class BundlesService {
 
     return {
       message: `Bundle "${bundle.name}" ouvert avec succès`,
-      cards: bundle.contents
-        .filter((c) => c.card)
-        .flatMap((c) => Array(c.quantity).fill(c.card)),
+      cards: bundle.contents.flatMap(({ card, quantity }) =>
+        card ? Array.from({ length: quantity }, () => card) : [],
+      ),
       boosters: bundle.contents.flatMap((c) =>
         c.booster ? [{ name: c.booster.name, quantity: c.quantity }] : [],
       ),

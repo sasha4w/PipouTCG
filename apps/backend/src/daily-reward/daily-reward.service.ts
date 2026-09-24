@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { LoginStreak } from './login-streak.entity';
 import { DailyRewardDefinition } from './daily-reward-definition.entity';
 import { MilestoneReward } from './milestone-reward.entity';
@@ -115,7 +115,7 @@ export class DailyRewardService {
 
     // Fallback sur la définition générique
     return this.rewardDefRepo.findOne({
-      where: { cycleDay, weekNumber: null as any, isActive: true },
+      where: { cycleDay, weekNumber: IsNull(), isActive: true },
     });
   }
 

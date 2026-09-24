@@ -1,3 +1,4 @@
+import { CardSet } from '../card-sets/card-set.entity';
 import {
   Injectable,
   NotFoundException,
@@ -104,7 +105,7 @@ export class BoostersService {
     }>,
   ) {
     const booster = await this.findOne(id);
-    if (data.cardSetId) booster.cardSet = { id: data.cardSetId } as any;
+    if (data.cardSetId) booster.cardSet = { id: data.cardSetId } as CardSet;
     Object.assign(booster, data);
     return this.boosterRepository.save(booster);
   }
@@ -240,8 +241,8 @@ export class BoostersService {
 
       const history = await manager.save(
         manager.create(BoosterOpenHistory, {
-          user: { id: userId } as any,
-          booster: { id: booster.id } as any,
+          user: { id: userId },
+          booster: { id: booster.id },
           openedAt: new Date(),
         }),
       );
@@ -257,8 +258,8 @@ export class BoostersService {
 
         await manager.save(
           manager.create(BoosterOpenCard, {
-            card: { id: Number(cardId) } as any,
-            openHistory: { id: history.id } as any,
+            card: { id: Number(cardId) },
+            openHistory: { id: history.id },
             quantity,
           }),
         );

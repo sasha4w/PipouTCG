@@ -28,7 +28,7 @@ const mockOpenCardRepo = {
   create: jest.fn(),
   save: jest.fn(),
   manager: {
-    transaction: jest.fn().mockImplementation(async (cb: any) => {
+    transaction: jest.fn((cb: (manager: unknown) => unknown) => {
       const fakeManager = {
         save: jest.fn().mockResolvedValue({ id: 1 }),
         create: jest.fn().mockReturnValue({}),
@@ -246,7 +246,7 @@ describe('BoostersService', () => {
       mockCardRepo.find.mockResolvedValue(fakeCards);
 
       mockOpenCardRepo.manager.transaction.mockImplementationOnce(
-        async (cb: any) => {
+        (cb: (manager: unknown) => unknown) => {
           const fakeManager = {
             save: jest.fn().mockResolvedValue({ id: 1 }),
             create: jest.fn().mockReturnValue({}),

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import { Banner } from './banner.entity';
+import { Banner, BannerItemType } from './banner.entity';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UsersService } from '../users/users.service';
 import { BoostersService } from '../boosters/boosters.service';
@@ -105,7 +105,7 @@ export class BannersService {
 
     await this.usersService.spendGoldAndRecordPurchase(userId, totalCost);
 
-    if (banner.itemType === 'BOOSTER') {
+    if (banner.itemType === BannerItemType.BOOSTER) {
       await this.usersService.addBoosterToUser(userId, banner.itemId, quantity);
     } else {
       await this.usersService.addBundleToUser(userId, banner.itemId, quantity);

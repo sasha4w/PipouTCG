@@ -24,8 +24,10 @@ const mockEventEmitter = { emit: jest.fn() };
 const mockManager = {
   findOne: jest.fn(),
   create: jest.fn((_entity: unknown, data: object) => ({ ...data })),
-  save: jest.fn(async (entity: unknown) =>
-    Array.isArray(entity) ? entity : { id: 42, ...(entity as object) },
+  save: jest.fn((entity: unknown) =>
+    Promise.resolve(
+      Array.isArray(entity) ? entity : { id: 42, ...(entity as object) },
+    ),
   ),
   increment: jest.fn(),
   update: jest.fn(),

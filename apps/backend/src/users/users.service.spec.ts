@@ -93,7 +93,10 @@ describe('UsersService', () => {
 
       const result = await service.findOne(1);
 
-      expect(result).toMatchObject({ id: 1, level: expect.any(Number) });
+      expect(result).toMatchObject({
+        id: 1,
+        level: expect.any(Number) as number,
+      });
     });
 
     it('should throw NotFoundException if user not found', async () => {

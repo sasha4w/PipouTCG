@@ -50,7 +50,8 @@ describe('AuthController', () => {
         access_token: 'jwt_token',
         autoClaimedRewards: [],
       });
-      const res = { cookie: jest.fn() } as unknown as Response;
+      const cookie = jest.fn();
+      const res = { cookie } as unknown as Response;
 
       const result = await controller.login(dto, res);
       expect(mockAuthService.login).toHaveBeenCalledWith(
@@ -58,7 +59,7 @@ describe('AuthController', () => {
         dto.password,
         undefined,
       );
-      expect(res.cookie).toHaveBeenCalledWith(
+      expect(cookie).toHaveBeenCalledWith(
         'token',
         'jwt_token',
         expect.objectContaining({

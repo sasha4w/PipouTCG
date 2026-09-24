@@ -11,7 +11,10 @@ export class UpdateListingDto {
   @Min(1)
   quantity?: number;
 
-  @ValidateIf((o) => o.unitPrice === undefined && o.quantity === undefined)
+  @ValidateIf(
+    (o: UpdateListingDto) =>
+      o.unitPrice === undefined && o.quantity === undefined,
+  )
   @IsInt({ message: 'Au moins unitPrice ou quantity doit être fourni.' })
   _atLeastOne?: never;
 }

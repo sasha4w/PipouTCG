@@ -81,17 +81,17 @@ export class TransactionController {
   }
 
   @OnEvent('listing.created')
-  handleListingCreated(payload: any) {
+  handleListingCreated(payload: Record<string, unknown>) {
     this.sseMarketSubject.next({ type: 'listing.created', ...payload });
   }
 
   @OnEvent('listing.cancelled')
-  handleListingCancelled(payload: any) {
+  handleListingCancelled(payload: Record<string, unknown>) {
     this.sseMarketSubject.next({ type: 'listing.cancelled', ...payload });
   }
 
   @OnEvent('listing.updated')
-  handleListingUpdated(payload: any) {
+  handleListingUpdated(payload: Record<string, unknown>) {
     this.sseMarketSubject.next({ type: 'listing.updated', ...payload });
   }
 

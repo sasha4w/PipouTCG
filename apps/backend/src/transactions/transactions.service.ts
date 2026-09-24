@@ -186,7 +186,7 @@ export class TransactionService {
       }
 
       const itemName =
-        (inventoryItem as any)[relationKey]?.name ?? `Objet #${dto.productId}`;
+        this.inventoryItemName(inventoryItem) ?? `Objet #${dto.productId}`;
       inventoryItem.quantity -= dto.quantity;
       await manager.save(inventoryItem);
 
@@ -428,7 +428,7 @@ export class TransactionService {
       if (isFullBuy) {
         await manager.update(Transaction, transactionId, {
           status: TransactionStatus.COMPLETED,
-          buyer: { id: buyerId } as any,
+          buyer: { id: buyerId },
           totalPrice,
           updatedAt: new Date(),
         });
@@ -563,6 +563,15 @@ export class TransactionService {
     if (!item) throw new BadRequestException('Inventaire introuvable');
     item.quantity += listing.quantity;
     await manager.save(item);
+  }
+
+  /** Nom du produit lié à une ligne d'inventaire (relation chargée par la requête). */
+  private inventoryItemName(
+    item: UserCard | UserBooster | UserBundle,
+  ): string | undefined {
+    if (item instanceof UserCard) return item.card?.name;
+    if (item instanceof UserBooster) return item.booster?.name;
+    return item.bundle?.name;
   }
 
   private mapProductType(type: ProductType) {

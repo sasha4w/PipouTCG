@@ -1,3 +1,4 @@
+import { CardSet } from '../card-sets/card-set.entity';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -73,7 +74,7 @@ export class CardsService {
       card.image = await this.imagesService.findOne(imageId);
     }
 
-    if (cardSetId) card.cardSet = { id: cardSetId } as any;
+    if (cardSetId) card.cardSet = { id: cardSetId } as CardSet;
     Object.assign(card, cardData); // ← plus d'imageId ni cardSetId dans le spread
     return this.cardRepository.save(card);
   }

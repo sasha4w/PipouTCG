@@ -3,6 +3,8 @@ import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CardsService } from './cards.service';
 import { Card } from './card.entity';
+import { CardSet } from '../card-sets/card-set.entity';
+import { Image } from '../images/image.entity';
 import { ImagesService } from '../images/images.service'; // ← remplace UploadService
 import { Rarity } from './enums/rarity.enum';
 import { CardType } from './enums/cardtype.enum';
@@ -24,7 +26,7 @@ const fakeImage = {
   id: 1,
   name: 'dragon',
   url: 'https://imgbb.com/dragon.webp',
-  deleteHash: 'abc123',
+  deleteUrl: 'https://ibb.co/abc/abc123',
 };
 
 const fakeCard: Partial<Card> = {
@@ -34,8 +36,8 @@ const fakeCard: Partial<Card> = {
   type: CardType.MONSTER,
   atk: 100,
   hp: 200,
-  image: fakeImage as any,
-  cardSet: { id: 1 } as any,
+  image: fakeImage as Image,
+  cardSet: { id: 1 } as CardSet,
 };
 
 const fakeFile = {
@@ -208,7 +210,7 @@ describe('CardsService', () => {
     it('should throw NotFoundException if card not found', async () => {
       mockCardRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.update(999, undefined as any, {})).rejects.toThrow(
+      await expect(service.update(999, undefined, {})).rejects.toThrow(
         NotFoundException,
       );
     });
