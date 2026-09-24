@@ -66,6 +66,23 @@ export interface Quest {
   isActive: boolean;
 }
 
+/** Avancement d'une condition (miroir de ConditionProgress côté back). */
+export interface ConditionProgress {
+  type: ConditionType;
+  current: number;
+  target: number;
+  completed: boolean;
+  rarity?: string;
+  setId?: number;
+  boosterId?: number;
+}
+
+export interface QuestProgress {
+  operator: ConditionOperator;
+  conditions: ConditionProgress[];
+  globalCompleted: boolean;
+}
+
 export interface UserQuest {
   id: number;
   questId: number;
@@ -75,7 +92,7 @@ export interface UserQuest {
   rewardType: RewardType;
   rewardAmount: number;
   rewardItemId?: number;
-  progress: any;
+  progress: QuestProgress | null;
   isCompleted: boolean;
   rewardClaimed: boolean;
   resetAt: string | null;

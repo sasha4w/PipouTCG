@@ -1,4 +1,5 @@
 import { api } from "../api/api";
+import type { CardType, Rarity, SupportType } from "./card.service";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -10,12 +11,12 @@ export interface DeckCardEntry {
 export interface CardInDeck {
   id: number;
   name: string;
-  rarity: string;
-  type: string;
+  rarity: Rarity;
+  type: CardType;
   atk: number;
   hp: number;
   cost: number;
-  supportType?: string | null;
+  supportType?: SupportType | null;
   description?: string | null;
   image?: { id: number; url: string } | null;
 }

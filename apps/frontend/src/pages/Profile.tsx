@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { questService } from "../services/quest.service";
@@ -23,7 +23,6 @@ export default function Profile() {
   const [openingTarget, setOpeningTarget] = useState<OpeningTarget | null>(
     null,
   );
-  const [isPrivate, setIsPrivate] = useState(false);
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -53,14 +52,14 @@ export default function Profile() {
 
   const loading = l1 || l2 || l3 || l4;
 
-  useEffect(() => {
-    if (profile) setIsPrivate(profile.isPrivate);
-  }, [profile]);
+  const isPrivate = profile?.isPrivate ?? false;
 
   const handleTogglePrivacy = async () => {
     if (!profile) return;
     const res = await userService.togglePrivacy(profile.id);
-    setIsPrivate(res.isPrivate);
+    queryClient.setQueryData<typeof profile>(QUERY_KEYS.myStats, (prev) =>
+      prev ? { ...prev, isPrivate: res.isPrivate } : prev,
+    );
   };
 
   const handleOpeningDone = () => {

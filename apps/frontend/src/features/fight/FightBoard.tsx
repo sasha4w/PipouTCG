@@ -72,7 +72,11 @@ export default function FightBoard({
     useState<PendingChoice | null>(null);
 
   // Zone adverse choisie pour Zeta (distinct de selectedZone qui est côté allié)
-  const [selectedOppZone, setSelectedOppZone] = useState<number | null>(null);
+  // Zone adverse choisie pour Noyau Zeta, liée à la carte de la main sélectionnée
+  const [oppZoneChoice, setOppZoneChoice] = useState<{
+    card: number | null;
+    zone: number;
+  } | null>(null);
 
   // ── Attack animation ──────────────────────────────────────────────────────
   const [attackingZoneIdx, setAttackingZoneIdx] = useState<number | null>(null);
@@ -149,10 +153,11 @@ export default function FightBoard({
     selectedHandCard?.type === "monster" &&
     selectedHandCard.id === NOYAU_ZETA_CARD_ID;
 
-  // Reset selectedOppZone quand Zeta est désélectionné
-  useEffect(() => {
-    if (!isZeta) setSelectedOppZone(null);
-  }, [isZeta]);
+  // Valable seulement tant que la même carte Zeta reste sélectionnée
+  const selectedOppZone =
+    isZeta && oppZoneChoice?.card === selectedCard ? oppZoneChoice.zone : null;
+  const setSelectedOppZone = (zone: number | null) =>
+    setOppZoneChoice(zone === null ? null : { card: selectedCard, zone });
 
   const monsterNeedsPayment = (card: HandCard): boolean => {
     const cost = card.cost ?? 0;
@@ -226,7 +231,7 @@ export default function FightBoard({
 
   // ── Event handlers ────────────────────────────────────────────────────────
 
-  const handleCardClick = (idx: number, _card: HandCard) => {
+  const handleCardClick = (idx: number) => {
     if (!gs.isMyTurn) return;
 
     if (phase === "main") {

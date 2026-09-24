@@ -47,12 +47,15 @@ function RewardLabel({ quest }: { quest: UserQuest }) {
 }
 
 // ── Countdown ─────────────────────────────────────────────────────────────────
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
 function formatTimeRemaining(
   resetAt: string | null,
-  t: (k: string, opts?: any) => string,
+  t: Translate,
+  now: number,
 ): string {
   if (!resetAt) return t("quests.permanent");
-  const diff = new Date(resetAt).getTime() - Date.now();
+  const diff = new Date(resetAt).getTime() - now;
   if (diff <= 0) return t("quests.expired");
   const totalSec = Math.floor(diff / 1000);
   const d = Math.floor(totalSec / 86400);
@@ -65,21 +68,15 @@ function formatTimeRemaining(
   return t("quests.remaining_secs", { s });
 }
 
-function useCountdown(
-  resetAt: string | null,
-  t: (k: string, opts?: any) => string,
-): string {
-  const [label, setLabel] = useState(() => formatTimeRemaining(resetAt, t));
+/** Libellé du temps restant, rafraîchi chaque seconde (l'horloge avance, le libellé est dérivé). */
+function useCountdown(resetAt: string | null, t: Translate): string {
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!resetAt) return;
-    setLabel(formatTimeRemaining(resetAt, t));
-    const interval = setInterval(
-      () => setLabel(formatTimeRemaining(resetAt, t)),
-      1000,
-    );
+    const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [resetAt, t]);
-  return label;
+  }, [resetAt]);
+  return formatTimeRemaining(resetAt, t, now);
 }
 
 // ── Progress ──────────────────────────────────────────────────────────────────
@@ -88,8 +85,8 @@ function parseProgress(quest: UserQuest): { current: number; target: number } {
     const conds = quest.progress?.conditions ?? [];
     if (conds.length === 0) return { current: 0, target: 1 };
     return {
-      current: conds.reduce((s: number, c: any) => s + (c.current ?? 0), 0),
-      target: conds.reduce((s: number, c: any) => s + (c.target ?? 1), 0),
+      current: conds.reduce((s, c) => s + (c.current ?? 0), 0),
+      target: conds.reduce((s, c) => s + (c.target ?? 1), 0),
     };
   } catch {
     return { current: 0, target: 1 };

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   deckService,
+  type CardInDeck,
   type Deck,
   type DeckCardEntry,
 } from "../../services/deck.service";
@@ -8,11 +10,23 @@ import { userService } from "../../services/user.service";
 import type { Card } from "../../services/card.service";
 import CardDisplay from "../cards/CardDisplay";
 import "../../components/manager.css";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import "./DeckBuilder.css";
 
 type View = "list" | "editor";
 
-function toCard(c: any): Card {
+/** Carte proposée dans l'éditeur : issue de l'inventaire ou du deck édité. */
+type PickableCard = CardInDeck & {
+  userCardId: number;
+  quantity: number;
+  set?: string;
+  setId?: number;
+};
+
+const NO_DECKS: Deck[] = [];
+const NO_CARDS: PickableCard[] = [];
+
+function toCard(c: PickableCard): Card {
   return {
     id: c.id,
     name: c.name,
@@ -22,7 +36,7 @@ function toCard(c: any): Card {
     atk: c.atk,
     hp: c.hp,
     cost: c.cost,
-    description: c.description,
+    description: c.description ?? undefined,
     image: c.image ?? null,
     cardSet: { id: c.setId ?? 0, name: c.set ?? "" },
   };
@@ -30,34 +44,28 @@ function toCard(c: any): Card {
 
 export default function DeckBuilder() {
   const [view, setView] = useState<View>("list");
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [inventoryCards, setInventoryCards] = useState<any[]>([]);
+  const queryClient = useQueryClient();
+  const decksQuery = useQuery({
+    queryKey: QUERY_KEYS.decks,
+    queryFn: () => deckService.getMyDecks(),
+  });
+  const inventoryQuery = useQuery({
+    queryKey: QUERY_KEYS.inventory,
+    queryFn: () => userService.getMyInventory(),
+  });
+  const decks = decksQuery.data ?? NO_DECKS;
+  const inventoryCards: PickableCard[] =
+    inventoryQuery.data?.cards.data ?? NO_CARDS;
+  const loading = decksQuery.isPending || inventoryQuery.isPending;
   const [editing, setEditing] = useState<Deck | null>(null);
   const [deckName, setDeckName] = useState("");
   const [cards, setCards] = useState<DeckCardEntry[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedCard, setSelectedCard] = useState<any | null>(null);
+  const [selectedCard, setSelectedCard] = useState<PickableCard | null>(null);
   const [tab, setTab] = useState<"inventory" | "deck">("inventory");
 
-  // ─── LOAD ─────────────────────────────────────
-  const load = async () => {
-    setLoading(true);
-    try {
-      const [d, inv] = await Promise.all([
-        deckService.getMyDecks(),
-        userService.getMyInventory(),
-      ]);
-      setDecks(d);
-      setInventoryCards(inv.cards.data);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
+  const refreshDecks = () =>
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.decks });
 
   // ─── NAV ──────────────────────────────────────
   const openCreate = () => {
@@ -89,7 +97,7 @@ export default function DeckBuilder() {
   };
 
   // ─── CARTE MAP ────────────────────────────────
-  const allCardsMap = new Map<number, any>();
+  const allCardsMap = new Map<number, PickableCard>();
   inventoryCards.forEach((c) => allCardsMap.set(c.userCardId, c));
   editing?.deckCards.forEach((dc) => {
     if (!allCardsMap.has(dc.userCard.id)) {
@@ -143,13 +151,13 @@ export default function DeckBuilder() {
     if (editing) await deckService.updateDeck(editing.id, body);
     else await deckService.createDeck(body);
     back();
-    load();
+    void refreshDecks();
   };
 
   const removeDeck = async (id: number) => {
     if (!confirm("Supprimer ce deck ?")) return;
     await deckService.deleteDeck(id);
-    load();
+    void refreshDecks();
   };
 
   const rarityColor: Record<string, string> = {
@@ -162,7 +170,9 @@ export default function DeckBuilder() {
   };
 
   // ─── MODAL CARTE ──────────────────────────────
-  const CardModal = () => {
+  // Fonction de rendu, pas composant : un composant déclaré ici changerait
+  // d'identité à chaque rendu et remonterait la modale (flip de carte perdu).
+  const renderCardModal = () => {
     if (!selectedCard) return null;
     const c = selectedCard;
     const inDeck = cards.find((x) => x.userCardId === c.userCardId);
@@ -291,7 +301,7 @@ export default function DeckBuilder() {
   // ═════════════════ EDITOR ═════════════════
   return (
     <div className="manager deck-editor">
-      <CardModal />
+      {renderCardModal()}
 
       {/* Header */}
       <div className="manager__header deck-editor__topbar">
@@ -382,7 +392,8 @@ export default function DeckBuilder() {
                       <span
                         className="deck-card-row__dot"
                         style={{
-                          background: rarityColor[info?.rarity] ?? "#ccc",
+                          background:
+                            (info && rarityColor[info.rarity]) ?? "#ccc",
                         }}
                       />
                       <span className="deck-row__name">

@@ -1,4 +1,18 @@
 import { api } from "../api/api";
+import type { CardType, Rarity, SupportType } from "./card.service";
+
+/** Carte du portfolio public d'un joueur (GET /users/:id/portfolio). */
+export interface PortfolioCard {
+  id: number;
+  name: string;
+  rarity: Rarity;
+  atk: number;
+  hp: number;
+  type: CardType;
+  set?: string;
+  setId?: number;
+  quantity: number;
+}
 
 export interface UserProfile {
   id: number;
@@ -44,13 +58,13 @@ export interface UserInventory {
       userCardId: number;
       id: number;
       name: string;
-      rarity: string;
+      rarity: Rarity;
       atk: number;
       hp: number;
       cost: number;
-      supportType?: string | null;
+      supportType?: SupportType | null;
       description?: string;
-      type: string;
+      type: CardType;
       set: string;
       setId: number;
       image?: { id: number; url: string } | null;
@@ -123,7 +137,7 @@ export const userService = {
     id: number,
     page = 1,
     limit = 20,
-  ): Promise<PaginatedResponse<any>> {
+  ): Promise<PaginatedResponse<PortfolioCard>> {
     const res = await api.get(`/users/${id}/portfolio`, {
       params: { page, limit },
     });

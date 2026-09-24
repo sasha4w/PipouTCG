@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SoundButton from "./SoundButton";
@@ -261,7 +260,6 @@ function IconCrown() {
 }
 
 export default function Header() {
-  const [mounted, setMounted] = useState(false);
   const navigate = useNavigate(); // Tu as déjà ceci
   const { t } = useTranslation();
   const { data: user } = useQuery({
@@ -270,14 +268,13 @@ export default function Header() {
     staleTime: 5 * 60 * 1000,
   });
 
-  useEffect(() => setMounted(true), []);
   const isAdminUser = user?.is_admin === true;
 
   return (
     <header className="cc-header">
       {/* Ajout du onClick et du cursor: pointer ici 👇 */}
       <div
-        className={`cc-header__title-row ${mounted ? "cc-header__title-row--visible" : "cc-header__title-row--hidden"}`}
+        className="cc-header__title-row"
         onClick={() => navigate("/")}
         style={{ cursor: "pointer" }}
       >
