@@ -1,6 +1,8 @@
+import type { CardInstance } from "../fight.types";
 import "./SupportZoneContent.css";
+
 interface Props {
-  zone: any;
+  zone: CardInstance;
 }
 
 export default function SupportZoneContent({ zone }: Props) {

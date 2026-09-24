@@ -10,10 +10,11 @@ import { useZoneAnimations } from "./useZoneAnimations";
 import MonsterZoneContent from "./MonsterZoneContent";
 import SupportZoneContent from "./SupportZoneContent";
 import BuffDebuffList from "../BuffDebuffList";
+import { isMonsterZone, type BoardZone } from "../fight.types";
 
 interface Props {
   label: string;
-  zones: (any | null)[];
+  zones: (BoardZone | null)[];
   isSupport?: boolean;
   isOpponent?: boolean;
   dim?: boolean;
@@ -54,6 +55,7 @@ export default function ZoneRow({
 
   const [openBuffIdx, setOpenBuffIdx] = useState<number | null>(null);
   const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+  const openZone = openBuffIdx !== null ? zones[openBuffIdx] : null;
 
   const handleBadgeClick = (
     e: React.MouseEvent<HTMLButtonElement>,
@@ -84,8 +86,7 @@ export default function ZoneRow({
           const dyingData = dyingZones.get(idx);
           const isZetaTarget = highlightOpponentEmpty && !zone && !isShattering;
           const rarityColor =
-            getRarityBorderColor(zone ?? null, isSupport) ??
-            getRarityBorderColor(dyingData, isSupport);
+            getRarityBorderColor(zone) ?? getRarityBorderColor(dyingData);
 
           const zoneClasses = [
             "zr-zone",
@@ -132,19 +133,17 @@ export default function ZoneRow({
               )}
 
               {zone ? (
-                isSupport ? (
-                  <SupportZoneContent zone={zone} />
-                ) : (
+                isMonsterZone(zone) ? (
                   <MonsterZoneContent
                     zone={zone}
                     isOpponent={isOpponent}
                     onModeChange={onModeChange}
                   />
+                ) : (
+                  <SupportZoneContent zone={zone} />
                 )
               ) : isShattering && dyingData ? (
-                isSupport ? (
-                  <SupportZoneContent zone={dyingData} />
-                ) : (
+                isMonsterZone(dyingData) ? (
                   <div className="zr-monster zr-dying-content">
                     <div
                       className={`zr-mode-chip zr-mode-chip--${dyingData.mode}`}
@@ -152,13 +151,15 @@ export default function ZoneRow({
                       {dyingData.mode === "attack" ? "⚔️" : "🛡️"}
                     </div>
                     <div className="zr-monster-name">
-                      {dyingData.card?.baseCard?.name}
+                      {dyingData.card.baseCard.name}
                     </div>
                     <div className="zr-monster-stats">
-                      {dyingData.card?.baseCard?.atk}⚔ 0/
-                      {dyingData.card?.baseCard?.hp}❤
+                      {dyingData.card.baseCard.atk}⚔ 0/
+                      {dyingData.card.baseCard.hp}❤
                     </div>
                   </div>
+                ) : (
+                  <SupportZoneContent zone={dyingData} />
                 )
               ) : isZetaTarget ? (
                 <span className="zr-zeta-hint">🦠 Poser Zeta</span>
@@ -170,20 +171,22 @@ export default function ZoneRow({
         })}
       </div>
 
-      {openBuffIdx !== null && anchorRect && zones[openBuffIdx] && (
+      {openZone && anchorRect && (
         <BuffDebuffList
           entries={
-            isSupport
-              ? getSupportBuffEntries(zones[openBuffIdx])
-              : getMonsterBuffEntries(zones[openBuffIdx])
+            isMonsterZone(openZone)
+              ? getMonsterBuffEntries(openZone)
+              : getSupportBuffEntries(openZone)
           }
           cardName={
-            isSupport
-              ? (zones[openBuffIdx]?.baseCard?.name ?? "")
-              : (zones[openBuffIdx]?.card?.baseCard?.name ?? "")
+            isMonsterZone(openZone)
+              ? openZone.card.baseCard.name
+              : openZone.baseCard.name
           }
           supportType={
-            isSupport ? zones[openBuffIdx]?.baseCard?.supportType : undefined
+            isMonsterZone(openZone)
+              ? undefined
+              : (openZone.baseCard.supportType ?? undefined)
           }
           anchorRect={anchorRect}
           onClose={() => {

@@ -6,15 +6,16 @@ import {
   type RawEffect,
 } from "../fight.effects";
 import { buildStatRecap } from "./zoneRow.helpers";
+import type { CardInstance, MonsterOnBoard } from "../fight.types";
 
-export function getEquipmentEntries(eq: any): BuffEntry[] {
+export function getEquipmentEntries(eq: CardInstance): BuffEntry[] {
   const entries: BuffEntry[] = [];
   const rawEffects: RawEffect[] = Array.isArray(eq.baseCard?.effects)
     ? eq.baseCard.effects
     : [];
 
   for (const eff of rawEffects) {
-    const condition = (eff as any).condition;
+    const condition = eff.condition;
     const conditionLabel =
       condition?.type === "SPECIFIC_CARD_ON_BOARD"
         ? `Si ${condition.value} présent`
@@ -48,10 +49,10 @@ export function getEquipmentEntries(eq: any): BuffEntry[] {
   return entries;
 }
 
-export function getSupportBuffEntries(zone: any): BuffEntry[] {
+export function getSupportBuffEntries(zone: CardInstance | null): BuffEntry[] {
   if (!zone) return [];
   const entries: BuffEntry[] = [];
-  const supportType: string | undefined = zone.baseCard?.supportType;
+  const supportType = zone.baseCard.supportType ?? undefined;
 
   if (supportType === "TERRAIN")
     entries.push({
@@ -73,7 +74,7 @@ export function getSupportBuffEntries(zone: any): BuffEntry[] {
     : [];
 
   for (const eff of rawEffects) {
-    const condition = (eff as any).condition;
+    const condition = eff.condition;
     const conditionLabel =
       condition?.type === "SPECIFIC_CARD_ON_BOARD"
         ? `Si ${condition.value} est sur le terrain`
@@ -108,7 +109,9 @@ export function getSupportBuffEntries(zone: any): BuffEntry[] {
   return entries;
 }
 
-export function getMonsterBuffEntries(zone: any): BuffEntry[] {
+export function getMonsterBuffEntries(
+  zone: MonsterOnBoard | null,
+): BuffEntry[] {
   if (!zone) return [];
   const entries: BuffEntry[] = [];
   const rawEffects: RawEffect[] = Array.isArray(zone.card?.baseCard?.effects)

@@ -150,6 +150,7 @@ export interface RawAction {
 }
 export interface RawEffect {
   trigger?: string;
+  condition?: { type?: string; value?: number | string } | null;
   actions?: RawAction[];
 }
 

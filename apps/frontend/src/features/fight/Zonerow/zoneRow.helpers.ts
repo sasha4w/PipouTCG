@@ -1,6 +1,12 @@
-import { QUENOUILLE_CARD_ID, RARITY_COLOR } from "../fight.types";
+import {
+  QUENOUILLE_CARD_ID,
+  RARITY_COLOR,
+  isMonsterZone,
+  type BoardZone,
+  type MonsterOnBoard,
+} from "../fight.types";
 
-export function isBlockedFromAttacking(zone: any): boolean {
+export function isBlockedFromAttacking(zone: MonsterOnBoard | null): boolean {
   if (!zone) return false;
   return (
     zone.summonedThisTurn && zone.card?.baseCard?.id === QUENOUILLE_CARD_ID
@@ -8,18 +14,17 @@ export function isBlockedFromAttacking(zone: any): boolean {
 }
 
 export function getRarityBorderColor(
-  zone: any,
-  isSupport: boolean,
+  zone: BoardZone | null | undefined,
 ): string | undefined {
   if (!zone) return undefined;
-  const rarity = isSupport
-    ? zone.baseCard?.rarity
-    : zone.card?.baseCard?.rarity;
+  const rarity = isMonsterZone(zone)
+    ? zone.card.baseCard.rarity
+    : zone.baseCard.rarity;
   return rarity ? RARITY_COLOR[rarity] : undefined;
 }
 
 export function buildStatRecap(
-  zone: any,
+  zone: MonsterOnBoard | null,
 ): { atkLine: string; hpLine: string } | null {
   if (!zone) return null;
   const baseAtk: number = zone.card?.baseCard?.atk ?? 0;

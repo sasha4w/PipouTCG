@@ -1,4 +1,4 @@
-import type { HandCard } from "./FightHand";
+import type { HandCard } from "./handCard";
 import { RARITY_COLOR } from "./fight.types";
 import "./SummonCostModal.css";
 interface Props {

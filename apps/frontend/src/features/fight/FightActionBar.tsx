@@ -1,7 +1,7 @@
 import "./FightActionBar.css";
 import type { Phase, MonsterOnBoard } from "./fight.types";
 import { END_PHASE_LABEL, FREE_SUMMON_CARD_ID } from "./fight.types";
-import type { HandCard } from "./FightHand";
+import type { HandCard } from "./handCard";
 
 interface Props {
   phase: Phase | undefined;

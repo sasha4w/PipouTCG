@@ -1,9 +1,10 @@
 import { getEquipmentEntries } from "./zoneRow.effects";
 import { isBlockedFromAttacking } from "./zoneRow.helpers";
+import type { MonsterOnBoard } from "../fight.types";
 import "./MonsterZoneContent.css";
 
 interface Props {
-  zone: any;
+  zone: MonsterOnBoard;
   isOpponent: boolean;
   onModeChange?: (instanceId: string, mode: "attack" | "guard") => void;
 }
@@ -67,7 +68,7 @@ export default function MonsterZoneContent({
             ⏳{zone.turnCounter}
           </span>
         )}
-        {zone.blockAttackTurns > 0 && (
+        {(zone.blockAttackTurns ?? 0) > 0 && (
           <span
             className="zr-badge zr-badge--sleep"
             title={`Ne peut pas attaquer encore ${zone.blockAttackTurns} tour(s)`}
@@ -103,7 +104,7 @@ export default function MonsterZoneContent({
 
       {Array.isArray(zone.equipments) && zone.equipments.length > 0 && (
         <div className="zr-equipment-list">
-          {(zone.equipments as any[]).map((eq, eIdx) => {
+          {zone.equipments.map((eq, eIdx) => {
             const effectSummary = getEquipmentEntries(eq)
               .map((e) => e.label)
               .join(" | ");

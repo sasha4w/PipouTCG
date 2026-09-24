@@ -6,7 +6,7 @@ import { FREE_SUMMON_CARD_ID, NOYAU_ZETA_CARD_ID } from "./fight.types";
 import FightHUD from "./FightHUD";
 import ZoneRow from "./Zonerow/ZoneRow";
 import FightHand from "./FightHand";
-import type { HandCard } from "./FightHand";
+import { toHandCard, type HandCard } from "./handCard";
 import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
@@ -124,18 +124,7 @@ export default function FightBoard({
 
   // ── Hand mapping ──────────────────────────────────────────────────────────
 
-  const mappedHand: HandCard[] = gs.me.hand.map((ci) => ({
-    id: ci.baseCard.id,
-    name: ci.baseCard.name,
-    type: ci.baseCard.type,
-    atk: ci.baseCard.atk,
-    hp: ci.baseCard.hp,
-    cost: ci.baseCard.cost,
-    rarity: ci.baseCard.rarity,
-    supportType: ci.baseCard.supportType ?? undefined,
-    effects: ci.baseCard.effects ?? null,
-    description: ci.baseCard.description ?? null,
-  }));
+  const mappedHand: HandCard[] = gs.me.hand.map(toHandCard);
 
   const selectedHandCard =
     selectedCard !== null ? mappedHand[selectedCard] : null;

@@ -1,40 +1,11 @@
 import { useState, useRef } from "react";
 import "./FightHand.css";
 import "./BuffDebuffList.css";
-import type { Phase, CardInstance } from "./fight.types";
+import type { Phase } from "./fight.types";
+import type { HandCard } from "./handCard";
 import { RARITY_COLOR, FREE_SUMMON_CARD_ID } from "./fight.types";
 import BuffDebuffList from "./BuffDebuffList";
-import { getCardEffectEntries, type RawEffect } from "./fight.effects";
-
-export interface HandCard {
-  id: number;
-  name: string;
-  type: string;
-  atk: number;
-  hp: number;
-  cost: number;
-  rarity: string;
-  supportType?: string;
-  // ── Enrichis pour le tooltip d'info ──────────────────────────────────────
-  effects?: RawEffect[] | null;
-  description?: string | null;
-}
-
-/** Converts a CardInstance (from server) to the flat HandCard shape */
-export function toHandCard(c: CardInstance): HandCard {
-  return {
-    id: c.baseCard.id,
-    name: c.baseCard.name,
-    type: c.baseCard.type,
-    atk: c.baseCard.atk,
-    hp: c.baseCard.hp,
-    cost: c.baseCard.cost,
-    rarity: c.baseCard.rarity,
-    supportType: c.baseCard.supportType ?? undefined,
-    effects: (c.baseCard as any).effects ?? null,
-    description: (c.baseCard as any).description ?? null,
-  };
-}
+import { getCardEffectEntries } from "./fight.effects";
 
 interface Props {
   hand: HandCard[];

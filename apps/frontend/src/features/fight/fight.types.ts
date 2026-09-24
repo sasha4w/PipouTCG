@@ -16,6 +16,7 @@ export interface CardInstance {
     effects?:
       | {
           trigger: string;
+          condition?: { type: string; value?: number | string } | null;
           actions: { type: string; target: string; value?: number }[];
         }[]
       | null;
@@ -51,6 +52,12 @@ export interface MonsterOnBoard {
   blockAttackTurns?: number;
   guardLocked?: boolean;
 }
+
+/** Contenu d'une zone du plateau : monstre ou carte support. */
+export type BoardZone = MonsterOnBoard | CardInstance;
+
+export const isMonsterZone = (zone: BoardZone): zone is MonsterOnBoard =>
+  "card" in zone;
 
 export interface MyState {
   userId: number;

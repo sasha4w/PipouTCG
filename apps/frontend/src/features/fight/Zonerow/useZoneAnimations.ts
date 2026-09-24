@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
+import { isMonsterZone, type BoardZone } from "../fight.types";
 
-export function useZoneAnimations(zones: (any | null)[], isSupport: boolean) {
-  const prevZonesRef = useRef<(unknown | null)[]>(zones.map(() => null));
-  const prevModesRef = useRef<(string | undefined)[]>(
-    zones.map((z) => z?.mode),
-  );
+const modeOf = (zone: BoardZone | null) =>
+  zone && isMonsterZone(zone) ? zone.mode : undefined;
+
+export function useZoneAnimations(
+  zones: (BoardZone | null)[],
+  isSupport: boolean,
+) {
+  const prevZonesRef = useRef<(BoardZone | null)[]>(zones.map(() => null));
+  const prevModesRef = useRef<(string | undefined)[]>(zones.map(modeOf));
 
   const [summoningZones, setSummoningZones] = useState<Set<number>>(new Set());
   const [flippingZones, setFlippingZones] = useState<Set<number>>(new Set());
-  const [dyingZones, setDyingZones] = useState<Map<number, any>>(new Map());
+  const [dyingZones, setDyingZones] = useState<Map<number, BoardZone>>(
+    new Map(),
+  );
 
   useEffect(() => {
     const prevZones = prevZonesRef.current;
@@ -34,7 +41,7 @@ export function useZoneAnimations(zones: (any | null)[], isSupport: boolean) {
 
       if (!isSupport && prevZones[idx] && zone) {
         const prevMode = prevModes[idx];
-        const curMode = zone.mode as string | undefined;
+        const curMode = modeOf(zone);
         if (prevMode && curMode && prevMode !== curMode) newFlipping.add(idx);
       }
     });
@@ -52,7 +59,7 @@ export function useZoneAnimations(zones: (any | null)[], isSupport: boolean) {
 
   useEffect(() => {
     prevZonesRef.current = [...zones];
-    prevModesRef.current = zones.map((z) => z?.mode);
+    prevModesRef.current = zones.map(modeOf);
   });
 
   return { summoningZones, flippingZones, dyingZones };
