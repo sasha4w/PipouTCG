@@ -16,6 +16,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@pipou/shared": "workspace:*",
     "@tanstack/react-query": "^5.94.5",
     "@types/howler": "^2.2.12",
     "axios": "^1.13.4",
