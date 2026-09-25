@@ -2,21 +2,30 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToOne,
+  Index,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
 
+// Noms alignés sur le schéma de production (table créée en SQL) :
+// toute différence ferait supprimer/recréer index et contraintes par TypeORM.
 @Entity('player_stats')
 export class PlayerStats {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @OneToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  // Un seul PlayerStats par joueur, garanti par l'index unique uq_player_stats_user
+  // (un @OneToOne imposerait son propre index REL_…).
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({
+    name: 'user_id',
+    foreignKeyConstraintName: 'fk_player_stats_user',
+  })
   user!: User;
 
-  @Column({ name: 'user_id', unique: true })
+  @Index('uq_player_stats_user', { unique: true })
+  @Column({ name: 'user_id' })
   userId!: number;
 
   @Column({ default: 0 })
@@ -29,6 +38,7 @@ export class PlayerStats {
   draws!: number;
 
   /** ELO rating — starts at 1000. */
+  @Index('idx_player_stats_elo')
   @Column({ default: 1000 })
   elo!: number;
 

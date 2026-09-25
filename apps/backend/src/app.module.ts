@@ -25,6 +25,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DecksModule } from './decks/decks.module';
 import { FightsModule } from './fights/fights.module';
 import { ForeignKeyViolationFilter } from './common/filters/foreign-key.filter';
+import { shouldSynchronize } from './database/synchronize';
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
@@ -48,7 +49,7 @@ import { ForeignKeyViolationFilter } from './common/filters/foreign-key.filter';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: shouldSynchronize(process.env),
       namingStrategy: new CustomNamingStrategy(),
       ssl: process.env.DB_SSL_CA_BASE64
         ? {
