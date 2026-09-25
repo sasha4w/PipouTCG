@@ -178,4 +178,6 @@ jobs:
             exit 0
           fi
           ls dist/_redirects dist/_headers
-          npx --yes netlify-cli deploy --prod --dir dist --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN"
+          # --no-build : le dist vient du job frontend ; sans lui, la CLI relance le build
+          # configuré dans l'interface Netlify, à la racine du monorepo
+          npx --yes netlify-cli deploy --prod --no-build --dir dist --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN"
