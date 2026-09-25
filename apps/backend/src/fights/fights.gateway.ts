@@ -7,61 +7,22 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import type {
+  AttackPayload,
+  ChangeModePayload,
+  DiscardPayload,
+  MatchPayload,
+  PickCardsPayload,
+  PlaySupportPayload,
+  RecycleSupportPayload,
+  SubmitDeckPayload,
+  SummonPayload,
+} from '@pipou/shared';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FightsService } from './fights.service';
 import * as cookie from 'cookie';
-import type { FightSocket } from './fight-socket.types';
-
-// ─── Payload shapes received from client ─────────────────────────────────────
-interface SubmitDeckPayload {
-  matchId: number;
-  deckId: number;
-}
-
-interface EndPhasePayload {
-  matchId: number;
-}
-
-interface SummonPayload {
-  matchId: number;
-  handIndex: number;
-  zoneIndex: number;
-  paymentHandIndices: number[];
-}
-
-interface PlaySupportPayload {
-  matchId: number;
-  handIndex: number;
-  zoneIndex?: number;
-  targetInstanceId?: string;
-}
-
-interface RecycleSupportPayload {
-  matchId: number;
-  handIndex: number;
-}
-
-interface ChangeModePayload {
-  matchId: number;
-  instanceId: string;
-  mode: 'attack' | 'guard';
-}
-
-interface AttackPayload {
-  matchId: number;
-  attackerInstanceId: string;
-  targetInstanceId?: string;
-  direct?: boolean;
-}
-
-interface DiscardPayload {
-  matchId: number;
-  handIndex: number;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
+import type { FightServer, FightSocket } from './fight-socket.types';
 
 @WebSocketGateway({
   cors: {
@@ -71,7 +32,7 @@ interface DiscardPayload {
   namespace: 'fight',
 })
 export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server!: Server;
+  @WebSocketServer() server!: FightServer;
 
   constructor(
     private readonly fightsService: FightsService,
@@ -204,7 +165,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('fight:end_phase')
   async endPhase(
     @ConnectedSocket() client: FightSocket,
-    @MessageBody() data: EndPhasePayload,
+    @MessageBody() data: MatchPayload,
   ): Promise<void> {
     const result = await this.fightsService.endPhase(
       data.matchId,
@@ -347,7 +308,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('fight:pick_cards')
   pickCards(
     @ConnectedSocket() client: FightSocket,
-    @MessageBody() data: { matchId: number; instanceIds: string[] },
+    @MessageBody() data: PickCardsPayload,
   ): void {
     const result = this.fightsService.pickCards(
       data.matchId,
@@ -365,7 +326,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('fight:surrender')
   async surrender(
     @ConnectedSocket() client: FightSocket,
-    @MessageBody() data: { matchId: number },
+    @MessageBody() data: MatchPayload,
   ): Promise<void> {
     await this.fightsService.surrender(
       data.matchId,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from './fight-socket.types';
 import {
   GameState,
   GameEndReason,
@@ -110,7 +110,7 @@ export class FightsService {
     matchId: number,
     userId: number,
     deckId: number,
-    server: Server,
+    server: FightServer,
   ): Promise<{ error?: string }> {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -137,7 +137,7 @@ export class FightsService {
   async endPhase(
     matchId: number,
     userId: number,
-    server: Server,
+    server: FightServer,
   ): Promise<{ error?: string }> {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -168,7 +168,7 @@ export class FightsService {
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -192,7 +192,7 @@ export class FightsService {
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -219,7 +219,7 @@ export class FightsService {
     handIndex: number,
     zoneIndex: number | undefined,
     targetInstanceId: string | undefined,
-    server: Server,
+    server: FightServer,
   ): Promise<{ error?: string }> {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -241,7 +241,7 @@ export class FightsService {
     matchId: number,
     userId: number,
     handIndex: number,
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -262,7 +262,7 @@ export class FightsService {
     userId: number,
     instanceId: string,
     mode: CombatMode,
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -289,7 +289,7 @@ export class FightsService {
     attackerInstanceId: string,
     targetInstanceId: string | undefined,
     direct: boolean,
-    server: Server,
+    server: FightServer,
   ): Promise<{ error?: string }> {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -311,7 +311,7 @@ export class FightsService {
     matchId: number,
     userId: number,
     handIndex: number,
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -326,7 +326,7 @@ export class FightsService {
     matchId: number,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const game = this.getGame(matchId);
     if (!game) return { error: 'Match introuvable' };
@@ -340,7 +340,7 @@ export class FightsService {
   async surrender(
     matchId: number,
     userId: number,
-    server: Server,
+    server: FightServer,
   ): Promise<void> {
     const game = this.getGame(matchId);
     if (!game) return;
@@ -352,7 +352,7 @@ export class FightsService {
     await this.executeEndGame(game, opp.userId, 'surrender', server);
   }
 
-  async handleDisconnect(userId: number, server: Server): Promise<void> {
+  async handleDisconnect(userId: number, server: FightServer): Promise<void> {
     this.leaveQueue(userId);
     const matchId = this.userToMatch.get(userId);
     if (!matchId) return;
@@ -402,19 +402,19 @@ export class FightsService {
       game: GameState,
       winnerId: number,
       reason: GameEndReason,
-      server: Server,
+      server: FightServer,
     ) => {
       return this.executeEndGame(game, winnerId, reason, server);
     };
   }
 
-  private timeoutEndPhase(tg: GameState, ts: Server): Promise<void> {
+  private timeoutEndPhase(tg: GameState, ts: FightServer): Promise<void> {
     return this.phase
       .endPhase(tg, tg.currentTurnUserId, ts, this.endGameCallback(), () => {})
       .then(() => void 0);
   }
 
-  private resetTimeout(game: GameState, server: Server): void {
+  private resetTimeout(game: GameState, server: FightServer): void {
     this.turnTimeout.reset(game, server, (tg, ts) =>
       this.timeoutEndPhase(tg, ts),
     );
@@ -423,7 +423,7 @@ export class FightsService {
     game: GameState,
     winnerId: number,
     reason: GameEndReason,
-    server: Server,
+    server: FightServer,
   ): Promise<void> {
     // 1. On coupe toujours le timer
     this.turnTimeout.clear(game.matchId);

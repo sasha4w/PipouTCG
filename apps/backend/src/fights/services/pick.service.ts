@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 import { addLog, getPlayerState, shuffle } from '../helpers/game-state.helper';
 import { emitGameState } from '../helpers/client-state.builder';
@@ -14,7 +14,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const choice = game.pendingChoice;
     if (!choice || choice.forUserId !== userId)
@@ -55,7 +55,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const choice = game.pendingChoice!;
     const player = getPlayerState(game, userId);
@@ -105,7 +105,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const player = getPlayerState(game, userId);
     const [instanceId] = instanceIds;
@@ -145,7 +145,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const player = getPlayerState(game, userId);
     const [instanceId] = instanceIds;
@@ -185,7 +185,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
@@ -218,7 +218,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
@@ -250,7 +250,7 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;

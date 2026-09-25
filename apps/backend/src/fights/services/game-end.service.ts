@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { Match } from '../entities/match.entity';
 import { MatchStatus, MatchEndReason } from '@pipou/shared';
 import { PlayerStats } from '../entities/player-stats.entity';
@@ -26,7 +26,7 @@ export class GameEndService {
     game: GameState,
     winnerId: number,
     reason: GameEndReason,
-    server: Server,
+    server: FightServer,
     onCleanup: (game: GameState) => void,
   ): Promise<void> {
     game.phase = 'finished';
@@ -71,12 +71,12 @@ export class GameEndService {
 
   async checkWinAndEmit(
     game: GameState,
-    server: Server,
+    server: FightServer,
     onEndGame: (
       game: GameState,
       winnerId: number,
       reason: GameEndReason,
-      server: Server,
+      server: FightServer,
     ) => Promise<void>,
   ): Promise<void> {
     const winner = checkWinCondition(game);

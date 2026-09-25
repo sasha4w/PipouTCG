@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { v4 as uuidv4 } from 'uuid';
 import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 import { CardType, EffectTrigger } from '@pipou/shared';
@@ -30,7 +30,7 @@ export class SummonService {
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     return this.doSummon(
       game,
@@ -50,7 +50,7 @@ export class SummonService {
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     const player = getPlayerState(game, userId);
     if (handIndex < 0 || handIndex >= player.hand.length)
@@ -78,7 +78,7 @@ export class SummonService {
     zoneIndex: number,
     paymentHandIndices: number[],
     onOpponentZone: boolean,
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };

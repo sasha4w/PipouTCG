@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { DecksService } from '../../decks/decks.service';
 import { GameState } from '../interfaces/game-state.interface';
 import { getPlayerState, shuffle } from '../helpers/game-state.helper';
@@ -15,8 +15,8 @@ export class DeckSubmissionService {
     game: GameState,
     userId: number,
     deckId: number,
-    server: Server,
-    onBothReady: (game: GameState, server: Server) => void,
+    server: FightServer,
+    onBothReady: (game: GameState, server: FightServer) => void,
   ): Promise<{ error?: string }> {
     if (game.phase !== 'waiting') return { error: 'Le match a déjà commencé' };
 

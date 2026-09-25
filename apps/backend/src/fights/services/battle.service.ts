@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { GameState } from '../interfaces/game-state.interface';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
@@ -28,8 +28,8 @@ export class BattleService {
     attackerInstanceId: string,
     targetInstanceId: string | undefined,
     direct: boolean,
-    server: Server,
-    checkWinAndEmit: (game: GameState, server: Server) => Promise<void>,
+    server: FightServer,
+    checkWinAndEmit: (game: GameState, server: FightServer) => Promise<void>,
   ): Promise<{ error?: string }> {
     // ── Validations communes ─────────────────────────────────────────────────
     if (!isCurrentPlayer(game, userId))

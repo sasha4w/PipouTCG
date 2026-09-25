@@ -1,4 +1,5 @@
-import type { DefaultEventsMap, Socket } from 'socket.io';
+import type { DefaultEventsMap, Server, Socket } from 'socket.io';
+import type { ClientToServerEvents, ServerToClientEvents } from '@pipou/shared';
 
 /** Renseigné par FightsGateway.handleConnection à partir du cookie JWT. */
 export interface FightSocketData {
@@ -6,9 +7,17 @@ export interface FightSocketData {
   username: string;
 }
 
+/** Serveur du namespace /fight : événements typés par le contrat partagé. */
+export type FightServer = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  DefaultEventsMap,
+  FightSocketData
+>;
+
 export type FightSocket = Socket<
-  DefaultEventsMap,
-  DefaultEventsMap,
+  ClientToServerEvents,
+  ServerToClientEvents,
   DefaultEventsMap,
   FightSocketData
 >;

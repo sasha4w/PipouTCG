@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
+import { FIGHT_NAMESPACE, type ClientToServerEvents } from "@pipou/shared";
 import { useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
@@ -8,7 +9,7 @@ import {
   type PlayerStats,
 } from "../../services/fight.service";
 import Leaderboard from "./Leaderboard";
-import type { Tab, GameState } from "./fight.types";
+import type { Tab, GameState, FightClientSocket } from "./fight.types";
 
 import FightTabBar from "./FightTabBar";
 import FightLobby from "./FightLobby";
@@ -42,7 +43,7 @@ export default function FightPage({
     type: "err" | "ok";
   } | null>(null);
   const [timeLeft, setTimeLeft] = useState(90);
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<FightClientSocket | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── Queries ───────────────────────────────────────────────────────────────
@@ -84,10 +85,13 @@ export default function FightPage({
   // ── Socket setup ──────────────────────────────────────────────────────────
 
   useEffect(() => {
-    const socket = io(`${import.meta.env.VITE_API_URL}/fight`, {
-      withCredentials: true,
-      transports: ["websocket"],
-    });
+    const socket: FightClientSocket = io(
+      `${import.meta.env.VITE_API_URL}${FIGHT_NAMESPACE}`,
+      {
+        withCredentials: true,
+        transports: ["websocket"],
+      },
+    );
     socketRef.current = socket;
 
     socket.on("fight:queued", () => setStatus("queued"));
@@ -144,9 +148,15 @@ export default function FightPage({
 
   // ── Emit helper ───────────────────────────────────────────────────────────
 
-  const emit = useCallback((event: string, data: object) => {
-    socketRef.current?.emit(event, data);
-  }, []);
+  const emit = useCallback(
+    <E extends keyof ClientToServerEvents>(
+      event: E,
+      ...args: Parameters<ClientToServerEvents[E]>
+    ) => {
+      socketRef.current?.emit(event, ...args);
+    },
+    [],
+  );
 
   // ── Actions ───────────────────────────────────────────────────────────────
 

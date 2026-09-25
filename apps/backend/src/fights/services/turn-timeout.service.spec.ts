@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { TurnTimeoutService } from './turn-timeout.service';
 import type { GameState } from '../interfaces/game-state.interface';
 
@@ -21,7 +21,7 @@ function fakeGame(): GameState {
 }
 
 describe('TurnTimeoutService', () => {
-  const server = {} as Server;
+  const server = {} as FightServer;
 
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => {

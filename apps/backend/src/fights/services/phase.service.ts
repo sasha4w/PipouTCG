@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import {
   GameState,
   GameEndReason,
@@ -29,14 +29,14 @@ export class PhaseService {
   async endPhase(
     game: GameState,
     userId: number,
-    server: Server,
+    server: FightServer,
     onEndGame: (
       game: GameState,
       winnerId: number,
       reason: GameEndReason,
-      server: Server,
+      server: FightServer,
     ) => Promise<void>,
-    onTurnEnd: (game: GameState, server: Server) => void,
+    onTurnEnd: (game: GameState, server: FightServer) => void,
   ): Promise<{ error?: string }> {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -101,7 +101,7 @@ export class PhaseService {
     game: GameState,
     userId: number,
     handIndex: number,
-    server: Server,
+    server: FightServer,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { GameState } from '../interfaces/game-state.interface';
 import { addLog, getPlayerState } from '../helpers/game-state.helper';
 
@@ -17,8 +17,8 @@ export class TurnTimeoutService {
    */
   start(
     game: GameState,
-    server: Server,
-    onTimeout: (game: GameState, server: Server) => Promise<void>,
+    server: FightServer,
+    onTimeout: (game: GameState, server: FightServer) => Promise<void>,
   ): void {
     const handle = setTimeout(() => {
       const player = getPlayerState(game, game.currentTurnUserId);
@@ -51,8 +51,8 @@ export class TurnTimeoutService {
 
   reset(
     game: GameState,
-    server: Server,
-    onTimeout: (game: GameState, server: Server) => Promise<void>,
+    server: FightServer,
+    onTimeout: (game: GameState, server: FightServer) => Promise<void>,
   ): void {
     this.clear(game.matchId);
     this.start(game, server, onTimeout);

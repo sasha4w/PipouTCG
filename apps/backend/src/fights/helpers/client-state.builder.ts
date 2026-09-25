@@ -1,4 +1,4 @@
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import { GameState, ClientGameState } from '../interfaces/game-state.interface';
 import { getPlayerState, getOpponentState } from './game-state.helper';
 
@@ -68,7 +68,7 @@ export function buildClientState(
   };
 }
 
-export function emitGameState(game: GameState, server: Server): void {
+export function emitGameState(game: GameState, server: FightServer): void {
   server
     .to(game.player1.socketId)
     .emit('fight:state', buildClientState(game, game.player1.userId));

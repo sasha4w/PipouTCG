@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Server } from 'socket.io';
+import type { FightServer } from '../fight-socket.types';
 import {
   GameState,
   CardInstance,
@@ -34,8 +34,8 @@ export class SupportService {
     handIndex: number,
     zoneIndex: number | undefined,
     targetInstanceId: string | undefined,
-    server: Server,
-    checkWinAndEmit: (game: GameState, server: Server) => Promise<void>,
+    server: FightServer,
+    checkWinAndEmit: (game: GameState, server: FightServer) => Promise<void>,
   ): Promise<{ error?: string }> {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -133,8 +133,8 @@ export class SupportService {
     game: GameState,
     userId: number,
     handIndex: number,
-    server: Server,
-    emitState: (game: GameState, server: Server) => void,
+    server: FightServer,
+    emitState: (game: GameState, server: FightServer) => void,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -170,8 +170,8 @@ export class SupportService {
     userId: number,
     instanceId: string,
     mode: CombatMode,
-    server: Server,
-    emitState: (game: GameState, server: Server) => void,
+    server: FightServer,
+    emitState: (game: GameState, server: FightServer) => void,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };

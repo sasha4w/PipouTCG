@@ -1,4 +1,11 @@
-import type { CardInstance, GamePhase, MonsterOnBoard } from "@pipou/shared";
+import type { Socket } from "socket.io-client";
+import type {
+  CardInstance,
+  ClientToServerEvents,
+  GamePhase,
+  MonsterOnBoard,
+  ServerToClientEvents,
+} from "@pipou/shared";
 
 // Types de jeu : contrat partagé avec le backend (@pipou/shared), sous les noms
 // historiques de l'UI.
@@ -14,6 +21,12 @@ export type {
 } from "@pipou/shared";
 
 export type Phase = GamePhase;
+
+/** Socket du namespace /fight, typé par le contrat partagé avec le serveur. */
+export type FightClientSocket = Socket<
+  ServerToClientEvents,
+  ClientToServerEvents
+>;
 export type Tab = "fight" | "history" | "leaderboard" | "rules";
 
 /** Contenu d'une zone du plateau : monstre ou carte support. */
