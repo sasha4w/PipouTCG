@@ -22,7 +22,11 @@ const envSchema = z.object({
 });
 
 export function validateEnv(config: Record<string, unknown>) {
-  const parsed = envSchema.safeParse(config);
+  // `KEY=` (valeur vide, comme dans .env.example) vaut « non définie »
+  const defined = Object.fromEntries(
+    Object.entries(config).filter(([, value]) => value !== ''),
+  );
+  const parsed = envSchema.safeParse(defined);
   if (!parsed.success) {
     const message = parsed.error.issues
       .map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`)

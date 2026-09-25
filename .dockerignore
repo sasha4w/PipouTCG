@@ -1,0 +1,16 @@
+**/node_modules
+**/dist
+**/dev-dist
+**/coverage
+**/reports
+**/*.tsbuildinfo
+# secrets et copies locales de bases distantes (données de joueurs)
+**/.env
+**/.env.*
+!**/.env.example
+**/.e2e
+.git
+docs
+# anciens dépôts, conservés à côté le temps de la bascule
+tcg-backend
+tcg-frontend

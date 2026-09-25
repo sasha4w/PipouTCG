@@ -1,6 +1,10 @@
+name: pipoutcg
+
 services:
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -36,4 +40,5 @@ services:
 
 volumes:
   mysql_data:
-
+    # nom figé : conserve la base locale (copie Aiven de l'e2e) créée avant le monorepo
+    name: backend_mysql_data

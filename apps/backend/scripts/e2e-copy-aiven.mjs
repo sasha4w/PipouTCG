@@ -71,7 +71,7 @@ await run(
 
 console.log(`Chargement dans la base locale ${target.DB_NAME}…`);
 const mysql = (...sql) => [
-  'compose', 'exec', '-T', '-e', 'MYSQL_PWD', 'db', 'mysql', '-u', target.DB_USER, ...sql,
+  'compose', '-f', join(backendDir, '../../docker-compose.yml'), 'exec', '-T', '-e', 'MYSQL_PWD', 'db', 'mysql', '-u', target.DB_USER, ...sql,
 ];
 await run('docker', mysql('-e', `DROP DATABASE IF EXISTS \`${target.DB_NAME}\`; CREATE DATABASE \`${target.DB_NAME}\`;`), {
   env: { MYSQL_PWD: target.DB_PASSWORD },

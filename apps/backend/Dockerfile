@@ -1,20 +1,20 @@
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
+# Build depuis la racine du monorepo :
+#   docker build -f apps/backend/Dockerfile .
+FROM node:22-alpine AS base
+RUN npm install -g pnpm@12.3.1
+WORKDIR /repo
 
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+FROM base AS build
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm fetch
 COPY . .
-RUN npm run build
+RUN pnpm install --frozen-lockfile --offline --filter @pipou/backend...
+RUN pnpm --filter @pipou/shared build && pnpm --filter @pipou/backend build
+RUN pnpm deploy --filter @pipou/backend --prod /prod
 
 FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
-COPY package.json package-lock.json* ./
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
+COPY --from=build /prod ./
 EXPOSE 3000
 CMD ["node", "dist/main"]
-

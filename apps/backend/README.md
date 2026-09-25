@@ -169,7 +169,7 @@ npm run start:dev
 
 ## Lancer via Docker (recommandé pour une V1 en ligne)
 
-Prérequis : Docker Desktop installé.
+Prérequis : Docker Desktop installé. Depuis la racine du monorepo :
 
 ```bash
 docker compose up --build
