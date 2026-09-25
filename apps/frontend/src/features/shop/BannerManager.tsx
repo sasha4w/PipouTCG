@@ -7,6 +7,7 @@ import type { Banner } from "../../services/banner.service";
 import type { ShopBooster, ShopBundle } from "../../services/shop.service";
 import type { Image } from "../../services/image.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import type { BannerItemType } from "@pipou/shared";
 import "../../components/manager.css";
 import "./BannerManager.css";
 
@@ -17,7 +18,7 @@ type View = "list" | "edit";
 interface BannerForm {
   title: string;
   description: string;
-  itemType: "BOOSTER" | "BUNDLE";
+  itemType: BannerItemType;
   itemId: number;
   itemName: string;
   originalPrice: number;
@@ -511,7 +512,7 @@ export default function BannerManager() {
               onChange={(e) =>
                 setForm((f) => ({
                   ...f,
-                  itemType: e.target.value as "BOOSTER" | "BUNDLE",
+                  itemType: e.target.value as BannerItemType,
                   itemId: 0,
                   itemName: "",
                   originalPrice: 0,

@@ -2,13 +2,9 @@ import { api } from "../api/api";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
-export type MatchEndReason =
-  | "primes_depleted"
-  | "deck_empty"
-  | "surrender"
-  | "disconnect";
+import type { MatchEndReason, MatchStatus } from "@pipou/shared";
 
-export type MatchStatus = "in_progress" | "finished" | "abandoned";
+export type { MatchEndReason, MatchStatus };
 
 export interface MatchPlayer {
   id: number;

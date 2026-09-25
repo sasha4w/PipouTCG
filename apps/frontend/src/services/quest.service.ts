@@ -1,41 +1,12 @@
 import { api } from "../api/api";
+import {
+  ConditionOperator,
+  QuestConditionType as ConditionType,
+  QuestResetType,
+  QuestRewardType as RewardType,
+} from "@pipou/shared";
 
-export const QuestResetType = {
-  NONE: "NONE",
-  DAILY: "DAILY",
-  WEEKLY: "WEEKLY",
-  MONTHLY: "MONTHLY",
-  EVENT: "EVENT",
-} as const;
-export type QuestResetType =
-  (typeof QuestResetType)[keyof typeof QuestResetType];
-
-export const RewardType = {
-  GOLD: "GOLD",
-  BOOSTER: "BOOSTER",
-  BUNDLE: "BUNDLE",
-} as const;
-export type RewardType = (typeof RewardType)[keyof typeof RewardType];
-
-export const ConditionType = {
-  OPEN_BOOSTER: "OPEN_BOOSTER",
-  BUY_CARD: "BUY_CARD",
-  SELL_CARD: "SELL_CARD",
-  BUY_BOOSTER: "BUY_BOOSTER",
-  SELL_BOOSTER: "SELL_BOOSTER",
-  OWN_CARD: "OWN_CARD",
-  COMPLETE_SET: "COMPLETE_SET",
-  REACH_LEVEL: "REACH_LEVEL",
-  WIN_FIGHT: "WIN_FIGHT",
-} as const;
-export type ConditionType = (typeof ConditionType)[keyof typeof ConditionType];
-
-export const ConditionOperator = {
-  AND: "AND",
-  OR: "OR",
-} as const;
-export type ConditionOperator =
-  (typeof ConditionOperator)[keyof typeof ConditionOperator];
+export { ConditionOperator, ConditionType, QuestResetType, RewardType };
 
 export interface QuestCondition {
   type: ConditionType;

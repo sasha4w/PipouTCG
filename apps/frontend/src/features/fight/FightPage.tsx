@@ -16,6 +16,7 @@ import MatchHistory from "./MatchHistory";
 import FightRules from "./FightRules";
 import FightBoard from "./FightBoard";
 import CardPickModal from "./CardPickModal";
+import type { CombatMode } from "@pipou/shared";
 import "./FightPage.css";
 
 export default function FightPage({
@@ -222,7 +223,7 @@ export default function FightPage({
     setSelectedZone(null);
   };
 
-  const changeMode = (instanceId: string, mode: "attack" | "guard") =>
+  const changeMode = (instanceId: string, mode: CombatMode) =>
     matchId && emit("fight:change_mode", { matchId, instanceId, mode });
 
   const recycleFromHand = (handIndex: number) =>

@@ -13,6 +13,7 @@ import GraveyardPile from "./GraveyardPile";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
+import type { CombatMode } from "@pipou/shared";
 
 interface Props {
   gs: GameState;
@@ -33,7 +34,7 @@ interface Props {
     zoneIndex?: number,
     targetInstanceId?: string,
   ) => void;
-  onChangeMode: (instanceId: string, mode: "attack" | "guard") => void;
+  onChangeMode: (instanceId: string, mode: CombatMode) => void;
   onRecycleSupport: (handIndex: number) => void;
   onDiscardCard: (handIndex: number) => void;
   onEndPhase: () => void;
@@ -194,6 +195,7 @@ export default function FightBoard({
           atk: z.card.baseCard.atk,
           hp: z.card.baseCard.hp,
           rarity: z.card.baseCard.rarity,
+          supportType: z.card.baseCard.supportType,
         },
         source: "board" as const,
       }));

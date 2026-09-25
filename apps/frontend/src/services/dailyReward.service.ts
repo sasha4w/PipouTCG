@@ -1,6 +1,8 @@
 import { api } from "../api/api";
 
-export type RewardType = "gold" | "card" | "booster" | "bundle";
+import type { DailyRewardType } from "@pipou/shared";
+
+export type RewardType = DailyRewardType;
 
 export interface DailyReward {
   type: RewardType;

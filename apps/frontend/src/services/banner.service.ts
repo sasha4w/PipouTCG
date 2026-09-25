@@ -1,11 +1,12 @@
 import { api } from "../api/api";
+import type { BannerItemType } from "@pipou/shared";
 
 export interface Banner {
   id: number;
   title: string;
   description: string;
   imageUrl?: string;
-  itemType: "BOOSTER" | "BUNDLE";
+  itemType: BannerItemType;
   itemId: number;
   itemName: string;
   originalPrice: number;

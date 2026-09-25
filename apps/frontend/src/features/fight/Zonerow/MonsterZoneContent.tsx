@@ -1,12 +1,13 @@
 import { getEquipmentEntries } from "./zoneRow.effects";
 import { isBlockedFromAttacking } from "./zoneRow.helpers";
 import type { MonsterOnBoard } from "../fight.types";
+import type { CombatMode } from "@pipou/shared";
 import "./MonsterZoneContent.css";
 
 interface Props {
   zone: MonsterOnBoard;
   isOpponent: boolean;
-  onModeChange?: (instanceId: string, mode: "attack" | "guard") => void;
+  onModeChange?: (instanceId: string, mode: CombatMode) => void;
 }
 
 export default function MonsterZoneContent({

@@ -1,19 +1,7 @@
 import { api } from "../api/api";
+import { ProductType, TransactionStatus } from "@pipou/shared";
 
-export const ProductType = {
-  CARD: "CARD",
-  BOOSTER: "BOOSTER",
-  BUNDLE: "BUNDLE",
-} as const;
-export type ProductType = (typeof ProductType)[keyof typeof ProductType];
-
-export const TransactionStatus = {
-  PENDING: "PENDING",
-  COMPLETED: "COMPLETED",
-  CANCELLED: "CANCELLED",
-} as const;
-export type TransactionStatus =
-  (typeof TransactionStatus)[keyof typeof TransactionStatus];
+export { ProductType, TransactionStatus };
 
 export interface Transaction {
   id: number;

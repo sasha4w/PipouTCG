@@ -1,13 +1,7 @@
 import { api } from "../api/api";
+import { CardNumber } from "@pipou/shared";
 
-export const CardNumber = {
-  ONE: 1,
-  FIVE: 5,
-  EIGHT: 8,
-  TEN: 10,
-} as const;
-
-export type CardNumber = (typeof CardNumber)[keyof typeof CardNumber];
+export { CardNumber };
 
 export interface Booster {
   id: number;

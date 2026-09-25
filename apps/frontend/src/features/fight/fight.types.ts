@@ -1,142 +1,26 @@
-export type Phase = "waiting" | "draw" | "main" | "battle" | "end" | "finished";
-export type Tab = "fight" | "history" | "leaderboard" | "rules";
-export interface CardInstance {
-  instanceId: string;
-  baseCard: {
-    id: number;
-    name: string;
-    type: string;
-    atk: number;
-    hp: number;
-    cost: number;
-    rarity: string;
-    supportType?: string | null;
-    archetype?: string | null;
-    image?: { url: string } | null;
-    effects?:
-      | {
-          trigger: string;
-          condition?: { type: string; value?: number | string } | null;
-          actions: { type: string; target: string; value?: number }[];
-        }[]
-      | null;
-    description?: string | null;
-  };
-  ownerId: number;
-}
+import type { CardInstance, GamePhase, MonsterOnBoard } from "@pipou/shared";
 
-export interface MonsterOnBoard {
-  instanceId: string;
-  card: CardInstance;
-  currentHp: number;
-  mode: "attack" | "guard";
-  /**
-   * Le backend envoie des CardInstance[] complets (avec baseCard.effects, etc.)
-   * L'ancien type { id, name }[] était trop restrictif.
-   */
-  equipments: CardInstance[];
-  atkBuff: number;
-  hpBuff: number;
-  tempAtkBuff: number;
-  hasAttackedThisTurn: boolean;
-  attacksPerTurn: number;
-  attacksUsedThisTurn: number;
-  hasTaunt: boolean;
-  hasPiercing: boolean;
-  isImmuneToDebuffs: boolean;
-  forcedAttackMode: boolean;
-  summonedThisTurn: boolean;
-  doubleAtkNextTurn: boolean;
-  damageReduction?: number;
-  turnCounter?: number;
-  blockAttackTurns?: number;
-  guardLocked?: boolean;
-}
+// Types de jeu : contrat partagé avec le backend (@pipou/shared), sous les noms
+// historiques de l'UI.
+export type {
+  CardInstance,
+  ClientChoiceCandidate,
+  ClientGameState as GameState,
+  ClientPendingChoice as PendingChoice,
+  MonsterOnBoard,
+  MyClientState as MyState,
+  OpponentClientState as OppState,
+  PendingChoiceResolution,
+} from "@pipou/shared";
+
+export type Phase = GamePhase;
+export type Tab = "fight" | "history" | "leaderboard" | "rules";
 
 /** Contenu d'une zone du plateau : monstre ou carte support. */
 export type BoardZone = MonsterOnBoard | CardInstance;
 
 export const isMonsterZone = (zone: BoardZone): zone is MonsterOnBoard =>
   "card" in zone;
-
-export interface MyState {
-  userId: number;
-  username: string;
-  primes: number;
-  hand: CardInstance[];
-  deckCount: number;
-  monsterZones: (MonsterOnBoard | null)[];
-  supportZones: (CardInstance | null)[];
-  recycleEnergy: number;
-  graveyard: CardInstance[];
-  banished: CardInstance[];
-  freeSummonAvailable?: boolean;
-}
-
-export interface OppState {
-  userId: number;
-  username: string;
-  primes: number;
-  handCount: number;
-  deckCount: number;
-  monsterZones: (MonsterOnBoard | null)[];
-  supportZones: (CardInstance | null)[];
-  graveyard: CardInstance[];
-  banished: CardInstance[];
-}
-
-// ─── Pending card pick ────────────────────────────────────────────────────────
-
-export interface ClientChoiceCandidate {
-  instanceId: string;
-  baseCard: {
-    id: number;
-    name: string;
-    type: string;
-    atk: number;
-    hp: number;
-    rarity: string;
-    supportType?: string | null;
-  };
-  /** 'board' = monstre sur le terrain (destroy_ally / return_to_hand / force_attack_enemy) */
-  source: "graveyard" | "deck" | "board";
-}
-
-/**
- * - 'pick_to_hand'      : récupère depuis cimetière/deck
- * - 'destroy_ally'      : détruit un allié sur le board (Formatage, Recyclage)
- * - 'return_to_hand'    : retourne un allié en main (Migration)
- * - 'force_attack_enemy': force un ennemi en mode Attaque (Rootkit)
- */
-export type PendingChoiceResolution =
-  | "pick_to_hand"
-  | "destroy_ally"
-  | "return_to_hand"
-  | "force_attack_enemy"
-  | "block_attack_enemy"
-  | "force_guard_enemy";
-
-export interface PendingChoice {
-  candidates: ClientChoiceCandidate[];
-  count: number;
-  prompt: string;
-  resolution?: PendingChoiceResolution;
-}
-
-// ─── Full game state ──────────────────────────────────────────────────────────
-
-export interface GameState {
-  matchId: number;
-  phase: Phase;
-  turnNumber: number;
-  isMyTurn: boolean;
-  me: MyState;
-  opponent: OppState;
-  log: string[];
-  winner?: number;
-  endReason?: string;
-  pendingChoice?: PendingChoice;
-}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

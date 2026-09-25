@@ -11,6 +11,7 @@ import MonsterZoneContent from "./MonsterZoneContent";
 import SupportZoneContent from "./SupportZoneContent";
 import BuffDebuffList from "../BuffDebuffList";
 import { isMonsterZone, type BoardZone } from "../fight.types";
+import type { CombatMode } from "@pipou/shared";
 
 interface Props {
   label: string;
@@ -20,7 +21,7 @@ interface Props {
   dim?: boolean;
   onZoneClick?: (idx: number) => void;
   onMonsterClick?: (instanceId: string) => void;
-  onModeChange?: (instanceId: string, mode: "attack" | "guard") => void;
+  onModeChange?: (instanceId: string, mode: CombatMode) => void;
   highlightEmpty?: boolean;
   highlightFilled?: boolean;
   highlightOpponentEmpty?: boolean;
