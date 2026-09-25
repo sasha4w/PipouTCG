@@ -1,10 +1,10 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import {
   QuestResetType,
-  RewardType,
+  QuestRewardType as RewardType,
   ConditionOperator,
-  ConditionType,
-} from './enums/quest.enums';
+  QuestConditionType as ConditionType,
+} from '@pipou/shared';
 import { UserQuest } from '../users/user-quest.entity';
 
 export interface QuestCondition {

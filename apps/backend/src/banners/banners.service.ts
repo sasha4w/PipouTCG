@@ -5,7 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import { Banner, BannerItemType } from './banner.entity';
+import { Banner } from './banner.entity';
+import { BannerItemType } from '@pipou/shared';
 import { CreateBannerDto } from './dto/create-banner.dto';
 import { UsersService } from '../users/users.service';
 import { BoostersService } from '../boosters/boosters.service';

@@ -13,16 +13,16 @@ import {
   Max,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CardType } from '../enums/cardtype.enum';
-import { Rarity } from '../enums/rarity.enum';
-import { SupportType } from '../enums/support-type.enum';
-import { Archetype } from '../enums/archetype.enum';
 import {
+  CardType,
+  Rarity,
+  SupportType,
+  Archetype,
   EffectTrigger,
-  ConditionType,
+  EffectConditionType as ConditionType,
   ActionType,
   EffectTarget,
-} from '../interfaces/card-effect.interface';
+} from '@pipou/shared';
 
 export class EffectConditionDto {
   @IsEnum(ConditionType)

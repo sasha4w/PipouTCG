@@ -10,11 +10,13 @@ import { CardSet } from '../card-sets/card-set.entity';
 import { BoosterOpenCard } from '../boosters/booster-open-card.entity';
 import { UserCard } from '../users/user-card.entity';
 import { Image } from '../images/image.entity';
-import { CardType } from './enums/cardtype.enum';
-import { Rarity } from './enums/rarity.enum';
-import { SupportType } from './enums/support-type.enum';
-import { CardEffect } from './interfaces/card-effect.interface';
-import { Archetype } from './enums/archetype.enum';
+import {
+  CardType,
+  Rarity,
+  SupportType,
+  CardEffect,
+  Archetype,
+} from '@pipou/shared';
 @Entity('card')
 export class Card {
   @PrimaryGeneratedColumn()

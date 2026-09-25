@@ -1,7 +1,7 @@
 import {
   CardEffect,
-  ConditionType,
-} from '../../cards/interfaces/card-effect.interface';
+  EffectConditionType as ConditionType,
+} from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 
 /**

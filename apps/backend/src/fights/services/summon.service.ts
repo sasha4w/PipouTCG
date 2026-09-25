@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
-import { CardType } from '../../cards/enums/cardtype.enum';
-import { EffectTrigger } from '../../cards/interfaces/card-effect.interface';
+import { CardType, EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {

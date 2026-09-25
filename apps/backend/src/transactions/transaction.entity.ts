@@ -8,8 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
-import { ProductType } from './enums/product-type.enum';
-import { TransactionStatus } from './enums/transaction-status.enum';
+import { ProductType, TransactionStatus } from '@pipou/shared';
 
 @Entity('transaction')
 export class Transaction {

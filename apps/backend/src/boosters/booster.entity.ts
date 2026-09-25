@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { CardSet } from '../card-sets/card-set.entity';
-import { CardNumber } from './enums/cardnumber.enum';
+import { CardNumber } from '@pipou/shared';
 @Entity('booster')
 export class Booster {
   @PrimaryGeneratedColumn()

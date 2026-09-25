@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EffectTrigger } from '../cards/interfaces/card-effect.interface';
+import { EffectTrigger } from '@pipou/shared';
 import {
   CardInstance,
   PlayerGameState,

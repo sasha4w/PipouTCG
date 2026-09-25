@@ -10,8 +10,7 @@ import { UserCard } from '../users/user-card.entity';
 import { UserBooster } from '../users/user-booster.entity';
 import { UserBundle } from '../users/user-bundle.entity';
 import { Card } from '../cards/card.entity';
-import { ProductType } from './enums/product-type.enum';
-import { TransactionStatus } from './enums/transaction-status.enum';
+import { ProductType, TransactionStatus } from '@pipou/shared';
 
 // ======= MOCKS =======
 const mockTransactionRepo = {

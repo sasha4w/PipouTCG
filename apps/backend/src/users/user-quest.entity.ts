@@ -9,7 +9,10 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Quest } from '../quests/quest.entity';
-import { ConditionOperator, ConditionType } from '../quests/enums/quest.enums';
+import {
+  ConditionOperator,
+  QuestConditionType as ConditionType,
+} from '@pipou/shared';
 
 export interface ConditionProgress {
   type: ConditionType;

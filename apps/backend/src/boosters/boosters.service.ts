@@ -11,8 +11,7 @@ import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
 import { Card } from '../cards/card.entity';
-import { CardNumber } from './enums/cardnumber.enum';
-import { Rarity } from '../cards/enums/rarity.enum';
+import { CardNumber, Rarity } from '@pipou/shared';
 import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
 

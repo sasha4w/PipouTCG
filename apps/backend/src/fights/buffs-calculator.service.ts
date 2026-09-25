@@ -6,11 +6,11 @@ import {
 import {
   ActionType,
   CardEffect,
-  ConditionType,
+  EffectConditionType as ConditionType,
   EffectTarget,
   EffectTrigger,
-} from '../cards/interfaces/card-effect.interface';
-import { SupportType } from '../cards/enums/support-type.enum';
+  SupportType,
+} from '@pipou/shared';
 
 /**
  * Détermine si un flag donné (ex: hasTaunt) est dérivé d'un effet PASSIF

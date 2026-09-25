@@ -1,9 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
-
-export enum BannerItemType {
-  BOOSTER = 'BOOSTER',
-  BUNDLE = 'BUNDLE',
-}
+import { BannerItemType } from '@pipou/shared';
 
 @Entity('banner')
 export class Banner {

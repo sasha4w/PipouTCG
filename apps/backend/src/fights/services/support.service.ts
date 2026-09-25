@@ -5,12 +5,12 @@ import {
   CardInstance,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
-import { CardType } from '../../cards/enums/cardtype.enum';
-import { SupportType } from '../../cards/enums/support-type.enum';
 import {
+  CardType,
+  SupportType,
   EffectTrigger,
-  ConditionType,
-} from '../../cards/interfaces/card-effect.interface';
+  EffectConditionType as ConditionType,
+} from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {

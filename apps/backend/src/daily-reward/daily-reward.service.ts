@@ -12,7 +12,7 @@ import { MilestoneReward } from './milestone-reward.entity';
 import { LoginRewardHistory } from './login-reward-histority.entity';
 import { StreakRescue } from './streak-rescue.entity';
 import { UsersService } from '../users/users.service';
-import { RewardType } from './enums/reward-type.enum';
+import { DailyRewardType as RewardType } from '@pipou/shared';
 import {
   CreateDailyRewardDefinitionDto,
   UpdateDailyRewardDefinitionDto,

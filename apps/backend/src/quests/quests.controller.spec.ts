@@ -5,10 +5,10 @@ import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import {
   QuestResetType,
-  RewardType,
+  QuestRewardType as RewardType,
   ConditionOperator,
-  ConditionType,
-} from './enums/quest.enums';
+  QuestConditionType as ConditionType,
+} from '@pipou/shared';
 
 const mockQuestService = {
   syncUserQuests: jest.fn().mockResolvedValue([]),

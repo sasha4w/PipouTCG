@@ -7,7 +7,7 @@ import {
   IsInt,
   Min,
 } from 'class-validator';
-import { CardNumber } from '../enums/cardnumber.enum';
+import { CardNumber } from '@pipou/shared';
 
 export class CreateBoosterDto {
   @IsString()

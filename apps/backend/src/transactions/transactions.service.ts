@@ -14,8 +14,7 @@ import { UserBundle } from '../users/user-bundle.entity';
 import { Card } from '../cards/card.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
-import { TransactionStatus } from './enums/transaction-status.enum';
-import { ProductType } from './enums/product-type.enum';
+import { TransactionStatus, ProductType } from '@pipou/shared';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 export interface ListingSoldPayload {

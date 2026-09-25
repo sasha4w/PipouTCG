@@ -7,7 +7,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { RewardType } from '../enums/reward-type.enum';
+import { DailyRewardType as RewardType } from '@pipou/shared';
 
 // ── Daily Reward Definition ────────────────────────────────────────────────
 

@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { RewardType } from './enums/reward-type.enum';
+import { DailyRewardType as RewardType } from '@pipou/shared';
 
 /**
  * Définit les récompenses du cycle 7j.

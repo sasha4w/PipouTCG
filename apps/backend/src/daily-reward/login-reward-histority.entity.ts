@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
-import { RewardType } from './enums/reward-type.enum';
+import { DailyRewardType as RewardType } from '@pipou/shared';
 
 @Entity('login_reward_history')
 export class LoginRewardHistory {

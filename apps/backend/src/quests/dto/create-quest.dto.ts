@@ -14,10 +14,10 @@ import {
 import { Type } from 'class-transformer';
 import {
   QuestResetType,
-  RewardType,
-  ConditionType,
+  QuestRewardType as RewardType,
+  QuestConditionType as ConditionType,
   ConditionOperator,
-} from '../enums/quest.enums';
+} from '@pipou/shared';
 
 export class QuestConditionDto {
   @IsEnum(ConditionType)

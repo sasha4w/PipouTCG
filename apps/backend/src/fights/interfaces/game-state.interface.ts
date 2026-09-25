@@ -1,47 +1,31 @@
+import type {
+  CardInstance as SharedCardInstance,
+  ChoiceSource,
+  GameEndReason,
+  GamePhase,
+  MonsterOnBoard as SharedMonsterOnBoard,
+  PendingChoiceResolution,
+} from '@pipou/shared';
 import { Card } from '../../cards/card.entity';
 
-// ─── Base runtime instance ───────────────────────────────────────────────────
+export type {
+  ClientChoiceCandidate,
+  ClientGameState,
+  ClientPendingChoice,
+  CombatMode,
+  GameEndReason,
+  GamePhase,
+  MyClientState,
+  OpponentClientState,
+  PendingChoiceResolution,
+} from '@pipou/shared';
 
-export interface CardInstance {
-  instanceId: string;
-  baseCard: Card;
-  ownerId: number;
-  currentHp?: number;
-  atkBuff?: number;
-  hpBuff?: number;
-  status?: string[];
-}
+// ─── Base runtime instance (côté serveur : carte = entité complète) ─────────
 
-// ─── Board pieces ────────────────────────────────────────────────────────────
+export type CardInstance = SharedCardInstance<Card>;
+export type MonsterOnBoard = SharedMonsterOnBoard<Card>;
 
-export type CombatMode = 'attack' | 'guard';
-
-export interface MonsterOnBoard {
-  instanceId: string;
-  card: CardInstance;
-  currentHp: number;
-  mode: CombatMode;
-  equipments: CardInstance[];
-  atkBuff: number;
-  hpBuff: number;
-  tempAtkBuff: number;
-  hasAttackedThisTurn: boolean;
-  attacksPerTurn: number;
-  attacksUsedThisTurn: number;
-  hasTaunt: boolean;
-  hasPiercing: boolean;
-  isImmuneToDebuffs: boolean;
-  forcedAttackMode: boolean;
-  summonedThisTurn: boolean;
-  doubleAtkNextTurn: boolean;
-  damageReduction?: number;
-  turnCounter?: number;
-  ownerUserId?: number;
-  blockAttackTurns?: number;
-  guardLocked?: boolean;
-}
-
-// ─── Per-player state ────────────────────────────────────────────────────────
+// ─── Per-player state (jamais envoyé tel quel au client) ─────────────────────
 
 export interface PlayerGameState {
   userId: number;
@@ -67,22 +51,8 @@ export interface PlayerGameState {
 export interface ChoiceCandidate {
   instanceId: string;
   baseCard: Card;
-  source: 'graveyard' | 'deck' | 'board';
+  source: ChoiceSource;
 }
-
-/**
- * - 'pick_to_hand'      : récupère depuis cimetière/deck (comportement existant)
- * - 'destroy_ally'      : détruit le monstre allié choisi (Formatage, Recyclage)
- * - 'return_to_hand'    : retourne le monstre allié + équipements en main (Migration)
- * - 'force_attack_enemy': force un monstre adverse en mode Attaque (Rootkit)
- */
-export type PendingChoiceResolution =
-  | 'pick_to_hand'
-  | 'destroy_ally'
-  | 'return_to_hand'
-  | 'force_attack_enemy'
-  | 'block_attack_enemy'
-  | 'force_guard_enemy';
 
 export interface PendingChoice {
   forUserId: number;
@@ -93,12 +63,6 @@ export interface PendingChoice {
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────
-
-export type GamePhase =
-  'waiting' | 'draw' | 'main' | 'battle' | 'end' | 'finished';
-
-export type GameEndReason =
-  'primes_depleted' | 'deck_empty' | 'surrender' | 'disconnect';
 
 export interface GameState {
   matchId: number;
@@ -111,66 +75,4 @@ export interface GameState {
   endReason?: GameEndReason;
   log: string[];
   pendingChoice?: PendingChoice;
-}
-
-// ─── Client-safe views ───────────────────────────────────────────────────────
-
-export interface MyClientState {
-  userId: number;
-  username: string;
-  primes: number;
-  hand: CardInstance[];
-  deckCount: number;
-  graveyard: CardInstance[];
-  banished: CardInstance[];
-  monsterZones: (MonsterOnBoard | null)[];
-  supportZones: (CardInstance | null)[];
-  recycleEnergy: number;
-  freeSummonAvailable?: boolean;
-}
-
-export interface OpponentClientState {
-  userId: number;
-  username: string;
-  primes: number;
-  handCount: number;
-  deckCount: number;
-  graveyard: CardInstance[];
-  banished: CardInstance[];
-  monsterZones: (MonsterOnBoard | null)[];
-  supportZones: (CardInstance | null)[];
-}
-
-export interface ClientChoiceCandidate {
-  instanceId: string;
-  baseCard: {
-    id: number;
-    name: string;
-    type: string;
-    atk: number;
-    hp: number;
-    rarity: string;
-    supportType?: string | null;
-  };
-  source: 'graveyard' | 'deck' | 'board';
-}
-
-export interface ClientPendingChoice {
-  candidates: ClientChoiceCandidate[];
-  count: number;
-  prompt: string;
-  resolution?: PendingChoiceResolution;
-}
-
-export interface ClientGameState {
-  matchId: number;
-  phase: GamePhase;
-  turnNumber: number;
-  isMyTurn: boolean;
-  me: MyClientState;
-  opponent: OpponentClientState;
-  log: string[];
-  winner?: number;
-  endReason?: GameEndReason;
-  pendingChoice?: ClientPendingChoice;
 }

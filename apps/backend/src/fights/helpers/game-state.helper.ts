@@ -4,7 +4,7 @@ import {
   MonsterOnBoard,
   CardInstance,
 } from '../interfaces/game-state.interface';
-import { EffectTrigger } from '../../cards/interfaces/card-effect.interface';
+import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 
 const LOG_MAX = 50;

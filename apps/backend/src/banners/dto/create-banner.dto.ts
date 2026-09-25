@@ -8,7 +8,7 @@ import {
   Min,
   ValidateIf,
 } from 'class-validator';
-import { BannerItemType } from '../banner.entity';
+import { BannerItemType } from '@pipou/shared';
 
 export class CreateBannerDto {
   @IsString()

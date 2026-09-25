@@ -3,8 +3,7 @@ import { CardsController } from './cards.controller';
 import { CardsService } from './cards.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
-import { Rarity } from './enums/rarity.enum';
-import { CardType } from './enums/cardtype.enum';
+import { Rarity, CardType } from '@pipou/shared';
 
 const mockCardsService = {
   findAll: jest.fn(),

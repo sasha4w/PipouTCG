@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { RewardType } from './enums/reward-type.enum';
+import { DailyRewardType as RewardType } from '@pipou/shared';
 
 /** Récompenses déclenchées aux paliers J30, J60, J100... */
 @Entity('milestone_reward')

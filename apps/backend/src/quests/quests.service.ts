@@ -16,10 +16,10 @@ import { CreateQuestDto } from './dto/create-quest.dto';
 import { UpdateQuestDto } from './dto/update-quest.dto';
 import {
   QuestResetType,
-  RewardType,
+  QuestRewardType as RewardType,
   ConditionOperator,
-  ConditionType,
-} from './enums/quest.enums';
+  QuestConditionType as ConditionType,
+} from '@pipou/shared';
 import { UsersService } from '../users/users.service';
 
 export interface AutoClaimedReward {

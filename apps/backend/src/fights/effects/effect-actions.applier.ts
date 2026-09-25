@@ -1,7 +1,4 @@
-import {
-  CardEffect,
-  ActionType,
-} from '../../cards/interfaces/card-effect.interface';
+import { CardEffect, ActionType } from '@pipou/shared';
 import {
   CardInstance,
   MonsterOnBoard,

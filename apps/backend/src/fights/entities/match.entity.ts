@@ -6,20 +6,8 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
+import { MatchEndReason, MatchStatus } from '@pipou/shared';
 import { User } from '../../users/user.entity';
-
-export enum MatchStatus {
-  IN_PROGRESS = 'in_progress',
-  FINISHED = 'finished',
-  ABANDONED = 'abandoned',
-}
-
-export enum MatchEndReason {
-  PRIMES_DEPLETED = 'primes_depleted',
-  DECK_EMPTY = 'deck_empty',
-  SURRENDER = 'surrender',
-  DISCONNECT = 'disconnect',
-}
 
 @Entity('match')
 export class Match {

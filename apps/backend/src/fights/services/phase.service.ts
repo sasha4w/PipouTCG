@@ -13,7 +13,7 @@ import {
   drawCard,
 } from '../helpers/game-state.helper';
 import { emitGameState } from '../helpers/client-state.builder';
-import { EffectTrigger } from '../../cards/interfaces/card-effect.interface';
+import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 

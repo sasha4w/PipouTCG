@@ -1,4 +1,4 @@
-import { EffectTarget } from '../../cards/interfaces/card-effect.interface';
+import { EffectTarget } from '@pipou/shared';
 import {
   PlayerGameState,
   MonsterOnBoard,

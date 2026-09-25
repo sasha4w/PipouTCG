@@ -7,10 +7,10 @@ import { UserQuest } from '../users/user-quest.entity';
 import { UsersService } from '../users/users.service';
 import {
   QuestResetType,
-  RewardType,
+  QuestRewardType as RewardType,
   ConditionOperator,
-  ConditionType,
-} from './enums/quest.enums';
+  QuestConditionType as ConditionType,
+} from '@pipou/shared';
 import type { CreateQuestDto } from './dto/create-quest.dto';
 
 // ======= MOCKS =======

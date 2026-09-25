@@ -6,8 +6,7 @@ import { Card } from './card.entity';
 import { CardSet } from '../card-sets/card-set.entity';
 import { Image } from '../images/image.entity';
 import { ImagesService } from '../images/images.service'; // ← remplace UploadService
-import { Rarity } from './enums/rarity.enum';
-import { CardType } from './enums/cardtype.enum';
+import { Rarity, CardType } from '@pipou/shared';
 
 const mockCardRepo = {
   findAndCount: jest.fn(),

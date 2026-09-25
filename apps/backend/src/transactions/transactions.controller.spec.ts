@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionController } from './transactions.controller';
 import { TransactionService } from './transactions.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
-import { ProductType } from './enums/product-type.enum';
-import { TransactionStatus } from './enums/transaction-status.enum';
+import { ProductType, TransactionStatus } from '@pipou/shared';
 
 const mockTransactionService = {
   findAll: jest.fn(),

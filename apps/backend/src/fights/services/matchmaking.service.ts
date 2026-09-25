@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Match, MatchStatus } from '../entities/match.entity';
+import { Match } from '../entities/match.entity';
+import { MatchStatus } from '@pipou/shared';
 import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
 
 export interface QueueEntry {

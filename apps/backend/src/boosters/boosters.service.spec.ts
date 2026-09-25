@@ -7,8 +7,7 @@ import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
 import { Card } from '../cards/card.entity';
 import { UsersService } from '../users/users.service';
-import { CardNumber } from './enums/cardnumber.enum';
-import { Rarity } from '../cards/enums/rarity.enum';
+import { CardNumber, Rarity } from '@pipou/shared';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const mockBoosterRepo = {

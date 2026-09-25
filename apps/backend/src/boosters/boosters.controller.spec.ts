@@ -3,7 +3,7 @@ import { BoostersController } from './boosters.controller';
 import { BoostersService } from './boosters.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
-import { CardNumber } from './enums/cardnumber.enum';
+import { CardNumber } from '@pipou/shared';
 
 const mockBoostersService = {
   findAll: jest.fn(),

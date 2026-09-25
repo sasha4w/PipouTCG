@@ -4,7 +4,7 @@ import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 import { addLog, getPlayerState, shuffle } from '../helpers/game-state.helper';
 import { emitGameState } from '../helpers/client-state.builder';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { EffectTrigger } from '../../cards/interfaces/card-effect.interface';
+import { EffectTrigger } from '@pipou/shared';
 
 @Injectable()
 export class PickService {

@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Server } from 'socket.io';
-import { Match, MatchStatus, MatchEndReason } from '../entities/match.entity';
+import { Match } from '../entities/match.entity';
+import { MatchStatus, MatchEndReason } from '@pipou/shared';
 import { PlayerStats } from '../entities/player-stats.entity';
 import { GameState, GameEndReason } from '../interfaces/game-state.interface';
 import {
