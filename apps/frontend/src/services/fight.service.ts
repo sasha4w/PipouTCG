@@ -1,4 +1,5 @@
 import { api } from "../api/api";
+import type { PaginatedResponse } from "@pipou/shared";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
 
@@ -33,17 +34,9 @@ export interface PlayerStats {
   user: MatchPlayer;
 }
 
-export interface PaginatedMatches {
-  data: Match[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
+
+export type PaginatedMatches = PaginatedResponse<Match>;
 
 export const fightService = {
   /** Paginated match history for the authenticated user (newest first). */

@@ -8,8 +8,9 @@ import {
   Min,
 } from 'class-validator';
 import { CardNumber } from '@pipou/shared';
+import type { CreateBoosterRequest } from '@pipou/shared';
 
-export class CreateBoosterDto {
+export class CreateBoosterDto implements CreateBoosterRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

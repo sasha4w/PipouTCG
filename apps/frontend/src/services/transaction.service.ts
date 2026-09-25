@@ -1,4 +1,11 @@
 import { api } from "../api/api";
+import type {
+  BuyRequest,
+  CreateListingRequest,
+  HistoryQuery,
+  PaginatedResponse,
+  UpdateListingRequest,
+} from "@pipou/shared";
 import { ProductType, TransactionStatus } from "@pipou/shared";
 
 export { ProductType, TransactionStatus };
@@ -18,28 +25,9 @@ export interface Transaction {
   itemName?: string;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-export interface CreateListingData {
-  productType: ProductType;
-  productId: number;
-  quantity: number;
-  unitPrice: number;
-}
-
-// Nouvelle interface pour correspondre au UpdateListingDto du backend
-export interface UpdateListingData {
-  quantity?: number;
-  unitPrice?: number;
-}
+export type { PaginatedResponse };
+export type CreateListingData = CreateListingRequest;
+export type UpdateListingData = UpdateListingRequest;
 
 export const transactionService = {
   // ============================================================
@@ -75,11 +63,10 @@ export const transactionService = {
   async getHistory(
     page = 1,
     limit = 20,
-    role?: "seller" | "buyer",
+    role?: HistoryQuery["role"],
   ): Promise<PaginatedResponse<Transaction>> {
-    const res = await api.get("/transactions/history", {
-      params: { page, limit, ...(role ? { role } : {}) },
-    });
+    const params: HistoryQuery = { page, limit, ...(role ? { role } : {}) };
+    const res = await api.get("/transactions/history", { params });
     return res.data;
   },
 
@@ -136,10 +123,8 @@ export const transactionService = {
 
   // Acheter une annonce (gère l'achat partiel via le quantity optionnel)
   async buy(id: number, quantity?: number): Promise<Transaction> {
-    const res = await api.post(
-      `/transactions/${id}/buy`,
-      quantity ? { quantity } : {},
-    );
+    const body: BuyRequest = quantity ? { quantity } : {};
+    const res = await api.post(`/transactions/${id}/buy`, body);
     return res.data;
   },
 

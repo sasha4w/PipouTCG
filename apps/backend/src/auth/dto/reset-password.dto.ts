@@ -1,6 +1,7 @@
 import { IsString, MinLength } from 'class-validator';
+import type { ResetPasswordRequest } from '@pipou/shared';
 
-export class ResetPasswordDto {
+export class ResetPasswordDto implements ResetPasswordRequest {
   @IsString()
   token!: string;
 

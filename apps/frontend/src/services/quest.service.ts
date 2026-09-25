@@ -1,4 +1,10 @@
 import { api } from "../api/api";
+import type {
+  CreateQuestRequest,
+  QuestCondition,
+  QuestConditionGroup,
+  UpdateQuestRequest,
+} from "@pipou/shared";
 import {
   ConditionOperator,
   QuestConditionType as ConditionType,
@@ -7,20 +13,6 @@ import {
 } from "@pipou/shared";
 
 export { ConditionOperator, ConditionType, QuestResetType, RewardType };
-
-export interface QuestCondition {
-  type: ConditionType;
-  amount?: number;
-  rarity?: string;
-  setId?: number;
-  boosterId?: number;
-  level?: number;
-}
-
-export interface QuestConditionGroup {
-  operator: ConditionOperator;
-  conditions: QuestCondition[];
-}
 
 export interface Quest {
   id: number;
@@ -77,19 +69,8 @@ export interface UserQuestsGrouped {
   ACHIEVEMENT: UserQuest[];
 }
 
-export interface CreateQuestData {
-  title: string;
-  description?: string;
-  resetType: QuestResetType;
-  resetHour?: number;
-  resetDayOfWeek?: number;
-  endDate?: string;
-  conditionGroup: QuestConditionGroup;
-  rewardType: RewardType;
-  rewardAmount: number;
-  rewardItemId?: number;
-  isActive?: boolean;
-}
+export type { QuestCondition, QuestConditionGroup };
+export type CreateQuestData = CreateQuestRequest;
 
 export const questService = {
   // USER
@@ -123,7 +104,7 @@ export const questService = {
     return res.data;
   },
 
-  async update(id: number, data: Partial<CreateQuestData>): Promise<Quest> {
+  async update(id: number, data: UpdateQuestRequest): Promise<Quest> {
     const res = await api.patch(`/quests/${id}`, data);
     return res.data;
   },

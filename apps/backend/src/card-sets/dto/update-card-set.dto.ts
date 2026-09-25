@@ -1,6 +1,7 @@
 import { IsString, IsOptional, MinLength, MaxLength } from 'class-validator';
+import type { UpdateCardSetRequest } from '@pipou/shared';
 
-export class UpdateCardSetDto {
+export class UpdateCardSetDto implements UpdateCardSetRequest {
   @IsString()
   @IsOptional()
   @MinLength(2)

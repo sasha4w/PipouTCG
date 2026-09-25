@@ -8,6 +8,7 @@ import {
   Max,
 } from 'class-validator';
 import { DailyRewardType as RewardType } from '@pipou/shared';
+import type { RescueStreakRequest } from '@pipou/shared';
 
 // ── Daily Reward Definition ────────────────────────────────────────────────
 
@@ -137,7 +138,7 @@ export class UpdateMilestoneRewardDto {
 
 // ── Streak Rescue ──────────────────────────────────────────────────────────
 
-export class RescueStreakDto {
+export class RescueStreakDto implements RescueStreakRequest {
   /** Nombre de jours à racheter */
   @IsInt()
   @Min(1)

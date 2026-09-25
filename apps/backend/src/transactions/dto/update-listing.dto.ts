@@ -1,6 +1,7 @@
 import { IsInt, IsOptional, Min, ValidateIf } from 'class-validator';
+import type { UpdateListingRequest } from '@pipou/shared';
 
-export class UpdateListingDto {
+export class UpdateListingDto implements UpdateListingRequest {
   @IsOptional()
   @IsInt()
   @Min(1)

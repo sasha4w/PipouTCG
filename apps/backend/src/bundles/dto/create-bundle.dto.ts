@@ -8,8 +8,9 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import type { CreateBundleRequest } from '@pipou/shared';
 
-export class CreateBundleDto {
+export class CreateBundleDto implements CreateBundleRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

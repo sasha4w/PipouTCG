@@ -1,4 +1,5 @@
 import { api } from "../api/api";
+import type { PaginatedResponse } from "@pipou/shared";
 import type { CardType, Rarity, SupportType } from "./card.service";
 
 /** Carte du portfolio public d'un joueur (GET /users/:id/portfolio). */
@@ -112,10 +113,7 @@ export interface UserCollection {
     }[];
   }[];
 }
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: { total: number; page: number; limit: number; totalPages: number };
-}
+export type { PaginatedResponse };
 
 export const userService = {
   // Moi

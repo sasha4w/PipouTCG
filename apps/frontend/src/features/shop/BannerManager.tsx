@@ -256,7 +256,7 @@ export default function BannerManager() {
       };
 
       if (editing) await bannerService.update(editing.id, payload);
-      else await bannerService.create(payload as Omit<Banner, "id">);
+      else await bannerService.create(payload);
 
       backToList();
       void refreshList();

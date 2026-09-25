@@ -1,12 +1,8 @@
 import { api } from "../api/api";
+import type { CreateDeckRequest, DeckCardEntry } from "@pipou/shared";
 import type { CardType, Rarity, SupportType } from "./card.service";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
-
-export interface DeckCardEntry {
-  userCardId: number;
-  quantity: number;
-}
 
 export interface CardInDeck {
   id: number;
@@ -39,12 +35,10 @@ export interface Deck {
   updatedAt: string;
 }
 
-export interface CreateDeckDto {
-  name: string;
-  cards: DeckCardEntry[];
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
+
+export type { DeckCardEntry };
+export type CreateDeckDto = CreateDeckRequest;
 
 export const deckService = {
   /** Get all decks belonging to the authenticated user. */

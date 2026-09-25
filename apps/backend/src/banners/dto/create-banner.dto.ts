@@ -9,8 +9,9 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { BannerItemType } from '@pipou/shared';
+import type { CreateBannerRequest } from '@pipou/shared';
 
-export class CreateBannerDto {
+export class CreateBannerDto implements CreateBannerRequest {
   @IsString()
   title!: string;
 

@@ -1,4 +1,5 @@
 import { api } from "../api/api";
+import type { RescueStreakRequest } from "@pipou/shared";
 
 import type { DailyRewardType } from "@pipou/shared";
 
@@ -70,7 +71,8 @@ export const dailyRewardService = {
   async rescueStreak(
     daysToBuy: number,
   ): Promise<{ message: string; goldSpent: number; goldRemaining: number }> {
-    const res = await api.post("/daily-reward/rescue", { daysToBuy });
+    const body: RescueStreakRequest = { daysToBuy };
+    const res = await api.post("/daily-reward/rescue", body);
     return res.data;
   },
 

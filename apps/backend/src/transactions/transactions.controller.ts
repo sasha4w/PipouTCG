@@ -25,7 +25,8 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { HistoryQueryDto } from './dto/history-query.dto';
 import type { AuthenticatedRequest } from '../auth/auth-user';
-class BuyListingDto {
+import type { BuyRequest } from '@pipou/shared';
+class BuyListingDto implements BuyRequest {
   @IsOptional()
   @IsInt()
   @Min(1)

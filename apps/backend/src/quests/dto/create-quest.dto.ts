@@ -18,8 +18,13 @@ import {
   QuestConditionType as ConditionType,
   ConditionOperator,
 } from '@pipou/shared';
+import type {
+  CreateQuestRequest,
+  QuestCondition,
+  QuestConditionGroup,
+} from '@pipou/shared';
 
-export class QuestConditionDto {
+export class QuestConditionDto implements QuestCondition {
   @IsEnum(ConditionType)
   type!: ConditionType;
 
@@ -45,7 +50,7 @@ export class QuestConditionDto {
   level?: number;
 }
 
-export class QuestConditionGroupDto {
+export class QuestConditionGroupDto implements QuestConditionGroup {
   @IsEnum(ConditionOperator)
   operator!: ConditionOperator;
 
@@ -55,7 +60,7 @@ export class QuestConditionGroupDto {
   conditions!: QuestConditionDto[];
 }
 
-export class CreateQuestDto {
+export class CreateQuestDto implements CreateQuestRequest {
   @IsString()
   title!: string;
 

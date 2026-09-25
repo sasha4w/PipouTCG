@@ -1,7 +1,8 @@
 import { IsEnum, IsInt, IsNotEmpty, Min } from 'class-validator';
 import { ProductType } from '@pipou/shared';
+import type { CreateListingRequest } from '@pipou/shared';
 
-export class CreateListingDto {
+export class CreateListingDto implements CreateListingRequest {
   @IsEnum(ProductType)
   @IsNotEmpty()
   productType!: ProductType;

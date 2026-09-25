@@ -1,4 +1,9 @@
 import { api } from "../api/api";
+import type {
+  CreateCardRequest,
+  PaginatedResponse,
+  UpdateCardRequest,
+} from "@pipou/shared";
 import {
   Archetype,
   CardType,
@@ -26,31 +31,13 @@ export interface Card {
   cardSet: { id: number; name: string };
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+export type { PaginatedResponse };
 
-export interface CreateCardData {
-  name: string;
-  description?: string;
-  rarity: Rarity;
-  type: CardType;
-  atk: number;
-  hp: number;
-  cardSetId: number;
-  cost?: number;
-  supportType?: SupportType;
-  archetype?: Archetype;
-  effects?: CardEffect[];
+/** Corps envoyé en FormData : le contrat + le fichier image éventuel. */
+export type CreateCardData = CreateCardRequest & {
   image?: File; // upload fichier
-  imageId?: number; // utiliser image déjà uploadée
-}
+};
+export type UpdateCardData = UpdateCardRequest & { image?: File };
 
 export const cardService = {
   async findAll(page = 1, limit = 20): Promise<PaginatedResponse<Card>> {
@@ -93,7 +80,7 @@ export const cardService = {
     return res.data;
   },
 
-  async update(id: number, data: Partial<CreateCardData>) {
+  async update(id: number, data: UpdateCardData) {
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
       if (value === undefined || value === null) return;

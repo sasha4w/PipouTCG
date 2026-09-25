@@ -1,4 +1,9 @@
 import { api } from "../api/api";
+import type {
+  CreateBoosterRequest,
+  PaginatedResponse,
+  UpdateBoosterRequest,
+} from "@pipou/shared";
 import { CardNumber } from "@pipou/shared";
 
 export { CardNumber };
@@ -14,15 +19,7 @@ export interface Booster {
   };
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+export type { PaginatedResponse };
 
 export const boosterService = {
   // Récupère tous les boosters (paginé)
@@ -50,26 +47,13 @@ export const boosterService = {
   },
 
   // ADMIN - Créer un booster
-  async create(data: {
-    name: string;
-    cardNumber: CardNumber;
-    cardSetId: number;
-    price: number;
-  }) {
+  async create(data: CreateBoosterRequest) {
     const res = await api.post("/boosters", data);
     return res.data;
   },
 
   // ADMIN - Modifier un booster
-  async update(
-    id: number,
-    data: {
-      name?: string;
-      cardNumber?: CardNumber;
-      cardSetId?: number;
-      price?: number;
-    },
-  ) {
+  async update(id: number, data: UpdateBoosterRequest) {
     const res = await api.patch(`/boosters/${id}`, data);
     return res.data;
   },

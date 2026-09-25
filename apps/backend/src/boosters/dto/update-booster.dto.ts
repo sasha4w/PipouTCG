@@ -8,8 +8,9 @@ import {
   IsOptional,
 } from 'class-validator';
 import { CardNumber } from '@pipou/shared';
+import type { UpdateBoosterRequest } from '@pipou/shared';
 
-export class UpdateBoosterDto {
+export class UpdateBoosterDto implements UpdateBoosterRequest {
   @IsOptional()
   @IsString()
   @MinLength(2)

@@ -1,10 +1,11 @@
 import { api } from "../api/api";
-
-export interface BundleItem {
-  cardId?: number;
-  boosterId?: number;
-  quantity?: number;
-}
+import type {
+  AddBundleContentRequest,
+  BundleItemEntry,
+  CreateBundleRequest,
+  PaginatedResponse,
+  UpdateBundleRequest,
+} from "@pipou/shared";
 
 export interface BundleContent {
   id: number;
@@ -20,15 +21,8 @@ export interface Bundle {
   contents: BundleContent[];
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+export type { PaginatedResponse };
+export type BundleItem = BundleItemEntry;
 
 export const bundleService = {
   async findAll(page = 1, limit = 20): Promise<PaginatedResponse<Bundle>> {
@@ -52,12 +46,12 @@ export const bundleService = {
   },
 
   // ADMIN
-  async create(data: { name: string; price?: number }) {
+  async create(data: CreateBundleRequest) {
     const res = await api.post("/bundles", data);
     return res.data;
   },
 
-  async update(id: number, data: { name?: string; price?: number }) {
+  async update(id: number, data: UpdateBundleRequest) {
     const res = await api.patch(`/bundles/${id}`, data);
     return res.data;
   },
@@ -68,7 +62,8 @@ export const bundleService = {
   },
 
   async addContent(id: number, items: BundleItem[]) {
-    const res = await api.post(`/bundles/${id}/contents`, { items });
+    const body: AddBundleContentRequest = { items };
+    const res = await api.post(`/bundles/${id}/contents`, body);
     return res.data;
   },
   async updateContent(bundleId: number, contentId: number, quantity: number) {

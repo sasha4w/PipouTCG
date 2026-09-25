@@ -7,8 +7,9 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import type { UpdateBundleRequest } from '@pipou/shared';
 
-export class UpdateBundleDto {
+export class UpdateBundleDto implements UpdateBundleRequest {
   @IsOptional()
   @IsString()
   @MinLength(2)

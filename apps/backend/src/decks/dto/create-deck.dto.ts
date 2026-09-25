@@ -10,8 +10,9 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsInt, Min, Max } from 'class-validator';
+import type { CreateDeckRequest, DeckCardEntry } from '@pipou/shared';
 
-export class DeckCardEntryDto {
+export class DeckCardEntryDto implements DeckCardEntry {
   @IsInt()
   @Min(1)
   userCardId!: number;
@@ -22,7 +23,7 @@ export class DeckCardEntryDto {
   quantity!: number;
 }
 
-export class CreateDeckDto {
+export class CreateDeckDto implements CreateDeckRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

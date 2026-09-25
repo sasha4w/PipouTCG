@@ -1,4 +1,5 @@
 import { api } from "../api/api";
+import type { BuyRequest, CreateBannerRequest } from "@pipou/shared";
 import type { BannerItemType } from "@pipou/shared";
 
 export interface Banner {
@@ -27,7 +28,8 @@ export const bannerService = {
     bannerId: number,
     quantity = 1,
   ): Promise<{ message: string; goldSpent: number; goldRemaining: number }> {
-    const res = await api.post(`/banners/${bannerId}/buy`, { quantity });
+    const body: BuyRequest = { quantity };
+    const res = await api.post(`/banners/${bannerId}/buy`, body);
     return res.data;
   },
 
@@ -36,11 +38,14 @@ export const bannerService = {
     const res = await api.get("/banners");
     return res.data;
   },
-  async create(data: Omit<Banner, "id">): Promise<Banner> {
+  async create(data: CreateBannerRequest): Promise<Banner> {
     const res = await api.post("/banners", data);
     return res.data;
   },
-  async update(id: number, data: Partial<Banner>): Promise<Banner> {
+  async update(
+    id: number,
+    data: Partial<CreateBannerRequest>,
+  ): Promise<Banner> {
     const res = await api.patch(`/banners/${id}`, data);
     return res.data;
   },

@@ -1,6 +1,7 @@
 import { IsEmail, IsBoolean, IsOptional, MinLength } from 'class-validator';
+import type { LoginRequest } from '@pipou/shared';
 
-export class LoginDto {
+export class LoginDto implements LoginRequest {
   @IsEmail()
   email!: string;
 

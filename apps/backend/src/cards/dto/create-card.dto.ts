@@ -23,8 +23,14 @@ import {
   ActionType,
   EffectTarget,
 } from '@pipou/shared';
+import type {
+  CardEffect,
+  CreateCardRequest,
+  EffectAction,
+  EffectCondition,
+} from '@pipou/shared';
 
-export class EffectConditionDto {
+export class EffectConditionDto implements EffectCondition {
   @IsEnum(ConditionType)
   type!: ConditionType;
 
@@ -32,7 +38,7 @@ export class EffectConditionDto {
   value?: number | string;
 }
 
-export class EffectActionDto {
+export class EffectActionDto implements EffectAction {
   @IsEnum(ActionType)
   type!: ActionType;
 
@@ -48,7 +54,7 @@ export class EffectActionDto {
   archetype?: Archetype;
 }
 
-export class CardEffectDto {
+export class CardEffectDto implements CardEffect {
   @IsEnum(EffectTrigger)
   trigger!: EffectTrigger;
 
@@ -63,7 +69,7 @@ export class CardEffectDto {
   actions!: EffectActionDto[];
 }
 
-export class CreateCardDto {
+export class CreateCardDto implements CreateCardRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
