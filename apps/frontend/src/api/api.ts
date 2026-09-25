@@ -6,7 +6,7 @@ import { parseApiError, logError } from "../utils/errors";
  * Create axios instance with base configuration
  */
 export const api: AxiosInstance = axios.create({
-  baseURL: "https://tcg-backend-3lez.onrender.com",
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
   timeout: 10000, // 10 seconds
 });
@@ -28,7 +28,7 @@ api.interceptors.request.use(
   (error) => {
     logError(parseApiError(error));
     return Promise.reject(error);
-  }
+  },
 );
 
 /**
@@ -42,7 +42,7 @@ api.interceptors.response.use(
     // Log successful responses in development
     if (import.meta.env.DEV) {
       console.debug(
-        `[API] ${response.config.method?.toUpperCase()} ${response.config.url} -> ${response.status}`
+        `[API] ${response.config.method?.toUpperCase()} ${response.config.url} -> ${response.status}`,
       );
     }
 
@@ -84,7 +84,7 @@ api.interceptors.response.use(
 
         if (import.meta.env.DEV) {
           console.debug(
-            `[API] Retrying ${config.url} (attempt ${retryCount + 1}/3) after ${delayMs}ms`
+            `[API] Retrying ${config.url} (attempt ${retryCount + 1}/3) after ${delayMs}ms`,
           );
         }
 
@@ -98,5 +98,5 @@ api.interceptors.response.use(
     logError(appError);
 
     return Promise.reject(appError);
-  }
+  },
 );
