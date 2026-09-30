@@ -8,6 +8,8 @@
     "email_placeholder": "이메일을 입력하세요",
     "password": "비밀번호",
     "password_placeholder": "6자 이상",
+    "show_password": "비밀번호 표시",
+    "hide_password": "비밀번호 숨기기",
     "username": "닉네임",
     "username_placeholder": "플레이어 닉네임",
     "remember": "로그인 유지",

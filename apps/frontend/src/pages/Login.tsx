@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import SoundButton from "../components/SoundButton";
+import { IconEye, IconEyeOff } from "../components/Icons";
 import { api } from "../api/api";
 import i18n from "../i18n";
 import { apiErrorStatus } from "../utils/errors";
@@ -23,6 +24,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -34,6 +36,7 @@ const Login = () => {
     setUsername("");
     setEmail("");
     setPassword("");
+    setShowPassword(false);
     setRememberMe(false);
   };
 
@@ -149,14 +152,33 @@ const Login = () => {
                   </span>
                 )}
               </div>
-              <input
-                className="login-input"
-                type="password"
-                placeholder={t("login.password_placeholder")}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              />
+              <div className="login-password">
+                <input
+                  className="login-input login-input--password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder={t("login.password_placeholder")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                />
+                <button
+                  type="button"
+                  className="login-password-toggle"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={t(
+                    showPassword
+                      ? "login.hide_password"
+                      : "login.show_password",
+                  )}
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? (
+                    <IconEyeOff size={20} />
+                  ) : (
+                    <IconEye size={20} />
+                  )}
+                </button>
+              </div>
             </div>
           )}
 

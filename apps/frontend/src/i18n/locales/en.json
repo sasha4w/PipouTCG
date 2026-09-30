@@ -8,6 +8,8 @@
     "email_placeholder": "your@email.com",
     "password": "Password",
     "password_placeholder": "6 characters minimum",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "username": "Username",
     "username_placeholder": "Your player name",
     "remember": "Stay logged in",

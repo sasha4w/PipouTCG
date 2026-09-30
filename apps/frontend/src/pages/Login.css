@@ -192,6 +192,38 @@
   box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
 }
 
+/* ── Afficher / masquer le mot de passe ── */
+.login-password {
+  position: relative;
+}
+.login-input--password {
+  padding-right: 2.75rem;
+}
+.login-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #c4a898;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.login-password-toggle:hover,
+.login-password-toggle:focus-visible {
+  color: #7a1c3b;
+}
+.login-password-toggle:focus-visible {
+  outline: 2px solid #f27aaa;
+  outline-offset: 1px;
+}
+
 /* ── Bouton ── */
 .login-btn {
   margin-top: 0.25rem;

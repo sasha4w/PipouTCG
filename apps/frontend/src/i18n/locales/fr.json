@@ -8,6 +8,8 @@
     "email_placeholder": "ton@email.com",
     "password": "Mot de passe",
     "password_placeholder": "6 caractères minimum",
+    "show_password": "Afficher le mot de passe",
+    "hide_password": "Masquer le mot de passe",
     "username": "Pseudo",
     "username_placeholder": "Ton pseudo de joueur",
     "remember": "Rester connecté",
