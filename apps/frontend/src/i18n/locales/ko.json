@@ -155,6 +155,10 @@
     "rarity": "등급",
     "reset": "초기화"
   },
+  "pagination": {
+    "prev": "이전 페이지",
+    "next": "다음 페이지"
+  },
   "marketplace": {
     "tabs": {
       "buy": "구매",
