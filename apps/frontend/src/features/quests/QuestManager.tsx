@@ -278,6 +278,7 @@ export default function QuestManager() {
                     variant="ghost-bordeaux"
                     size="icon"
                     aria-label={q.isActive ? "Désactiver" : "Activer"}
+                    title={q.isActive ? "Désactiver" : "Activer"}
                     onClick={() => handleToggle(q.id)}
                   >
                     {q.isActive ? (
@@ -290,6 +291,7 @@ export default function QuestManager() {
                     variant="ghost-bordeaux"
                     size="icon"
                     aria-label="Modifier"
+                    title="Modifier"
                     onClick={() => openEdit(q)}
                   >
                     <IconPencil size={16} />
@@ -298,6 +300,7 @@ export default function QuestManager() {
                     variant="danger"
                     size="icon"
                     aria-label="Supprimer"
+                    title="Supprimer"
                     onClick={() => handleDelete(q.id)}
                   >
                     <IconTrash size={16} />
@@ -522,6 +525,7 @@ export default function QuestManager() {
                   variant="danger"
                   size="icon"
                   aria-label="Retirer"
+                  title="Retirer"
                   onClick={() => removeCondition(i)}
                 >
                   <IconClose size={16} />

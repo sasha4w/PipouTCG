@@ -104,14 +104,14 @@ export class ErrorBoundary extends Component<Props, State> {
 
               <div className="error-boundary-actions">
                 <Button
-                  variant="primary-inverse"
+                  variant="primary"
                   className="error-boundary-action"
                   onClick={this.handleReset}
                 >
                   Réessayer
                 </Button>
                 <Button
-                  variant="ghost-gold"
+                  variant="ghost-bordeaux"
                   className="error-boundary-action"
                   onClick={() => (window.location.href = "/")}
                 >

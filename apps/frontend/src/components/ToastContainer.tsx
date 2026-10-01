@@ -27,7 +27,7 @@ export const ToastContainer = ({
           <span className="toast__icon">{icons[toast.type]}</span>
           <span className="toast__message">{toast.message}</span>
           <Button
-            variant="ghost-gold"
+            variant="ghost-bordeaux"
             size="icon"
             aria-label="Fermer"
             onClick={() => onRemove(toast.id)}

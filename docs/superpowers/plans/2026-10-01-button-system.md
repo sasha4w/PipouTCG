@@ -1346,7 +1346,7 @@ git commit -m "refactor(admin): use the shared Button component and SVG icons" -
 **Interfaces:**
 - Consumes: `Button`, `IconClose`.
 
-Fonds : barre de recherche (marché, profil, admin) → **clair**. Page d'erreur (dégradé violet, conservé) et toasts (fonds colorés foncés) → **foncé**.
+Fonds : barre de recherche (marché, profil, admin) → **clair**. Les boutons de la page d'erreur reposent sur la carte blanche `.error-boundary-content` (le dégradé violet n'est que le conteneur extérieur) et les toasts sont pâles → **clair**.
 
 - [ ] **Step 1: Migrer (procédure commune)**
 
@@ -1354,9 +1354,9 @@ Fonds : barre de recherche (marché, profil, admin) → **clair**. Page d'erreur
 |---|---|---|---|---|---|
 | Marché / Profil / Admin → recherche | Loupe | `search-bar__icon-btn` (+ `--active`) | `<Button variant="ghost-bordeaux" size="icon" active={searchOpen} aria-label={t("search.aria_search")} onClick={toggleSearch}><IconSearch size={16} /></Button>` | — | `Searchbar.tsx` |
 | Marché / Profil / Admin → recherche | Filtres | `search-bar__icon-btn` (+ `--active`) | `<Button variant="ghost-bordeaux" size="icon" active={filterOpen} aria-label={t("search.aria_filter")} onClick={…}>` (supprimer `style={{ position: "relative" }}`, garder `IconFilter` et le point) | — | `Searchbar.tsx` |
-| Page d'erreur (plantage) | Réessayer | `error-boundary-button error-boundary-button-primary` | `<Button variant="primary-inverse" onClick={this.handleReset}>Réessayer</Button>` | — | `ErrorBoundary.tsx` |
-| Page d'erreur | Accueil | `error-boundary-button error-boundary-button-secondary` | `<Button variant="ghost-gold" onClick={() => (window.location.href = "/")}>Accueil</Button>` | — | `ErrorBoundary.tsx` |
-| Toutes les pages → notification | × fermer | `toast__close` | `<Button variant="ghost-gold" size="icon" aria-label="Fermer" onClick={() => onRemove(toast.id)}><IconClose size={16} /></Button>` | `toast__close` si `position`/`margin` | `ToastContainer.tsx` |
+| Page d'erreur (plantage) | Réessayer | `error-boundary-button error-boundary-button-primary` | `<Button variant="primary" onClick={this.handleReset}>Réessayer</Button>` | — | `ErrorBoundary.tsx` |
+| Page d'erreur | Accueil | `error-boundary-button error-boundary-button-secondary` | `<Button variant="ghost-bordeaux" onClick={() => (window.location.href = "/")}>Accueil</Button>` | — | `ErrorBoundary.tsx` |
+| Toutes les pages → notification | × fermer | `toast__close` | `<Button variant="ghost-bordeaux" size="icon" aria-label="Fermer" onClick={() => onRemove(toast.id)}><IconClose size={16} /></Button>` | `toast__close` si `position`/`margin` | `ToastContainer.tsx` |
 
 `ErrorBoundary.test.tsx` cible « Réessayer » et « Accueil » par leur nom : il doit passer sans modification.
 

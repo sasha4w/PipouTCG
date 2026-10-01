@@ -267,7 +267,7 @@
   height: 440px;
 }
 
-.deck-modal-close {
+.btn.deck-modal-close {
   position: absolute;
   top: 8px;
   right: 8px;

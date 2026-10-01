@@ -24,7 +24,7 @@
   }
 }
 
-.profile-tab-btn {
+.btn.profile-tab-btn {
   flex-direction: column;
   gap: 6px;
   padding: 1rem 0.5rem;

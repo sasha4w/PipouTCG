@@ -401,6 +401,7 @@ export default function BannerManager() {
                     variant="ghost-bordeaux"
                     size="icon"
                     aria-label={b.isActive ? "Désactiver" : "Activer"}
+                    title={b.isActive ? "Désactiver" : "Activer"}
                     onClick={() => handleToggle(b.id)}
                   >
                     {b.isActive ? (
@@ -413,6 +414,7 @@ export default function BannerManager() {
                     variant="ghost-bordeaux"
                     size="icon"
                     aria-label="Modifier"
+                    title="Modifier"
                     onClick={() => openEdit(b)}
                   >
                     <IconPencil size={16} />
@@ -421,6 +423,7 @@ export default function BannerManager() {
                     variant="danger"
                     size="icon"
                     aria-label="Supprimer"
+                    title="Supprimer"
                     onClick={() => handleDelete(b.id)}
                   >
                     <IconTrash size={16} />

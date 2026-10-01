@@ -1,3 +1,4 @@
+/* Les classes de placement passées via className s'écrivent .btn.<classe> quand elles redéfinissent position, padding ou gap. */
 /* ── Base ── */
 .btn {
   position: relative;

@@ -34,7 +34,7 @@ Rappel des variantes :
 | [ ] | Marché → Modifier une annonce | Enregistrer | `listing-edit__save` | `primary-inverse` / md | `features/marketplace/ListingEditForm.tsx` |
 | [ ] | Marché → Modifier une annonce | Annuler | `marketplace-cancel-btn` | `danger-inverse` / md | `features/marketplace/ListingEditForm.tsx` |
 | [ ] | Marché → Achat / Vente → historique | ← page | `.tx-history__pagination button` | `ghost-bordeaux` / icon | `features/marketplace/TransactionHistory.tsx` |
-| [ ] | Marché → historique | → page | `.tx-history__pagination button` | `ghost-bordeaux` / icon | `features/marketplace/TransactionHistory.tsx` |
+| [ ] | Marché → historique | page suivante | `.tx-history__pagination button` | `ghost-bordeaux` / icon | `features/marketplace/TransactionHistory.tsx` |
 | [ ] | Profil → Collection → cartes → filtres | Filtres (options, Réinitialiser) | `filter-panel__btn`, `filter-panel__reset` | `ghost-bordeaux` / sm | `components/FilterPanel.tsx` (utilisé par `features/profile/OwnCardList.tsx`) |
 | [ ] | Admin → Cartes → filtres | Filtres (options, Réinitialiser) | `filter-panel__btn`, `filter-panel__reset` | `ghost-bordeaux` / sm | `components/FilterPanel.tsx` (utilisé par `features/cards/CardManager.tsx`) |
 
@@ -45,10 +45,10 @@ Rappel des variantes :
 | [ ] | Profil (`/profile`) → Collection → boosters | Ouvrir | `inv-row__open-btn` | `primary` / sm | `features/boosters/OwnerBoosterList.tsx` |
 | [ ] | Profil → Collection → bundles | Ouvrir | `inv-row__open-btn` | `primary` / sm | `features/bundles/OwnerBundleList.tsx` |
 | [ ] | Profil → Collection → cartes | ← page | `own-cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/profile/OwnCardList.tsx` |
-| [ ] | Profil → Collection → cartes | → page | `own-cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/profile/OwnCardList.tsx` |
+| [ ] | Profil → Collection → cartes | page suivante | `own-cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/profile/OwnCardList.tsx` |
 | [ ] | Accueil (`/`) → un set de cartes | Retour | `cardlist__back` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
 | [ ] | Accueil → un set de cartes | ← page | `cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
-| [ ] | Accueil → un set de cartes | → page | `cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
+| [ ] | Accueil → un set de cartes | page suivante | `cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
 
 ## Quêtes et récompenses
 
@@ -60,7 +60,7 @@ Rappel des variantes :
 | [ ] | En-tête (toutes les pages) | Trophée des quêtes | `qi__btn` | `ghost-bordeaux` / icon | `features/quests/QuestInboxWidget.tsx` |
 | [ ] | En-tête → menu des quêtes | Tout récupérer | `qi__claim-all` | `primary-inverse` / sm | `features/quests/QuestInboxWidget.tsx` |
 | [ ] | En-tête → menu des quêtes | Récupérer (une quête) | `qi__item-claim` | `primary-inverse` / sm | `features/quests/QuestInboxWidget.tsx` |
-| [ ] | En-tête → menu des quêtes | Voir tout → | `qi__footer-link` | `ghost-gold` / sm | `features/quests/QuestInboxWidget.tsx` |
+| [ ] | En-tête → menu des quêtes | Voir tout | `qi__footer-link` | `ghost-gold` / sm | `features/quests/QuestInboxWidget.tsx` |
 | [ ] | Récompense quotidienne (à la connexion) | ✕ fermer | `drm-close` | `ghost-gold` / icon | `components/DailyRewardModal.tsx` |
 | [ ] | Récompense quotidienne | Réclamer ma récompense | `drm-claim-btn` | `primary-inverse` / lg, fullWidth | `components/DailyRewardModal.tsx` |
 | [ ] | Récompense quotidienne → série perdue | Racheter | `drm-rescue-btn` | `primary-inverse` / md | `components/DailyRewardModal.tsx` |
@@ -81,21 +81,21 @@ Rappel des variantes :
 | [ ] | Accueil → Boutique → carrousel | Bannière suivante | `banner-carousel__btn` | `ghost-bordeaux` / icon | `features/shop/BannerCarousel.tsx` |
 | [ ] | Accueil → ouverture rapide | Ouvrir | `opening-selector__open-btn` | `primary-inverse` / lg | `features/opening/OpeningQuickAccess.tsx` |
 | [ ] | Ouverture d'un booster | ✕ fermer | `opening-modal__close` | `ghost-gold` / icon | `features/opening/OpeningModal.tsx` |
-| [ ] | Ouverture → cartes | Voir les résultats → | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
-| [ ] | Ouverture → cartes une à une | Carte suivante → / Voir les résultats | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
+| [ ] | Ouverture → cartes | Voir les résultats | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
+| [ ] | Ouverture → cartes une à une | Carte suivante / Voir les résultats | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
 | [ ] | Ouverture → résultats | Fermer | `opening-results__close-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
-| [ ] | Ouverture → révélation des cartes | Skip | `opening-skip-btn` | `ghost-gold` / sm | `OpeningModal.tsx` |
+| [ ] | Ouverture → révélation des cartes | Skip | `opening-skip-btn` | `ghost-gold` / sm | `features/opening/OpeningModal.tsx` |
 
 ## Combat hors plateau
 
 | ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
 |---|---|---|---|---|---|
 | [ ] | Combat (`/fight`) → fin de partie | Rejouer | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
-| [ ] | Combat → lobby | Lancer la partie → | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
+| [ ] | Combat → lobby | Lancer la partie | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
 | [ ] | Combat → lobby | Rechercher une partie | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
 | [ ] | Combat → file d'attente | Annuler | `lobby-btn-cancel` | `danger` / md | `features/fight/FightLobby.tsx` |
 | [ ] | Combat → règles | ← Précédent | `fr-nav-btn` | `ghost-bordeaux` / md | `features/fight/FightRules.tsx` |
-| [ ] | Combat → règles | Suivant → | `fr-nav-btn fr-nav-btn--next` | `primary` / md | `features/fight/FightRules.tsx` |
+| [ ] | Combat → règles | Suivant | `fr-nav-btn fr-nav-btn--next` | `primary` / md | `features/fight/FightRules.tsx` |
 | [ ] | Combat → coût d'invocation | Fermer (✕) | `scm-close` | `ghost-bordeaux` / icon | `features/fight/SummonCostModal.tsx` |
 | [ ] | Combat → coût d'invocation | Annuler | `scm-btn-cancel` | `danger` / md | `features/fight/SummonCostModal.tsx` |
 | [ ] | Combat → coût d'invocation | Recycler & Invoquer | `scm-btn-confirm` | `primary` / md | `features/fight/SummonCostModal.tsx` |
@@ -142,16 +142,16 @@ Rappel des variantes :
 | [ ] | Admin → onglet Boosters | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
 | [ ] | Admin → onglet Boosters | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/boosters/BoosterManager.tsx` |
 | [ ] | Admin → onglet Boosters | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
-| [ ] | Admin → onglet Boosters | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
 | [ ] | Admin → onglet Boosters | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/boosters/BoosterManager.tsx` |
 | [ ] | Admin → onglet Boosters | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/boosters/BoosterManager.tsx` |
-| [ ] | Admin → onglet Boosters | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | Suivant | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/boosters/BoosterManager.tsx` |
 | [ ] | Admin → onglet Boosters | Créer le booster / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/boosters/BoosterManager.tsx` |
 | [ ] | Admin → onglet Bundles | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
-| [ ] | Admin → onglet Bundles | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | OK (édition d'une ligne de contenu) | `manager-form__submit` | `primary` / sm | `features/bundles/BundleManager.tsx` |
@@ -159,22 +159,22 @@ Rappel des variantes :
 | [ ] | Admin → onglet Bundles | ✕ retirer une ligne de contenu | `manager-content-row__remove` | `danger` / icon | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | + Ajouter un item | `manager-form__add-row` | `ghost-bordeaux` / md, pleine largeur | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | Sauvegarder le contenu | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
-| [ ] | Admin → onglet Bundles | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | Suivant | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Bundles | ✓ Terminer | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
 | [ ] | Admin → onglet Cartes | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Cartes | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Cartes | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Cartes | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
-| [ ] | Admin → onglet Cartes | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Cartes | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Cartes | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/cards/CardManager.tsx` |
-| [ ] | Admin → onglet Cartes | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | Suivant | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Cartes | Créer la carte / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardManager.tsx` |
 | [ ] | Admin → onglet Card Sets | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/cards/CardSetManager.tsx` |
 | [ ] | Admin → onglet Card Sets | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
 | [ ] | Admin → onglet Card Sets | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/cards/CardSetManager.tsx` |
 | [ ] | Admin → onglet Card Sets | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
-| [ ] | Admin → onglet Card Sets | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
 | [ ] | Admin → onglet Card Sets | Créer / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardSetManager.tsx` |
 | [ ] | Admin → onglet Card Sets | Annuler | `manager-form__cancel` | `danger` / md | `features/cards/CardSetManager.tsx` |
 | [ ] | Admin → onglet Bannières | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/shop/BannerManager.tsx` |
@@ -183,7 +183,7 @@ Rappel des variantes :
 | [ ] | Admin → onglet Bannières | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/shop/BannerManager.tsx` |
 | [ ] | Admin → onglet Bannières | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/shop/BannerManager.tsx` |
 | [ ] | Admin → onglet Bannières | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/shop/BannerManager.tsx` |
-| [ ] | Admin → onglet Bannières | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | Suivant | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/shop/BannerManager.tsx` |
 | [ ] | Admin → onglet Bannières | Créer la bannière / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/shop/BannerManager.tsx` |
 | [ ] | Admin → onglet Quêtes | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/quests/QuestManager.tsx` |
 | [ ] | Admin → onglet Quêtes | ⏸ / ▶ activer / désactiver | `manager-item__content-btn` | `ghost-bordeaux` / icon | `features/quests/QuestManager.tsx` |
@@ -193,7 +193,7 @@ Rappel des variantes :
 | [ ] | Admin → onglet Quêtes | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/quests/QuestManager.tsx` |
 | [ ] | Admin → onglet Quêtes | ✕ retirer une condition | `quest-condition-row__remove` | `danger` / icon | `features/quests/QuestManager.tsx` |
 | [ ] | Admin → onglet Quêtes | + Ajouter une condition | `manager-form__add-row` | `ghost-bordeaux` / md, pleine largeur | `features/quests/QuestManager.tsx` |
-| [ ] | Admin → onglet Quêtes | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | Suivant | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/quests/QuestManager.tsx` |
 | [ ] | Admin → onglet Quêtes | Créer la quête / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/quests/QuestManager.tsx` |
 
 ## Composants transverses
@@ -202,9 +202,9 @@ Rappel des variantes :
 |---|---|---|---|---|---|
 | [ ] | Marché / Profil / Admin → recherche | Loupe | `search-bar__icon-btn` (+ `--active`) | `ghost-bordeaux` / icon | `components/Searchbar.tsx` |
 | [ ] | Marché / Profil / Admin → recherche | Filtres | `search-bar__icon-btn` (+ `--active`) | `ghost-bordeaux` / icon | `components/Searchbar.tsx` |
-| [ ] | Page d'erreur (plantage) | Réessayer | `error-boundary-button error-boundary-button-primary` | `primary-inverse` / md (placement mobile `flex: 1`) | `components/ErrorBoundary.tsx` |
-| [ ] | Page d'erreur (plantage) | Accueil | `error-boundary-button error-boundary-button-secondary` | `ghost-gold` / md (placement mobile `flex: 1`) | `components/ErrorBoundary.tsx` |
-| [ ] | Toutes les pages → notification | × fermer | `toast__close` | `ghost-gold` / icon | `components/ToastContainer.tsx` |
+| [ ] | Page d'erreur (plantage) | Réessayer | `error-boundary-button error-boundary-button-primary` | `primary` / md (placement mobile `flex: 1`) | `components/ErrorBoundary.tsx` |
+| [ ] | Page d'erreur (plantage) | Accueil | `error-boundary-button error-boundary-button-secondary` | `ghost-bordeaux` / md (placement mobile `flex: 1`) | `components/ErrorBoundary.tsx` |
+| [ ] | Toutes les pages → notification | × fermer | `toast__close` | `ghost-bordeaux` / icon | `components/ToastContainer.tsx` |
 
 ## Boutons de jeu laissés tels quels
 

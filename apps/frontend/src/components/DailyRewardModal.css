@@ -27,7 +27,7 @@
   display: none;
 }
 
-.drm-close {
+.btn.drm-close {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;

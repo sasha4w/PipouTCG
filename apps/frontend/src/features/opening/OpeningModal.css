@@ -30,7 +30,7 @@
   z-index: 1002;
 }
 
-.opening-modal__close {
+.btn.opening-modal__close {
   position: absolute;
   top: 0;
   right: 0.5rem;

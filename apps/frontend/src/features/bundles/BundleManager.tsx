@@ -298,6 +298,7 @@ export default function BundleManager() {
                     variant="ghost-bordeaux"
                     size="icon"
                     aria-label="Modifier"
+                    title="Modifier"
                     onClick={() => openEdit(b)}
                   >
                     <IconPencil size={16} />
@@ -306,6 +307,7 @@ export default function BundleManager() {
                     variant="danger"
                     size="icon"
                     aria-label="Supprimer"
+                    title="Supprimer"
                     onClick={() => handleDelete(b.id)}
                   >
                     <IconTrash size={16} />
@@ -322,6 +324,7 @@ export default function BundleManager() {
               variant="ghost-bordeaux"
               size="icon"
               aria-label="Page précédente"
+              title="Page précédente"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
@@ -334,6 +337,7 @@ export default function BundleManager() {
               variant="ghost-bordeaux"
               size="icon"
               aria-label="Page suivante"
+              title="Page suivante"
               disabled={page >= total}
               onClick={() => setPage((p) => p + 1)}
             >
@@ -495,6 +499,7 @@ export default function BundleManager() {
                             variant="danger"
                             size="icon"
                             aria-label="Annuler"
+                            title="Annuler"
                             onClick={cancelEditContent}
                           >
                             <IconClose size={16} />
@@ -510,6 +515,7 @@ export default function BundleManager() {
                           variant="ghost-bordeaux"
                           size="icon"
                           aria-label="Modifier"
+                          title="Modifier"
                           onClick={() => startEditContent(c)}
                         >
                           <IconPencil size={16} />
@@ -518,6 +524,7 @@ export default function BundleManager() {
                           variant="danger"
                           size="icon"
                           aria-label="Supprimer"
+                          title="Supprimer"
                           onClick={() => handleDeleteContent(c.id)}
                         >
                           <IconTrash size={16} />
@@ -573,6 +580,7 @@ export default function BundleManager() {
                     variant="danger"
                     size="icon"
                     aria-label="Retirer"
+                    title="Retirer"
                     onClick={() => removeRow(row.id)}
                   >
                     <IconClose size={16} />
