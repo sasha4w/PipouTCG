@@ -6,7 +6,7 @@ Branche : `feat/button-system`
 
 ## Objectif
 
-Remplacer la centaine de styles de boutons du frontend par un composant unique `<Button>` à 5 variantes choisies selon le fond, pour garder une cohérence visuelle durable.
+Remplacer la centaine de styles de boutons du frontend par un composant unique `<Button>` à 6 variantes choisies selon le fond, pour garder une cohérence visuelle durable.
 
 ## Contexte actuel
 
@@ -41,6 +41,7 @@ Ajoutées dans `:root` de `apps/frontend/src/index.css`. Seul le système de bou
 | `ghost-gold` | foncé | onglet, filtre, sélection | transparent, bordure `rgba(255,255,255,.15)`, texte `rgba(255,255,255,.6)` | fond `rgba(255,255,255,.08)`, texte `rgba(255,255,255,.85)` | fond or 20 %, bordure or 50 %, texte or |
 | `ghost-bordeaux` | clair | onglet, filtre, sélection | fond bordeaux 8 %, texte bordeaux | fond bordeaux 14 % | fond bordeaux plein, texte blanc |
 | `danger` | clair | supprimer, annuler | fond rose 15 %, bordure rose 25 %, texte `--color-pink-text` | fond rose 25 %, bordure rose 45 % | — |
+| `danger-inverse` | foncé | supprimer, annuler | fond rose 15 %, bordure rose 25 %, texte `--color-pink` | fond rose 25 %, bordure rose 45 % | — |
 
 Le doré plein disparaît : ses usages passent en `primary` sur fond clair et en `primary-inverse` sur fond foncé.
 
@@ -65,7 +66,8 @@ type ButtonVariant =
   | "primary-inverse"
   | "ghost-gold"
   | "ghost-bordeaux"
-  | "danger";
+  | "danger"
+  | "danger-inverse";
 type ButtonTextSize = "sm" | "md" | "lg";
 
 type NativeProps = Omit<ComponentPropsWithoutRef<"button">, "type">;
@@ -75,7 +77,10 @@ type ButtonProps = NativeProps & {
   type?: "button" | "submit" | "reset"; // "button" par défaut
 } & (
     | { variant: "ghost-gold" | "ghost-bordeaux"; active?: boolean }
-    | { variant?: "primary" | "primary-inverse" | "danger"; active?: never } // "primary" par défaut
+    | {
+        variant?: "primary" | "primary-inverse" | "danger" | "danger-inverse"; // "primary" par défaut
+        active?: never;
+      }
   ) & (
     | { size?: ButtonTextSize }
     | { size: "icon"; "aria-label": string }
@@ -94,20 +99,28 @@ type ButtonProps = NativeProps & {
 - **Survol** : changement de couleur uniquement, pas de `translateY`.
 - **Appui** : `transform: scale(0.96)`.
 - **Désactivé** : `opacity: 0.4`, `cursor: not-allowed`, aucun effet de survol ni d'appui. Les états désactivés maison des boutons migrés (`lobby-btn-big--disabled`…) disparaissent.
-- **Focus clavier** : contour `:focus-visible`, doré pour `primary-inverse` et `ghost-gold`, bordeaux pour les autres.
+- **Focus clavier** : contour `:focus-visible`, doré pour les variantes de fond foncé (`primary-inverse`, `ghost-gold`, `danger-inverse`), bordeaux pour les autres.
 - **Pas de propriété `loading`** : les écrans gardent leur texte d'attente et passent `disabled`.
 
 ## Style `button` global
 
-Dans `index.css`, la règle `button` devient une remise à zéro : `font-family: inherit`, pas de fond, pas de bordure, `cursor: pointer`, couleur héritée. Les règles `button:hover` (bordure rose) et `button:focus` (outline) sont supprimées.
+Dans `index.css`, la règle `button` ne garde que `font-family: inherit`, `font-size: 1em`, `font-weight: 500` et `cursor: pointer`. Le fond doré, la bordure, le padding, l'arrondi et la transition sont supprimés, ainsi que les règles `button:hover` (bordure rose) et `button:focus` (outline). La couleur du texte n'est pas touchée (valeur du navigateur, comme aujourd'hui).
 
-Les boutons de jeu sans classe (`FightActionBar`, `MonsterZoneContent`, `FightHand`, `FightTabBar`…) sont vérifiés un par un. S'ils dépendaient du style global, ils reçoivent une classe locale qui reproduit exactement leur rendu actuel.
+Tous les boutons de jeu ont une classe. Un contrôle de leurs propriétés montre que trois d'entre eux héritaient d'une valeur supprimée ; elle est recopiée dans leur règle pour garder leur rendu :
+
+- `.bm-stepper__dot` (`components/manager.css`) : `padding: 0.6em 1.2em` ;
+- `.ftb-tab` (`features/fight/FightTabBar.css`) : `border-radius: 8px` ;
+- `.gp-close` (`features/fight/GraveyardPile.css`) : `border-radius: 8px`.
+
+Seul effet visible accepté : la bordure rose au survol, qui venait du style global, disparaît sur les boutons de jeu qui avaient une bordure.
+
+Les sélecteurs CSS qui visent l'élément `button` dans un conteneur (`.marketplace-modal-actions button[...]`, `.tx-history__pagination button`) sont supprimés : ils l'emporteraient sur les classes du composant.
 
 ## Nouvelles icônes
 
-Ajoutées dans `apps/frontend/src/components/Icons.tsx`, au même format que les existantes (`IconProps`, `viewBox 0 0 24 24`, trait 2, bouts arrondis, `currentColor`) : `IconPencil`, `IconTrash`, `IconClose`, `IconPlus`, `IconMinus`.
+Ajoutées dans `apps/frontend/src/components/Icons.tsx`, au même format que les existantes (`IconProps`, `viewBox 0 0 24 24`, trait 2, bouts arrondis, `currentColor`) : `IconPencil`, `IconTrash`, `IconClose`, `IconPlus`, `IconMinus`, `IconPause`, `IconPlay`.
 
-Elles remplacent les emojis ✏ et 🗑 des gestionnaires admin, les ✕ des boutons de fermeture et les +/− texte des sélecteurs de quantité.
+Elles remplacent les emojis ✏, 🗑, ⏸ et ▶ des gestionnaires admin, les ✕ des boutons de fermeture et les +/− texte des sélecteurs de quantité.
 
 ## Périmètre
 
@@ -121,11 +134,19 @@ Restent avec leur style actuel, sans changement visuel :
 
 - plateau de combat : `FightBoard`, `FightActionBar`, `FightHand`, `FightTabBar`, `ZoneRow`, `MonsterZoneContent`, `GraveyardPile`, `BuffDebuffList` ;
 - vignettes cliquables : `marketplace-card-pick`, `marketplace-item-pick`, `opening-selector__thumb`, `fh-card` (cartes du hub de combat) ;
-- indicateurs d'étapes : `bm-stepper__dot`, `fr-bc-step`, `fr-bc-dot`, `listing-edit__step` ;
+- indicateurs d'étapes : `bm-stepper__dot`, `fr-bc-step`, `fr-bc-dot` ;
 - options de récompense : `drm-rescue-option` ;
-- navigation du pied de page : `cc-footer__item`.
+- navigation du pied de page : `cc-footer__item` ;
+- confirmation de `CardPickModal` (`cpm-btn-confirm`) : sa couleur change selon l'effet de jeu résolu (`RESOLUTION_BTN_BG`) ;
+- bascule d'affichage du mot de passe (`login-password-toggle`) : icône intégrée au champ de saisie.
 
-Les modales de combat hors plateau (`SummonCostModal`, `CardPickModal`), le lobby, le hub et les règles sont migrés pour leurs boutons d'action (confirmer, annuler, fermer, navigation).
+Les modales de combat hors plateau (`SummonCostModal`, `CardPickModal`), le lobby et les règles sont migrés pour leurs boutons d'action (confirmer, annuler, fermer, navigation).
+
+`listing-edit__step` n'est pas un indicateur d'étape mais le sélecteur −/+ de quantité de l'édition d'annonce : il est migré.
+
+## `FilterPanel`
+
+`FilterPanel` est utilisé sur fond clair (`BuyTab`, `OwnCardList`, `CardManager`) et sur fond foncé (`CreateListingModal`). Il reçoit une propriété `tone?: "light" | "dark"` (`"light"` par défaut) : ses filtres sont des `ghost-bordeaux` en clair et des `ghost-gold` en foncé. Les surcharges `.marketplace-picker-filters .filter-panel__*` de `CreateListingModal.css` sont supprimées.
 
 ## Ordre de migration
 
@@ -134,10 +155,10 @@ Un commit par étape ; typecheck, lint et tests verts à chaque étape. Le CSS d
 1. **Socle** : variables CSS, `Button.tsx`, `Button.css`, nouvelles icônes, remise à zéro du `button` global, `Button.test.tsx`, création du fichier de vérification.
 2. **Marché** : `MarketplaceTabs`, `BuyTab`, `SellTab`, `CreateListingModal`, `ListingEditForm`, `TransactionHistory`, `FilterPanel`.
 3. **Collection** : `OwnerBoosterList`, `OwnerBundleList` (fin du doré), `OwnCardList`, `CardList`.
-4. **Quêtes et récompenses** : `QuestsPanel`, `QuestInboxWidget`, `DailyRewardModal`, `DailyStreakWidget`.
+4. **Quêtes et récompenses** : `QuestsPanel`, `QuestInboxWidget`, `DailyRewardModal`.
 5. **Boutique et ouverture** : `ShopSection`, `BannerCard`, `BannerCarousel`, `OpeningModal`, `OpeningQuickAccess`.
-6. **Combat hors plateau** : `FightLobby`, `FightHub`, `FightRules`, `SummonCostModal`, `CardPickModal`.
-7. **Profil, réglages, connexion, deck** : `Profile`, `Settings`, `Login`, `ResetPassword`, `PrivacyButton`, `SoundButton`, `SoundSettings`, `DeckWidget`, `DeckBuilder`.
+6. **Combat hors plateau** : `FightLobby`, `FightRules`, `SummonCostModal`, `CardPickModal` (bouton Annuler).
+7. **Profil, réglages, connexion, deck, en-tête** : `Profile`, `Settings`, `Login`, `ResetPassword`, `PrivacyButton`, `SoundButton`, `SoundSettings`, `Header`, `DeckWidget`, `DeckBuilder`.
 8. **Admin** : `Admin`, `BoosterManager`, `BundleManager`, `CardManager`, `CardSetManager`, `BannerManager`, `QuestManager`, `manager.css`.
 9. **Composants transverses** : `Searchbar`, `ErrorBoundary` (fin du dégradé violet), `ToastContainer`.
 
