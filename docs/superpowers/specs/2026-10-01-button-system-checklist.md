@@ -11,8 +11,6 @@ Rappel des variantes :
 
 ## Marché
 
-| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
-|---|---|---|---|---|---|
 | [ ] | Marché (`/marketplace`) | Onglet Achat | `marketplace-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/marketplace/MarketplaceTabs.tsx` |
 | [ ] | Marché | Onglet Vente | `marketplace-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/marketplace/MarketplaceTabs.tsx` |
 | [ ] | Marché → Achat → carte d'annonce (haut foncé) | − quantité | `marketplace-qty-btn` | `ghost-gold` / icon | `features/marketplace/BuyTab.tsx` |
@@ -53,8 +51,6 @@ Rappel des variantes :
 
 ## Quêtes et récompenses
 
-| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
-|---|---|---|---|---|---|
 | [ ] | Profil → Quêtes | Onglets Jour / Semaine / … | `quests-panel__tab` (+ `--active`) | `ghost-gold` / sm | `features/profile/QuestsPanel.tsx` |
 | [ ] | Profil → Quêtes | Tout récupérer | `quests-panel__claim-all` | `primary-inverse` / sm | `features/profile/QuestsPanel.tsx` |
 | [ ] | Profil → Quêtes → une quête | Récupérer | `quest-item__claim-btn` | `primary-inverse` / sm | `features/profile/QuestsPanel.tsx` |
