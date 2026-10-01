@@ -53,6 +53,21 @@ Rappel des variantes :
 
 ## Quêtes et récompenses
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Profil → Quêtes | Onglets Jour / Semaine / … | `quests-panel__tab` (+ `--active`) | `ghost-gold` / sm | `features/profile/QuestsPanel.tsx` |
+| [ ] | Profil → Quêtes | Tout récupérer | `quests-panel__claim-all` | `primary-inverse` / sm | `features/profile/QuestsPanel.tsx` |
+| [ ] | Profil → Quêtes → une quête | Récupérer | `quest-item__claim-btn` | `primary-inverse` / sm | `features/profile/QuestsPanel.tsx` |
+| [ ] | En-tête (toutes les pages) | Trophée des quêtes | `qi__btn` | `ghost-bordeaux` / icon | `features/quests/QuestInboxWidget.tsx` |
+| [ ] | En-tête → menu des quêtes | Tout récupérer | `qi__claim-all` | `primary-inverse` / sm | `features/quests/QuestInboxWidget.tsx` |
+| [ ] | En-tête → menu des quêtes | Récupérer (une quête) | `qi__item-claim` | `primary-inverse` / sm | `features/quests/QuestInboxWidget.tsx` |
+| [ ] | En-tête → menu des quêtes | Voir tout → | `qi__footer-link` | `ghost-gold` / sm | `features/quests/QuestInboxWidget.tsx` |
+| [ ] | Récompense quotidienne (à la connexion) | ✕ fermer | `drm-close` | `ghost-gold` / icon | `components/DailyRewardModal.tsx` |
+| [ ] | Récompense quotidienne | Réclamer ma récompense | `drm-claim-btn` | `primary-inverse` / lg, fullWidth | `components/DailyRewardModal.tsx` |
+| [ ] | Récompense quotidienne → série perdue | Racheter | `drm-rescue-btn` | `primary-inverse` / md | `components/DailyRewardModal.tsx` |
+| [ ] | Récompense quotidienne → série perdue | Recommencer à J1 | `drm-reset-btn` | `danger-inverse` / md | `components/DailyRewardModal.tsx` |
+| [ ] | Récompense quotidienne → résultat | Super, merci ! | `drm-close-btn` | `primary-inverse` / md | `components/DailyRewardModal.tsx` |
+
 ## Boutique et ouverture
 
 ## Combat hors plateau

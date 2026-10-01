@@ -10,6 +10,7 @@ import {
   IconBundle,
   IconTrophy,
 } from "../../components/Icons";
+import Button from "../../components/Button";
 import "./QuestInboxWidget.css";
 
 const RESET_TYPE_LABEL: Record<string, string> = {
@@ -75,8 +76,9 @@ export default function QuestInboxWidget({
 
   return (
     <div className="qi" ref={ref}>
-      <button
-        className="qi__btn"
+      <Button
+        variant="ghost-bordeaux"
+        size="icon"
         onClick={() => setOpen((v) => !v)}
         aria-label={t("quests.inbox_label")}
       >
@@ -84,22 +86,23 @@ export default function QuestInboxWidget({
         {claimable.length > 0 && (
           <span className="qi__badge">{claimable.length}</span>
         )}
-      </button>
+      </Button>
 
       {open && (
         <div className="qi__dropdown">
           <div className="qi__dheader">
             <span className="qi__dheader-title">{t("quests.inbox_title")}</span>
             {claimable.length > 1 && (
-              <button
-                className="qi__claim-all"
+              <Button
+                variant="primary-inverse"
+                size="sm"
                 onClick={handleClaimAll}
                 disabled={claimingAll || claimMutation.isPending}
               >
                 {claimingAll
                   ? "..."
                   : `${t("quests.claim_all")} (${claimable.length})`}
-              </button>
+              </Button>
             )}
           </div>
 
@@ -121,8 +124,9 @@ export default function QuestInboxWidget({
                     <span className="qi__item-type">
                       {RESET_TYPE_LABEL[quest.resetType] ?? quest.resetType}
                     </span>
-                    <button
-                      className="qi__item-claim"
+                    <Button
+                      variant="primary-inverse"
+                      size="sm"
                       onClick={() => claimMutation.mutate(quest.id)}
                       disabled={claimMutation.isPending}
                     >
@@ -130,7 +134,7 @@ export default function QuestInboxWidget({
                       claimMutation.variables === quest.id
                         ? "..."
                         : t("quests.claim")}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))
@@ -139,15 +143,16 @@ export default function QuestInboxWidget({
 
           {onOpenPanel && (
             <div className="qi__footer">
-              <button
-                className="qi__footer-link"
+              <Button
+                variant="ghost-gold"
+                size="sm"
                 onClick={() => {
                   setOpen(false);
                   onOpenPanel();
                 }}
               >
                 {t("quests.see_all")} →
-              </button>
+              </Button>
             </div>
           )}
         </div>

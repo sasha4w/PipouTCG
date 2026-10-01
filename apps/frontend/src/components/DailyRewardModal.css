@@ -31,17 +31,7 @@
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 1.1rem;
-  cursor: pointer;
-  line-height: 1;
-  padding: 4px;
   z-index: 2;
-}
-.drm-close:hover {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ── Content ── */
@@ -352,32 +342,6 @@
 }
 
 /* ── Bouton claim ── */
-.drm-claim-btn {
-  background: linear-gradient(135deg, #eebc77, #d4913a);
-  color: #3d1020;
-  border: none;
-  border-radius: 14px;
-  padding: 0.75rem 2rem;
-  font-family: "Lilita One", cursive;
-  font-size: 0.95rem;
-  cursor: pointer;
-  width: 100%;
-  transition:
-    opacity 0.15s,
-    transform 0.1s;
-}
-.drm-claim-btn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-.drm-claim-btn:active:not(:disabled) {
-  transform: scale(0.97);
-}
-.drm-claim-btn:disabled {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.3);
-  cursor: default;
-}
 
 /* ── Loading ── */
 .drm-loading-icon {
@@ -477,61 +441,11 @@
   gap: 8px;
   width: 100%;
 }
-.drm-rescue-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #eebc77, #d4913a);
-  color: #3d1020;
-  border: none;
-  border-radius: 12px;
-  padding: 0.7rem;
-  font-family: "Lilita One", cursive;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.drm-rescue-btn:hover:not(:disabled) {
-  opacity: 0.88;
-}
-.drm-rescue-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
 
-.drm-reset-btn {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 0.6rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.drm-reset-btn:hover:not(:disabled) {
-  border-color: rgba(255, 100, 100, 0.4);
-  color: rgba(255, 100, 100, 0.7);
-}
 
 /* ── Close btn résultat ── */
 .drm-close-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 0.65rem 2rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  transition: background 0.15s;
   width: 100%;
-}
-.drm-close-btn:hover {
-  background: rgba(255, 255, 255, 0.13);
 }
 
 /* ── Error ── */
