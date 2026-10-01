@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { cardService } from "../../services/card.service";
 import type { Card } from "../../services/card.service";
 import CardDisplay from "./CardDisplay";
+import Button from "../../components/Button";
+import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import Loading from "../../components/Loading";
 import { soundService } from "../../services/sound.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
@@ -57,7 +59,9 @@ export default function CardList({
       {/* Header */}
       <div className="cardlist__header">
         {onBack && (
-          <button
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
             className="cardlist__back"
             onClick={handleBack}
             aria-label="Retour"
@@ -71,10 +75,10 @@ export default function CardList({
             >
               <path
                 d="M5 1H4L0 5L4 9H5V6H11C12.6569 6 14 7.34315 14 9C14 10.6569 12.6569 12 11 12H4V14H11C13.7614 14 16 11.7614 16 9C16 6.23858 13.7614 4 11 4H5V1Z"
-                fill="#7a1c3b"
+                fill="currentColor"
               />
             </svg>
-          </button>
+          </Button>
         )}
         <h2 className="cardlist__title">{setName}</h2>
         <span className="cardlist__count">
@@ -106,29 +110,33 @@ export default function CardList({
 
       {totalPages > 1 && (
         <div className="cardlist__pagination">
-          <button
-            className="cardlist__pagination-btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Page précédente"
             disabled={page <= 1}
             onClick={() => {
               soundService.play("select");
               setPage((p) => p - 1);
             }}
           >
-            ←
-          </button>
+            <IconArrowLeft size={16} />
+          </Button>
           <span className="cardlist__pagination-info">
             {page} / {totalPages}
           </span>
-          <button
-            className="cardlist__pagination-btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Page suivante"
             disabled={page >= totalPages}
             onClick={() => {
               soundService.play("select");
               setPage((p) => p + 1);
             }}
           >
-            →
-          </button>
+            <IconArrowRight size={16} />
+          </Button>
         </div>
       )}
     </div>

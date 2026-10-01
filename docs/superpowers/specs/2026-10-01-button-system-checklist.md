@@ -43,6 +43,14 @@ Rappel des variantes :
 
 ## Collection
 
+| [ ] | Profil (`/profile`) → Collection → boosters | Ouvrir | `inv-row__open-btn` | `primary` / sm | `features/boosters/OwnerBoosterList.tsx` |
+| [ ] | Profil → Collection → bundles | Ouvrir | `inv-row__open-btn` | `primary` / sm | `features/bundles/OwnerBundleList.tsx` |
+| [ ] | Profil → Collection → cartes | ← page | `own-cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/profile/OwnCardList.tsx` |
+| [ ] | Profil → Collection → cartes | → page | `own-cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/profile/OwnCardList.tsx` |
+| [ ] | Accueil (`/`) → un set de cartes | Retour | `cardlist__back` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
+| [ ] | Accueil → un set de cartes | ← page | `cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
+| [ ] | Accueil → un set de cartes | → page | `cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/cards/CardList.tsx` |
+
 ## Quêtes et récompenses
 
 ## Boutique et ouverture
