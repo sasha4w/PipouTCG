@@ -26,7 +26,7 @@ export interface FilterPanelProps {
   onChange: (key: string, value: string) => void;
   /** Affiche un bouton « Réinitialiser » quand il est fourni. */
   onReset?: () => void;
-  /** Fond sur lequel le panneau est pos� (d�faut : clair). */
+  /** Fond sur lequel le panneau est posé (défaut : clair). */
   tone?: "light" | "dark";
 }
 
