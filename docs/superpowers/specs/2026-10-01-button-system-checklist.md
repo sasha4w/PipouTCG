@@ -87,6 +87,19 @@ Rappel des variantes :
 
 ## Combat hors plateau
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Combat (`/fight`) → fin de partie | Rejouer | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
+| [ ] | Combat → lobby | Lancer la partie → | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
+| [ ] | Combat → lobby | Rechercher une partie | `lobby-btn-big` | `primary` / lg | `features/fight/FightLobby.tsx` |
+| [ ] | Combat → file d'attente | Annuler | `lobby-btn-cancel` | `danger` / md | `features/fight/FightLobby.tsx` |
+| [ ] | Combat → règles | ← Précédent | `fr-nav-btn` | `ghost-bordeaux` / md | `features/fight/FightRules.tsx` |
+| [ ] | Combat → règles | Suivant → | `fr-nav-btn fr-nav-btn--next` | `primary` / md | `features/fight/FightRules.tsx` |
+| [ ] | Combat → coût d'invocation | Fermer (✕) | `scm-close` | `ghost-bordeaux` / icon | `features/fight/SummonCostModal.tsx` |
+| [ ] | Combat → coût d'invocation | Annuler | `scm-btn-cancel` | `danger` / md | `features/fight/SummonCostModal.tsx` |
+| [ ] | Combat → coût d'invocation | Recycler & Invoquer | `scm-btn-confirm` | `primary` / md | `features/fight/SummonCostModal.tsx` |
+| [ ] | Combat → choix de carte | Annuler | `cpm-btn-cancel` | `danger` / md | `features/fight/CardPickModal.tsx` |
+
 ## Profil, réglages, connexion, deck, en-tête
 
 ## Admin

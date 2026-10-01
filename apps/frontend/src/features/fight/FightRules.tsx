@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Button from "../../components/Button";
+import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import "./FightRules.css";
 
 type Step = { icon: string; label: string; content: React.ReactNode };
@@ -357,23 +359,24 @@ export default function FightRules() {
 
       {/* Navigation */}
       <div className="fr-nav">
-        <button
-          className="fr-nav-btn"
+        <Button
+          variant="ghost-bordeaux"
           onClick={() => setCur((c) => c - 1)}
           disabled={cur === 0}
         >
-          ← Précédent
-        </button>
+          <IconArrowLeft size={16} />
+          Précédent
+        </Button>
         <span className="fr-nav-counter">
           {cur + 1} / {STEPS.length}
         </span>
-        <button
-          className="fr-nav-btn fr-nav-btn--next"
+        <Button
           onClick={() => setCur((c) => c + 1)}
           disabled={cur === STEPS.length - 1}
         >
-          Suivant →
-        </button>
+          Suivant
+          <IconArrowRight size={16} />
+        </Button>
       </div>
     </div>
   );
