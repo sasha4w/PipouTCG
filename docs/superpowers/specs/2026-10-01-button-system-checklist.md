@@ -69,6 +69,22 @@ Rappel des variantes :
 
 ## Boutique et ouverture
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Accueil → Boutique → booster | − quantité | `shop-item__qty-btn` | `ghost-bordeaux` / icon | `features/shop/ShopSection.tsx` |
+| [ ] | Accueil → Boutique → booster | + quantité | `shop-item__qty-btn` | `ghost-bordeaux` / icon | `features/shop/ShopSection.tsx` |
+| [ ] | Accueil → Boutique → booster | Acheter ×N | `shop-item__btn` | `primary` / md, pleine largeur | `features/shop/ShopSection.tsx` |
+| [ ] | Accueil → Boutique → bannière | − quantité | `banner-card__qty-btn` | `ghost-gold` / icon | `features/shop/BannerCard.tsx` |
+| [ ] | Accueil → Boutique → bannière | + quantité | `banner-card__qty-btn` | `ghost-gold` / icon | `features/shop/BannerCard.tsx` |
+| [ ] | Accueil → Boutique → bannière | Acheter ×N — objet | `banner-card__btn` | `primary-inverse` / md, pleine largeur | `features/shop/BannerCard.tsx` |
+| [ ] | Accueil → Boutique → carrousel | Bannière précédente | `banner-carousel__btn` | `ghost-bordeaux` / icon | `features/shop/BannerCarousel.tsx` |
+| [ ] | Accueil → Boutique → carrousel | Bannière suivante | `banner-carousel__btn` | `ghost-bordeaux` / icon | `features/shop/BannerCarousel.tsx` |
+| [ ] | Accueil → ouverture rapide | Ouvrir | `opening-selector__open-btn` | `primary-inverse` / lg | `features/opening/OpeningQuickAccess.tsx` |
+| [ ] | Ouverture d'un booster | ✕ fermer | `opening-modal__close` | `ghost-gold` / icon | `features/opening/OpeningModal.tsx` |
+| [ ] | Ouverture → cartes | Voir les résultats → | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
+| [ ] | Ouverture → cartes une à une | Carte suivante → / Voir les résultats | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
+| [ ] | Ouverture → résultats | Fermer | `opening-results__close-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
+
 ## Combat hors plateau
 
 ## Profil, réglages, connexion, deck, en-tête

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Button from "../../components/Button";
 import type { OpeningTarget } from "./OpeningModal";
 import type { UserInventory } from "../../services/user.service";
 import "./OpeningQuickAccess.css";
@@ -56,7 +57,9 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
         <div className="opening-selector__featured-qty">
           ×{selected.qty} disponible{selected.qty > 1 ? "s" : ""}
         </div>
-        <button
+        <Button
+          variant="primary-inverse"
+          size="lg"
           className="opening-selector__open-btn"
           onClick={() =>
             onOpen({
@@ -67,7 +70,7 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
           }
         >
           Ouvrir
-        </button>
+        </Button>
       </div>
 
       <div className="opening-selector__shelf">

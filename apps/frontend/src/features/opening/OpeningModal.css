@@ -34,17 +34,7 @@
   position: absolute;
   top: 0;
   right: 0.5rem;
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 4px;
-  line-height: 1;
   z-index: 10;
-}
-.opening-modal__close:hover {
-  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ── Pack fermé ── */
@@ -157,22 +147,6 @@
   font-family: "Comfortaa", sans-serif;
 }
 
-.opening-cards__next-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border-radius: 12px;
-  padding: 0.6rem 2rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.opening-cards__next-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
 /* ── Résultats ── */
 .opening-results {
   display: flex;
@@ -210,22 +184,6 @@
   text-align: center;
   font-family: "Comfortaa", sans-serif;
   line-height: 1.2;
-}
-
-.opening-results__close-btn {
-  background: #eebc77;
-  color: #3d1020;
-  border: none;
-  border-radius: 12px;
-  padding: 0.65rem 2rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.opening-results__close-btn:hover {
-  opacity: 0.85;
 }
 
 /* ── Liste d'items bundle ── */

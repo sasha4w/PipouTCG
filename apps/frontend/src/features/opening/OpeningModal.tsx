@@ -7,6 +7,8 @@ import {
   type OpenedCard,
   type OpeningResult,
 } from "../../services/opening.service";
+import Button from "../../components/Button";
+import { IconClose } from "../../components/Icons";
 import CardDisplay from "../cards/CardDisplay";
 import type { Card } from "../../services/card.service";
 import { soundService } from "../../services/sound.service";
@@ -277,9 +279,15 @@ export default function OpeningModal({
 
       <div className="opening-modal">
         {phase !== "flash" && phase !== "loading" && (
-          <button className="opening-modal__close" onClick={handleClose}>
-            ✕
-          </button>
+          <Button
+            variant="ghost-gold"
+            size="icon"
+            aria-label="Fermer"
+            className="opening-modal__close"
+            onClick={handleClose}
+          >
+            <IconClose size={16} />
+          </Button>
         )}
 
         <AnimatePresence mode="wait">
@@ -451,12 +459,13 @@ export default function OpeningModal({
                 ))}
               </div>
 
-              <button
-                className="opening-cards__next-btn"
+              <Button
+                variant="primary-inverse"
+                size="lg"
                 onClick={() => setPhase("results")}
               >
                 Voir les résultats →
-              </button>
+              </Button>
             </motion.div>
           )}
 
@@ -532,11 +541,15 @@ export default function OpeningModal({
                 </span>
               </motion.div>
 
-              <button className="opening-cards__next-btn" onClick={handleNext}>
+              <Button
+                variant="primary-inverse"
+                size="lg"
+                onClick={handleNext}
+              >
                 {currentIdx < cards.length - 1
                   ? "Carte suivante →"
                   : "Voir les résultats"}
-              </button>
+              </Button>
             </motion.div>
           )}
 
@@ -617,12 +630,13 @@ export default function OpeningModal({
                 </div>
               )}
 
-              <button
-                className="opening-results__close-btn"
+              <Button
+                variant="primary-inverse"
+                size="lg"
                 onClick={handleClose}
               >
                 Fermer
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>

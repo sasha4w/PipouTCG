@@ -113,31 +113,6 @@
   gap: 4px;
   justify-content: center;
 }
-.banner-card__qty-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition:
-    background 0.15s,
-    opacity 0.15s;
-}
-.banner-card__qty-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.2);
-}
-.banner-card__qty-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
 .banner-card__qty-input {
   width: 38px;
   text-align: center;
@@ -164,32 +139,6 @@
 }
 .banner-card__qty-input:disabled {
   opacity: 0.5;
-}
-
-.banner-card__btn {
-  background: #eebc77;
-  color: #3d1020;
-  border: none;
-  border-radius: 10px;
-  padding: 0.55rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    opacity 0.15s,
-    transform 0.12s;
-  width: 100%;
-}
-.banner-card__btn:hover {
-  opacity: 0.85;
-}
-.banner-card__btn:active {
-  transform: scale(0.97);
-}
-.banner-card__btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .banner-card__timer {

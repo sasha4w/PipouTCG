@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import type { Banner } from "../../services/banner.service";
+import Button from "../../components/Button";
+import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import BannerCard from "./BannerCard";
 import "./BannerCarousel.css";
 
@@ -80,9 +82,14 @@ export default function BannerCarousel({
 
       {banners.length > 1 && (
         <div className="banner-carousel__actions">
-          <button className="banner-carousel__btn" onClick={prev}>
-            {"<"}
-          </button>
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Bannière précédente"
+            onClick={prev}
+          >
+            <IconArrowLeft size={16} />
+          </Button>
           <div className="banner-carousel__dots">
             {banners.map((_, i) => (
               <span
@@ -91,9 +98,14 @@ export default function BannerCarousel({
               />
             ))}
           </div>
-          <button className="banner-carousel__btn" onClick={next}>
-            {">"}
-          </button>
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Bannière suivante"
+            onClick={next}
+          >
+            <IconArrowRight size={16} />
+          </Button>
         </div>
       )}
     </div>

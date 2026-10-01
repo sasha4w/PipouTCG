@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import type { Banner } from "../../services/banner.service";
 import { bannerService } from "../../services/banner.service";
-import { IconGold } from "../../components/Icons";
+import Button from "../../components/Button";
+import { IconGold, IconMinus, IconPlus } from "../../components/Icons";
 import "./BannerCard.css";
 
 function countdownLabel(endDate: string | null, now: number): string | null {
@@ -93,13 +94,15 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
           </span>
         </div>
         <div className="banner-card__qty">
-          <button
-            className="banner-card__qty-btn"
+          <Button
+            variant="ghost-gold"
+            size="icon"
+            aria-label="Diminuer"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={buying || quantity <= 1}
           >
-            −
-          </button>
+            <IconMinus size={16} />
+          </Button>
           <input
             className="banner-card__qty-input"
             type="number"
@@ -111,24 +114,27 @@ export default function BannerCard({ banner, onBought }: BannerCardProps) {
             }}
             disabled={buying}
           />
-          <button
-            className="banner-card__qty-btn"
+          <Button
+            variant="ghost-gold"
+            size="icon"
+            aria-label="Augmenter"
             onClick={() => setQuantity((q) => q + 1)}
             disabled={buying}
           >
-            +
-          </button>
+            <IconPlus size={16} />
+          </Button>
         </div>
         {error && (
           <span style={{ fontSize: "0.7rem", color: "#f27aaa" }}>{error}</span>
         )}
-        <button
-          className="banner-card__btn"
+        <Button
+          variant="primary-inverse"
+          fullWidth
           onClick={handleBuy}
           disabled={buying}
         >
           {buying ? "..." : `Acheter ×${quantity} — ${banner.itemName}`}
-        </button>
+        </Button>
         {timer && <span className="banner-card__timer">⏱ {timer}</span>}
       </div>
     </div>
