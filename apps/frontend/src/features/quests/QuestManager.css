@@ -79,30 +79,6 @@
 .quest-condition-row__amount {
   flex: 0 0 72px;
 }
-.quest-condition-row__remove {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(242, 122, 170, 0.1);
-  color: #b03060;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.15s,
-    transform 0.1s;
-}
-.quest-condition-row__remove:hover {
-  background: rgba(242, 122, 170, 0.22);
-}
-.quest-condition-row__remove:active {
-  transform: scale(0.9);
-}
 
 /* ── Section de formulaire ── */
 .quest-form-section {

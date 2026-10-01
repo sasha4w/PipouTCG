@@ -134,6 +134,67 @@ Rappel des variantes :
 
 ## Admin
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Admin (`/admin`) | Onglets Card Sets / Cartes / Boosters / Bundles / Quêtes / Bannières | `admin-tab-btn` | `ghost-bordeaux` / md (actif = `active`) | `pages/Admin.tsx` |
+| [ ] | Admin → onglet Boosters | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Boosters | Créer le booster / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/boosters/BoosterManager.tsx` |
+| [ ] | Admin → onglet Bundles | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | OK (édition d'une ligne de contenu) | `manager-form__submit` | `primary` / sm | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ✕ annuler l'édition d'une ligne | `manager-form__cancel` | `danger` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ✕ retirer une ligne de contenu | `manager-content-row__remove` | `danger` / icon | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | + Ajouter un item | `manager-form__add-row` | `ghost-bordeaux` / md, pleine largeur | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | Sauvegarder le contenu | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Bundles | ✓ Terminer | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/bundles/BundleManager.tsx` |
+| [ ] | Admin → onglet Cartes | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Cartes | Créer la carte / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardManager.tsx` |
+| [ ] | Admin → onglet Card Sets | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | ← page précédente | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | → page suivante | `manager-pagination__btn` | `ghost-bordeaux` / icon | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | Créer / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Card Sets | Annuler | `manager-form__cancel` | `danger` / md | `features/cards/CardSetManager.tsx` |
+| [ ] | Admin → onglet Bannières | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | ⏸ / ▶ activer / désactiver | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Bannières | Créer la bannière / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/shop/BannerManager.tsx` |
+| [ ] | Admin → onglet Quêtes | + Nouveau / + Nouvelle | `manager__add-btn` | `primary` / sm | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | ⏸ / ▶ activer / désactiver | `manager-item__content-btn` | `ghost-bordeaux` / icon | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | ✏ modifier | `manager-item__edit-btn` | `ghost-bordeaux` / icon | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | 🗑 supprimer | `manager-item__delete-btn` | `danger` / icon | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | ← Précédent | `manager-form__cancel` | `ghost-bordeaux` / md | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | ✕ retirer une condition | `quest-condition-row__remove` | `danger` / icon | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | + Ajouter une condition | `manager-form__add-row` | `ghost-bordeaux` / md, pleine largeur | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | Suivant → | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/quests/QuestManager.tsx` |
+| [ ] | Admin → onglet Quêtes | Créer la quête / Modifier | `manager-form__submit` | `primary` / md (placement `flex: 1`) | `features/quests/QuestManager.tsx` |
+
 ## Composants transverses
 
 ## Boutons de jeu laissés tels quels

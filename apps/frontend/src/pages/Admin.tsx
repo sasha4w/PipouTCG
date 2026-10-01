@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import Loading from "../components/Loading";
+import Button from "../components/Button";
 import CardSetManager from "../features/cards/CardSetManager";
 import CardManager from "../features/cards/CardManager";
 import BoosterManager from "../features/boosters/BoosterManager";
@@ -47,14 +48,16 @@ export default function Admin() {
       <h1 className="admin-page__title">Dashboard Admin</h1>
       <div className="admin-tabs">
         {TABS.map((t) => (
-          <button
+          <Button
             key={t.key}
-            className={`admin-tab-btn${tab === t.key ? " admin-tab-btn--active" : ""}`}
+            variant="ghost-bordeaux"
+            active={tab === t.key}
+            className="admin-tab-btn"
             onClick={() => setTab(t.key)}
           >
             <span className="admin-tab-btn__icon">{t.icon}</span>
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
       {tab === "cardsets" && <CardSetManager />}

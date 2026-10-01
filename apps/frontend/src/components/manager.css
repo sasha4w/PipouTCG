@@ -40,32 +40,6 @@
   text-overflow: ellipsis;
 }
 
-/* Bouton ajout */
-.manager__add-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: none;
-  background: #7a1c3b;
-  color: #fff;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.18s,
-    transform 0.12s;
-  flex-shrink: 0;
-}
-.manager__add-btn:hover {
-  background: #9b2349;
-}
-.manager__add-btn:active {
-  transform: scale(0.95);
-}
-
 /* ── Formulaire ── */
 .manager-form {
   background: rgba(238, 188, 119, 0.08);
@@ -139,44 +113,6 @@
 
 .manager-form__submit {
   flex: 1;
-  padding: 0.65rem;
-  border-radius: 12px;
-  border: none;
-  background: #7a1c3b;
-  color: #fff;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.18s,
-    transform 0.12s;
-}
-.manager-form__submit:hover {
-  background: #9b2349;
-}
-.manager-form__submit:active {
-  transform: scale(0.97);
-}
-.manager-form__submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.manager-form__cancel {
-  padding: 0.65rem 1rem;
-  border-radius: 12px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: transparent;
-  color: #a08070;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.88rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.18s;
-}
-.manager-form__cancel:hover {
-  background: rgba(61, 16, 32, 0.05);
 }
 
 /* ── Ligne de contenu bundle (type + item + quantité + suppr) ── */
@@ -197,55 +133,6 @@
 
 .manager-content-row__qty {
   flex: 0 0 64px;
-}
-
-.manager-content-row__remove {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: rgba(242, 122, 170, 0.1);
-  color: #b03060;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.15s,
-    transform 0.1s;
-}
-.manager-content-row__remove:hover {
-  background: rgba(242, 122, 170, 0.22);
-}
-.manager-content-row__remove:active {
-  transform: scale(0.9);
-}
-
-/* ── Bouton "Ajouter une ligne" (tirets) ── */
-.manager-form__add-row {
-  background: none;
-  border: 1.5px dashed rgba(61, 16, 32, 0.2);
-  border-radius: 10px;
-  padding: 0.5rem;
-  cursor: pointer;
-  color: #a08070;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  width: 100%;
-  text-align: center;
-  transition:
-    border-color 0.15s,
-    color 0.15s,
-    background 0.15s;
-}
-.manager-form__add-row:hover {
-  border-color: rgba(122, 28, 59, 0.35);
-  color: #7a1c3b;
-  background: rgba(122, 28, 59, 0.03);
 }
 
 /* ── Liste items ── */
@@ -294,67 +181,6 @@
   align-items: center;
 }
 
-.manager-item__edit-btn,
-.manager-item__delete-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  transition:
-    background 0.15s,
-    transform 0.1s;
-}
-.manager-item__edit-btn {
-  background: rgba(122, 28, 59, 0.08);
-  color: #7a1c3b;
-}
-.manager-item__edit-btn:hover {
-  background: rgba(122, 28, 59, 0.16);
-}
-.manager-item__delete-btn {
-  background: rgba(242, 122, 170, 0.1);
-  color: #b03060;
-}
-.manager-item__delete-btn:hover {
-  background: rgba(242, 122, 170, 0.22);
-}
-.manager-item__edit-btn:active,
-.manager-item__delete-btn:active {
-  transform: scale(0.9);
-}
-
-/* Bouton content (largeur auto) */
-.manager-item__content-btn {
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  font-family: "Comfortaa", sans-serif;
-  background: rgba(238, 188, 119, 0.25);
-  color: #7a4a00;
-  transition:
-    background 0.15s,
-    transform 0.1s;
-  white-space: nowrap;
-}
-.manager-item__content-btn:hover {
-  background: rgba(238, 188, 119, 0.45);
-}
-.manager-item__content-btn:active {
-  transform: scale(0.9);
-}
-
 /* ── États ── */
 .manager-empty {
   text-align: center;
@@ -377,26 +203,6 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
-
-.manager-pagination__btn {
-  padding: 5px 12px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: transparent;
-  color: #7a1c3b;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.manager-pagination__btn:hover {
-  background: rgba(122, 28, 59, 0.06);
-}
-.manager-pagination__btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 .manager-pagination__info {

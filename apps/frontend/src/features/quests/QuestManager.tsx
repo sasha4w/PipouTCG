@@ -11,6 +11,16 @@ import {
   type QuestCondition,
 } from "../../services/quest.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import Button from "../../components/Button";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconClose,
+  IconPause,
+  IconPencil,
+  IconPlay,
+  IconTrash,
+} from "../../components/Icons";
 import "../../components/manager.css";
 import "./QuestManager.css";
 
@@ -228,9 +238,9 @@ export default function QuestManager() {
       <div className="manager">
         <div className="manager__header">
           <h2 className="manager__title">Quêtes</h2>
-          <button className="manager__add-btn" onClick={openCreate}>
+          <Button size="sm" onClick={openCreate}>
             + Nouvelle
-          </button>
+          </Button>
         </div>
 
         {(error || loadError) && (
@@ -264,25 +274,34 @@ export default function QuestManager() {
                   </div>
                 </div>
                 <div className="manager-item__actions">
-                  <button
-                    className="manager-item__content-btn"
+                  <Button
+                    variant="ghost-bordeaux"
+                    size="icon"
+                    aria-label={q.isActive ? "Désactiver" : "Activer"}
                     onClick={() => handleToggle(q.id)}
-                    title={q.isActive ? "Désactiver" : "Activer"}
                   >
-                    {q.isActive ? "⏸" : "▶"}
-                  </button>
-                  <button
-                    className="manager-item__edit-btn"
+                    {q.isActive ? (
+                      <IconPause size={16} />
+                    ) : (
+                      <IconPlay size={16} />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost-bordeaux"
+                    size="icon"
+                    aria-label="Modifier"
                     onClick={() => openEdit(q)}
                   >
-                    ✏
-                  </button>
-                  <button
-                    className="manager-item__delete-btn"
+                    <IconPencil size={16} />
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="icon"
+                    aria-label="Supprimer"
                     onClick={() => handleDelete(q.id)}
                   >
-                    🗑
-                  </button>
+                    <IconTrash size={16} />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -295,9 +314,10 @@ export default function QuestManager() {
   return (
     <div className="manager">
       <div className="manager__header">
-        <button className="manager-form__cancel" onClick={backToList}>
-          ← Retour
-        </button>
+        <Button variant="ghost-bordeaux" onClick={backToList}>
+          <IconArrowLeft size={16} />
+          Retour
+        </Button>
         <h2 className="manager__title">
           {editing ? "Modifier" : "Nouvelle"} quête
         </h2>
@@ -498,19 +518,21 @@ export default function QuestManager() {
                 placeholder="Qté"
               />
               {form.conditionGroup.conditions.length > 1 && (
-                <button
-                  className="quest-condition-row__remove"
+                <Button
+                  variant="danger"
+                  size="icon"
+                  aria-label="Retirer"
                   onClick={() => removeCondition(i)}
                 >
-                  ✕
-                </button>
+                  <IconClose size={16} />
+                </Button>
               )}
             </div>
           ))}
 
-          <button className="manager-form__add-row" onClick={addCondition}>
+          <Button variant="ghost-bordeaux" fullWidth onClick={addCondition}>
             + Ajouter une condition
-          </button>
+          </Button>
         </div>
       )}
 
@@ -566,24 +588,26 @@ export default function QuestManager() {
       {/* ── Navigation wizard ── */}
       <div className="bm-nav">
         {step > 1 ? (
-          <button className="manager-form__cancel" onClick={goPrev}>
-            ← Précédent
-          </button>
+          <Button variant="ghost-bordeaux" onClick={goPrev}>
+            <IconArrowLeft size={16} />
+            Précédent
+          </Button>
         ) : (
           <div />
         )}
         {isLast ? (
-          <button
+          <Button
             className="manager-form__submit"
             onClick={handleSubmit}
             disabled={saving}
           >
             {saving ? "..." : editing ? "Modifier" : "Créer la quête"}
-          </button>
+          </Button>
         ) : (
-          <button className="manager-form__submit" onClick={goNext}>
-            Suivant →
-          </button>
+          <Button className="manager-form__submit" onClick={goNext}>
+            Suivant
+            <IconArrowRight size={16} />
+          </Button>
         )}
       </div>
     </div>

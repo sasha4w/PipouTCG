@@ -8,6 +8,13 @@ import { boosterService } from "../../services/booster.service";
 import { cardSetService } from "../../services/card-set.service";
 import type { Booster, CardNumber } from "../../services/booster.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import Button from "../../components/Button";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconPencil,
+  IconTrash,
+} from "../../components/Icons";
 import "../../components/manager.css";
 
 const CARD_NUMBERS: CardNumber[] = [1, 5, 8, 10];
@@ -142,9 +149,9 @@ export default function BoosterManager() {
       <div className="manager">
         <div className="manager__header">
           <h2 className="manager__title">Boosters</h2>
-          <button className="manager__add-btn" onClick={openCreate}>
+          <Button size="sm" onClick={openCreate}>
             + Nouveau
-          </button>
+          </Button>
         </div>
 
         {(error || loadError) && (
@@ -166,18 +173,22 @@ export default function BoosterManager() {
                   </div>
                 </div>
                 <div className="manager-item__actions">
-                  <button
-                    className="manager-item__edit-btn"
+                  <Button
+                    variant="ghost-bordeaux"
+                    size="icon"
+                    aria-label="Modifier"
                     onClick={() => openEdit(b)}
                   >
-                    ✏
-                  </button>
-                  <button
-                    className="manager-item__delete-btn"
+                    <IconPencil size={16} />
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="icon"
+                    aria-label="Supprimer"
                     onClick={() => handleDelete(b.id)}
                   >
-                    🗑
-                  </button>
+                    <IconTrash size={16} />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -186,23 +197,27 @@ export default function BoosterManager() {
 
         {total > 1 && (
           <div className="manager-pagination">
-            <button
-              className="manager-pagination__btn"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
+              aria-label="Page précédente"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
-              ←
-            </button>
+              <IconArrowLeft size={16} />
+            </Button>
             <span className="manager-pagination__info">
               {page} / {total}
             </span>
-            <button
-              className="manager-pagination__btn"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
+              aria-label="Page suivante"
               disabled={page >= total}
               onClick={() => setPage((p) => p + 1)}
             >
-              →
-            </button>
+              <IconArrowRight size={16} />
+            </Button>
           </div>
         )}
       </div>
@@ -212,9 +227,10 @@ export default function BoosterManager() {
   return (
     <div className="manager">
       <div className="manager__header">
-        <button className="manager-form__cancel" onClick={backToList}>
-          ← Retour
-        </button>
+        <Button variant="ghost-bordeaux" onClick={backToList}>
+          <IconArrowLeft size={16} />
+          Retour
+        </Button>
         <h2 className="manager__title">
           {editing ? "Modifier" : "Nouveau"} booster
         </h2>
@@ -327,24 +343,26 @@ export default function BoosterManager() {
       {/* ── Navigation wizard ── */}
       <div className="bm-nav">
         {step > 1 ? (
-          <button className="manager-form__cancel" onClick={goPrev}>
-            ← Précédent
-          </button>
+          <Button variant="ghost-bordeaux" onClick={goPrev}>
+            <IconArrowLeft size={16} />
+            Précédent
+          </Button>
         ) : (
           <div />
         )}
         {isLast ? (
-          <button
+          <Button
             className="manager-form__submit"
             onClick={handleSubmit}
             disabled={saving}
           >
             {saving ? "..." : editing ? "Modifier" : "Créer le booster"}
-          </button>
+          </Button>
         ) : (
-          <button className="manager-form__submit" onClick={goNext}>
-            Suivant →
-          </button>
+          <Button className="manager-form__submit" onClick={goNext}>
+            Suivant
+            <IconArrowRight size={16} />
+          </Button>
         )}
       </div>
     </div>

@@ -7,6 +7,13 @@ import {
 import { cardSetService } from "../../services/card-set.service";
 import type { CardSet } from "../../services/card-set.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import Button from "../../components/Button";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconPencil,
+  IconTrash,
+} from "../../components/Icons";
 import "../../components/manager.css";
 
 export default function CardSetManager() {
@@ -80,9 +87,9 @@ export default function CardSetManager() {
     <div className="manager">
       <div className="manager__header">
         <h2 className="manager__title">Card Sets</h2>
-        <button className="manager__add-btn" onClick={openCreate}>
+        <Button size="sm" onClick={openCreate}>
           + Nouveau
-        </button>
+        </Button>
       </div>
 
       {(error || loadError) && (
@@ -105,16 +112,16 @@ export default function CardSetManager() {
             />
           </div>
           <div className="manager-form__actions">
-            <button
+            <Button
               className="manager-form__submit"
               onClick={handleSubmit}
               disabled={saving}
             >
               {saving ? "..." : editing ? "Modifier" : "Créer"}
-            </button>
-            <button className="manager-form__cancel" onClick={cancel}>
+            </Button>
+            <Button variant="danger" onClick={cancel}>
               Annuler
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -132,18 +139,22 @@ export default function CardSetManager() {
                 <div className="manager-item__meta">#{s.id}</div>
               </div>
               <div className="manager-item__actions">
-                <button
-                  className="manager-item__edit-btn"
+                <Button
+                  variant="ghost-bordeaux"
+                  size="icon"
+                  aria-label="Modifier"
                   onClick={() => openEdit(s)}
                 >
-                  ✏
-                </button>
-                <button
-                  className="manager-item__delete-btn"
+                  <IconPencil size={16} />
+                </Button>
+                <Button
+                  variant="danger"
+                  size="icon"
+                  aria-label="Supprimer"
                   onClick={() => handleDelete(s.id)}
                 >
-                  🗑
-                </button>
+                  <IconTrash size={16} />
+                </Button>
               </div>
             </div>
           ))}
@@ -152,23 +163,27 @@ export default function CardSetManager() {
 
       {total > 1 && (
         <div className="manager-pagination">
-          <button
-            className="manager-pagination__btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Page précédente"
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
           >
-            ←
-          </button>
+            <IconArrowLeft size={16} />
+          </Button>
           <span className="manager-pagination__info">
             {page} / {total}
           </span>
-          <button
-            className="manager-pagination__btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Page suivante"
             disabled={page >= total}
             onClick={() => setPage((p) => p + 1)}
           >
-            →
-          </button>
+            <IconArrowRight size={16} />
+          </Button>
         </div>
       )}
     </div>
