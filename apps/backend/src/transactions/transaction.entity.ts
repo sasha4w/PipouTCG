@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { ProductType, TransactionStatus } from '@pipou/shared';
+import { bigintTransformer } from '../common/transformers/bigint.transformer';
 
 @Entity('transaction')
 export class Transaction {
@@ -37,10 +38,18 @@ export class Transaction {
   @Column()
   quantity!: number;
 
-  @Column({ name: 'unit_price', type: 'bigint' })
+  @Column({
+    name: 'unit_price',
+    type: 'bigint',
+    transformer: bigintTransformer,
+  })
   unitPrice!: number;
 
-  @Column({ name: 'total_price', type: 'bigint' })
+  @Column({
+    name: 'total_price',
+    type: 'bigint',
+    transformer: bigintTransformer,
+  })
   totalPrice!: number;
 
   @Column({

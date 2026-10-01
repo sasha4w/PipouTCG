@@ -152,7 +152,8 @@
     "support": "서포트",
     "all_rarities": "모든 등급",
     "type": "유형",
-    "rarity": "등급"
+    "rarity": "등급",
+    "reset": "초기화"
   },
   "marketplace": {
     "tabs": {
@@ -161,6 +162,7 @@
     },
     "buy": {
       "title": "마켓",
+      "empty": "검색 결과에 맞는 판매가 없습니다.",
       "search_placeholder": "아이템 또는 판매자 검색...",
       "seller": "판매자:",
       "unit_price": "{{price}} G / 개",
@@ -180,7 +182,9 @@
       "btn_cancel": "취소",
       "btn_save": "저장",
       "edit_quantity": "수량",
-      "edit_price": "단가 (G)",
+      "edit_price": "단가",
+      "edit_title": "판매 수정",
+      "edit_max": "최대 {{max}}개",
       "edit_total": "예상 합계: {{total}} G",
       "history_title": "최근 판매 내역",
       "history_empty": "완료된 판매가 없습니다."
@@ -194,6 +198,7 @@
       "stock_count": "재고 {{type}} {{count}}개",
       "stock_empty": "{{type}} 재고 없음",
       "inventory_empty": "이 유형의 아이템이 인벤토리에 없습니다.",
+      "no_filter_results": "필터에 맞는 카드가 없습니다.",
       "no_results": "\"{{search}}\" 검색 결과 없음.",
       "search_placeholder": "검색...",
       "in_stock": "재고 {{count}}개",
@@ -210,6 +215,7 @@
       "warn_price": "가격은 최소 1골드 이상이어야 합니다."
     },
     "filter": {
+      "product": "상품",
       "all": "전체",
       "cards": "카드",
       "boosters": "부스터",
@@ -232,6 +238,7 @@
       "cancel_error": "판매 취소 불가.",
       "update_success": "판매 목록이 업데이트되었습니다.",
       "update_error": "판매 목록 수정 불가.",
+      "update_error_detail": "판매 목록 수정 불가: {{message}}",
       "update_warn": "수량과 가격은 0보다 커야 합니다.",
       "warn_no_item": "판매할 아이템을 선택해주세요.",
       "warn_qty": "수량은 0보다 커야 합니다.",

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import "./FilterPanel.css";
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -22,6 +23,8 @@ export interface FilterPanelProps {
   config: FilterGroupConfig[];
   values: FilterValues;
   onChange: (key: string, value: string) => void;
+  /** Affiche un bouton « Réinitialiser » quand il est fourni. */
+  onReset?: () => void;
 }
 
 // ── Composant ────────────────────────────────────────────────────────────────
@@ -30,7 +33,9 @@ export default function FilterPanel({
   config,
   values,
   onChange,
+  onReset,
 }: FilterPanelProps) {
+  const { t } = useTranslation();
   return (
     <div className="filter-panel">
       {config.map((group) => (
@@ -44,6 +49,7 @@ export default function FilterPanel({
               return (
                 <button
                   key={opt.value}
+                  type="button"
                   className={`filter-panel__btn${isActive ? " filter-panel__btn--active" : ""}`}
                   onClick={() => onChange(group.key, opt.value)}
                 >
@@ -54,6 +60,11 @@ export default function FilterPanel({
           </div>
         </div>
       ))}
+      {onReset && (
+        <button type="button" className="filter-panel__reset" onClick={onReset}>
+          {t("filter.reset")}
+        </button>
+      )}
     </div>
   );
 }

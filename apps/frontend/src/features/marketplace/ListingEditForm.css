@@ -1,0 +1,239 @@
+/* ══════════════════════════════════════════════
+   ÉDITION D'UNE ANNONCE (onglet Vente)
+   Double classe : l'emporte sur .marketplace-listing (ListingCard.css)
+   quel que soit l'ordre de chargement.
+══════════════════════════════════════════════ */
+.marketplace-listing.marketplace-listing--editing {
+  height: auto;
+  gap: 0.9rem;
+  padding: 1.1rem 1.1rem 1.2rem;
+  background: linear-gradient(to bottom, #262022, #1a1a1a);
+  border-color: #7a1c3b;
+  box-shadow: 0 14px 30px rgba(73, 16, 33, 0.35);
+  transform: none;
+  color: #f5e6d0;
+}
+
+.marketplace-listing.marketplace-listing--editing:hover {
+  transform: none;
+}
+
+/* Pas de reflet animé pendant la saisie */
+.marketplace-listing.marketplace-listing--editing::after {
+  display: none;
+}
+
+/* ── En-tête ── */
+.listing-edit__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(245, 230, 208, 0.1);
+}
+
+.listing-edit__eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f27aaa;
+}
+
+.listing-edit__name {
+  font-family: "Lilita One", cursive;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.2;
+}
+
+/* ── Champs ── */
+.listing-edit__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.listing-edit__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #d4a85c;
+}
+
+.listing-edit__hint {
+  font-size: 0.7rem;
+  color: rgba(245, 230, 208, 0.55);
+}
+
+.listing-edit__input {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 9px;
+  border: 1px solid rgba(245, 230, 208, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5e6d0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.listing-edit__input::-webkit-inner-spin-button,
+.listing-edit__input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.listing-edit__input:focus {
+  border-color: #d4a85c;
+  box-shadow: 0 0 0 3px rgba(212, 168, 92, 0.2);
+}
+
+.listing-edit__input[aria-invalid="true"] {
+  border-color: #f27aaa;
+}
+
+.listing-edit__input:disabled {
+  opacity: 0.5;
+}
+
+.listing-edit__input--qty {
+  flex: 1;
+  text-align: center;
+}
+
+/* ── Sélecteur de quantité : − [ n ] + Max ── */
+.listing-edit__stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.listing-edit__step {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 9px;
+  border: 1px solid rgba(245, 230, 208, 0.18);
+  background: rgba(245, 230, 208, 0.08);
+  color: #f5e6d0;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.listing-edit__step:hover:not(:disabled) {
+  background: rgba(245, 230, 208, 0.16);
+  border-color: rgba(245, 230, 208, 0.35);
+}
+
+.listing-edit__max {
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0 0.7rem;
+  border-radius: 9px;
+  border: 1px solid rgba(212, 168, 92, 0.4);
+  background: rgba(212, 168, 92, 0.1);
+  color: #d4a85c;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.listing-edit__max:hover:not(:disabled) {
+  background: rgba(212, 168, 92, 0.2);
+  border-color: rgba(212, 168, 92, 0.65);
+}
+
+.listing-edit__step:disabled,
+.listing-edit__max:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Prix avec suffixe « G » ── */
+.listing-edit__price {
+  position: relative;
+}
+
+.listing-edit__price .listing-edit__input {
+  padding-right: 2rem;
+}
+
+.listing-edit__suffix {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  font-family: "Lilita One", cursive;
+  color: #d4a85c;
+  pointer-events: none;
+}
+
+/* ── Total ── */
+.listing-edit__total {
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(245, 230, 208, 0.1);
+  font-family: "Lilita One", cursive;
+  font-size: 1.05rem;
+  color: #d4a85c;
+}
+
+/* ── Actions ── */
+.listing-edit__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.listing-edit__save {
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 122, 170, 0.35);
+  background: #7a1c3b;
+  color: #fff;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.listing-edit__save:hover:not(:disabled) {
+  background: #9b2349;
+  border-color: rgba(242, 122, 170, 0.6);
+  transform: translateY(-1px);
+}
+
+.listing-edit__save:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.listing-edit__actions .marketplace-cancel-btn {
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+}

@@ -8,6 +8,7 @@ import {
   type FilterValues,
 } from "../../components/FilterPanel";
 import TransactionHistory from "./TransactionHistory";
+import ListingPreview from "./ListingPreview";
 import "./BuyTab.css";
 import "./ListingCard.css";
 
@@ -22,6 +23,7 @@ interface BuyTabProps {
   getDisplayName: (listing: Transaction) => string;
   onSearchChange: (value: string) => void;
   onFilterChange: (key: string, value: string) => void;
+  onResetFilters: () => void;
   onBuyListing: (id: number, quantity: number) => void;
 }
 
@@ -36,6 +38,7 @@ const BuyTab = ({
   getDisplayName,
   onSearchChange,
   onFilterChange,
+  onResetFilters,
   onBuyListing,
 }: BuyTabProps) => {
   const { t } = useTranslation();
@@ -61,38 +64,29 @@ const BuyTab = ({
             config={filterConfig}
             values={filterValues}
             onChange={onFilterChange}
+            onReset={hasActiveFilters ? onResetFilters : undefined}
           />
         }
         hasActiveFilters={hasActiveFilters}
       />
       <div className="marketplace-listings">
+        {filteredListings?.length === 0 && (
+          <p className="marketplace-empty">{t("marketplace.buy.empty")}</p>
+        )}
         {filteredListings?.map((listing: Transaction) => {
           const qty = getQty(listing.id);
           const totalForQty = listing.unitPrice * qty;
           const isLoading = loadingAction === listing.id;
 
           return (
-            <div key={listing.id} className="marketplace-listing">
-              <div className="marketplace-listing__top">
-                <svg
-                  width="36"
-                  height="36"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#7a1c3b"
-                  strokeWidth="1.5"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <path d="M20.4 14.5L16 10 4 20" />
-                </svg>
-                <div className="marketplace-listing__name">
-                  {getDisplayName(listing)}
-                </div>
-                <div className="marketplace-listing__qty">
-                  ×{listing.quantity}
-                </div>
-              </div>
+            <div
+              key={listing.id}
+              className={`marketplace-listing${listing.card ? " marketplace-listing--card" : ""}`}
+            >
+              <ListingPreview
+                listing={listing}
+                name={getDisplayName(listing)}
+              />
 
               <div className="marketplace-listing__qty-selector">
                 <button

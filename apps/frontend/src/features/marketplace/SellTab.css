@@ -60,3 +60,66 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ══════════════════════════════════════════════
+   BAS DE CARTE (annonce en cours)
+   Double classe : l'emporte sur ListingCard.css, chargé après.
+══════════════════════════════════════════════ */
+.marketplace-listing__bottom.marketplace-listing__bottom--sell {
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 12px;
+}
+
+.marketplace-listing__sell-prices {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.marketplace-listing__sell-unit {
+  font-family: "Lilita One", cursive;
+  font-size: 1.05rem;
+  color: #7a1c3b;
+  white-space: nowrap;
+}
+
+.marketplace-listing__sell-total {
+  font-size: 0.75rem;
+  color: #666;
+  white-space: nowrap;
+}
+
+.marketplace-listing__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* ── Bouton modifier ── */
+.marketplace-edit-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(122, 28, 59, 0.35);
+  background: rgba(122, 28, 59, 0.08);
+  color: #7a1c3b;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.marketplace-edit-btn:hover:not(:disabled) {
+  background: #7a1c3b;
+  border-color: #7a1c3b;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.marketplace-edit-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

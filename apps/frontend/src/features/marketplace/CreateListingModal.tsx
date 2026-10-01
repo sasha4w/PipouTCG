@@ -11,6 +11,9 @@ import {
   type InventoryCard,
   type InventoryItem,
 } from "../../services/user.service";
+import FilterPanel from "../../components/FilterPanel";
+import { useFilters } from "../../hooks/useFilters";
+import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
 import "./CreateListingModal.css";
 
 const TYPE_KEYS: Record<ProductType, string> = {
@@ -65,6 +68,10 @@ const CreateListingModal = ({
   const [quantity, setQuantity] = useState(1);
   const [unitPrice, setUnitPrice] = useState<number | "">("");
 
+  const filterConfig = useMemo(() => cardFilterGroups(t), [t]);
+  const { filterValues, setFilter, resetFilters, hasActiveFilters } =
+    useFilters(filterConfig);
+
   const handleSelectItem = (id: number) => {
     onInventoryIdChange(id);
     setQuantity(1);
@@ -79,11 +86,14 @@ const CreateListingModal = ({
   };
 
   const filteredItems = useMemo(() => {
-    if (!search.trim()) return availableItems;
-    return availableItems.filter((item) =>
-      item.name?.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [availableItems, search]);
+    const term = search.trim().toLowerCase();
+    return availableItems.filter((item) => {
+      if (term && !item.name?.toLowerCase().includes(term)) return false;
+      // Rareté / type : uniquement pour les cartes
+      if (isInventoryCard(item)) return matchesCardFilters(filterValues, item);
+      return true;
+    });
+  }, [availableItems, search, filterValues]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,6 +185,18 @@ const CreateListingModal = ({
               )}
             </div>
 
+            {formProductType === ProductType.CARD &&
+              availableItems.length > 0 && (
+                <div className="marketplace-picker-filters">
+                  <FilterPanel
+                    config={filterConfig}
+                    values={filterValues}
+                    onChange={setFilter}
+                    onReset={hasActiveFilters ? resetFilters : undefined}
+                  />
+                </div>
+              )}
+
             {availableItems.length === 0 ? (
               <p className="marketplace-form-hint">
                 {t("marketplace.modal.inventory_empty")}
@@ -189,7 +211,9 @@ const CreateListingModal = ({
               >
                 {filteredItems.length === 0 && (
                   <p className="marketplace-form-hint">
-                    {t("marketplace.modal.no_results", { search })}
+                    {search.trim()
+                      ? t("marketplace.modal.no_results", { search })
+                      : t("marketplace.modal.no_filter_results")}
                   </p>
                 )}
                 {formProductType === ProductType.CARD

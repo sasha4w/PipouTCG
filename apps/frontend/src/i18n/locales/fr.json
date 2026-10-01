@@ -152,7 +152,8 @@
     "support": "Support",
     "all_rarities": "Toutes",
     "type": "Type",
-    "rarity": "Rareté"
+    "rarity": "Rareté",
+    "reset": "Réinitialiser"
   },
   "marketplace": {
     "tabs": {
@@ -161,6 +162,7 @@
     },
     "buy": {
       "title": "Marché",
+      "empty": "Aucune annonce ne correspond à votre recherche.",
       "search_placeholder": "Rechercher un objet ou un vendeur...",
       "seller": "Par :",
       "unit_price": "{{price}} G / unité",
@@ -180,7 +182,9 @@
       "btn_cancel": "Annuler",
       "btn_save": "Sauvegarder",
       "edit_quantity": "Quantité",
-      "edit_price": "Prix unitaire (G)",
+      "edit_price": "Prix unitaire",
+      "edit_title": "Modifier l'annonce",
+      "edit_max": "{{max}} au maximum",
       "edit_total": "Total estimé : {{total}} G",
       "history_title": "Mes Ventes Récentes",
       "history_empty": "Aucune vente complétée."
@@ -194,6 +198,7 @@
       "stock_count": "{{count}} {{type}} en stock",
       "stock_empty": "Aucun(e) {{type}} disponible",
       "inventory_empty": "Votre inventaire est vide pour ce type d'objet.",
+      "no_filter_results": "Aucune carte ne correspond aux filtres.",
       "no_results": "Aucun résultat pour « {{search}} ».",
       "search_placeholder": "Rechercher...",
       "in_stock": "{{count}} en stock",
@@ -210,6 +215,7 @@
       "warn_price": "Le prix doit être d'au moins 1 gold."
     },
     "filter": {
+      "product": "Objet",
       "all": "Tous",
       "cards": "Cartes",
       "boosters": "Boosters",
@@ -232,6 +238,7 @@
       "cancel_error": "Impossible d'annuler l'annonce.",
       "update_success": "Annonce mise à jour.",
       "update_error": "Impossible de modifier l'annonce.",
+      "update_error_detail": "Impossible de modifier l'annonce : {{message}}",
       "update_warn": "Quantité et prix doivent être supérieurs à 0.",
       "warn_no_item": "Veuillez sélectionner un objet à vendre.",
       "warn_qty": "La quantité doit être supérieure à 0.",

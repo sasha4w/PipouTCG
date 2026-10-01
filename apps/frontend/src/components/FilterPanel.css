@@ -54,3 +54,24 @@
   border-color: #7a1c3b;
   color: #fff;
 }
+
+.filter-panel__reset {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: #7a1c3b;
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-family: "Comfortaa", sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.filter-panel__reset:hover {
+  opacity: 1;
+  border-color: transparent;
+}

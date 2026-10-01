@@ -28,8 +28,23 @@ import MarketplaceTabs from "../features/marketplace/MarketplaceTabs";
 import SellTab from "../features/marketplace/SellTab";
 import BuyTab from "../features/marketplace/BuyTab";
 import CreateListingModal from "../features/marketplace/CreateListingModal";
+import {
+  cardFilterGroups,
+  hasActiveCardFilter,
+  matchesCardFilters,
+} from "../features/cards/cardFilters";
 
 type Listings = PaginatedResponse<Transaction>;
+
+/** Applique localement une modification d'annonce (prix total recalculé). */
+function applyListingUpdate(
+  listing: Transaction,
+  data: UpdateListingData,
+): Transaction {
+  const quantity = data.quantity ?? listing.quantity;
+  const unitPrice = data.unitPrice ?? listing.unitPrice;
+  return { ...listing, quantity, unitPrice, totalPrice: quantity * unitPrice };
+}
 
 const Marketplace = () => {
   const { t } = useTranslation();
@@ -50,26 +65,24 @@ const Marketplace = () => {
   const queryClient = useQueryClient();
   const { toasts, addToast, removeToast } = useToast();
 
-  useSseNewListings(
-    (event: MarketUpdateEvent) => {
-      if (event.type === "listing.updated" && event.transactionId != null) {
-        queryClient.setQueryData<Listings>(QUERY_KEYS.offers, (old) =>
-          old
-            ? {
-                ...old,
-                data: old.data.map((l) =>
-                  l.id === event.transactionId && event.newQuantity != null
-                    ? { ...l, quantity: event.newQuantity }
-                    : l,
-                ),
-              }
-            : old,
-        );
-      } else {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.offers });
-      }
-    },
-  );
+  useSseNewListings((event: MarketUpdateEvent) => {
+    if (event.type === "listing.updated" && event.transactionId != null) {
+      queryClient.setQueryData<Listings>(QUERY_KEYS.offers, (old) =>
+        old
+          ? {
+              ...old,
+              data: old.data.map((l) =>
+                l.id === event.transactionId && event.newQuantity != null
+                  ? { ...l, quantity: event.newQuantity }
+                  : l,
+              ),
+            }
+          : old,
+      );
+    } else {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.offers });
+    }
+  });
 
   const { data: listings } = useQuery({
     queryKey: QUERY_KEYS.offers,
@@ -112,6 +125,19 @@ const Marketplace = () => {
 
   const getDisplayName = (listing: Transaction) =>
     listing.itemName || `Objet #${listing.productId}`;
+
+  /** Quantité déjà en vente + exemplaires encore en inventaire. */
+  const getMaxQuantity = (listing: Transaction) => {
+    const items =
+      listing.productType === ProductType.CARD
+        ? inventory?.cards.data
+        : listing.productType === ProductType.BOOSTER
+          ? inventory?.boosters.data
+          : inventory?.bundles.data;
+    const inStock =
+      items?.find((item) => item.id === listing.productId)?.quantity ?? 0;
+    return listing.quantity + inStock;
+  };
 
   // ─────────────────────────────────────────────
   // Handlers
@@ -195,19 +221,7 @@ const Marketplace = () => {
         ? {
             ...old,
             data: old.data.map((l) =>
-              l.id === id
-                ? {
-                    ...l,
-                    ...(data.quantity !== undefined && {
-                      quantity: data.quantity,
-                    }),
-                    ...(data.unitPrice !== undefined && {
-                      unitPrice: data.unitPrice,
-                      totalPrice:
-                        data.unitPrice * (data.quantity ?? l.quantity),
-                    }),
-                  }
-                : l,
+              l.id === id ? applyListingUpdate(l, data) : l,
             ),
           }
         : old,
@@ -218,14 +232,24 @@ const Marketplace = () => {
         old
           ? {
               ...old,
-              data: old.data.map((l) => (l.id === id ? updated : l)),
+              data: old.data.map((l) =>
+                l.id === id ? { ...l, ...updated } : l,
+              ),
             }
           : old,
       );
+      if (data.quantity !== undefined)
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       addToast(t("marketplace.toast.update_success"), "success");
-    } catch {
+    } catch (error) {
       queryClient.setQueryData(QUERY_KEYS.myListings, snapshot);
-      addToast(t("marketplace.toast.update_error"), "error");
+      const message = apiErrorMessage(error);
+      addToast(
+        message
+          ? t("marketplace.toast.update_error_detail", { message })
+          : t("marketplace.toast.update_error"),
+        "error",
+      );
     } finally {
       setLoadingUpdate(null);
     }
@@ -276,32 +300,45 @@ const Marketplace = () => {
   // Filtres BuyTab
   // ─────────────────────────────────────────────
 
-  const filterConfig = [
-    {
-      key: "type",
-      label: t("filter.type"),
-      options: [
-        { value: "all", label: t("marketplace.filter.all") },
-        { value: ProductType.CARD, label: t("marketplace.filter.cards") },
-        { value: ProductType.BOOSTER, label: t("marketplace.filter.boosters") },
-        { value: ProductType.BUNDLE, label: t("marketplace.filter.bundles") },
-      ],
-      defaultValue: "all",
-    },
-  ];
+  const filterConfig = useMemo(
+    () => [
+      {
+        key: "productType",
+        label: t("marketplace.filter.product"),
+        options: [
+          { value: "all", label: t("marketplace.filter.all") },
+          { value: ProductType.CARD, label: t("marketplace.filter.cards") },
+          {
+            value: ProductType.BOOSTER,
+            label: t("marketplace.filter.boosters"),
+          },
+          { value: ProductType.BUNDLE, label: t("marketplace.filter.bundles") },
+        ],
+      },
+      ...cardFilterGroups(t),
+    ],
+    [t],
+  );
 
-  const { filterValues, setFilter, hasActiveFilters } =
+  const { filterValues, setFilter, resetFilters, hasActiveFilters } =
     useFilters(filterConfig);
 
   const filteredListings = useMemo(() => {
+    const cardFilterActive = hasActiveCardFilter(filterValues);
+    const search = searchTerm.toLowerCase();
     return listings?.data.filter((listing: Transaction) => {
       if (
-        filterValues.type !== "all" &&
-        listing.productType !== filterValues.type
+        filterValues.productType !== "all" &&
+        listing.productType !== filterValues.productType
       )
         return false;
-      if (searchTerm) {
-        const search = searchTerm.toLowerCase();
+      // Un filtre rareté / type de carte ne garde que les cartes
+      if (cardFilterActive) {
+        if (listing.productType !== ProductType.CARD) return false;
+        if (!listing.card || !matchesCardFilters(filterValues, listing.card))
+          return false;
+      }
+      if (search) {
         const itemName = (listing.itemName || "").toLowerCase();
         const sellerName = (listing.seller?.username || "").toLowerCase();
         return itemName.includes(search) || sellerName.includes(search);
@@ -326,6 +363,7 @@ const Marketplace = () => {
           loadingAction={loadingAction}
           loadingUpdate={loadingUpdate}
           getDisplayName={getDisplayName}
+          getMaxQuantity={getMaxQuantity}
           onCreateListing={() => setShowCreateListingForm(true)}
           onCancelListing={handleCancelListing}
           onUpdateListing={handleUpdateListing}
@@ -344,6 +382,7 @@ const Marketplace = () => {
           getDisplayName={getDisplayName}
           onSearchChange={setSearchTerm}
           onFilterChange={setFilter}
+          onResetFilters={resetFilters}
           onBuyListing={handleBuyListing}
         />
       )}
