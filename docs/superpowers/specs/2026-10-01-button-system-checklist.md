@@ -197,6 +197,14 @@ Rappel des variantes :
 
 ## Composants transverses
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Marché / Profil / Admin → recherche | Loupe | `search-bar__icon-btn` (+ `--active`) | `ghost-bordeaux` / icon | `components/Searchbar.tsx` |
+| [ ] | Marché / Profil / Admin → recherche | Filtres | `search-bar__icon-btn` (+ `--active`) | `ghost-bordeaux` / icon | `components/Searchbar.tsx` |
+| [ ] | Page d'erreur (plantage) | Réessayer | `error-boundary-button error-boundary-button-primary` | `primary-inverse` / md (placement mobile `flex: 1`) | `components/ErrorBoundary.tsx` |
+| [ ] | Page d'erreur (plantage) | Accueil | `error-boundary-button error-boundary-button-secondary` | `ghost-gold` / md (placement mobile `flex: 1`) | `components/ErrorBoundary.tsx` |
+| [ ] | Toutes les pages → notification | × fermer | `toast__close` | `ghost-gold` / icon | `components/ToastContainer.tsx` |
+
 ## Boutons de jeu laissés tels quels
 
 Vérifier qu'ils n'ont **pas** changé d'apparence (seule la bordure rose au survol, qui venait du style global, a disparu).

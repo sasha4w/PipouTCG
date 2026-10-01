@@ -1,5 +1,6 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import { logError, AppError } from "../utils/errors";
+import Button from "./Button";
 import "./ErrorBoundary.css";
 
 interface Props {
@@ -102,18 +103,20 @@ export class ErrorBoundary extends Component<Props, State> {
               )}
 
               <div className="error-boundary-actions">
-                <button
+                <Button
+                  variant="primary-inverse"
+                  className="error-boundary-action"
                   onClick={this.handleReset}
-                  className="error-boundary-button error-boundary-button-primary"
                 >
                   Réessayer
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost-gold"
+                  className="error-boundary-action"
                   onClick={() => (window.location.href = "/")}
-                  className="error-boundary-button error-boundary-button-secondary"
                 >
                   Accueil
-                </button>
+                </Button>
               </div>
             </div>
           </div>

@@ -122,23 +122,6 @@
   line-height: 1.4;
 }
 
-/* ── Bouton fermer ── */
-.toast__close {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.1rem;
-  line-height: 1;
-  opacity: 0.5;
-  color: inherit;
-  padding: 0;
-  transition: opacity 0.15s;
-}
-.toast__close:hover {
-  opacity: 1;
-}
-
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .toast-container {

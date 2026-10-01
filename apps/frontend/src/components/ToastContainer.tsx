@@ -1,4 +1,6 @@
 import type { Toast, ToastType } from "../hooks/useToast";
+import Button from "./Button";
+import { IconClose } from "./Icons";
 import "../hooks/useToast.css";
 
 export const ToastContainer = ({
@@ -24,9 +26,14 @@ export const ToastContainer = ({
         >
           <span className="toast__icon">{icons[toast.type]}</span>
           <span className="toast__message">{toast.message}</span>
-          <button className="toast__close" onClick={() => onRemove(toast.id)}>
-            ×
-          </button>
+          <Button
+            variant="ghost-gold"
+            size="icon"
+            aria-label="Fermer"
+            onClick={() => onRemove(toast.id)}
+          >
+            <IconClose size={16} />
+          </Button>
         </div>
       ))}
     </div>
