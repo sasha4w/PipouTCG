@@ -13,54 +13,6 @@
   gap: 1rem;
 }
 
-/* ── Bouton créer une annonce ── */
-.marketplace-create-listing-btn {
-  padding: 0.75rem 1.25rem;
-  border-radius: 12px;
-  border: none;
-  background: #7a1c3b;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  font-size: 0.88rem;
-  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.25);
-  transition: all 0.2s ease;
-}
-
-.marketplace-create-listing-btn:hover {
-  background: #9b2349;
-  box-shadow: 0 6px 18px rgba(122, 28, 59, 0.3);
-  transform: translateY(-1px);
-}
-
-/* ── Bouton annuler ── */
-.marketplace-cancel-btn {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  font-size: 0.82rem;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  background: rgba(242, 122, 170, 0.15);
-  color: #f27aaa;
-  border: 1px solid rgba(242, 122, 170, 0.25);
-}
-
-.marketplace-cancel-btn:hover:not(:disabled) {
-  background: rgba(242, 122, 170, 0.25);
-  border-color: rgba(242, 122, 170, 0.45);
-  transform: translateY(-1px);
-}
-
-.marketplace-cancel-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 /* ══════════════════════════════════════════════
    BAS DE CARTE (annonce en cours)
    Double classe : l'emporte sur ListingCard.css, chargé après.
@@ -97,29 +49,3 @@
   gap: 0.5rem;
 }
 
-/* ── Bouton modifier ── */
-.marketplace-edit-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  border: 1px solid rgba(122, 28, 59, 0.35);
-  background: rgba(122, 28, 59, 0.08);
-  color: #7a1c3b;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.marketplace-edit-btn:hover:not(:disabled) {
-  background: #7a1c3b;
-  border-color: #7a1c3b;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-.marketplace-edit-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}

@@ -11,6 +11,36 @@ Rappel des variantes :
 
 ## Marché
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Marché (`/marketplace`) | Onglet Achat | `marketplace-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/marketplace/MarketplaceTabs.tsx` |
+| [ ] | Marché | Onglet Vente | `marketplace-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/marketplace/MarketplaceTabs.tsx` |
+| [ ] | Marché → Achat → carte d'annonce (haut foncé) | − quantité | `marketplace-qty-btn` | `ghost-gold` / icon | `features/marketplace/BuyTab.tsx` |
+| [ ] | Marché → Achat → carte d'annonce | + quantité | `marketplace-qty-btn` | `ghost-gold` / icon | `features/marketplace/BuyTab.tsx` |
+| [ ] | Marché → Achat → carte d'annonce | Max | `marketplace-qty-max` | `ghost-gold` / sm | `features/marketplace/BuyTab.tsx` |
+| [ ] | Marché → Achat → carte d'annonce (bas blanc) | Acheter | `marketplace-buy-btn` | `primary` / md | `features/marketplace/BuyTab.tsx` |
+| [ ] | Marché → Achat | Filtres | `filter-panel__btn`, `filter-panel__reset` | `ghost-bordeaux` / sm | `components/FilterPanel.tsx` |
+| [ ] | Marché → Vente | Mettre en vente | `marketplace-create-listing-btn` | `primary` / md | `features/marketplace/SellTab.tsx` |
+| [ ] | Marché → Vente → carte d'annonce (bas blanc) | Modifier | `marketplace-edit-btn` | `ghost-bordeaux` / md | `features/marketplace/SellTab.tsx` |
+| [ ] | Marché → Vente → carte d'annonce | Annuler l'annonce | `marketplace-cancel-btn` | `danger` / md | `features/marketplace/SellTab.tsx` |
+| [ ] | Marché → Vente → Mettre en vente (modale foncée) | ✕ fermer | `marketplace-modal-close` | `ghost-gold` / icon | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | Type Carte / Booster / Bundle | `marketplace-type-btn` (+ `--active`) | `ghost-gold` / md | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | Filtres | `.marketplace-picker-filters .filter-panel__*` | `ghost-gold` / sm (`tone="dark"`) | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | − quantité | `marketplace-qty-btn` | `ghost-gold` / icon | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | + quantité | `marketplace-qty-btn` | `ghost-gold` / icon | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | Max | `marketplace-qty-max` | `ghost-gold` / sm | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | Annuler | `.marketplace-modal-actions button[type="button"]` | `danger-inverse` / md | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Mettre en vente | Mettre en vente (envoi) | `.marketplace-modal-actions button[type="submit"]` | `primary-inverse` / md | `features/marketplace/CreateListingModal.tsx` |
+| [ ] | Marché → Vente → Modifier une annonce (foncé) | − quantité | `listing-edit__step` | `ghost-gold` / icon | `features/marketplace/ListingEditForm.tsx` |
+| [ ] | Marché → Modifier une annonce | + quantité | `listing-edit__step` | `ghost-gold` / icon | `features/marketplace/ListingEditForm.tsx` |
+| [ ] | Marché → Modifier une annonce | Max | `listing-edit__max` | `ghost-gold` / sm | `features/marketplace/ListingEditForm.tsx` |
+| [ ] | Marché → Modifier une annonce | Enregistrer | `listing-edit__save` | `primary-inverse` / md | `features/marketplace/ListingEditForm.tsx` |
+| [ ] | Marché → Modifier une annonce | Annuler | `marketplace-cancel-btn` | `danger-inverse` / md | `features/marketplace/ListingEditForm.tsx` |
+| [ ] | Marché → Achat / Vente → historique | ← page | `.tx-history__pagination button` | `ghost-bordeaux` / icon | `features/marketplace/TransactionHistory.tsx` |
+| [ ] | Marché → historique | → page | `.tx-history__pagination button` | `ghost-bordeaux` / icon | `features/marketplace/TransactionHistory.tsx` |
+| [ ] | Profil → Collection → cartes → filtres | Filtres (options, Réinitialiser) | `filter-panel__btn`, `filter-panel__reset` | `ghost-bordeaux` / sm | `components/FilterPanel.tsx` (utilisé par `features/profile/OwnCardList.tsx`) |
+| [ ] | Admin → Cartes → filtres | Filtres (options, Réinitialiser) | `filter-panel__btn`, `filter-panel__reset` | `ghost-bordeaux` / sm | `components/FilterPanel.tsx` (utilisé par `features/cards/CardManager.tsx`) |
+
 ## Collection
 
 ## Quêtes et récompenses

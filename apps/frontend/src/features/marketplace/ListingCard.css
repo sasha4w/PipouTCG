@@ -115,13 +115,6 @@
   align-items: center;
 }
 
-/* On adapte le bouton pour qu'il soit petit dans la carte */
-.marketplace-listing .marketplace-buy-btn {
-  padding: 4px 12px;
-  font-size: 0.7rem;
-  border-radius: 8px;
-}
-
 /* ── Annonce de carte : la carte (CardDisplay) remplace l'icône ── */
 .marketplace-listing.marketplace-listing--card {
   height: auto;

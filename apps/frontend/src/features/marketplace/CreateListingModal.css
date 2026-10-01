@@ -43,25 +43,6 @@
   letter-spacing: 0.03em;
 }
 
-.marketplace-modal-close {
-  background: none;
-  border: none;
-  color: rgba(245, 230, 208, 0.45);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
-  line-height: 1;
-}
-
-.marketplace-modal-close:hover {
-  color: #f5e6d0;
-  background: rgba(122, 28, 59, 0.25);
-}
-
 /* ── Form group ── */
 .marketplace-form-group {
   display: flex;
@@ -112,29 +93,6 @@
 
 .marketplace-type-btn {
   flex: 1;
-  padding: 0.55rem 0.75rem;
-  border-radius: 10px;
-  border: 1px solid rgba(122, 28, 59, 0.3);
-  background: rgba(122, 28, 59, 0.1);
-  color: rgba(245, 230, 208, 0.6);
-  font-size: 0.82rem;
-  font-weight: 600;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-
-.marketplace-type-btn:hover {
-  border-color: rgba(122, 28, 59, 0.6);
-  color: #f5e6d0;
-  background: rgba(122, 28, 59, 0.2);
-}
-
-.marketplace-type-btn--active {
-  background: #7a1c3b;
-  border-color: #7a1c3b;
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(122, 28, 59, 0.4);
 }
 
 /* ══════════════════════════════════════════════
@@ -383,34 +341,6 @@
   gap: 0.4rem;
 }
 
-.marketplace-qty-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: 1px solid rgba(122, 28, 59, 0.4);
-  background: rgba(122, 28, 59, 0.15);
-  color: #f5e6d0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-  font-family: "Comfortaa", system-ui, sans-serif;
-}
-
-.marketplace-qty-btn:hover:not(:disabled) {
-  background: rgba(122, 28, 59, 0.35);
-  border-color: rgba(122, 28, 59, 0.7);
-}
-
-.marketplace-qty-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
 .marketplace-qty-input {
   width: 56px;
   padding: 0.4rem 0.5rem;
@@ -435,25 +365,6 @@
 
 .marketplace-qty-input:focus {
   border-color: rgba(122, 28, 59, 0.7);
-}
-
-.marketplace-qty-max {
-  padding: 0.35rem 0.65rem;
-  border-radius: 7px;
-  border: 1px solid rgba(212, 168, 92, 0.3);
-  background: rgba(212, 168, 92, 0.08);
-  color: #d4a85c;
-  font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  transition: all 0.15s ease;
-}
-
-.marketplace-qty-max:hover {
-  background: rgba(212, 168, 92, 0.18);
-  border-color: rgba(212, 168, 92, 0.55);
 }
 
 /* ── Input prix ── */
@@ -495,53 +406,9 @@
   border-top: 1px solid rgba(122, 28, 59, 0.15);
 }
 
-.marketplace-modal-actions button[type="button"] {
-  padding: 0.6rem 1.2rem;
-  border-radius: 10px;
-  border: 1px solid rgba(245, 230, 208, 0.15);
-  background: transparent;
-  color: rgba(245, 230, 208, 0.55);
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  transition: all 0.15s ease;
-}
-
-.marketplace-modal-actions button[type="button"]:hover:not(:disabled) {
-  border-color: rgba(245, 230, 208, 0.3);
-  color: #f5e6d0;
-}
-
-.marketplace-modal-actions button[type="submit"] {
-  padding: 0.6rem 1.25rem;
-  border-radius: 10px;
-  border: none;
-  background: #7a1c3b;
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.35);
-  transition: all 0.18s ease;
-}
-
-.marketplace-modal-actions button[type="submit"]:hover:not(:disabled) {
-  background: #9b2349;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(122, 28, 59, 0.45);
-}
-
-.marketplace-modal-actions button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
-}
-
 /* ══════════════════════════════════════════════
    FILTRES RARETÉ / TYPE (onglet Cartes)
-   FilterPanel est pensé pour fond clair : on l'adapte au thème sombre.
+   FilterPanel est rendu avec tone="dark" (fond sombre).
 ══════════════════════════════════════════════ */
 .marketplace-picker-filters {
   margin-top: 0.6rem;
@@ -551,30 +418,3 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-.marketplace-picker-filters .filter-panel__label {
-  color: #d4a85c;
-  opacity: 1;
-}
-
-.marketplace-picker-filters .filter-panel__btn {
-  border-color: rgba(245, 230, 208, 0.15);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(245, 230, 208, 0.75);
-}
-
-.marketplace-picker-filters .filter-panel__btn:hover {
-  border-color: rgba(242, 122, 170, 0.45);
-  background: rgba(122, 28, 59, 0.25);
-  color: #f5e6d0;
-}
-
-.marketplace-picker-filters .filter-panel__btn--active,
-.marketplace-picker-filters .filter-panel__btn--active:hover {
-  border-color: #7a1c3b;
-  background: #7a1c3b;
-  color: #fff;
-}
-
-.marketplace-picker-filters .filter-panel__reset {
-  color: #f27aaa;
-}
