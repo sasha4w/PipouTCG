@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager, Not } from 'typeorm';
+import { Repository, DataSource, EntityManager, In, Not } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Transaction } from './transaction.entity';
 import { User } from '../users/user.entity';
@@ -24,6 +24,9 @@ export interface ListingSoldPayload {
   totalPrice: number;
   transactionId: number;
 }
+
+/** Annonce accompagnée de la carte vendue (null pour un booster / bundle). */
+export type ListingWithCard = Transaction & { card: Card | null };
 
 @Injectable()
 export class TransactionService {
@@ -62,7 +65,7 @@ export class TransactionService {
       skip,
     });
     return {
-      data,
+      data: await this.withCards(data),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -79,7 +82,7 @@ export class TransactionService {
       },
     );
     return {
-      data: transactions,
+      data: await this.withCards(transactions),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -222,7 +225,8 @@ export class TransactionService {
       seller: { username: saved.seller.username },
     });
 
-    return saved;
+    const [withCard] = await this.withCards([saved]);
+    return withCard;
   }
 
   async updateListing(
@@ -509,6 +513,33 @@ export class TransactionService {
   // ============================================================
   // 🔒 LOGIQUE INTERNE
   // ============================================================
+
+  /** Joint la carte vendue (image et set compris) aux annonces, en une requête. */
+  private async withCards(listings: Transaction[]): Promise<ListingWithCard[]> {
+    const cardIds = [
+      ...new Set(
+        listings
+          .filter((l) => l.productType === ProductType.CARD)
+          .map((l) => l.productId),
+      ),
+    ];
+    const cards = cardIds.length
+      ? await this.dataSource.getRepository(Card).find({
+          where: { id: In(cardIds) },
+          relations: { cardSet: true, image: true },
+        })
+      : [];
+    const byId = new Map(cards.map((c) => [c.id, c]));
+
+    return listings.map((listing) =>
+      Object.assign(listing, {
+        card:
+          listing.productType === ProductType.CARD
+            ? (byId.get(listing.productId) ?? null)
+            : null,
+      }),
+    );
+  }
 
   private async giveItemToBuyer(
     manager: EntityManager,

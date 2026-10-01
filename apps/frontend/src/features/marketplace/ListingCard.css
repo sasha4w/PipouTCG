@@ -121,3 +121,22 @@
   font-size: 0.7rem;
   border-radius: 8px;
 }
+
+/* ── Annonce de carte : la carte (CardDisplay) remplace l'icône ── */
+.marketplace-listing.marketplace-listing--card {
+  height: auto;
+}
+
+.marketplace-listing--card .marketplace-listing__top {
+  height: auto;
+  padding: 1.5rem 1rem 1.1rem;
+}
+
+.marketplace-listing--card .marketplace-listing__bottom {
+  height: auto;
+}
+
+.marketplace-listing__card-preview {
+  width: 120px;
+  pointer-events: none;
+}

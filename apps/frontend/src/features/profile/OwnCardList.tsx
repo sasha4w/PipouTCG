@@ -8,6 +8,7 @@ import SearchBar from "../../components/Searchbar";
 import { IconUnknown } from "../../components/Icons";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
+import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
 import "./OwnCardList.css";
 
 function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {
@@ -35,35 +36,9 @@ interface OwnCardListProps {
 export default function OwnCardList({ collection }: OwnCardListProps) {
   const { t } = useTranslation();
 
-  const filterConfig = useMemo(
-    () => [
-      {
-        key: "type",
-        label: t("filter.type"),
-        options: [
-          { value: "all", label: t("filter.all") },
-          { value: "monster", label: t("filter.monster") },
-          { value: "support", label: t("filter.support") },
-        ],
-      },
-      {
-        key: "rarity",
-        label: t("filter.rarity"),
-        options: [
-          { value: "all", label: t("filter.all_rarities") },
-          { value: "common", label: t("rarity.common") },
-          { value: "uncommon", label: t("rarity.uncommon") },
-          { value: "rare", label: t("rarity.rare") },
-          { value: "epic", label: t("rarity.epic") },
-          { value: "legendary", label: t("rarity.legendary") },
-          { value: "secret", label: t("rarity.secret") },
-        ],
-      },
-    ],
-    [t],
-  );
+  const filterConfig = useMemo(() => cardFilterGroups(t), [t]);
 
-  const { filterValues, setFilter, hasActiveFilters } =
+  const { filterValues, setFilter, resetFilters, hasActiveFilters } =
     useFilters(filterConfig);
 
   const [page, setPage] = useState(1);
@@ -86,17 +61,7 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
       if (!showMissing && !c.owned) return false;
       if (search && !c.name.toLowerCase().includes(search.toLowerCase()))
         return false;
-      if (
-        filterValues.type !== "all" &&
-        c.type?.toLowerCase() !== filterValues.type
-      )
-        return false;
-      if (
-        filterValues.rarity !== "all" &&
-        c.rarity?.toLowerCase() !== filterValues.rarity
-      )
-        return false;
-      return true;
+      return matchesCardFilters(filterValues, c);
     });
   }, [allCards, search, filterValues, showMissing]);
 
@@ -154,6 +119,9 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
             config={filterConfig}
             values={filterValues}
             onChange={(key, val) => applyFilter(() => setFilter(key, val))}
+            onReset={
+              hasActiveFilters ? () => applyFilter(resetFilters) : undefined
+            }
           />
         }
       />

@@ -152,7 +152,8 @@
     "support": "Support",
     "all_rarities": "All rarities",
     "type": "Type",
-    "rarity": "Rarity"
+    "rarity": "Rarity",
+    "reset": "Reset"
   },
   "marketplace": {
     "tabs": {
@@ -161,6 +162,7 @@
     },
     "buy": {
       "title": "Market",
+      "empty": "No listing matches your search.",
       "search_placeholder": "Search an item or seller...",
       "seller": "By:",
       "unit_price": "{{price}} G / unit",
@@ -180,7 +182,9 @@
       "btn_cancel": "Cancel",
       "btn_save": "Save",
       "edit_quantity": "Quantity",
-      "edit_price": "Unit price (G)",
+      "edit_price": "Unit price",
+      "edit_title": "Edit listing",
+      "edit_max": "Up to {{max}}",
       "edit_total": "Estimated total: {{total}} G",
       "history_title": "My Recent Sales",
       "history_empty": "No completed sales."
@@ -194,6 +198,7 @@
       "stock_count": "{{count}} {{type}} in stock",
       "stock_empty": "No {{type}} available",
       "inventory_empty": "Your inventory is empty for this item type.",
+      "no_filter_results": "No card matches the filters.",
       "no_results": "No results for \"{{search}}\".",
       "search_placeholder": "Search...",
       "in_stock": "{{count}} in stock",
@@ -210,6 +215,7 @@
       "warn_price": "Price must be at least 1 gold."
     },
     "filter": {
+      "product": "Item",
       "all": "All",
       "cards": "Cards",
       "boosters": "Boosters",
@@ -232,6 +238,7 @@
       "cancel_error": "Unable to cancel listing.",
       "update_success": "Listing updated.",
       "update_error": "Unable to update listing.",
+      "update_error_detail": "Unable to update listing: {{message}}",
       "update_warn": "Quantity and price must be greater than 0.",
       "warn_no_item": "Please select an item to sell.",
       "warn_qty": "Quantity must be greater than 0.",

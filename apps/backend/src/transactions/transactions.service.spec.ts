@@ -35,10 +35,13 @@ const mockManager = {
   })),
 };
 
+const mockCardRepo = { find: jest.fn() };
+
 const mockDataSource = {
   transaction: jest.fn((cb: (manager: typeof mockManager) => unknown) =>
     cb(mockManager),
   ),
+  getRepository: jest.fn(() => mockCardRepo),
 };
 
 type FindOneStubs = {
@@ -108,6 +111,7 @@ describe('TransactionService', () => {
     }).compile();
 
     service = module.get<TransactionService>(TransactionService);
+    mockCardRepo.find.mockResolvedValue([]);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -354,6 +358,115 @@ describe('TransactionService', () => {
         );
       },
     );
+  });
+
+  // ============================================================
+  // LISTINGS — carte vendue
+  // ============================================================
+  describe('findOtherListings', () => {
+    it('should attach the sold card to card listings only', async () => {
+      const booster = listing({
+        id: 2,
+        productType: ProductType.BOOSTER,
+        productId: 3,
+      });
+      const card = { id: 10, name: 'Dragon', rarity: 'epic', image: null };
+      mockTransactionRepo.findAndCount.mockResolvedValue([
+        [listing(), booster],
+        2,
+      ]);
+      mockCardRepo.find.mockResolvedValue([card]);
+
+      const result = await service.findOtherListings({}, 2);
+
+      expect(mockCardRepo.find).toHaveBeenCalledTimes(1);
+      expect(mockCardRepo.find).toHaveBeenCalledWith(
+        expect.objectContaining({
+          relations: { cardSet: true, image: true },
+        }),
+      );
+      expect(result.data[0]).toMatchObject({ id: 1, card });
+      expect(result.data[1]).toMatchObject({ id: 2, card: null });
+    });
+
+    it('should not query cards when no listing is a card', async () => {
+      mockTransactionRepo.findAndCount.mockResolvedValue([
+        [listing({ productType: ProductType.BUNDLE })],
+        1,
+      ]);
+
+      await service.findUserListings({}, 1);
+
+      expect(mockCardRepo.find).not.toHaveBeenCalled();
+    });
+  });
+
+  // ============================================================
+  // UPDATE LISTING
+  // ============================================================
+  describe('updateListing', () => {
+    it('should reserve more stock when only the quantity increases', async () => {
+      const current = listing();
+      const inventory = { id: 5, quantity: 3 };
+      stubFindOne({ listing: current, inventory });
+
+      await service.updateListing(1, { quantity: 4 }, 1);
+
+      expect(inventory.quantity).toBe(1);
+      expect(current).toMatchObject({
+        quantity: 4,
+        unitPrice: 100,
+        totalPrice: 400,
+      });
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'listing.updated',
+        expect.objectContaining({ transactionId: 1, newQuantity: 4 }),
+      );
+    });
+
+    it('should give stock back when only the quantity decreases', async () => {
+      const current = listing({ quantity: 5, totalPrice: 500 });
+      const inventory = { id: 5, quantity: 0 };
+      stubFindOne({ listing: current, inventory });
+
+      await service.updateListing(1, { quantity: 2 }, 1);
+
+      expect(inventory.quantity).toBe(3);
+      expect(current).toMatchObject({ quantity: 2, totalPrice: 200 });
+    });
+
+    it('should refuse a quantity above the available stock', async () => {
+      const inventory = { id: 5, quantity: 1 };
+      stubFindOne({ listing: listing(), inventory });
+
+      await expect(
+        service.updateListing(1, { quantity: 5 }, 1),
+      ).rejects.toThrow('Stock insuffisant. Disponible : 1.');
+      expect(inventory.quantity).toBe(1);
+      expect(mockManager.save).not.toHaveBeenCalled();
+    });
+
+    it('should change only the price without touching the inventory', async () => {
+      const current = listing();
+      stubFindOne({ listing: current, inventory: { id: 5, quantity: 3 } });
+
+      await service.updateListing(1, { unitPrice: 50 }, 1);
+
+      expect(current).toMatchObject({
+        quantity: 2,
+        unitPrice: 50,
+        totalPrice: 100,
+      });
+      expect(mockManager.save).toHaveBeenCalledTimes(1);
+    });
+
+    it("should refuse to edit someone else's listing", async () => {
+      stubFindOne({ listing: listing() });
+
+      await expect(
+        service.updateListing(1, { quantity: 1 }, 2),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   // ============================================================

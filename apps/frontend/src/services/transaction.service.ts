@@ -7,6 +7,7 @@ import type {
   UpdateListingRequest,
 } from "@pipou/shared";
 import { ProductType, TransactionStatus } from "@pipou/shared";
+import type { Card } from "./card.service";
 
 export { ProductType, TransactionStatus };
 
@@ -23,6 +24,8 @@ export interface Transaction {
   seller: { id: number; username: string };
   buyer?: { id: number; username: string } | null;
   itemName?: string;
+  /** Carte vendue, jointe par le serveur aux annonces actives (null hors cartes). */
+  card?: Card | null;
 }
 
 export type { PaginatedResponse };
