@@ -19,6 +19,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Couleurs de marque (utilisées par components/Button.css) */
+  --color-bordeaux: #7a1c3b;
+  --color-bordeaux-hover: #9b2349;
+  --color-bordeaux-dark: #3d1020;
+  --color-cream: #fdf6f0;
+  --color-cream-hover: #f5efe0;
+  --color-gold: #eebc77;
+  --color-pink: #f27aaa;
+  --color-pink-text: #b03060;
 }
 /* ── Liens ── */
 a {
