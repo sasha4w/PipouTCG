@@ -84,6 +84,7 @@ Rappel des variantes :
 | [ ] | Ouverture → cartes | Voir les résultats → | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
 | [ ] | Ouverture → cartes une à une | Carte suivante → / Voir les résultats | `opening-cards__next-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
 | [ ] | Ouverture → résultats | Fermer | `opening-results__close-btn` | `primary-inverse` / lg | `features/opening/OpeningModal.tsx` |
+| [ ] | Ouverture → révélation des cartes | Skip | `opening-skip-btn` | `ghost-gold` / sm | `OpeningModal.tsx` |
 
 ## Combat hors plateau
 
@@ -229,3 +230,4 @@ Vérifier qu'ils n'ont **pas** changé d'apparence (seule la bordure rose au sur
 | [ ] | Récompense quotidienne | Options de rachat (jours) | `drm-rescue-option` | `components/DailyRewardModal.tsx` |
 | [ ] | Toutes les pages | Navigation du pied de page | `cc-footer__item` | `components/Footer.tsx` |
 | [ ] | Connexion (`/login`) | Œil du mot de passe | `login-password-toggle` | `pages/Login.tsx` |
+| [ ] | Accueil → widget de série quotidienne | Tuile entière (ouvre la récompense) | `dsw` | `components/DailyStreakWidget.tsx` |

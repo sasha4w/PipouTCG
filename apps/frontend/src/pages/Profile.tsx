@@ -91,9 +91,7 @@ export default function Profile() {
           onClick={() => setTab("collection")}
         >
           <span className="profile-tab-btn__icon">
-            <IconCollection
-              size={22}
-            />
+            <IconCollection size={22} />
           </span>
           {t("profile.collection_tab")}
         </Button>
@@ -104,9 +102,7 @@ export default function Profile() {
           onClick={() => setTab("stats")}
         >
           <span className="profile-tab-btn__icon">
-            <IconStats
-              size={22}
-            />
+            <IconStats size={22} />
           </span>
           {t("profile.stats_tab")}
         </Button>

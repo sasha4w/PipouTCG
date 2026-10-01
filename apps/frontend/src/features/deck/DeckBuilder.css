@@ -51,6 +51,10 @@
 }
 
 .deck-tab__badge--filled {
+  background: rgba(122, 28, 59, 0.15);
+}
+
+.btn--active .deck-tab__badge--filled {
   background: rgba(255, 255, 255, 0.25);
 }
 

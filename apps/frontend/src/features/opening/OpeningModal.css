@@ -65,24 +65,10 @@
 }
 
 /* ── Skip button ── */
-.opening-skip-btn {
+.opening-skip {
   position: absolute;
   top: 0.5rem;
   right: 0rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
-  border-radius: 20px;
-  padding: 4px 14px;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.opening-skip-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
 }
 
 /* ── Révélation ── */

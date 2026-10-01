@@ -8,7 +8,7 @@ import {
   type OpeningResult,
 } from "../../services/opening.service";
 import Button from "../../components/Button";
-import { IconClose } from "../../components/Icons";
+import { IconArrowRight, IconClose } from "../../components/Icons";
 import CardDisplay from "../cards/CardDisplay";
 import type { Card } from "../../services/card.service";
 import { soundService } from "../../services/sound.service";
@@ -464,7 +464,7 @@ export default function OpeningModal({
                 size="lg"
                 onClick={() => setPhase("results")}
               >
-                Voir les résultats →
+                Voir les résultats <IconArrowRight size={16} />
               </Button>
             </motion.div>
           )}
@@ -477,15 +477,20 @@ export default function OpeningModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <motion.button
-                className="opening-skip-btn"
-                onClick={() => setPhase("results")}
+              <motion.div
+                className="opening-skip"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                Skip →
-              </motion.button>
+                <Button
+                  variant="ghost-gold"
+                  size="sm"
+                  onClick={() => setPhase("results")}
+                >
+                  Skip <IconArrowRight size={16} />
+                </Button>
+              </motion.div>
 
               <AnimatePresence mode="wait">
                 <motion.div
@@ -546,9 +551,13 @@ export default function OpeningModal({
                 size="lg"
                 onClick={handleNext}
               >
-                {currentIdx < cards.length - 1
-                  ? "Carte suivante →"
-                  : "Voir les résultats"}
+                {currentIdx < cards.length - 1 ? (
+                  <>
+                    Carte suivante <IconArrowRight size={16} />
+                  </>
+                ) : (
+                  "Voir les résultats"
+                )}
               </Button>
             </motion.div>
           )}

@@ -5,6 +5,7 @@ import { questService } from "../../services/quest.service";
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
+  IconArrowRight,
   IconGold,
   IconBooster,
   IconBundle,
@@ -151,7 +152,7 @@ export default function QuestInboxWidget({
                   onOpenPanel();
                 }}
               >
-                {t("quests.see_all")} →
+                {t("quests.see_all")} <IconArrowRight size={16} />
               </Button>
             </div>
           )}

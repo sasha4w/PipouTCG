@@ -3,7 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { bannerService } from "../../services/banner.service";
 import { shopService } from "../../services/shop.service";
 import Button from "../../components/Button";
-import { IconMinus, IconPlus } from "../../components/Icons";
 import BannerCard from "./BannerCard";
 import BannerCarousel from "./BannerCarousel";
 import { QUERY_KEYS } from "../../utils/querykeys";
@@ -12,6 +11,8 @@ import {
   IconCart,
   IconBooster,
   IconBundle,
+  IconMinus,
+  IconPlus,
 } from "../../components/Icons";
 import "./ShopSection.css";
 
