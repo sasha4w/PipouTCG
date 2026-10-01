@@ -6,11 +6,10 @@ Rappel des variantes :
 - fond clair : `primary` (bordeaux plein), `ghost-bordeaux` (bordeaux léger, plein si actif), `danger` (rose, texte rose soutenu) ;
 - fond foncé : `primary-inverse` (crème, texte bordeaux), `ghost-gold` (transparent, doré si actif), `danger-inverse` (rose, texte rose vif).
 
-| ✓ | Écran (chemin dans l'appli) | Bouton | Ancienne classe | Variante / taille | Fichier |
-|---|---|---|---|---|---|
-
 ## Marché
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
 | [ ] | Marché (`/marketplace`) | Onglet Achat | `marketplace-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/marketplace/MarketplaceTabs.tsx` |
 | [ ] | Marché | Onglet Vente | `marketplace-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/marketplace/MarketplaceTabs.tsx` |
 | [ ] | Marché → Achat → carte d'annonce (haut foncé) | − quantité | `marketplace-qty-btn` | `ghost-gold` / icon | `features/marketplace/BuyTab.tsx` |
@@ -41,6 +40,8 @@ Rappel des variantes :
 
 ## Collection
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
 | [ ] | Profil (`/profile`) → Collection → boosters | Ouvrir | `inv-row__open-btn` | `primary` / sm | `features/boosters/OwnerBoosterList.tsx` |
 | [ ] | Profil → Collection → bundles | Ouvrir | `inv-row__open-btn` | `primary` / sm | `features/bundles/OwnerBundleList.tsx` |
 | [ ] | Profil → Collection → cartes | ← page | `own-cardlist__pagination-btn` | `ghost-bordeaux` / icon | `features/profile/OwnCardList.tsx` |
@@ -51,6 +52,8 @@ Rappel des variantes :
 
 ## Quêtes et récompenses
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
 | [ ] | Profil → Quêtes | Onglets Jour / Semaine / … | `quests-panel__tab` (+ `--active`) | `ghost-gold` / sm | `features/profile/QuestsPanel.tsx` |
 | [ ] | Profil → Quêtes | Tout récupérer | `quests-panel__claim-all` | `primary-inverse` / sm | `features/profile/QuestsPanel.tsx` |
 | [ ] | Profil → Quêtes → une quête | Récupérer | `quest-item__claim-btn` | `primary-inverse` / sm | `features/profile/QuestsPanel.tsx` |
