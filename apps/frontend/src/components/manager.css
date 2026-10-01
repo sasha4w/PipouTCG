@@ -503,6 +503,7 @@
   z-index: 1;
   width: 28px;
   height: 28px;
+  padding: 0.6em 1.2em;
   border-radius: 50%;
   border: 2px solid rgba(61, 16, 32, 0.15);
   background: #fff;
