@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import Button from "./Button";
 import "./PrivacyButton.css";
 
 interface PrivacyButtonProps {
@@ -62,8 +63,10 @@ export default function PrivacyButton({
 }: PrivacyButtonProps) {
   const { t } = useTranslation();
   return (
-    <button
-      className={`privacy-btn${isPrivate ? " privacy-btn--private" : ""}`}
+    <Button
+      variant="ghost-bordeaux"
+      size="sm"
+      className="privacy-btn"
       onClick={onToggle}
       aria-label={
         isPrivate ? t("privacy.make_public") : t("privacy.make_private")
@@ -78,6 +81,6 @@ export default function PrivacyButton({
           <IconGlobe color="#7a1c3b" /> {t("privacy.public")}
         </>
       )}
-    </button>
+    </Button>
   );
 }

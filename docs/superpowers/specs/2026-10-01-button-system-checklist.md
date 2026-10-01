@@ -102,6 +102,36 @@ Rappel des variantes :
 
 ## Profil, réglages, connexion, deck, en-tête
 
+| ✓ | Écran | Bouton | Ancienne classe | Variante / taille | Fichier |
+|---|---|---|---|---|---|
+| [ ] | Profil (`/profile`) | Onglet Collection | `profile-tab-btn` (+ `--active`) | `ghost-bordeaux` / md (tuile) | `pages/Profile.tsx` |
+| [ ] | Profil | Onglet Stats | `profile-tab-btn` (+ `--active`) | `ghost-bordeaux` / md (tuile) | `pages/Profile.tsx` |
+| [ ] | Profil | Public / Privé | `privacy-btn` (+ `--private`) | `ghost-bordeaux` / sm | `components/PrivacyButton.tsx` |
+| [ ] | Réglages (`/settings`) | Se déconnecter | `settings-logout-btn` | `danger` / lg | `pages/Settings.tsx` |
+| [ ] | Réglages → son | − volume (×2) | `sound-row__btn` | `ghost-bordeaux` / icon | `components/SoundSettings.tsx` |
+| [ ] | Réglages → son | + volume (×2) | `sound-row__btn` | `ghost-bordeaux` / icon | `components/SoundSettings.tsx` |
+| [ ] | En-tête / connexion | Haut-parleur | `sound-btn` | `ghost-bordeaux` / icon | `components/SoundButton.tsx` |
+| [ ] | En-tête → menu du son | ✕ fermer | `sound-widget__close` | `ghost-bordeaux` / icon | `components/SoundButton.tsx` |
+| [ ] | En-tête (admin connecté) | 👑 Admin | `cc-header__admin-btn` | `ghost-bordeaux` / sm | `components/Header.tsx` |
+| [ ] | Connexion (`/login`) | Drapeaux de langue | `login-lang-btn` (+ `--active`) | `ghost-bordeaux` / sm | `pages/Login.tsx` |
+| [ ] | Connexion | Se connecter / S'inscrire / … | `login-btn` | `primary` / lg | `pages/Login.tsx` |
+| [ ] | Réinitialisation (`/reset-password`) | Réinitialiser | `login-btn` | `primary` / lg | `pages/ResetPassword.tsx` |
+| [ ] | Combat → onglet Deck | Decks ▾ | `dw-trigger` | `ghost-bordeaux` / md | `features/deck/DeckWidget.tsx` |
+| [ ] | Combat → menu des decks | Gérer | `dw-btn-manage` | `ghost-bordeaux` / sm | `features/deck/DeckWidget.tsx` |
+| [ ] | Combat → menu des decks | + Créer un deck | `dw-btn-create` | `primary` / sm | `features/deck/DeckWidget.tsx` |
+| [ ] | Combat → menu des decks | Utiliser / ✓ Sélectionné | `dw-btn-select` / `dw-btn-selected` | `ghost-bordeaux` / sm | `features/deck/DeckWidget.tsx` |
+| [ ] | Decks (`/decks`) | + Nouveau | `manager__add-btn` | `primary` / sm | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → un deck | Modifier | `deck-btn deck-btn--edit` | `ghost-bordeaux` / icon | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → un deck | Supprimer | `deck-btn deck-btn--delete` | `danger` / icon | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → édition | ← Retour | `manager-form__cancel` | `ghost-bordeaux` / md | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → édition | Inventaire / Mon deck | `deck-tab` (+ `--active`) | `ghost-bordeaux` / md | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → édition → liste | − carte | `deck-icon-btn deck-icon-btn--remove` | `ghost-bordeaux` / icon | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → édition → liste | + carte | `deck-icon-btn deck-icon-btn--add` | `ghost-bordeaux` / icon | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → édition | 💾 Sauvegarder | `manager-form__submit deck-save-btn` | `primary` / md | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → détail d'une carte (modale) | ✕ fermer | `deck-modal-close` | `ghost-bordeaux` / icon | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → détail d'une carte | − | `deck-modal-btn deck-modal-btn--remove` | `ghost-bordeaux` / icon | `features/deck/DeckBuilder.tsx` |
+| [ ] | Decks → détail d'une carte | + | `deck-modal-btn deck-modal-btn--add` | `ghost-bordeaux` / icon | `features/deck/DeckBuilder.tsx` |
+
 ## Admin
 
 ## Composants transverses

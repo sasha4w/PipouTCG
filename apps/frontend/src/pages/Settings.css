@@ -166,28 +166,6 @@
   border-color: #f27aaa;
 }
 
-/* ── Bouton déconnexion ── */
-.settings-logout-btn {
-  width: 100%;
-  padding: 0.85rem;
-  border-radius: 14px;
-  border: 1.5px solid rgba(242, 122, 170, 0.35);
-  background: rgba(242, 122, 170, 0.08);
-  color: #b03060;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    border-color 0.2s,
-    transform 0.15s;
+.settings-logout {
   margin-top: 0.5rem;
-}
-.settings-logout-btn:hover {
-  background: rgba(242, 122, 170, 0.15);
-  border-color: rgba(242, 122, 170, 0.55);
-}
-.settings-logout-btn:active {
-  transform: scale(0.97);
 }
