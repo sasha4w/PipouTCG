@@ -38,8 +38,8 @@ Ajoutées dans `:root` de `apps/frontend/src/index.css`. Seul le système de bou
 |---|---|---|---|---|---|
 | `primary` (défaut) | clair (blanc, crème) | action principale | fond bordeaux, texte blanc | fond `--color-bordeaux-hover` | — |
 | `primary-inverse` | foncé | action principale | fond crème, texte bordeaux | fond `--color-cream-hover` | — |
-| `ghost-gold` | foncé | onglet, filtre, sélection | transparent, bordure `rgba(255,255,255,.15)`, texte `rgba(255,255,255,.6)` | fond `rgba(255,255,255,.08)`, texte `rgba(255,255,255,.85)` | fond or 20 %, bordure or 50 %, texte or |
-| `ghost-bordeaux` | clair | onglet, filtre, sélection | fond bordeaux 8 %, texte bordeaux | fond bordeaux 14 % | fond bordeaux plein, texte blanc |
+| `ghost-gold` | foncé | onglet, filtre, sélection ; action secondaire (fermer, « Max », lien) | transparent, bordure `rgba(255,255,255,.15)`, texte `rgba(255,255,255,.6)` | fond `rgba(255,255,255,.08)`, texte `rgba(255,255,255,.85)` | fond or 20 %, bordure or 50 %, texte or |
+| `ghost-bordeaux` | clair | onglet, filtre, sélection ; action secondaire (retour, modifier, pagination, fermer) | fond bordeaux 8 %, texte bordeaux | fond bordeaux 14 % | fond bordeaux plein, texte blanc |
 | `danger` | clair | supprimer, annuler | fond rose 15 %, bordure rose 25 %, texte `--color-pink-text` | fond rose 25 %, bordure rose 45 % | — |
 | `danger-inverse` | foncé | supprimer, annuler | fond rose 15 %, bordure rose 25 %, texte `--color-pink` | fond rose 25 %, bordure rose 45 % | — |
 
@@ -90,7 +90,7 @@ type ButtonProps = NativeProps & {
 - `active` n'existe que pour les variantes fantôme. Quand il est fourni, il pose `aria-pressed` ; quand il est absent, pas d'`aria-pressed`.
 - `size="icon"` exige un `aria-label` (pas de texte visible).
 - `ref` transmise via `forwardRef` vers le `<button>`.
-- `className` est ajoutée après les classes du composant ; elle ne sert qu'au placement (marge, `flex`, largeur), jamais aux couleurs ni à la forme.
+- `className` est ajoutée après les classes du composant ; elle ne sert qu'au placement (marge, `flex`, largeur), jamais aux couleurs ni à la forme. Exception : les onglets en tuile (icône au-dessus du texte, `Profile` et `Admin`) gardent aussi `flex-direction`, `gap` et `padding`.
 - Classes générées : `btn btn--<variant> btn--<size>`, plus `btn--full` et `btn--active`.
 - Une icône placée dans `children` à côté du texte est espacée par `gap`.
 
