@@ -11,6 +11,7 @@ import {
   MaxLength,
   IsInt,
   Max,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -25,6 +26,8 @@ import {
 } from '@pipou/shared';
 import type {
   CardEffect,
+  CardNameMatch,
+  EffectFilter,
   CreateCardRequest,
   EffectAction,
   EffectCondition,
@@ -36,6 +39,29 @@ export class EffectConditionDto implements EffectCondition {
 
   @IsOptional()
   value?: number | string;
+
+  @IsOptional()
+  @IsIn(['exact', 'contains'])
+  match?: CardNameMatch;
+}
+
+export class EffectFilterDto implements EffectFilter {
+  @IsOptional()
+  @IsEnum(Archetype)
+  archetype?: Archetype;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(Rarity, { each: true })
+  rarities?: Rarity[];
+
+  @IsOptional()
+  @IsEnum(CardType)
+  type?: CardType;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
 }
 
 export class EffectActionDto implements EffectAction {
@@ -52,6 +78,11 @@ export class EffectActionDto implements EffectAction {
   @IsOptional()
   @IsEnum(Archetype)
   archetype?: Archetype;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EffectFilterDto)
+  filter?: EffectFilterDto;
 }
 
 export class CardEffectDto implements CardEffect {

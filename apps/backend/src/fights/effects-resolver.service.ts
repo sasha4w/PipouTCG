@@ -30,11 +30,12 @@ export class EffectsResolverService {
     const effects = card.baseCard.effects;
     if (!effects?.length) return false;
 
+    const effectCtx: EffectContext = { ...ctx, sourceCard: card };
     let changed = false;
     for (const effect of effects) {
       if (effect.trigger !== trigger) continue;
-      if (!checkCondition(effect, ctx)) continue;
-      applyActions(effect, card, ctx, (host, instanceId) =>
+      if (!checkCondition(effect, effectCtx)) continue;
+      applyActions(effect, card, effectCtx, (host, instanceId) =>
         this.destroyMonster(ctx.game, host, instanceId, ctx.log, {
           // Sacrifice par son propre effet : pas de pioche
           draw: host.userId !== ctx.ownerUserId,

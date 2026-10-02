@@ -17,6 +17,7 @@ export const EffectConditionType = {
   HAND_SIZE_MIN: "HAND_SIZE_MIN",
   OPPONENT_HAS_NO_MONSTERS: "OPPONENT_HAS_NO_MONSTERS",
   SPECIFIC_CARD_ON_BOARD: "SPECIFIC_CARD_ON_BOARD",
+  EQUIPPED_ON: "EQUIPPED_ON",
 } as const;
 export type EffectConditionType =
   (typeof EffectConditionType)[keyof typeof EffectConditionType];
