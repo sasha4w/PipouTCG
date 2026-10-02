@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { FightServer } from '../fight-socket.types';
-import { v4 as uuidv4 } from 'uuid';
-import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
+import { GameState } from '../interfaces/game-state.interface';
+import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { CardType, EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
@@ -129,28 +129,10 @@ export class SummonService {
     ).length;
     const [monster] = player.hand.splice(handIndex - removedBefore, 1);
 
-    const instance: MonsterOnBoard = {
-      instanceId: uuidv4(),
-      card: monster,
-      currentHp: monster.baseCard.hp,
-      mode: 'attack',
-      equipments: [],
-      atkBuff: 0,
-      hpBuff: 0,
-      tempAtkBuff: 0,
-      hasAttackedThisTurn: false,
-      attacksPerTurn: 1,
-      attacksUsedThisTurn: 0,
-      hasTaunt: false,
-      hasPiercing: false,
-      isImmuneToDebuffs: false,
-      forcedAttackMode: false,
-      summonedThisTurn: true,
-      doubleAtkNextTurn: false,
-      turnCounter: undefined,
+    const instance = createMonsterOnBoard(monster, {
       // Mémorise le poseur quand c'est une zone adverse (Zeta)
       ownerUserId: onOpponentZone ? userId : undefined,
-    };
+    });
 
     target.monsterZones[zoneIndex] = instance;
 
