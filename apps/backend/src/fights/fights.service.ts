@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { GameAction } from '@pipou/shared';
+import type { GameAction, GamePhase } from '@pipou/shared';
 import type { FightServer } from './fight-socket.types';
 import { GameState } from './interfaces/game-state.interface';
 import { PlayerStats } from './entities/player-stats.entity';
@@ -22,12 +22,16 @@ import { emitGameState } from './helpers/client-state.builder';
 
 const NOT_IN_MATCH = 'Tu ne participes pas à ce match';
 
+/** Délai laissé à un joueur déconnecté pour revenir avant de perdre. */
+export const RECONNECT_GRACE_MS = 60_000;
+
 @Injectable()
 export class FightsService {
   private readonly logger = new Logger(FightsService.name);
   private games = new Map<number, GameState>();
   private userToMatch = new Map<number, number>();
   private locks = new Map<number, Promise<unknown>>();
+  private disconnectTimers = new Map<number, NodeJS.Timeout>();
 
   constructor(
     private matchmaking: MatchmakingService,
@@ -136,15 +140,78 @@ export class FightsService {
     });
   }
 
-  handleDisconnect(userId: number, server: FightServer): Promise<void> {
+  /** Fermeture d'un socket : sortie de file, puis délai de grâce avant la défaite. */
+  handleDisconnect(
+    userId: number,
+    socketId: string,
+    server: FightServer,
+  ): void {
     this.leaveQueue(userId);
     const matchId = this.userToMatch.get(userId);
-    if (!matchId) return Promise.resolve();
+    if (matchId === undefined || this.disconnectTimers.has(userId)) return;
+    const game = this.games.get(matchId);
+    if (!game || game.phase === 'finished') return;
 
+    const player = getPlayerState(game, userId);
+    // Un ancien onglet qui se ferme ne compte pas
+    if (player.socketId !== socketId) return;
+
+    addLog(
+      game,
+      `🔌 ${player.username} s'est déconnecté — ${RECONNECT_GRACE_MS / 1000} s pour revenir`,
+    );
+    this.disconnectTimers.set(
+      userId,
+      setTimeout(() => {
+        this.disconnectTimers.delete(userId);
+        this.forfeit(matchId, userId, server).catch((err: unknown) =>
+          this.logger.error(
+            `Défaite par déconnexion du match ${matchId} en échec`,
+            err instanceof Error ? err.stack : String(err),
+          ),
+        );
+      }, RECONNECT_GRACE_MS),
+    );
+  }
+
+  /** Reconnexion : rattache le nouveau socket à la partie en cours, s'il y en a une. */
+  reconnect(
+    userId: number,
+    socketId: string,
+  ): { matchId: number; opponentName: string; phase: GamePhase } | null {
+    const matchId = this.userToMatch.get(userId);
+    const game = matchId === undefined ? undefined : this.games.get(matchId);
+    if (!game || game.phase === 'finished') return null;
+
+    const player = getPlayerState(game, userId);
+    const pending = this.disconnectTimers.get(userId);
+    if (pending) {
+      clearTimeout(pending);
+      this.disconnectTimers.delete(userId);
+      addLog(game, `🔌 ${player.username} est de retour`);
+    }
+    player.socketId = socketId;
+    return {
+      matchId: game.matchId,
+      opponentName: getOpponentState(game, userId).username,
+      phase: game.phase,
+    };
+  }
+
+  /** Renvoie l'état d'une partie commencée à ses deux joueurs. */
+  emitState(matchId: number, server: FightServer): void {
+    const game = this.games.get(matchId);
+    if (game && game.phase !== 'waiting') emitGameState(game, server);
+  }
+
+  private forfeit(
+    matchId: number,
+    userId: number,
+    server: FightServer,
+  ): Promise<void> {
     return this.withLock(matchId, async () => {
       const game = this.games.get(matchId);
       if (!game || game.phase === 'finished') return;
-      addLog(game, `🔌 ${getPlayerState(game, userId).username} déconnecté`);
       finishGame(game, getOpponentState(game, userId).userId, 'disconnect');
       await this.afterChange(game, server);
     });
@@ -224,8 +291,11 @@ export class FightsService {
   }
 
   private cleanupGame(game: GameState): void {
+    for (const p of [game.player1, game.player2]) {
+      clearTimeout(this.disconnectTimers.get(p.userId));
+      this.disconnectTimers.delete(p.userId);
+      this.userToMatch.delete(p.userId);
+    }
     this.games.delete(game.matchId);
-    this.userToMatch.delete(game.player1.userId);
-    this.userToMatch.delete(game.player2.userId);
   }
 }

@@ -61,6 +61,18 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       client.data.userId = Number(payload.sub);
       client.data.username = payload.username;
+
+      const resumed = this.fightsService.reconnect(
+        client.data.userId,
+        client.id,
+      );
+      if (resumed) {
+        client.emit('fight:resumed', {
+          matchId: resumed.matchId,
+          opponentName: resumed.opponentName,
+        });
+        this.fightsService.emitState(resumed.matchId, this.server);
+      }
     } catch (err) {
       if (err instanceof Error) {
         console.error('WS auth error:', err.message);
@@ -72,10 +84,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  async handleDisconnect(client: FightSocket): Promise<void> {
+  handleDisconnect(client: FightSocket): void {
     if (client.data.userId) {
-      await this.fightsService.handleDisconnect(
+      this.fightsService.handleDisconnect(
         client.data.userId,
+        client.id,
         this.server,
       );
     }

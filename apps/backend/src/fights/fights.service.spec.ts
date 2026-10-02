@@ -110,4 +110,62 @@ describe('FightsService', () => {
       service.submitDeck(game.matchId, OUTSIDER, 5, server),
     ).resolves.toEqual({ error: 'Tu ne participes pas à ce match' });
   });
+
+  it('un timeout fait avancer la phase et relance le timer', async () => {
+    const { service, server, game, timer } = setup();
+    await service.act(game.matchId, P1_ID, { type: 'end_phase' }, server);
+
+    await jest.advanceTimersByTimeAsync(90_000);
+
+    expect(game.phase).toBe('end');
+    expect(timer.has(game.matchId)).toBe(true);
+  });
+
+  it('aucun timer ne tourne après la fin de la partie', async () => {
+    const { service, server, game, timer } = setup();
+    await service.act(game.matchId, P1_ID, { type: 'end_phase' }, server);
+
+    await service.surrender(game.matchId, P1_ID, server);
+
+    expect(timer.has(game.matchId)).toBe(false);
+  });
+
+  it('déconnexion puis retour sous 60 s : la partie continue sur le nouveau socket', async () => {
+    const { service, server, game } = setup();
+    service.handleDisconnect(P1_ID, 'socket-1', server);
+    await jest.advanceTimersByTimeAsync(30_000);
+
+    expect(service.reconnect(P1_ID, 'socket-neuf')).toEqual({
+      matchId: game.matchId,
+      opponentName: 'Bob',
+      phase: 'main',
+    });
+    await jest.advanceTimersByTimeAsync(60_000);
+
+    expect(game.phase).toBe('main');
+    expect(game.player1.socketId).toBe('socket-neuf');
+  });
+
+  it('sans retour sous 60 s : défaite par déconnexion', async () => {
+    const { service, server, game, gameEnd } = setup();
+    service.handleDisconnect(P1_ID, 'socket-1', server);
+
+    await jest.advanceTimersByTimeAsync(60_000);
+
+    expect(game).toMatchObject({
+      phase: 'finished',
+      winner: P2_ID,
+      endReason: 'disconnect',
+    });
+    expect(gameEnd.persistResult).toHaveBeenCalledWith(game);
+  });
+
+  it("ignore la fermeture d'un ancien socket du joueur", async () => {
+    const { service, server, game } = setup();
+    service.handleDisconnect(P1_ID, 'ancien-onglet', server);
+
+    await jest.advanceTimersByTimeAsync(60_000);
+
+    expect(game.phase).toBe('main');
+  });
 });

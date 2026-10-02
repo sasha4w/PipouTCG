@@ -111,6 +111,13 @@ export default function FightPage({
         showToast(`⚔️ Adversaire trouvé : ${oName} !`, "ok");
       },
     );
+    socket.on("fight:resumed", ({ matchId: mid, opponentName: oName }) => {
+      setMatchId(mid);
+      setOpponentName(oName);
+      // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
+      setStatus((s) => (s === "playing" ? s : "selecting"));
+      showToast("🔌 Partie en cours retrouvée", "ok");
+    });
     socket.on("fight:deck_accepted", () =>
       showToast("Deck accepté — en attente de l'adversaire…"),
     );

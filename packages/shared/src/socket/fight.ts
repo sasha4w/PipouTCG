@@ -104,6 +104,8 @@ export interface ServerToClientEvents {
   "fight:queued": (payload: MessagePayload) => void;
   "fight:dequeued": () => void;
   "fight:matched": (payload: MatchFoundPayload) => void;
+  /** Reconnexion : une partie en cours a été retrouvée pour ce joueur. */
+  "fight:resumed": (payload: MatchFoundPayload) => void;
   "fight:deck_accepted": (payload: MatchPayload) => void;
   "fight:state": (state: ClientGameState) => void;
   "fight:game_over": (payload: GameOverPayload) => void;
