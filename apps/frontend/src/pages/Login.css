@@ -227,30 +227,6 @@
 /* ── Bouton ── */
 .login-btn {
   margin-top: 0.25rem;
-  width: 100%;
-  padding: 0.85rem;
-  border-radius: 14px;
-  border: none;
-  background: #7a1c3b;
-  color: #fff;
-  font-family: "Comfortaa", system-ui, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.25);
-  letter-spacing: 0.3px;
-  transition:
-    background 0.2s ease,
-    transform 0.15s ease,
-    box-shadow 0.2s ease;
-}
-.login-btn:hover {
-  background: #9b2349;
-  box-shadow: 0 6px 18px rgba(122, 28, 59, 0.3);
-}
-.login-btn:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 6px rgba(122, 28, 59, 0.2);
 }
 
 /* ── Switch ── */
@@ -291,25 +267,6 @@
   margin-bottom: 1rem;
 }
 
-.login-lang-btn {
-  background: transparent;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  border-radius: 8px;
-  padding: 4px 12px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
-}
-.login-lang-btn:hover {
-  background: rgba(122, 28, 59, 0.06);
-  border-color: rgba(122, 28, 59, 0.25);
-}
-.login-lang-btn--active {
-  border-color: #7a1c3b;
-  background: rgba(122, 28, 59, 0.08);
-}
 .login-sound {
   position: absolute;
   top: 16px;

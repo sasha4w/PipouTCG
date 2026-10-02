@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import Button from "../../components/Button";
 import "./MarketplaceTabs.css";
 
 interface MarketplaceTabsProps {
@@ -13,18 +14,22 @@ const MarketplaceTabs = ({
   const { t } = useTranslation();
   return (
     <div className="marketplace-tabs">
-      <button
-        className={`marketplace-tab ${selectedTab === "buy" ? "marketplace-tab--active" : ""}`}
+      <Button
+        variant="ghost-bordeaux"
+        active={selectedTab === "buy"}
+        className="marketplace-tab"
         onClick={() => onTabChange("buy")}
       >
         {t("marketplace.tabs.buy")}
-      </button>
-      <button
-        className={`marketplace-tab ${selectedTab === "sell" ? "marketplace-tab--active" : ""}`}
+      </Button>
+      <Button
+        variant="ghost-bordeaux"
+        active={selectedTab === "sell"}
+        className="marketplace-tab"
         onClick={() => onTabChange("sell")}
       >
         {t("marketplace.tabs.sell")}
-      </button>
+      </Button>
     </div>
   );
 };

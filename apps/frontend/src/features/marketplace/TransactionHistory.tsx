@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { type Transaction } from "../../services/transaction.service";
+import Button from "../../components/Button";
 import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import "./TransactionHistory.css";
 
@@ -65,21 +66,27 @@ const TransactionHistory = ({
       </ul>
       {totalPages > 1 && (
         <div className="tx-history__pagination">
-          <button
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label={t("pagination.prev")}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
             <IconArrowLeft size={16} color="currentColor" />
-          </button>
+          </Button>
           <span>
             {t("marketplace.history.pagination", { page, total: totalPages })}
           </span>
-          <button
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label={t("pagination.next")}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
           >
             <IconArrowRight size={16} color="currentColor" />
-          </button>
+          </Button>
         </div>
       )}
     </div>

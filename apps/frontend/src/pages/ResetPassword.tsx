@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import Button from "../components/Button";
 import { api } from "../api/api";
 import "./Login.css";
 
@@ -76,9 +77,14 @@ const ResetPassword = () => {
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
           </div>
-          <button className="login-btn" onClick={handleSubmit}>
+          <Button
+            size="lg"
+            fullWidth
+            className="login-btn"
+            onClick={handleSubmit}
+          >
             {t("login.btn_reset")}
-          </button>
+          </Button>
         </div>
         <div className="login-switch">
           <span className="login-switch__text">{t("login.remember_it")}</span>

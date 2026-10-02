@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SoundButton from "./SoundButton";
+import Button from "./Button";
 import "./Header.css";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
@@ -284,13 +285,14 @@ export default function Header() {
 
       <div className="cc-header__actions">
         {isAdminUser && (
-          <button
-            className="cc-header__admin-btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="sm"
             onClick={() => navigate("/admin")}
           >
             <IconCrown />
             <span>{t("header.admin")}</span>
-          </button>
+          </Button>
         )}
         <QuestInboxWidget onOpenPanel={() => navigate("/profile")} />
         <SoundButton />

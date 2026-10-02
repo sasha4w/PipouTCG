@@ -12,27 +12,7 @@
 }
 
 .cardlist__back {
-  padding: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   flex-shrink: 0;
-  transition:
-    background 0.15s,
-    transform 0.12s;
-  color: #7a1c3b;
-}
-.cardlist__back:hover {
-  background: rgba(122, 28, 59, 0.06);
-}
-.cardlist__back:active {
-  transform: scale(0.92);
 }
 
 .cardlist__title {
@@ -65,26 +45,6 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-}
-
-.cardlist__pagination-btn {
-  padding: 6px 14px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: #fff;
-  color: #7a1c3b;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.cardlist__pagination-btn:hover {
-  background: rgba(122, 28, 59, 0.06);
-}
-.cardlist__pagination-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 .cardlist__pagination-info {

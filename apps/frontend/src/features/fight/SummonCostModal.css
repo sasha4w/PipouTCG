@@ -41,27 +41,6 @@
   color: #7a1c3b;
 }
 
-.scm-close {
-  background: none;
-  border: none;
-  font-size: 16px;
-  color: #aaa;
-  cursor: pointer;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.15s,
-    color 0.15s;
-}
-.scm-close:hover {
-  background: #f0ddd0;
-  color: #7a1c3b;
-}
-
 /* ── Coût ─────────────────────────────────────────────────────────────────── */
 .scm-cost-row {
   display: flex;
@@ -178,38 +157,8 @@
 
 .scm-btn-cancel {
   flex: 1;
-  padding: 10px;
-  border-radius: 99px;
-  border: 1.5px solid #e0c8d0;
-  background: #fff;
-  color: #7a1c3b;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.scm-btn-cancel:hover {
-  background: #f8edf2;
 }
 
 .scm-btn-confirm {
   flex: 2;
-  padding: 10px;
-  border-radius: 99px;
-  border: none;
-  background: #7a1c3b;
-  color: #fff;
-  font-family: "Lilita One", sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    transform 0.1s;
-}
-.scm-btn-confirm:hover:not(:disabled) {
-  background: #9b2349;
-  transform: translateY(-1px);
-}
-.scm-btn-confirm:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }

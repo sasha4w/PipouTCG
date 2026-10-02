@@ -5,7 +5,8 @@ import type { Card } from "../../services/card.service";
 import CardDisplay from "../cards/CardDisplay";
 import { soundService } from "../../services/sound.service";
 import SearchBar from "../../components/Searchbar";
-import { IconUnknown } from "../../components/Icons";
+import { IconUnknown, IconArrowLeft, IconArrowRight } from "../../components/Icons";
+import Button from "../../components/Button";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
 import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
@@ -205,29 +206,33 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="own-cardlist__pagination">
-          <button
-            className="own-cardlist__pagination-btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label={t("pagination.prev")}
             disabled={page <= 1}
             onClick={() => {
               soundService.play("select");
               setPage((p) => p - 1);
             }}
           >
-            ←
-          </button>
+            <IconArrowLeft size={16} />
+          </Button>
           <span className="own-cardlist__pagination-info">
             {page} / {totalPages}
           </span>
-          <button
-            className="own-cardlist__pagination-btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label={t("pagination.next")}
             disabled={page >= totalPages}
             onClick={() => {
               soundService.play("select");
               setPage((p) => p + 1);
             }}
           >
-            →
-          </button>
+            <IconArrowRight size={16} />
+          </Button>
         </div>
       )}
     </div>

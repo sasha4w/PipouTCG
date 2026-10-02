@@ -68,26 +68,6 @@
   gap: 8px;
 }
 
-.own-cardlist__pagination-btn {
-  padding: 6px 14px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: #fff;
-  color: #7a1c3b;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.own-cardlist__pagination-btn:hover {
-  background: rgba(122, 28, 59, 0.06);
-}
-.own-cardlist__pagination-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
 .own-cardlist__pagination-info {
   font-size: 0.78rem;
   font-weight: 700;

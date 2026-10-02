@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import type { UserInventory } from "../../services/user.service";
 import type { OpeningTarget } from "../opening/OpeningModal";
 import SearchBar from "../../components/Searchbar";
+import Button from "../../components/Button";
 import "./OwnerBundleList.css";
 
 interface OwnBundleListProps {
@@ -40,14 +41,14 @@ export default function OwnBundleList({ bundles, onOpen }: OwnBundleListProps) {
               <span className="inv-row__meta">{b.price} gold</span>
               <span className="inv-row__qty">×{b.quantity}</span>
               {onOpen && b.quantity > 0 && (
-                <button
-                  className="inv-row__open-btn"
+                <Button
+                  size="sm"
                   onClick={() =>
                     onOpen({ type: "bundle", id: b.id, name: b.name })
                   }
                 >
                   Ouvrir
-                </button>
+                </Button>
               )}
             </div>
           ))}

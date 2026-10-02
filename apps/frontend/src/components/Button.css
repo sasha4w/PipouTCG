@@ -1,0 +1,132 @@
+/* Les classes de placement passées via className s'écrivent .btn.<classe> quand elles redéfinissent position, padding ou gap. */
+/* ── Base ── */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1.5px solid transparent;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.1s;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--color-bordeaux);
+  outline-offset: 2px;
+}
+.btn--primary-inverse:focus-visible,
+.btn--ghost-gold:focus-visible,
+.btn--danger-inverse:focus-visible {
+  outline-color: var(--color-gold);
+}
+
+/* ── Tailles ── */
+.btn--sm {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  border-radius: 8px;
+}
+.btn--md {
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  border-radius: 12px;
+}
+.btn--lg {
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 14px;
+}
+.btn--icon {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 1rem;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.btn--full {
+  width: 100%;
+}
+
+/* ── Variantes — fond clair ── */
+.btn--primary {
+  background: var(--color-bordeaux);
+  color: #fff;
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--color-bordeaux-hover);
+}
+
+.btn--ghost-bordeaux {
+  background: rgba(122, 28, 59, 0.08);
+  color: var(--color-bordeaux);
+}
+.btn--ghost-bordeaux:hover:not(:disabled) {
+  background: rgba(122, 28, 59, 0.14);
+}
+.btn--ghost-bordeaux.btn--active,
+.btn--ghost-bordeaux.btn--active:hover:not(:disabled) {
+  background: var(--color-bordeaux);
+  color: #fff;
+}
+
+.btn--danger {
+  background: rgba(242, 122, 170, 0.15);
+  border-color: rgba(242, 122, 170, 0.25);
+  color: var(--color-pink-text);
+}
+.btn--danger:hover:not(:disabled) {
+  background: rgba(242, 122, 170, 0.25);
+  border-color: rgba(242, 122, 170, 0.45);
+}
+
+/* ── Variantes — fond foncé ── */
+.btn--primary-inverse {
+  background: var(--color-cream);
+  color: var(--color-bordeaux);
+}
+.btn--primary-inverse:hover:not(:disabled) {
+  background: var(--color-cream-hover);
+}
+
+.btn--ghost-gold {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.6);
+}
+.btn--ghost-gold:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+}
+.btn--ghost-gold.btn--active,
+.btn--ghost-gold.btn--active:hover:not(:disabled) {
+  background: rgba(238, 188, 119, 0.2);
+  border-color: rgba(238, 188, 119, 0.5);
+  color: var(--color-gold);
+}
+
+.btn--danger-inverse {
+  background: rgba(242, 122, 170, 0.15);
+  border-color: rgba(242, 122, 170, 0.25);
+  color: var(--color-pink);
+}
+.btn--danger-inverse:hover:not(:disabled) {
+  background: rgba(242, 122, 170, 0.25);
+  border-color: rgba(242, 122, 170, 0.45);
+}

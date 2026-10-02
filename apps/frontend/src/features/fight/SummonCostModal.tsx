@@ -1,3 +1,5 @@
+import Button from "../../components/Button";
+import { IconClose } from "../../components/Icons";
 import type { HandCard } from "./handCard";
 import { RARITY_COLOR } from "./fight.types";
 import "./SummonCostModal.css";
@@ -33,9 +35,9 @@ export default function SummonCostModal({
       <div className="scm-modal" onClick={(e) => e.stopPropagation()}>
         <div className="scm-header">
           <span className="scm-title">Invoquer — {card.name}</span>
-          <button className="scm-close" onClick={onClose}>
-            ✕
-          </button>
+          <Button variant="ghost-bordeaux" size="icon" aria-label="Fermer" onClick={onClose}>
+            <IconClose size={16} />
+          </Button>
         </div>
 
         <div className="scm-cost-row">
@@ -86,16 +88,16 @@ export default function SummonCostModal({
         </div>
 
         <div className="scm-actions">
-          <button className="scm-btn-cancel" onClick={onClose}>
+          <Button variant="danger" className="scm-btn-cancel" onClick={onClose}>
             Annuler
-          </button>
-          <button
+          </Button>
+          <Button
             className="scm-btn-confirm"
             disabled={!canConfirm}
             onClick={onConfirm}
           >
             ⬆️ Recycler &amp; Invoquer
-          </button>
+          </Button>
         </div>
       </div>
     </div>

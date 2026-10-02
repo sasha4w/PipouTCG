@@ -1,3 +1,5 @@
+import Button from "../../components/Button";
+import { IconArrowRight } from "../../components/Icons";
 import "./FightLobby.css";
 
 type LobbyStatus = "idle" | "queued" | "selecting" | "finished";
@@ -36,9 +38,9 @@ export default function FightLobby({
           {won ? "Victoire !" : "Défaite"}
         </h2>
         <p className="lobby-muted">{endReason}</p>
-        <button onClick={onReplay} className="lobby-btn-big">
+        <Button size="lg" onClick={onReplay}>
           Rejouer
-        </button>
+        </Button>
       </div>
     );
   }
@@ -56,13 +58,14 @@ export default function FightLobby({
         ) : (
           <p className="lobby-deck-warning">Sélectionne un deck via le widget « Decks »</p>
         )}
-        <button
+        <Button
+          size="lg"
           onClick={onSubmitDeck}
           disabled={!selectedDeck}
-          className={`lobby-btn-big${!selectedDeck ? " lobby-btn-big--disabled" : ""}`}
         >
-          Lancer la partie →
-        </button>
+          Lancer la partie
+          <IconArrowRight size={16} />
+        </Button>
       </div>
     );
   }
@@ -84,13 +87,13 @@ export default function FightLobby({
       )}
 
       {status === "idle" ? (
-        <button
+        <Button
+          size="lg"
           onClick={onJoinQueue}
           disabled={!selectedDeck}
-          className={`lobby-btn-big${!selectedDeck ? " lobby-btn-big--disabled" : ""}`}
         >
           🔍 Rechercher une partie
-        </button>
+        </Button>
       ) : (
         <>
           <div className="lobby-queue-anim">
@@ -99,9 +102,9 @@ export default function FightLobby({
             <span className="lobby-dot" />
           </div>
           <p className="lobby-muted">En attente d'un adversaire…</p>
-          <button onClick={onLeaveQueue} className="lobby-btn-cancel">
+          <Button variant="danger" onClick={onLeaveQueue}>
             Annuler
-          </button>
+          </Button>
         </>
       )}
     </div>

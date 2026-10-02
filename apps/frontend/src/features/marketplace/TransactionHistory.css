@@ -114,29 +114,6 @@
   gap: 0.75rem;
 }
 
-.tx-history__pagination button {
-  width: 34px;
-  height: 34px;
-
-  border: none;
-  border-radius: 10px;
-
-  background: #7a1c3b;
-  color: #f5e6d0;
-
-  cursor: pointer;
-  transition: 0.15s ease;
-}
-
-.tx-history__pagination button:hover:not(:disabled) {
-  background: rgba(122, 28, 59, 0.7);
-}
-
-.tx-history__pagination button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
 .tx-history__empty {
   text-align: center;
   padding: 1.2rem;

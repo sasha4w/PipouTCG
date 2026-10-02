@@ -13,6 +13,14 @@ import type {
   BundleItem,
 } from "../../services/bundle.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import Button from "../../components/Button";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconClose,
+  IconPencil,
+  IconTrash,
+} from "../../components/Icons";
 import "../../components/manager.css";
 
 type View = "list" | "edit";
@@ -262,9 +270,9 @@ export default function BundleManager() {
       <div className="manager">
         <div className="manager__header">
           <h2 className="manager__title">Bundles</h2>
-          <button className="manager__add-btn" onClick={openCreate}>
+          <Button size="sm" onClick={openCreate}>
             + Nouveau
-          </button>
+          </Button>
         </div>
 
         {(error || loadError) && (
@@ -286,18 +294,24 @@ export default function BundleManager() {
                   </div>
                 </div>
                 <div className="manager-item__actions">
-                  <button
-                    className="manager-item__edit-btn"
+                  <Button
+                    variant="ghost-bordeaux"
+                    size="icon"
+                    aria-label="Modifier"
+                    title="Modifier"
                     onClick={() => openEdit(b)}
                   >
-                    ✏
-                  </button>
-                  <button
-                    className="manager-item__delete-btn"
+                    <IconPencil size={16} />
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="icon"
+                    aria-label="Supprimer"
+                    title="Supprimer"
                     onClick={() => handleDelete(b.id)}
                   >
-                    🗑
-                  </button>
+                    <IconTrash size={16} />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -306,23 +320,29 @@ export default function BundleManager() {
 
         {total > 1 && (
           <div className="manager-pagination">
-            <button
-              className="manager-pagination__btn"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
+              aria-label="Page précédente"
+              title="Page précédente"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
-              ←
-            </button>
+              <IconArrowLeft size={16} />
+            </Button>
             <span className="manager-pagination__info">
               {page} / {total}
             </span>
-            <button
-              className="manager-pagination__btn"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
+              aria-label="Page suivante"
+              title="Page suivante"
               disabled={page >= total}
               onClick={() => setPage((p) => p + 1)}
             >
-              →
-            </button>
+              <IconArrowRight size={16} />
+            </Button>
           </div>
         )}
       </div>
@@ -332,9 +352,10 @@ export default function BundleManager() {
   return (
     <div className="manager">
       <div className="manager__header">
-        <button className="manager-form__cancel" onClick={backToList}>
-          ← Retour
-        </button>
+        <Button variant="ghost-bordeaux" onClick={backToList}>
+          <IconArrowLeft size={16} />
+          Retour
+        </Button>
         <h2 className="manager__title">
           {editing ? "Modifier" : "Nouveau"} bundle
           {contentBundle && step === 2 && (
@@ -467,25 +488,22 @@ export default function BundleManager() {
                             onChange={(e) => setEditQty(Number(e.target.value))}
                             style={{ width: 64 }}
                           />
-                          <button
-                            className="manager-form__submit"
-                            style={{
-                              padding: "3px 10px",
-                              fontSize: "0.72rem",
-                              flex: "unset",
-                            }}
+                          <Button
+                            size="sm"
                             onClick={handleUpdateContent}
                             disabled={savingEdit}
                           >
                             {savingEdit ? "..." : "OK"}
-                          </button>
-                          <button
-                            className="manager-form__cancel"
-                            style={{ padding: "3px 8px", fontSize: "0.72rem" }}
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="icon"
+                            aria-label="Annuler"
+                            title="Annuler"
                             onClick={cancelEditContent}
                           >
-                            ✕
-                          </button>
+                            <IconClose size={16} />
+                          </Button>
                         </div>
                       ) : (
                         <div className="manager-item__meta">× {c.quantity}</div>
@@ -493,18 +511,24 @@ export default function BundleManager() {
                     </div>
                     {editingContent?.id !== c.id && (
                       <div className="manager-item__actions">
-                        <button
-                          className="manager-item__edit-btn"
+                        <Button
+                          variant="ghost-bordeaux"
+                          size="icon"
+                          aria-label="Modifier"
+                          title="Modifier"
                           onClick={() => startEditContent(c)}
                         >
-                          ✏
-                        </button>
-                        <button
-                          className="manager-item__delete-btn"
+                          <IconPencil size={16} />
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="icon"
+                          aria-label="Supprimer"
+                          title="Supprimer"
                           onClick={() => handleDeleteContent(c.id)}
                         >
-                          🗑
-                        </button>
+                          <IconTrash size={16} />
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -552,26 +576,29 @@ export default function BundleManager() {
                   }
                 />
                 {contentRows.length > 1 && (
-                  <button
-                    className="manager-content-row__remove"
+                  <Button
+                    variant="danger"
+                    size="icon"
+                    aria-label="Retirer"
+                    title="Retirer"
                     onClick={() => removeRow(row.id)}
                   >
-                    ✕
-                  </button>
+                    <IconClose size={16} />
+                  </Button>
                 )}
               </div>
             ))}
-            <button className="manager-form__add-row" onClick={addRow}>
+            <Button variant="ghost-bordeaux" fullWidth onClick={addRow}>
               + Ajouter un item
-            </button>
+            </Button>
             <div className="manager-form__actions">
-              <button
+              <Button
                 className="manager-form__submit"
                 onClick={handleSaveContent}
                 disabled={savingContent}
               >
                 {savingContent ? "..." : "Sauvegarder le contenu"}
-              </button>
+              </Button>
             </div>
           </div>
         </>
@@ -580,24 +607,32 @@ export default function BundleManager() {
       {/* ── Navigation wizard ── */}
       <div className="bm-nav">
         {step > 1 ? (
-          <button className="manager-form__cancel" onClick={goPrev}>
-            ← Précédent
-          </button>
+          <Button variant="ghost-bordeaux" onClick={goPrev}>
+            <IconArrowLeft size={16} />
+            Précédent
+          </Button>
         ) : (
           <div />
         )}
         {isLast ? (
-          <button className="manager-form__submit" onClick={backToList}>
+          <Button className="manager-form__submit" onClick={backToList}>
             ✓ Terminer
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             className="manager-form__submit"
             onClick={goNext}
             disabled={saving}
           >
-            {saving ? "..." : "Suivant →"}
-          </button>
+            {saving ? (
+              "..."
+            ) : (
+              <>
+                Suivant
+                <IconArrowRight size={16} />
+              </>
+            )}
+          </Button>
         )}
       </div>
     </div>

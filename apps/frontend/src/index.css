@@ -19,6 +19,15 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Couleurs de marque (utilisées par components/Button.css) */
+  --color-bordeaux: #7a1c3b;
+  --color-bordeaux-hover: #9b2349;
+  --color-bordeaux-dark: #3d1020;
+  --color-cream: #fdf6f0;
+  --color-cream-hover: #f5efe0;
+  --color-gold: #eebc77;
+  --color-pink: #f27aaa;
+  --color-pink-text: #b03060;
 }
 /* ── Liens ── */
 a {
@@ -34,24 +43,12 @@ h1 {
   font-size: 2em;
   line-height: 1.1;
 }
-/* ── Boutons globaux ── */
+/* ── Boutons globaux ── (le style vient de components/Button.css) */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  font-family: inherit;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #eebc77;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #f27aaa;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 /* ── Body — centrage mobile ── */
 body {

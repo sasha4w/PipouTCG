@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSoundStore } from "../contexts/useSoundStore";
 import SoundSettings from "./SoundSettings";
+import Button from "./Button";
+import { IconClose } from "./Icons";
 import "./SoundButton.css";
 
 export default function SoundButton() {
@@ -23,8 +25,9 @@ export default function SoundButton() {
 
   return (
     <div className="sound-widget" ref={ref}>
-      <button
-        className="sound-btn"
+      <Button
+        variant="ghost-bordeaux"
+        size="icon"
         onClick={() => setOpen((v) => !v)}
         aria-label={t("sound.label")}
       >
@@ -79,19 +82,20 @@ export default function SoundButton() {
             />
           </svg>
         )}
-      </button>
+      </Button>
 
       {open && (
         <div className="sound-widget__dropdown">
           <div className="sound-widget__header">
             <span className="sound-widget__title">{t("sound.label")}</span>
-            <button
-              className="sound-widget__close"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
               onClick={() => setOpen(false)}
               aria-label="Fermer"
             >
-              ✕
-            </button>
+              <IconClose size={16} />
+            </Button>
           </div>
           <div className="sound-widget__body">
             <SoundSettings />

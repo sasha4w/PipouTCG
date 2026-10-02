@@ -2,30 +2,6 @@
   position: relative;
 }
 
-.qi__btn {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(122, 28, 59, 0.2);
-  background: rgba(238, 188, 119, 0.15);
-  color: #7a1c3b;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.15s,
-    transform 0.12s;
-  padding: 0;
-}
-.qi__btn:hover {
-  background: rgba(238, 188, 119, 0.3);
-}
-.qi__btn:active {
-  transform: scale(0.93);
-}
-
 .qi__badge {
   position: absolute;
   top: -4px;
@@ -91,26 +67,6 @@
   font-weight: 700;
   color: #eebc77;
 }
-.qi__claim-all {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: none;
-  background: #eebc77;
-  color: #3d1020;
-  cursor: pointer;
-  transition:
-    opacity 0.15s,
-    transform 0.12s;
-}
-.qi__claim-all:hover {
-  opacity: 0.85;
-}
-.qi__claim-all:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 .qi__list {
   max-height: 320px;
@@ -173,46 +129,9 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
-.qi__item-claim {
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: none;
-  background: #eebc77;
-  color: #3d1020;
-  cursor: pointer;
-  font-family: "Comfortaa", sans-serif;
-  transition:
-    opacity 0.15s,
-    transform 0.12s;
-}
-.qi__item-claim:hover {
-  opacity: 0.85;
-}
-.qi__item-claim:active {
-  transform: scale(0.95);
-}
-.qi__item-claim:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 .qi__footer {
   padding: 10px 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   text-align: center;
-}
-.qi__footer-link {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: rgba(238, 188, 119, 0.7);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: "Comfortaa", sans-serif;
-  transition: color 0.15s;
-}
-.qi__footer-link:hover {
-  color: #eebc77;
 }

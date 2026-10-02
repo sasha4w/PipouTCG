@@ -4,6 +4,7 @@ import {
   type Transaction,
   type UpdateListingData,
 } from "../../services/transaction.service";
+import Button from "../../components/Button";
 import TransactionHistory from "./TransactionHistory";
 import ListingEditForm from "./ListingEditForm";
 import ListingPreview from "./ListingPreview";
@@ -48,12 +49,9 @@ const SellTab = ({
         {t("marketplace.sell.title")}
       </h2>
       <div className="marketplace-header-actions">
-        <button
-          className="marketplace-create-listing-btn"
-          onClick={onCreateListing}
-        >
+        <Button onClick={onCreateListing}>
           {t("marketplace.sell.btn_create")}
-        </button>
+        </Button>
       </div>
 
       <div className="marketplace-listings">
@@ -104,20 +102,20 @@ const SellTab = ({
                     </span>
                   </div>
                   <div className="marketplace-listing__actions">
-                    <button
-                      className="marketplace-edit-btn"
+                    <Button
+                      variant="ghost-bordeaux"
                       onClick={() => setEditingId(listing.id)}
                       disabled={busy}
                     >
                       {t("marketplace.sell.btn_edit")}
-                    </button>
-                    <button
-                      className="marketplace-cancel-btn"
+                    </Button>
+                    <Button
+                      variant="danger"
                       onClick={() => onCancelListing(listing.id)}
                       disabled={busy}
                     >
                       {isActioning ? "..." : t("marketplace.sell.btn_cancel")}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import Button from "./Button";
 import "./Searchbar.css";
 
 function IconSearch({ size = 16 }: { size?: number }) {
@@ -75,13 +76,15 @@ export default function SearchBar({
   return (
     <div className="search-bar">
       <div className="search-bar__row">
-        <button
-          className={`search-bar__icon-btn${searchOpen ? " search-bar__icon-btn--active" : ""}`}
-          onClick={toggleSearch}
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          active={searchOpen}
           aria-label={t("search.aria_search")}
+          onClick={toggleSearch}
         >
           <IconSearch size={16} />
-        </button>
+        </Button>
 
         <div
           className={`search-bar__input-wrap${searchOpen ? " search-bar__input-wrap--open" : ""}`}
@@ -97,17 +100,18 @@ export default function SearchBar({
         </div>
         {extra && <div className="search-bar__extra">{extra}</div>}
         {filters && (
-          <button
-            className={`search-bar__icon-btn${filterOpen ? " search-bar__icon-btn--active" : ""}`}
-            onClick={() => setFilterOpen((o) => !o)}
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            active={filterOpen}
             aria-label={t("search.aria_filter")}
-            style={{ position: "relative" }}
+            onClick={() => setFilterOpen((o) => !o)}
           >
             <IconFilter size={16} />
             {hasActiveFilters && !filterOpen && (
               <span className="search-bar__filter-dot" />
             )}
-          </button>
+          </Button>
         )}
       </div>
 

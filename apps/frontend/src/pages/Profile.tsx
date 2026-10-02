@@ -11,6 +11,7 @@ import PrivacyButton from "../components/PrivacyButton";
 import OpeningModal, {
   type OpeningTarget,
 } from "../features/opening/OpeningModal";
+import Button from "../components/Button";
 import { IconCollection, IconStats } from "../components/Icons";
 import "./Profile.css";
 import { useTranslation } from "react-i18next";
@@ -83,30 +84,28 @@ export default function Profile() {
       <PrivacyButton isPrivate={isPrivate} onToggle={handleTogglePrivacy} />
 
       <div className="profile-tabs">
-        <button
-          className={`profile-tab-btn${tab === "collection" ? " profile-tab-btn--active" : ""}`}
+        <Button
+          variant="ghost-bordeaux"
+          active={tab === "collection"}
+          className="profile-tab-btn"
           onClick={() => setTab("collection")}
         >
           <span className="profile-tab-btn__icon">
-            <IconCollection
-              size={22}
-              color={tab === "collection" ? "#7a1c3b" : "#a08070"}
-            />
+            <IconCollection size={22} />
           </span>
           {t("profile.collection_tab")}
-        </button>
-        <button
-          className={`profile-tab-btn${tab === "stats" ? " profile-tab-btn--active" : ""}`}
+        </Button>
+        <Button
+          variant="ghost-bordeaux"
+          active={tab === "stats"}
+          className="profile-tab-btn"
           onClick={() => setTab("stats")}
         >
           <span className="profile-tab-btn__icon">
-            <IconStats
-              size={22}
-              color={tab === "stats" ? "#7a1c3b" : "#a08070"}
-            />
+            <IconStats size={22} />
           </span>
           {t("profile.stats_tab")}
-        </button>
+        </Button>
       </div>
 
       {tab === "collection" && (

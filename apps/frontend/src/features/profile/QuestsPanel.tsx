@@ -16,6 +16,7 @@ import {
   IconBell,
   IconCheck,
 } from "../../components/Icons";
+import Button from "../../components/Button";
 import "./QuestsPanel.css";
 
 // ── Reward label ──────────────────────────────────────────────────────────────
@@ -129,13 +130,15 @@ function QuestItem({
       </div>
       <span className="quest-item__timer">{timeLeft}</span>
       {canClaim && (
-        <button
+        <Button
+          variant="primary-inverse"
+          size="sm"
           className="quest-item__claim-btn"
           onClick={() => onClaim(quest.id)}
           disabled={claiming !== null} // On bloque si n'importe quel claim est en cours
         >
           {claiming === quest.id ? "..." : t("quests.claim")}
-        </button>
+        </Button>
       )}
       {done && quest.rewardClaimed && (
         <span className="quest-item__claimed">
@@ -199,9 +202,11 @@ export default function QuestsPanel() {
       {/* FIX : On ré-intègre les onglets pour utiliser visibleTabs, setActiveTab et IconBell */}
       <div className="quests-panel__tabs">
         {visibleTabs.map((tab) => (
-          <button
+          <Button
             key={tab.key}
-            className={`quests-panel__tab${activeTab === tab.key ? " quests-panel__tab--active" : ""}`}
+            variant="ghost-gold"
+            size="sm"
+            active={activeTab === tab.key}
             onClick={() => setActiveTab(tab.key)}
           >
             {t(tab.labelKey)}
@@ -209,21 +214,22 @@ export default function QuestsPanel() {
             {quests[tab.key].some((q) => q.isCompleted && !q.rewardClaimed) && (
               <IconBell size={11} color="#eebc77" style={{ marginLeft: 5 }} />
             )}
-          </button>
+          </Button>
         ))}
       </div>
 
       <div className="quests-panel__list-actions">
         {claimableInTab.length > 1 && (
-          <button
-            className="quests-panel__claim-all"
+          <Button
+            variant="primary-inverse"
+            size="sm"
             onClick={handleClaimAll}
             disabled={isClaimingAll || claimMutation.isPending}
           >
             {isClaimingAll
               ? "..."
               : `${t("quests.claim_all")} (${claimableInTab.length})`}
-          </button>
+          </Button>
         )}
       </div>
 

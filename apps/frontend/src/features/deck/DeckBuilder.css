@@ -37,28 +37,6 @@
 
 .deck-tab {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 8px;
-  border: none;
-  border-radius: 12px;
-  background: #ece8e1;
-  color: #888;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.deck-tab--active {
-  background: #7a1c3b;
-  color: #fff;
 }
 
 .deck-tab__badge {
@@ -68,11 +46,15 @@
   border-radius: 20px;
 }
 
-.deck-tab--active .deck-tab__badge {
+.btn--active .deck-tab__badge {
   background: rgba(255, 255, 255, 0.2);
 }
 
 .deck-tab__badge--filled {
+  background: rgba(122, 28, 59, 0.15);
+}
+
+.btn--active .deck-tab__badge--filled {
   background: rgba(255, 255, 255, 0.25);
 }
 
@@ -249,52 +231,7 @@
 
 .deck-save-btn {
   flex-shrink: 0;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
   width: auto;
-}
-
-/* ─── Icon buttons ───────────────────────── */
-.deck-icon-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  border: none;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.deck-icon-btn--add {
-  background: #f0e8d0;
-  color: #7a1c3b;
-}
-
-.deck-icon-btn--add:active:not(:disabled) {
-  background: #7a1c3b;
-  color: #fff;
-}
-
-.deck-icon-btn--remove {
-  background: #fde8e8;
-  color: #c0392b;
-}
-
-.deck-icon-btn--remove:active {
-  background: #c0392b;
-  color: #fff;
-}
-
-.deck-icon-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 .deck-card-row__dot {
@@ -330,24 +267,11 @@
   height: 440px;
 }
 
-.deck-modal-close {
+.btn.deck-modal-close {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 10;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #ece8e1;
-  background: #fff;
-  color: #555;
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .deck-modal-card {
@@ -384,46 +308,6 @@
   align-items: center;
   gap: 16px;
   margin-top: 4px;
-}
-
-.deck-modal-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
-}
-
-.deck-modal-btn--add {
-  background: #f0e8d0;
-  color: #7a1c3b;
-}
-
-.deck-modal-btn--add:active:not(:disabled) {
-  background: #7a1c3b;
-  color: #fff;
-}
-
-.deck-modal-btn--remove {
-  background: #fde8e8;
-  color: #c0392b;
-}
-
-.deck-modal-btn--remove:active:not(:disabled) {
-  background: #c0392b;
-  color: #fff;
-}
-
-.deck-modal-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 .deck-modal-qty {
@@ -481,37 +365,6 @@
 .deck-badge--invalid {
   background: #fff3e0;
   color: #e65100;
-}
-
-.deck-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s;
-}
-
-.deck-btn--edit {
-  background: #f0e8d0;
-  color: #7a1c3b;
-}
-
-.deck-btn--edit:active {
-  background: #7a1c3b;
-  color: #fff;
-}
-
-.deck-btn--delete {
-  background: #fde8e8;
-  color: #c0392b;
-}
-
-.deck-btn--delete:active {
-  background: #c0392b;
-  color: #fff;
 }
 
 /* ─── Empty state ────────────────────────── */

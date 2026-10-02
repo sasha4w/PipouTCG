@@ -4,6 +4,7 @@ import type {
   ClientChoiceCandidate,
   PendingChoiceResolution,
 } from "./fight.types";
+import Button from "../../components/Button";
 import { RARITY_COLOR } from "./fight.types";
 import "./CardPickModal.css";
 
@@ -190,9 +191,9 @@ export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
         {/* ── Actions ── */}
         <div className="cpm-actions">
           {onCancel && (
-            <button className="cpm-btn-cancel" onClick={onCancel}>
-              ✕ Annuler
-            </button>
+            <Button variant="danger" onClick={onCancel}>
+              Annuler
+            </Button>
           )}
           <button
             className="cpm-btn-confirm"

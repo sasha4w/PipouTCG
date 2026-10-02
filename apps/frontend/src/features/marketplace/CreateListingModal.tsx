@@ -12,6 +12,8 @@ import {
   type InventoryItem,
 } from "../../services/user.service";
 import FilterPanel from "../../components/FilterPanel";
+import Button from "../../components/Button";
+import { IconClose, IconMinus, IconPlus } from "../../components/Icons";
 import { useFilters } from "../../hooks/useFilters";
 import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
 import "./CreateListingModal.css";
@@ -136,28 +138,29 @@ const CreateListingModal = ({
       <div className="marketplace-modal-content">
         <div className="marketplace-modal-header">
           <h3>{t("marketplace.modal.title")}</h3>
-          <button
-            className="marketplace-modal-close"
-            type="button"
+          <Button
+            variant="ghost-gold"
+            size="icon"
             onClick={onClose}
             aria-label={t("marketplace.modal.close")}
           >
-            ✕
-          </button>
+            <IconClose size={16} />
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="marketplace-form-group">
             <div className="marketplace-type-selector">
               {Object.values(ProductType).map((type) => (
-                <button
+                <Button
                   key={type}
-                  type="button"
-                  className={`marketplace-type-btn${formProductType === type ? " marketplace-type-btn--active" : ""}`}
+                  variant="ghost-gold"
+                  active={formProductType === type}
+                  className="marketplace-type-btn"
                   onClick={() => handleTypeChange(type)}
                 >
                   {t(TYPE_KEYS[type])}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -189,6 +192,7 @@ const CreateListingModal = ({
               availableItems.length > 0 && (
                 <div className="marketplace-picker-filters">
                   <FilterPanel
+                    tone="dark"
                     config={filterConfig}
                     values={filterValues}
                     onChange={setFilter}
@@ -306,14 +310,15 @@ const CreateListingModal = ({
               <div className="marketplace-form-group">
                 <label>{t("marketplace.modal.quantity")}</label>
                 <div className="marketplace-qty-selector">
-                  <button
-                    type="button"
-                    className="marketplace-qty-btn"
+                  <Button
+                    variant="ghost-gold"
+                    size="icon"
+                    aria-label={t("marketplace.qty.reduce")}
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     disabled={quantity <= 1}
                   >
-                    −
-                  </button>
+                    <IconMinus size={16} />
+                  </Button>
                   <input
                     className="marketplace-qty-input"
                     type="number"
@@ -329,24 +334,25 @@ const CreateListingModal = ({
                       )
                     }
                   />
-                  <button
-                    type="button"
-                    className="marketplace-qty-btn"
+                  <Button
+                    variant="ghost-gold"
+                    size="icon"
+                    aria-label={t("marketplace.qty.increase")}
                     onClick={() =>
                       setQuantity((q) => Math.min(selectedItem.quantity, q + 1))
                     }
                     disabled={quantity >= selectedItem.quantity}
                   >
-                    +
-                  </button>
+                    <IconPlus size={16} />
+                  </Button>
                   {selectedItem.quantity > 1 && (
-                    <button
-                      type="button"
-                      className="marketplace-qty-max"
+                    <Button
+                      variant="ghost-gold"
+                      size="sm"
                       onClick={() => setQuantity(selectedItem.quantity)}
                     >
                       {t("marketplace.qty.max")}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -377,10 +383,15 @@ const CreateListingModal = ({
           )}
 
           <div className="marketplace-modal-actions">
-            <button type="button" onClick={onClose} disabled={isCreating}>
+            <Button
+              variant="danger-inverse"
+              onClick={onClose}
+              disabled={isCreating}
+            >
               {t("marketplace.modal.btn_cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary-inverse"
               type="submit"
               disabled={!selectedInventoryId || !unitPrice || isCreating}
             >
@@ -392,7 +403,7 @@ const CreateListingModal = ({
                       total: Number(unitPrice) * quantity,
                     })
                   : t("marketplace.modal.btn_sell_default")}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

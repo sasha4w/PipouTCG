@@ -4,6 +4,8 @@ import type {
   Transaction,
   UpdateListingData,
 } from "../../services/transaction.service";
+import Button from "../../components/Button";
+import { IconMinus, IconPlus } from "../../components/Icons";
 import "./ListingEditForm.css";
 
 interface ListingEditFormProps {
@@ -77,15 +79,15 @@ export default function ListingEditForm({
           {t("marketplace.sell.edit_quantity")}
         </label>
         <div className="listing-edit__stepper">
-          <button
-            type="button"
-            className="listing-edit__step"
+          <Button
+            variant="ghost-gold"
+            size="icon"
             onClick={() => clampQty((qtyValid ? qty : 1) - 1)}
             disabled={busy || qty <= 1}
             aria-label={t("marketplace.qty.reduce")}
           >
-            −
-          </button>
+            <IconMinus size={16} />
+          </Button>
           <input
             id={qtyId}
             className="listing-edit__input listing-edit__input--qty"
@@ -98,23 +100,23 @@ export default function ListingEditForm({
             aria-invalid={!qtyValid}
             disabled={busy}
           />
-          <button
-            type="button"
-            className="listing-edit__step"
+          <Button
+            variant="ghost-gold"
+            size="icon"
             onClick={() => clampQty((qtyValid ? qty : 0) + 1)}
             disabled={busy || qty >= maxQuantity}
             aria-label={t("marketplace.qty.increase")}
           >
-            +
-          </button>
-          <button
-            type="button"
-            className="listing-edit__max"
+            <IconPlus size={16} />
+          </Button>
+          <Button
+            variant="ghost-gold"
+            size="sm"
             onClick={() => clampQty(maxQuantity)}
             disabled={busy || qty === maxQuantity}
           >
             {t("marketplace.qty.max")}
-          </button>
+          </Button>
         </div>
         <span className="listing-edit__hint">
           {t("marketplace.sell.edit_max", { max: maxQuantity })}
@@ -146,21 +148,16 @@ export default function ListingEditForm({
       </p>
 
       <div className="listing-edit__actions">
-        <button
+        <Button
+          variant="primary-inverse"
           type="submit"
-          className="listing-edit__save"
           disabled={busy || !qtyValid || !priceValid}
         >
           {busy ? "..." : t("marketplace.sell.btn_save")}
-        </button>
-        <button
-          type="button"
-          className="marketplace-cancel-btn"
-          onClick={onCancel}
-          disabled={busy}
-        >
+        </Button>
+        <Button variant="danger-inverse" onClick={onCancel} disabled={busy}>
           {t("marketplace.sell.btn_cancel")}
-        </button>
+        </Button>
       </div>
     </form>
   );

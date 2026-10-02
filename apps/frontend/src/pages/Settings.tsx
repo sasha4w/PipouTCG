@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import { useQueryClient } from "@tanstack/react-query";
 import SoundSettings from "../components/SoundSettings";
+import Button from "../components/Button";
 import i18n from "../i18n";
 import "./Settings.css";
 
@@ -102,9 +103,15 @@ const Settings = () => {
         </div>
       </div>
 
-      <button className="settings-logout-btn" onClick={handleLogout}>
+      <Button
+        variant="danger"
+        size="lg"
+        fullWidth
+        className="settings-logout"
+        onClick={handleLogout}
+      >
         {t("settings.logout")}
-      </button>
+      </Button>
     </div>
   );
 };

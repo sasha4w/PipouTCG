@@ -112,27 +112,6 @@
   margin-top: 2px;
 }
 
-.shop-item__btn {
-  background: #7a1c3b;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 0.4rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  width: 100%;
-}
-.shop-item__btn:hover {
-  opacity: 0.85;
-}
-.shop-item__btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
 .shop-item__error {
   font-size: 0.65rem;
   color: #b03060;
@@ -152,32 +131,6 @@
   align-items: center;
   gap: 4px;
   justify-content: center;
-}
-
-.shop-item__qty-btn {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(122, 28, 59, 0.2);
-  background: rgba(122, 28, 59, 0.06);
-  color: #7a1c3b;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition:
-    background 0.15s,
-    opacity 0.15s;
-}
-.shop-item__qty-btn:hover:not(:disabled) {
-  background: rgba(122, 28, 59, 0.14);
-}
-.shop-item__qty-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
 }
 
 .shop-item__qty-input {

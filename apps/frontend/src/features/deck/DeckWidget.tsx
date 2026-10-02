@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { deckService } from "../../services/deck.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import Button from "../../components/Button";
 import "./DeckWidget.css";
 
 interface DeckWidgetProps {
@@ -25,7 +26,8 @@ export default function DeckWidget({
 
   return (
     <div className="dw-container">
-      <button
+      <Button
+        variant="ghost-bordeaux"
         onClick={() => setOpen((o) => !o)}
         className="dw-trigger"
         title="Mes decks"
@@ -35,21 +37,22 @@ export default function DeckWidget({
         <span className={`dw-chevron${open ? " dw-chevron--open" : ""}`}>
           ▾
         </span>
-      </button>
+      </Button>
 
       {open && (
         <div className="dw-panel">
           <div className="dw-panel-header">
             <span className="dw-panel-title">🃏 Mes Decks</span>
-            <button
-              className="dw-btn-manage"
+            <Button
+              variant="ghost-bordeaux"
+              size="sm"
               onClick={() => {
                 setOpen(false);
                 navigate("/decks");
               }}
             >
               Gérer
-            </button>
+            </Button>
           </div>
 
           {isLoading ? (
@@ -57,15 +60,15 @@ export default function DeckWidget({
           ) : decks.length === 0 ? (
             <div className="dw-empty">
               <p className="dw-muted">Aucun deck</p>
-              <button
-                className="dw-btn-create"
+              <Button
+                size="sm"
                 onClick={() => {
                   setOpen(false);
                   navigate("/decks");
                 }}
               >
                 + Créer un deck
-              </button>
+              </Button>
             </div>
           ) : (
             <ul className="dw-list">
@@ -85,10 +88,10 @@ export default function DeckWidget({
                       <span className="dw-item-count">{total} cartes</span>
                     </div>
                     {onSelectDeck && (
-                      <button
-                        className={
-                          selected ? "dw-btn-selected" : "dw-btn-select"
-                        }
+                      <Button
+                        variant="ghost-bordeaux"
+                        size="sm"
+                        active={selected}
                         onClick={() => {
                           if (!selected) {
                             onSelectDeck(deck.id);
@@ -97,7 +100,7 @@ export default function DeckWidget({
                         }}
                       >
                         {selected ? "✓ Sélectionné" : "Utiliser"}
-                      </button>
+                      </Button>
                     )}
                   </li>
                 );

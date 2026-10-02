@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { bannerService } from "../../services/banner.service";
 import { shopService } from "../../services/shop.service";
+import Button from "../../components/Button";
 import BannerCard from "./BannerCard";
 import BannerCarousel from "./BannerCarousel";
 import { QUERY_KEYS } from "../../utils/querykeys";
@@ -10,6 +11,8 @@ import {
   IconCart,
   IconBooster,
   IconBundle,
+  IconMinus,
+  IconPlus,
 } from "../../components/Icons";
 import "./ShopSection.css";
 
@@ -68,13 +71,15 @@ function ShopItemCard({
       </div>
 
       <div className="shop-item__qty">
-        <button
-          className="shop-item__qty-btn"
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          aria-label="Diminuer"
           onClick={() => setQuantity((q) => Math.max(1, q - 1))}
           disabled={buying || quantity <= 1}
         >
-          −
-        </button>
+          <IconMinus size={16} />
+        </Button>
         <input
           className="shop-item__qty-input"
           type="number"
@@ -86,19 +91,21 @@ function ShopItemCard({
           }}
           disabled={buying}
         />
-        <button
-          className="shop-item__qty-btn"
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          aria-label="Augmenter"
           onClick={() => setQuantity((q) => q + 1)}
           disabled={buying}
         >
-          +
-        </button>
+          <IconPlus size={16} />
+        </Button>
       </div>
 
       {error && <span className="shop-item__error">{error}</span>}
-      <button className="shop-item__btn" onClick={handleBuy} disabled={buying}>
+      <Button fullWidth onClick={handleBuy} disabled={buying}>
         {buying ? `Achat ${quantity}x...` : `Acheter ×${quantity}`}
-      </button>
+      </Button>
     </div>
   );
 }

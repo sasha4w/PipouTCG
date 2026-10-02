@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSoundStore } from "../contexts/useSoundStore";
+import Button from "./Button";
+import { IconMinus, IconPlus } from "./Icons";
 import "./SoundSettings.css";
 
 interface VolumeRowProps {
@@ -69,8 +71,9 @@ function VolumeRow({
         </div>
       </div>
       <div className="sound-row__controls">
-        <button
-          className="sound-row__btn"
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
           onMouseDown={() => startHold(-0.05)}
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
@@ -79,8 +82,8 @@ function VolumeRow({
           disabled={isDisabled || value <= 0}
           aria-label={t("sound.decrease")}
         >
-          −
-        </button>
+          <IconMinus size={16} />
+        </Button>
         <div
           className={`sound-row__bar-wrap${isDisabled ? " sound-row__bar-wrap--disabled" : ""}`}
           onClick={handleBarClick}
@@ -90,8 +93,9 @@ function VolumeRow({
             style={{ width: `${value * 100}%` }}
           />
         </div>
-        <button
-          className="sound-row__btn"
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
           onMouseDown={() => startHold(0.05)}
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
@@ -100,8 +104,8 @@ function VolumeRow({
           disabled={isDisabled || value >= 1}
           aria-label={t("sound.increase")}
         >
-          +
-        </button>
+          <IconPlus size={16} />
+        </Button>
       </div>
     </div>
   );
@@ -142,8 +146,9 @@ export default function SoundSettings() {
           </span>
         </div>
         <div className="sound-row__controls">
-          <button
-            className="sound-row__btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
             disabled={muted || masterVolume <= 0}
             onMouseDown={() =>
               setMasterVolume(
@@ -152,8 +157,8 @@ export default function SoundSettings() {
             }
             aria-label={t("sound.decrease")}
           >
-            −
-          </button>
+            <IconMinus size={16} />
+          </Button>
           <div
             className={`sound-row__bar-wrap${muted ? " sound-row__bar-wrap--disabled" : ""}`}
           >
@@ -162,8 +167,9 @@ export default function SoundSettings() {
               style={{ width: `${masterVolume * 100}%` }}
             />
           </div>
-          <button
-            className="sound-row__btn"
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
             disabled={muted || masterVolume >= 1}
             onMouseDown={() =>
               setMasterVolume(
@@ -172,8 +178,8 @@ export default function SoundSettings() {
             }
             aria-label={t("sound.increase")}
           >
-            +
-          </button>
+            <IconPlus size={16} />
+          </Button>
         </div>
       </div>
 

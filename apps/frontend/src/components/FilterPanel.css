@@ -28,50 +28,6 @@
   gap: 4px;
 }
 
-.filter-panel__btn {
-  padding: 3px 10px;
-  border-radius: 8px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: #fff;
-  color: #491021;
-  font-size: 0.78rem;
-  font-family: "Comfortaa", sans-serif;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background 0.13s,
-    border-color 0.13s,
-    color 0.13s;
-}
-
-.filter-panel__btn:hover {
-  background: rgba(122, 28, 59, 0.06);
-  border-color: rgba(122, 28, 59, 0.3);
-}
-
-.filter-panel__btn--active {
-  background: #7a1c3b;
-  border-color: #7a1c3b;
-  color: #fff;
-}
-
 .filter-panel__reset {
   align-self: flex-start;
-  padding: 3px 10px;
-  border-radius: 8px;
-  border: none;
-  background: none;
-  color: #7a1c3b;
-  font-size: 0.74rem;
-  font-weight: 700;
-  font-family: "Comfortaa", sans-serif;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.filter-panel__reset:hover {
-  opacity: 1;
-  border-color: transparent;
 }

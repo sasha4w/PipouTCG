@@ -9,6 +9,15 @@ import {
 import { userService } from "../../services/user.service";
 import type { Card } from "../../services/card.service";
 import CardDisplay from "../cards/CardDisplay";
+import Button from "../../components/Button";
+import {
+  IconArrowLeft,
+  IconClose,
+  IconMinus,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+} from "../../components/Icons";
 import "../../components/manager.css";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import "./DeckBuilder.css";
@@ -184,12 +193,15 @@ export default function DeckBuilder() {
     return (
       <div className="deck-modal-overlay" onClick={() => setSelectedCard(null)}>
         <div className="deck-modal" onClick={(e) => e.stopPropagation()}>
-          <button
+          <Button
+            variant="ghost-bordeaux"
+            size="icon"
+            aria-label="Fermer"
             className="deck-modal-close"
             onClick={() => setSelectedCard(null)}
           >
-            ✕
-          </button>
+            <IconClose size={16} />
+          </Button>
 
           <div className="deck-modal-card">
             <CardDisplay
@@ -207,24 +219,28 @@ export default function DeckBuilder() {
           </div>
 
           <div className="deck-modal-controls">
-            <button
-              className="deck-modal-btn deck-modal-btn--remove"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
+              aria-label="Retirer"
               onClick={() => removeCard(c.userCardId)}
               disabled={!inDeck}
             >
-              −
-            </button>
+              <IconMinus size={16} />
+            </Button>
             <div className="deck-modal-qty">
               <span className="deck-modal-qty-num">{inDeckQty}</span>
               <span className="deck-modal-qty-label">dans le deck</span>
             </div>
-            <button
-              className="deck-modal-btn deck-modal-btn--add"
+            <Button
+              variant="ghost-bordeaux"
+              size="icon"
+              aria-label="Ajouter"
               onClick={() => addCard(c.userCardId)}
               disabled={atMax || deckFull}
             >
-              +
-            </button>
+              <IconPlus size={16} />
+            </Button>
           </div>
 
           {(atMax || deckFull) && (
@@ -245,9 +261,9 @@ export default function DeckBuilder() {
       <div className="manager">
         <div className="manager__header">
           <h2 className="manager__title">Mes Decks</h2>
-          <button className="manager__add-btn" onClick={openCreate}>
+          <Button size="sm" onClick={openCreate}>
             + Nouveau
-          </button>
+          </Button>
         </div>
 
         {loading ? (
@@ -276,18 +292,22 @@ export default function DeckBuilder() {
                     </div>
                   </div>
                   <div className="manager-item__actions">
-                    <button
-                      className="deck-btn deck-btn--edit"
+                    <Button
+                      variant="ghost-bordeaux"
+                      size="icon"
+                      aria-label="Modifier"
                       onClick={() => openEdit(d)}
                     >
-                      ✏
-                    </button>
-                    <button
-                      className="deck-btn deck-btn--delete"
+                      <IconPencil size={16} />
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="icon"
+                      aria-label="Supprimer"
                       onClick={() => removeDeck(d.id)}
                     >
-                      🗑
-                    </button>
+                      <IconTrash size={16} />
+                    </Button>
                   </div>
                 </div>
               );
@@ -305,9 +325,10 @@ export default function DeckBuilder() {
 
       {/* Header */}
       <div className="manager__header deck-editor__topbar">
-        <button onClick={back} className="manager-form__cancel">
-          ← Retour
-        </button>
+        <Button variant="ghost-bordeaux" onClick={back}>
+          <IconArrowLeft size={16} />
+          Retour
+        </Button>
         <input
           value={deckName}
           onChange={(e) => setDeckName(e.target.value)}
@@ -318,15 +339,19 @@ export default function DeckBuilder() {
 
       {/* Onglets */}
       <div className="deck-tabs">
-        <button
-          className={`deck-tab ${tab === "inventory" ? "deck-tab--active" : ""}`}
+        <Button
+          variant="ghost-bordeaux"
+          active={tab === "inventory"}
+          className="deck-tab"
           onClick={() => setTab("inventory")}
         >
           Inventaire
           <span className="deck-tab__badge">{allCards.length}</span>
-        </button>
-        <button
-          className={`deck-tab ${tab === "deck" ? "deck-tab--active" : ""}`}
+        </Button>
+        <Button
+          variant="ghost-bordeaux"
+          active={tab === "deck"}
+          className="deck-tab"
           onClick={() => setTab("deck")}
         >
           Mon deck
@@ -335,7 +360,7 @@ export default function DeckBuilder() {
           >
             {totalCards}/40
           </span>
-        </button>
+        </Button>
       </div>
 
       {/* Contenu scrollable */}
@@ -401,20 +426,24 @@ export default function DeckBuilder() {
                       </span>
                     </div>
                     <div className="deck-row__controls">
-                      <button
-                        className="deck-icon-btn deck-icon-btn--remove"
+                      <Button
+                        variant="ghost-bordeaux"
+                        size="icon"
+                        aria-label="Retirer"
                         onClick={() => removeCard(c.userCardId)}
                       >
-                        −
-                      </button>
+                        <IconMinus size={16} />
+                      </Button>
                       <span className="deck-row__qty">x{c.quantity}</span>
-                      <button
-                        className="deck-icon-btn deck-icon-btn--add"
+                      <Button
+                        variant="ghost-bordeaux"
+                        size="icon"
+                        aria-label="Ajouter"
                         onClick={() => addCard(c.userCardId)}
                         disabled={c.quantity >= maxAllowed || totalCards >= 40}
                       >
-                        +
-                      </button>
+                        <IconPlus size={16} />
+                      </Button>
                     </div>
                   </div>
                 );
@@ -445,13 +474,13 @@ export default function DeckBuilder() {
               </span>
             )}
           </span>
-          <button
+          <Button
             onClick={save}
             disabled={!isValid || !deckName.trim()}
-            className="manager-form__submit deck-save-btn"
+            className="deck-save-btn"
           >
             {isValid ? "💾 Sauvegarder" : "⚠ Invalide"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

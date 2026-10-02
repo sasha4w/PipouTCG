@@ -155,6 +155,10 @@
     "rarity": "Rarity",
     "reset": "Reset"
   },
+  "pagination": {
+    "prev": "Previous page",
+    "next": "Next page"
+  },
   "marketplace": {
     "tabs": {
       "buy": "Buy",

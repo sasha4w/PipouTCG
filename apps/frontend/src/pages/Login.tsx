@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import SoundButton from "../components/SoundButton";
+import Button from "../components/Button";
 import { IconEye, IconEyeOff } from "../components/Icons";
 import { api } from "../api/api";
 import i18n from "../i18n";
@@ -88,13 +89,15 @@ const Login = () => {
         {/* ── Sélecteur de langue ── */}
         <div className="login-lang-select">
           {LANGS.map((lang) => (
-            <button
+            <Button
               key={lang.code}
-              className={`login-lang-btn${i18n.language.startsWith(lang.code) ? " login-lang-btn--active" : ""}`}
+              variant="ghost-bordeaux"
+              size="sm"
+              active={i18n.language.startsWith(lang.code)}
               onClick={() => i18n.changeLanguage(lang.code)}
             >
               {lang.flag}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -196,9 +199,14 @@ const Login = () => {
             </div>
           )}
 
-          <button className="login-btn" onClick={handleSubmit}>
+          <Button
+            size="lg"
+            fullWidth
+            className="login-btn"
+            onClick={handleSubmit}
+          >
             {btnLabels[mode]}
-          </button>
+          </Button>
         </div>
 
         <div className="login-switch">

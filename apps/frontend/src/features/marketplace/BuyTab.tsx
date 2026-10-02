@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
+import Button from "../../components/Button";
+import { IconMinus, IconPlus } from "../../components/Icons";
 import { type Transaction } from "../../services/transaction.service";
 import {
   type FilterConfig,
@@ -89,14 +91,15 @@ const BuyTab = ({
               />
 
               <div className="marketplace-listing__qty-selector">
-                <button
-                  className="marketplace-qty-btn"
+                <Button
+                  variant="ghost-gold"
+                  size="icon"
                   onClick={() => setQty(listing.id, listing.quantity, qty - 1)}
                   disabled={qty <= 1 || isLoading}
                   aria-label={t("marketplace.qty.reduce")}
                 >
-                  −
-                </button>
+                  <IconMinus size={16} />
+                </Button>
                 <input
                   className="marketplace-qty-input"
                   type="number"
@@ -108,16 +111,19 @@ const BuyTab = ({
                   }
                   disabled={isLoading}
                 />
-                <button
-                  className="marketplace-qty-btn"
+                <Button
+                  variant="ghost-gold"
+                  size="icon"
                   onClick={() => setQty(listing.id, listing.quantity, qty + 1)}
                   disabled={qty >= listing.quantity || isLoading}
                   aria-label={t("marketplace.qty.increase")}
                 >
-                  +
-                </button>
+                  <IconPlus size={16} />
+                </Button>
                 {listing.quantity > 1 && (
-                  <button
+                  <Button
+                    variant="ghost-gold"
+                    size="sm"
                     className="marketplace-qty-max"
                     onClick={() =>
                       setQty(listing.id, listing.quantity, listing.quantity)
@@ -125,7 +131,7 @@ const BuyTab = ({
                     disabled={isLoading}
                   >
                     {t("marketplace.qty.max")}
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -149,15 +155,14 @@ const BuyTab = ({
                       </span>
                     )}
                   </div>
-                  <button
-                    className="marketplace-buy-btn"
+                  <Button
                     onClick={() => onBuyListing(listing.id, qty)}
                     disabled={isLoading}
                   >
                     {isLoading
                       ? t("marketplace.buy.loading")
                       : t("marketplace.buy.btn_buy", { total: totalForQty })}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

@@ -9,6 +9,7 @@ import {
 } from "../services/dailyReward.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import type { ToastType } from "../hooks/useToast";
+import Button from "./Button";
 import "./DailyRewardModal.css";
 import {
   IconFire,
@@ -19,6 +20,7 @@ import {
   IconBundle,
   IconPartyHorn,
   IconSkull,
+  IconClose,
 } from "./Icons";
 import { apiErrorMessage } from "../utils/errors";
 
@@ -347,9 +349,15 @@ export default function DailyRewardModal({
         transition={{ type: "spring", damping: 20, stiffness: 260 }}
       >
         {phase !== "claiming" && (
-          <button className="drm-close" onClick={onClose}>
-            ✕
-          </button>
+          <Button
+            variant="ghost-gold"
+            size="icon"
+            aria-label="Fermer"
+            className="drm-close"
+            onClick={onClose}
+          >
+            <IconClose size={16} />
+          </Button>
         )}
 
         <AnimatePresence mode="wait">
@@ -422,15 +430,17 @@ export default function DailyRewardModal({
 
               {error && <p className="drm-error">{error}</p>}
 
-              <button
-                className="drm-claim-btn"
+              <Button
+                variant="primary-inverse"
+                size="lg"
+                fullWidth
                 onClick={handleClaim}
                 disabled={status?.alreadyClaimed}
               >
                 {status?.alreadyClaimed
                   ? "✓ Récompense réclamée aujourd'hui"
                   : "Réclamer ma récompense !"}
-              </button>
+              </Button>
             </motion.div>
           )}
 
@@ -504,22 +514,22 @@ export default function DailyRewardModal({
               {error && <p className="drm-error">{error}</p>}
 
               <div className="drm-rescue-actions">
-                <button
-                  className="drm-rescue-btn"
+                <Button
+                  variant="primary-inverse"
                   onClick={handleRescue}
                   disabled={isResetting}
                 >
                   <IconGold size={14} color="#c8960c" />
                   Racheter ({claimResult.rescue.costPerScenario[rescueDays - 1]}
                   g)
-                </button>
-                <button
-                  className="drm-reset-btn"
+                </Button>
+                <Button
+                  variant="danger-inverse"
                   onClick={handleReset}
                   disabled={isResetting}
                 >
                   {isResetting ? "Réinitialisation..." : "Recommencer à J1"}
-                </button>
+                </Button>
               </div>
             </motion.div>
           )}
@@ -561,9 +571,13 @@ export default function DailyRewardModal({
               {/* Milestone tracker post-claim */}
               <MilestoneTracker totalDays={claimResult.streak.totalDays} />
 
-              <button className="drm-close-btn" onClick={onClose}>
+              <Button
+                variant="primary-inverse"
+                className="drm-close-btn"
+                onClick={onClose}
+              >
                 Super, merci !
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
