@@ -18,6 +18,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "migration:generate": "node ./scripts/migration-generate.cjs",
+    "cards:snapshot": "node scripts/extract-cards-snapshot.mjs",
     "migration:run": "dotenv -e .env -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:run",
     "migration:revert": "dotenv -e .env -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:revert",
     "migration:run:local": "dotenv -e .env.e2e -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:run",
