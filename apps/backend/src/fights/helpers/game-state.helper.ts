@@ -113,8 +113,14 @@ export function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
-export function checkWinCondition(game: GameState): number | null {
-  if (game.player1.primes <= 0) return game.player1.userId;
-  if (game.player2.primes <= 0) return game.player2.userId;
+/** Joueur ayant récupéré toutes ses Primes ; winnerUserId null si les deux (match nul). */
+export function checkWinCondition(
+  game: GameState,
+): { winnerUserId: number | null } | null {
+  const p1Done = game.player1.primes <= 0;
+  const p2Done = game.player2.primes <= 0;
+  if (p1Done && p2Done) return { winnerUserId: null };
+  if (p1Done) return { winnerUserId: game.player1.userId };
+  if (p2Done) return { winnerUserId: game.player2.userId };
   return null;
 }

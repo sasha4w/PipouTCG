@@ -87,7 +87,8 @@ export interface MatchFoundPayload {
 }
 
 export interface GameOverPayload {
-  winner: number;
+  /** null = match nul. */
+  winner: number | null;
   endReason: GameEndReason;
 }
 

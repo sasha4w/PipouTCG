@@ -59,8 +59,13 @@ export class GameEngine {
   /** Stabilise l'état après un changement : contrôle de victoire. */
   settle(game: GameState): void {
     if (game.phase === 'finished') return;
-    const winner = checkWinCondition(game);
-    if (winner !== null) finishGame(game, winner, 'primes_depleted');
+    const outcome = checkWinCondition(game);
+    if (outcome)
+      finishGame(
+        game,
+        outcome.winnerUserId,
+        outcome.winnerUserId === null ? 'double_ko' : 'primes_depleted',
+      );
   }
 
   private apply(

@@ -25,12 +25,24 @@ export class GameEndService {
       totalTurns: game.turnNumber,
       endedAt: new Date(),
     });
-    if (winnerId === null) return;
-    const loserId =
-      game.player1.userId === winnerId
-        ? game.player2.userId
-        : game.player1.userId;
-    await this.updateStats(winnerId, loserId);
+    const [s1, s2] = await Promise.all([
+      this.getOrCreateStats(game.player1.userId),
+      this.getOrCreateStats(game.player2.userId),
+    ]);
+    const score1 =
+      winnerId === null ? 0.5 : winnerId === game.player1.userId ? 1 : 0;
+    if (score1 === 1) {
+      s1.wins += 1;
+      s2.losses += 1;
+    } else if (score1 === 0) {
+      s1.losses += 1;
+      s2.wins += 1;
+    } else {
+      s1.draws += 1;
+      s2.draws += 1;
+    }
+    [s1.elo, s2.elo] = calcElo(s1.elo, s2.elo, score1);
+    await this.statsRepo.save([s1, s2]);
   }
 
   // ── REST endpoints ──────────────────────────────────────────────────────────
@@ -76,19 +88,6 @@ export class GameEndService {
 
   // ── Private ─────────────────────────────────────────────────────────────────
 
-  private async updateStats(winnerId: number, loserId: number): Promise<void> {
-    const [w, l] = await Promise.all([
-      this.getOrCreateStats(winnerId),
-      this.getOrCreateStats(loserId),
-    ]);
-    w.wins += 1;
-    l.losses += 1;
-    const { newWinnerElo, newLoserElo } = this.calcElo(w.elo, l.elo);
-    w.elo = newWinnerElo;
-    l.elo = newLoserElo;
-    await this.statsRepo.save([w, l]);
-  }
-
   private async getOrCreateStats(userId: number): Promise<PlayerStats> {
     let s = await this.statsRepo.findOne({ where: { userId } });
     if (!s) {
@@ -97,15 +96,18 @@ export class GameEndService {
     }
     return s;
   }
+}
 
-  private calcElo(winnerElo: number, loserElo: number) {
-    const exp = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
-    return {
-      newWinnerElo: Math.round(winnerElo + ELO_K * (1 - exp)),
-      newLoserElo: Math.max(
-        100,
-        Math.round(loserElo + ELO_K * (0 - (1 - exp))),
-      ),
-    };
-  }
+/** ELO après une partie ; scoreA = 1 (A gagne), 0,5 (nul) ou 0 (A perd). Plancher à 100. */
+export function calcElo(
+  eloA: number,
+  eloB: number,
+  scoreA: number,
+): [number, number] {
+  const expectedA = 1 / (1 + Math.pow(10, (eloB - eloA) / 400));
+  const deltaA = ELO_K * (scoreA - expectedA);
+  return [
+    Math.max(100, Math.round(eloA + deltaA)),
+    Math.max(100, Math.round(eloB - deltaA)),
+  ];
 }

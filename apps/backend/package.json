@@ -20,6 +20,8 @@
     "migration:generate": "node ./scripts/migration-generate.cjs",
     "migration:run": "dotenv -e .env -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:run",
     "migration:revert": "dotenv -e .env -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:revert",
+    "migration:run:local": "dotenv -e .env.e2e -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:run",
+    "migration:revert:local": "dotenv -e .env.e2e -- node -r ts-node/register -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/database/data-source.ts migration:revert",
     "migration:run:prod": "node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run",
     "start:prod:migrate": "npm run migration:run:prod && npm run start:prod",
     "lint": "eslint \"{src,test}/**/*.ts\"",

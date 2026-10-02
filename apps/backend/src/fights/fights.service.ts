@@ -215,7 +215,10 @@ export class FightsService {
       );
     }
     emitGameState(game, server);
-    const payload = { winner: game.winner!, endReason: game.endReason! };
+    const payload = {
+      winner: game.winner ?? null,
+      endReason: game.endReason!,
+    };
     server.to(game.player1.socketId).emit('fight:game_over', payload);
     server.to(game.player2.socketId).emit('fight:game_over', payload);
   }

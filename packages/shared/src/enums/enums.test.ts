@@ -44,7 +44,7 @@ describe("enum values match the backend database values", () => {
     ["ConditionOperator", ConditionOperator, ["AND", "OR"]],
     ["DailyRewardType", DailyRewardType, ["gold", "card", "booster", "bundle"]],
     ["MatchStatus", MatchStatus, ["in_progress", "finished", "abandoned"]],
-    ["MatchEndReason", MatchEndReason, ["primes_depleted", "deck_empty", "surrender", "disconnect"]],
+    ["MatchEndReason", MatchEndReason, ["primes_depleted", "deck_empty", "surrender", "disconnect", "double_ko"]],
     [
       "EffectTrigger",
       EffectTrigger,

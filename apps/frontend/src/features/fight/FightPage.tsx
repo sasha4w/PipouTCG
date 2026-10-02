@@ -122,20 +122,21 @@ export default function FightPage({
       setPayIndices([]);
       if (state.isMyTurn) startCountdown();
     });
-    socket.on(
-      "fight:game_over",
-      ({ winner, endReason }: { winner: number; endReason: string }) => {
-        setStatus("finished");
-        if (timerRef.current) clearInterval(timerRef.current);
+    socket.on("fight:game_over", ({ winner, endReason }) => {
+      setStatus("finished");
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (winner === null) {
+        showToast(`🤝 Match nul (${endReason})`, "ok");
+      } else {
         showToast(
           winner === userId
             ? `🎉 Victoire ! (${endReason})`
             : `💀 Défaite… (${endReason})`,
           winner === userId ? "ok" : "err",
         );
-        setTimeout(() => refetchHistory(), 2000);
-      },
-    );
+      }
+      setTimeout(() => refetchHistory(), 2000);
+    });
     socket.on("fight:error", ({ message }: { message: string }) =>
       showToast(message, "err"),
     );
