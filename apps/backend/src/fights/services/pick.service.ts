@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 import { addLog, getPlayerState, shuffle } from '../helpers/game-state.helper';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { EffectTrigger } from '@pipou/shared';
 
 @Injectable()
 export class PickService {
@@ -115,16 +114,10 @@ export class PickService {
     const monster = player.monsterZones[zoneIdx]!;
 
     const log: string[] = [];
-    this.effectsResolver.resolve(monster.card, EffectTrigger.ON_DEATH, {
-      game,
-      ownerUserId: userId,
-      sourceMonster: monster,
-      log,
+    this.effectsResolver.destroyMonster(game, player, instanceId, log, {
+      draw: false,
     });
     log.forEach((l) => addLog(game, l));
-
-    player.graveyard.push(...monster.equipments, monster.card);
-    player.monsterZones[zoneIdx] = null;
 
     addLog(game, `💥 ${player.username} détruit ${monster.card.baseCard.name}`);
 

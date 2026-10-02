@@ -4,9 +4,7 @@ import {
   MonsterOnBoard,
   CardInstance,
 } from '../interfaces/game-state.interface';
-import { EffectTrigger } from '@pipou/shared';
 import type { Seat } from '@pipou/shared';
-import { EffectsResolverService } from '../effects-resolver.service';
 
 const LOG_MAX = 50;
 
@@ -78,31 +76,6 @@ export function gainPrime(
     game,
     `🏆 ${player.username} récupère une Prime avec ${monsterName} ! (${player.primes} restante${player.primes > 1 ? 's' : ''})`,
   );
-}
-
-export function removeMonster(
-  player: PlayerGameState,
-  instanceId: string,
-  game: GameState,
-  effectsResolver: EffectsResolverService,
-): void {
-  const idx = player.monsterZones.findIndex(
-    (m) => m?.instanceId === instanceId,
-  );
-  if (idx === -1) return;
-  const monster = player.monsterZones[idx]!;
-
-  const log: string[] = [];
-  effectsResolver.resolve(monster.card, EffectTrigger.ON_DEATH, {
-    game,
-    ownerUserId: player.userId,
-    sourceMonster: monster,
-    log,
-  });
-  log.forEach((l) => addLog(game, l));
-
-  player.graveyard.push(...monster.equipments, monster.card);
-  player.monsterZones[idx] = null;
 }
 
 export function shuffle<T>(arr: T[]): T[] {

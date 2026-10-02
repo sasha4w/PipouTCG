@@ -6,6 +6,7 @@ import {
   getOpponentState,
   isCurrentPlayer,
   drawCard,
+  gainPrime,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
 import { EffectTrigger } from '@pipou/shared';
@@ -193,28 +194,11 @@ export class PhaseService {
 
         log.push(`💀 ${zone.card.baseCard.name} s'autodétruit !`);
 
-        // Prime pour le poseur (player = le joueur dont c'est le tour = le bon)
-        if (player.primeDeck.length > 0) {
-          const prime = player.primeDeck.shift()!;
-          player.primes -= 1;
-          player.hand.push(prime);
-          log.push(
-            `🏆 ${player.username} récupère une Prime (${zone.card.baseCard.name}) — ${player.primes} restante(s)`,
-          );
-        }
-
-        // ON_DEATH avant suppression — ownerUserId = hôte de la zone
-        const deathLog: string[] = [];
-        this.effectsResolver.resolve(zone.card, EffectTrigger.ON_DEATH, {
-          game,
-          ownerUserId: host.userId,
-          sourceMonster: zone,
-          log: deathLog,
+        // Prime pour le poseur (player = le joueur dont c'est le tour)
+        gainPrime(game, player.userId, zone.card.baseCard.name);
+        this.effectsResolver.destroyMonster(game, host, zone.instanceId, log, {
+          draw: false,
         });
-        deathLog.forEach((l) => log.push(l));
-
-        host.graveyard.push(...zone.equipments, zone.card);
-        zones[idx] = null;
       }
     } // end both loop
   }

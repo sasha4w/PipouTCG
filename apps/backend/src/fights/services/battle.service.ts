@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GameState } from '../interfaces/game-state.interface';
+import {
+  GameState,
+  MonsterOnBoard,
+  PlayerGameState,
+} from '../interfaces/game-state.interface';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
@@ -10,7 +14,6 @@ import {
   isCurrentPlayer,
   applyDamage,
   gainPrime,
-  removeMonster,
   drawCard,
 } from '../helpers/game-state.helper';
 
@@ -142,6 +145,12 @@ export class BattleService {
     });
     onDefendLog.forEach((l) => addLog(game, l));
 
+    const log: string[] = [];
+    const destroy = (host: PlayerGameState, m: MonsterOnBoard) =>
+      this.effectsResolver.destroyMonster(game, host, m.instanceId, log, {
+        draw: true,
+      });
+
     if (target.mode === 'attack') {
       applyDamage(attacker, targetAtk);
       applyDamage(target, attackerAtk);
@@ -154,28 +163,24 @@ export class BattleService {
           game,
           `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name} — chacun récupère une Prime`,
         );
-        removeMonster(player, attackerInstanceId, game, this.effectsResolver);
-        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
+        destroy(player, attacker);
+        destroy(opponent, target);
         gainPrime(game, userId, attacker.card.baseCard.name);
         gainPrime(game, opponent.userId, target.card.baseCard.name);
-        drawCard(game, userId);
-        drawCard(game, opponent.userId);
       } else if (tDied) {
         addLog(
           game,
           `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`,
         );
-        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
+        destroy(opponent, target);
         gainPrime(game, userId, attacker.card.baseCard.name);
-        drawCard(game, opponent.userId);
       } else if (aDied) {
         addLog(
           game,
           `⚔️ ${target.card.baseCard.name} détruit ${attacker.card.baseCard.name}`,
         );
-        removeMonster(player, attackerInstanceId, game, this.effectsResolver);
+        destroy(player, attacker);
         gainPrime(game, opponent.userId, target.card.baseCard.name);
-        drawCard(game, userId);
       } else {
         addLog(
           game,
@@ -187,8 +192,7 @@ export class BattleService {
       applyDamage(target, attackerAtk);
 
       if (target.currentHp <= 0) {
-        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
-        drawCard(game, opponent.userId);
+        destroy(opponent, target);
         if (attacker.hasPiercing) {
           gainPrime(game, userId, attacker.card.baseCard.name);
           addLog(
@@ -209,6 +213,7 @@ export class BattleService {
       }
     }
 
+    log.forEach((l) => addLog(game, l));
     this.buffsCalc.recalculate(player);
     this.buffsCalc.recalculate(opponent);
     return {};

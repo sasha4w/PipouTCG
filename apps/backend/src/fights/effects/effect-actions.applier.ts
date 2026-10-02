@@ -12,11 +12,7 @@ export function applyActions(
   effect: CardEffect,
   card: CardInstance,
   ctx: EffectContext,
-  resolveOnDeath: (
-    instanceId: string,
-    owner: PlayerGameState,
-    ctx: EffectContext,
-  ) => void,
+  destroy: (host: PlayerGameState, instanceId: string) => void,
 ): void {
   const owner =
     ctx.game.player1.userId === ctx.ownerUserId
@@ -43,11 +39,7 @@ export function applyActions(
             `✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`,
           );
           if (target.currentHp <= 0) {
-            resolveOnDeath(
-              target.instanceId,
-              targets.ownerOfMonster(target),
-              ctx,
-            );
+            destroy(targets.ownerOfMonster(target), target.instanceId);
           }
         }
         for (const p of targets.players) {
@@ -114,11 +106,7 @@ export function applyActions(
       case ActionType.DESTROY_MONSTER: {
         if (targets.monsters.length > 0) {
           for (const target of targets.monsters) {
-            resolveOnDeath(
-              target.instanceId,
-              targets.ownerOfMonster(target),
-              ctx,
-            );
+            destroy(targets.ownerOfMonster(target), target.instanceId);
           }
         } else {
           // TARGET_ALLY — choix interactif
