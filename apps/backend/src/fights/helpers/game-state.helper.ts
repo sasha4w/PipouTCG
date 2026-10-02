@@ -54,12 +54,22 @@ export function drawCard(game: GameState, userId: number): CardInstance | null {
   return card;
 }
 
-export function applyDamage(target: MonsterOnBoard, dmg: number): number {
-  const reduced = target.damageReduction
-    ? Math.ceil(dmg / target.damageReduction)
-    : dmg;
+export function applyDamage(
+  target: MonsterOnBoard,
+  dmg: number,
+  opts: { ignoreReduction?: boolean } = {},
+): number {
+  const reduced =
+    target.damageReduction && !opts.ignoreReduction
+      ? Math.ceil(dmg / target.damageReduction)
+      : dmg;
   target.currentHp -= reduced;
   return reduced;
+}
+
+/** ATK effective : base + bonus (permanents et passifs) + bonus temporaire. */
+export function effectiveAtk(m: MonsterOnBoard): number {
+  return m.card.baseCard.atk + m.atkBuff + (m.tempAtkBuff ?? 0);
 }
 
 export function gainPrime(
