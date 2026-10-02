@@ -12,6 +12,7 @@ export const TRIGGER_LABEL: Record<string, string> = {
   ON_TURN_END: "Fin de tour",
   ON_ALLY_SUMMON: "Invocation alliée",
   PASSIVE: "Passif",
+  ON_RECYCLE: "Recyclage",
 };
 
 export const TARGET_SUFFIX: Record<string, string> = {
@@ -52,7 +53,6 @@ export const ACTION_META: Record<string, ActionMeta> = {
     label: (v) => `Pioche ${v ?? "?"} carte(s)`,
     type: "neutral",
   },
-  STEAL_PRIME: { icon: "🏆", label: () => "Vole une Prime", type: "debuff" },
   DESTROY_MONSTER: { icon: "💀", label: () => "Détruit", type: "debuff" },
   RETURN_TO_HAND: {
     icon: "↩️",
@@ -135,6 +135,11 @@ export const ACTION_META: Record<string, ActionMeta> = {
     icon: "🧊",
     label: (v) => `Bloque les attaques ${v ?? "?"} tour(s)`,
     type: "debuff",
+  },
+  SUMMONABLE_ON_ENEMY_SIDE: {
+    icon: "🦠",
+    label: () => "Invocable sur le terrain adverse",
+    type: "neutral",
   },
   CANNOT_ATTACK_ON_SUMMON_TURN: {
     icon: "💤",

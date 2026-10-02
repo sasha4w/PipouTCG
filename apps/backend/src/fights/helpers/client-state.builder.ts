@@ -48,7 +48,7 @@ export function buildClientState(
       monsterZones: me.monsterZones,
       supportZones: me.supportZones,
       recycleEnergy: me.recycleEnergy,
-      freeSummonAvailable: me.freeSummonAvailable,
+      freeSummonInstanceIds: me.freeSummonInstanceIds,
       mulliganDone: me.mulliganDone,
     },
     opponent: {

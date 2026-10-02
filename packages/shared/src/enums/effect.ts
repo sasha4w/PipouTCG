@@ -8,6 +8,7 @@ export const EffectTrigger = {
   ON_TURN_END: "ON_TURN_END",
   ON_ALLY_SUMMON: "ON_ALLY_SUMMON",
   PASSIVE: "PASSIVE",
+  ON_RECYCLE: "ON_RECYCLE",
 } as const;
 export type EffectTrigger = (typeof EffectTrigger)[keyof typeof EffectTrigger];
 
@@ -29,7 +30,6 @@ export const ActionType = {
   BUFF_ATK: "BUFF_ATK",
   BUFF_HP: "BUFF_HP",
   BUFF_ATK_TEMP: "BUFF_ATK_TEMP",
-  STEAL_PRIME: "STEAL_PRIME",
   DESTROY_MONSTER: "DESTROY_MONSTER",
   RETURN_TO_HAND: "RETURN_TO_HAND",
   DISCARD: "DISCARD",
@@ -51,6 +51,7 @@ export const ActionType = {
   BLOCK_ATTACK: "BLOCK_ATTACK",
   FORCE_GUARD_LOCK_ENEMY: "FORCE_GUARD_LOCK_ENEMY",
   CANNOT_ATTACK_ON_SUMMON_TURN: "CANNOT_ATTACK_ON_SUMMON_TURN",
+  SUMMONABLE_ON_ENEMY_SIDE: "SUMMONABLE_ON_ENEMY_SIDE",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

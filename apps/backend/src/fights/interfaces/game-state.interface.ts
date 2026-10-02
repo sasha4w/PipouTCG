@@ -42,7 +42,8 @@ export interface PlayerGameState {
   recycleEnergy: number;
   hasDrawnThisTurn: boolean;
   handLimitEnforced: boolean;
-  freeSummonAvailable?: boolean;
+  /** Cartes de la main invocables gratuitement (instanceId). */
+  freeSummonInstanceIds: string[];
   ready: boolean;
   mulliganDone: boolean;
 }

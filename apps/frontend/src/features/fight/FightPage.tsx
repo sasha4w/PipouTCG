@@ -199,11 +199,12 @@ export default function FightPage({
     paymentIndices: number[] = payIndices,
   ) => {
     if (selectedCard === null || !matchId) return;
-    emit("fight:summon_opponent", {
+    emit("fight:summon", {
       matchId,
       handIndex: selectedCard,
       zoneIndex,
       paymentHandIndices: paymentIndices,
+      onOpponentSide: true,
     });
     setSelectedCard(null);
     setSelectedZone(null);

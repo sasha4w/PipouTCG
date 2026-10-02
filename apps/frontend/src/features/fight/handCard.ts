@@ -3,6 +3,7 @@ import type { RawEffect } from "./fight.effects";
 
 /** Carte de la main, aplatie pour l'affichage et les actions. */
 export interface HandCard {
+  instanceId: string;
   id: number;
   name: string;
   type: string;
@@ -19,6 +20,7 @@ export interface HandCard {
 /** Convertit une CardInstance (envoyée par le serveur) en HandCard. */
 export function toHandCard(c: CardInstance): HandCard {
   return {
+    instanceId: c.instanceId,
     id: c.baseCard.id,
     name: c.baseCard.name,
     type: c.baseCard.type,

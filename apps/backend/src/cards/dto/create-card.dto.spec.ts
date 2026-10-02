@@ -60,4 +60,14 @@ describe('CreateCardDto — effets', () => {
     ]);
     expect(errors).not.toEqual([]);
   });
+
+  it('refuse DEAL_DAMAGE visant un joueur', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [{ type: 'DEAL_DAMAGE', target: 'OPPONENT', value: 100 }],
+      },
+    ]);
+    expect(errors).not.toEqual([]);
+  });
 });

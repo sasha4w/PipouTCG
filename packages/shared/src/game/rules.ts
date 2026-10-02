@@ -1,4 +1,4 @@
-import { EffectTarget, EffectTrigger } from "../enums/effect";
+import { ActionType, EffectTarget, EffectTrigger } from "../enums/effect";
 import type { CardEffect } from "./effect";
 
 /** Règles de construction d'un deck (création et lancement de match). */
@@ -33,4 +33,15 @@ export function ephemeralTargetSide(
     }
   }
   return null;
+}
+
+/** La carte peut être invoquée sur une zone adverse libre (effet passif). */
+export function canSummonOnEnemySide(
+  effects: readonly CardEffect[] | null | undefined,
+): boolean {
+  return (effects ?? []).some(
+    (e) =>
+      e.trigger === EffectTrigger.PASSIVE &&
+      e.actions.some((a) => a.type === ActionType.SUMMONABLE_ON_ENEMY_SIDE),
+  );
 }

@@ -48,7 +48,7 @@ describe("enum values match the backend database values", () => {
     [
       "EffectTrigger",
       EffectTrigger,
-      ["ON_SUMMON", "ON_DEATH", "ON_ATTACK", "ON_DEFEND", "ON_PLAY", "ON_TURN_START", "ON_TURN_END", "ON_ALLY_SUMMON", "PASSIVE"],
+      ["ON_SUMMON", "ON_DEATH", "ON_ATTACK", "ON_DEFEND", "ON_PLAY", "ON_TURN_START", "ON_TURN_END", "ON_ALLY_SUMMON", "PASSIVE", "ON_RECYCLE"],
     ],
     [
       "EffectConditionType",
@@ -66,13 +66,14 @@ describe("enum values match the backend database values", () => {
 
   it("ActionType", () => {
     expect(Object.values(ActionType)).toEqual([
-      "DEAL_DAMAGE", "HEAL", "DRAW", "BUFF_ATK", "BUFF_HP", "BUFF_ATK_TEMP", "STEAL_PRIME",
+      "DEAL_DAMAGE", "HEAL", "DRAW", "BUFF_ATK", "BUFF_HP", "BUFF_ATK_TEMP",
       "DESTROY_MONSTER", "RETURN_TO_HAND", "DISCARD", "SET_TAUNT", "SET_PIERCING",
       "SET_ATTACKS_PER_TURN", "SET_DEBUFF_IMMUNITY", "SET_DELAY_DOUBLE_ATK", "FORCE_ATTACK_MODE",
       "RETURN_FROM_GRAVEYARD", "RETURN_FROM_GRAVEYARD_OR_DECK", "SEARCH_DECK",
       "GAIN_RECYCLE_ENERGY", "SET_FREE_SUMMON", "SET_DAMAGE_REDUCTION",
       "BUFF_HP_PER_ADJACENT_ALLY", "SET_TURN_COUNTER", "FORCE_ATTACK_MODE_ENEMY",
       "BLOCK_ATTACK", "FORCE_GUARD_LOCK_ENEMY", "CANNOT_ATTACK_ON_SUMMON_TURN",
+      "SUMMONABLE_ON_ENEMY_SIDE",
     ]);
   });
 

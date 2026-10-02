@@ -3,7 +3,7 @@ import "./FightHand.css";
 import "./BuffDebuffList.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
-import { RARITY_COLOR, FREE_SUMMON_CARD_ID } from "./fight.types";
+import { RARITY_COLOR } from "./fight.types";
 import BuffDebuffList from "./BuffDebuffList";
 import { getCardEffectEntries } from "./fight.effects";
 
@@ -13,7 +13,7 @@ interface Props {
   isMyTurn: boolean;
   selectedCard: number | null;
   payIndices: number[];
-  freeSummonAvailable?: boolean;
+  freeSummonInstanceIds: string[];
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -23,7 +23,7 @@ export default function FightHand({
   isMyTurn,
   selectedCard,
   payIndices,
-  freeSummonAvailable = false,
+  freeSummonInstanceIds,
   onCardClick,
 }: Props) {
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
@@ -55,7 +55,7 @@ export default function FightHand({
         const isPaying = payIndices.includes(idx);
         const isPayable =
           !isSelected && selectedCard !== null && phase === "main";
-        const isFree = freeSummonAvailable && card.id === FREE_SUMMON_CARD_ID;
+        const isFree = freeSummonInstanceIds.includes(card.instanceId);
         const isInfoOpen = openInfoIdx === idx;
 
         return (

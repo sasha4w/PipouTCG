@@ -17,7 +17,6 @@ import {
   getPlayerState,
   getOpponentState,
   isCurrentPlayer,
-  drawCard,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
 
@@ -160,19 +159,19 @@ export class SupportService {
     const [card] = player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
 
-    if (card.baseCard.id === 17) {
-      const drawn = drawCard(game, userId);
-      if (drawn)
-        addLog(
-          game,
-          `🎺 Clairon recyclé — ${player.username} pioche une carte`,
-        );
-    }
     player.recycleEnergy += 1;
     addLog(
       game,
       `♻️ ${player.username} recycle ${card.baseCard.name} → +1 énergie (${player.recycleEnergy} total)`,
     );
+
+    const log: string[] = [];
+    this.effectsResolver.resolve(card, EffectTrigger.ON_RECYCLE, {
+      game,
+      ownerUserId: userId,
+      log,
+    });
+    log.forEach((l) => addLog(game, l));
     return {};
   }
 

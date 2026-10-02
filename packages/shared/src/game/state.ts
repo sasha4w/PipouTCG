@@ -47,7 +47,8 @@ export interface MyClientState {
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
-  freeSummonAvailable?: boolean;
+  /** Cartes de la main invocables gratuitement (instanceId). */
+  freeSummonInstanceIds: string[];
   mulliganDone: boolean;
 }
 

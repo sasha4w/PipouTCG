@@ -70,6 +70,7 @@ export class MatchmakingService {
       handLimitEnforced: false,
       ready: false,
       mulliganDone: false,
+      freeSummonInstanceIds: [],
     };
   }
 

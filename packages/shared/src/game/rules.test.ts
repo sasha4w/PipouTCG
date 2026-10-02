@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ephemeralTargetSide } from "./rules";
+import { canSummonOnEnemySide, ephemeralTargetSide } from "./rules";
 
 describe("ephemeralTargetSide", () => {
   it("détecte une cible adverse", () => {
@@ -34,5 +34,19 @@ describe("ephemeralTargetSide", () => {
         },
       ]),
     ).toBeNull();
+  });
+});
+
+describe("canSummonOnEnemySide", () => {
+  it("vrai seulement avec le passif SUMMONABLE_ON_ENEMY_SIDE", () => {
+    expect(
+      canSummonOnEnemySide([
+        {
+          trigger: "PASSIVE",
+          actions: [{ type: "SUMMONABLE_ON_ENEMY_SIDE", target: "SELF" }],
+        },
+      ]),
+    ).toBe(true);
+    expect(canSummonOnEnemySide(null)).toBe(false);
   });
 });

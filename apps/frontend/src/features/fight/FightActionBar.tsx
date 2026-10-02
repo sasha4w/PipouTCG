@@ -1,6 +1,6 @@
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
-import { END_PHASE_LABEL, FREE_SUMMON_CARD_ID } from "./fight.types";
+import { END_PHASE_LABEL } from "./fight.types";
 import type { HandCard } from "./handCard";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
   selectedCard: number | null;
   selectedZone: number | null;
   hand: HandCard[];
-  freeSummonAvailable?: boolean;
+  freeSummonInstanceIds: string[];
   onSummon: () => void;
   onOpenSummonModal: () => void; // ouvre la modal de coût
   onPlaySupport: (
@@ -30,7 +30,7 @@ export default function FightActionBar({
   selectedCard,
   selectedZone,
   hand,
-  freeSummonAvailable = false,
+  freeSummonInstanceIds,
   onSummon,
   onOpenSummonModal,
   onPlaySupport,
@@ -44,11 +44,12 @@ export default function FightActionBar({
   const card = selectedCard !== null ? hand[selectedCard] : null;
   const overhandLimit = phase === "end" && hand.length > 7;
 
-  const isFreeCard = freeSummonAvailable && card?.id === FREE_SUMMON_CARD_ID;
+  const isFreeCard =
+    card !== null && freeSummonInstanceIds.includes(card.instanceId);
 
   /**
    * Summon button logic:
-   * - Free card (Chevalier Touille + freeSummonAvailable) → invoke directly, no modal
+   * - Free card (rendue gratuite par SET_FREE_SUMMON) → invoke directly, no modal
    * - Cost = 0 → invoke directly, no modal
    * - Otherwise → open cost modal
    */

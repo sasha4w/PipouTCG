@@ -7,7 +7,7 @@ import {
 } from '../interfaces/game-state.interface';
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
-import { queueChoice } from '../helpers/game-state.helper';
+import { drawCard, queueChoice } from '../helpers/game-state.helper';
 
 export function applyActions(
   effect: CardEffect,
@@ -15,15 +15,6 @@ export function applyActions(
   ctx: EffectContext,
   destroy: (host: PlayerGameState, instanceId: string) => void,
 ): void {
-  const owner =
-    ctx.game.player1.userId === ctx.ownerUserId
-      ? ctx.game.player1
-      : ctx.game.player2;
-  const opponent =
-    ctx.game.player1.userId === ctx.ownerUserId
-      ? ctx.game.player2
-      : ctx.game.player1;
-
   for (const action of effect.actions) {
     const targets = resolveTargets(action.target, ctx);
 
@@ -41,16 +32,6 @@ export function applyActions(
           );
           if (target.currentHp <= 0) {
             destroy(targets.ownerOfMonster(target), target.instanceId);
-          }
-        }
-        for (const p of targets.players) {
-          if (p.primes > 0 && p.primeDeck.length > 0) {
-            const prime = p.primeDeck.shift()!;
-            p.primes--;
-            p.banished.push(prime);
-            ctx.log.push(
-              `💥 ${card.baseCard.name} détruit une Prime de ${p.username}`,
-            );
           }
         }
         break;
@@ -100,8 +81,8 @@ export function applyActions(
       // ── Draw ──────────────────────────────────────────────────────────────
       case ActionType.DRAW:
         for (const p of targets.players) {
-          const draw = p.deck.shift();
-          if (draw) p.hand.push(draw);
+          for (let i = 0; i < (action.value ?? 1); i++)
+            drawCard(ctx.game, p.userId);
         }
         break;
 
@@ -141,17 +122,6 @@ export function applyActions(
           );
         }
         break;
-
-      // ── Steal prime ───────────────────────────────────────────────────────
-      case ActionType.STEAL_PRIME: {
-        if (opponent.primes > 0 && opponent.primeDeck.length > 0) {
-          const prime = opponent.primeDeck.shift()!;
-          opponent.primes--;
-          owner.hand.push(prime);
-          ctx.log.push(`🏆 ${card.baseCard.name} vole une Prime`);
-        }
-        break;
-      }
 
       // ── Flags ─────────────────────────────────────────────────────────────
       case ActionType.SET_TAUNT:
@@ -220,9 +190,14 @@ export function applyActions(
         break;
 
       case ActionType.SET_FREE_SUMMON:
+        // La carte source (en main) devient invocable gratuitement
         for (const p of targets.players) {
-          p.freeSummonAvailable = true;
-          ctx.log.push(`⚡ Chevalier Touille peut être invoqué gratuitement !`);
+          if (!p.hand.includes(card)) continue;
+          if (p.freeSummonInstanceIds.includes(card.instanceId)) continue;
+          p.freeSummonInstanceIds.push(card.instanceId);
+          ctx.log.push(
+            `⚡ ${card.baseCard.name} peut être invoqué gratuitement !`,
+          );
         }
         break;
 

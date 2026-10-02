@@ -22,6 +22,8 @@ export interface SummonPayload {
   handIndex: number;
   zoneIndex: number;
   paymentHandIndices: number[];
+  /** Invocation sur une zone adverse libre (cartes SUMMONABLE_ON_ENEMY_SIDE). */
+  onOpponentSide?: boolean;
 }
 
 export interface PlaySupportPayload {
@@ -72,7 +74,6 @@ export interface ClientToServerEvents {
   "fight:mulligan": (payload: MulliganPayload) => void;
   "fight:end_phase": (payload: MatchPayload) => void;
   "fight:summon": (payload: SummonPayload) => void;
-  "fight:summon_opponent": (payload: SummonPayload) => void;
   "fight:play_support": (payload: PlaySupportPayload) => void;
   "fight:recycle_support": (payload: RecycleSupportPayload) => void;
   "fight:change_mode": (payload: ChangeModePayload) => void;

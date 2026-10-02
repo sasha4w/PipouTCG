@@ -2,7 +2,6 @@ import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import "./FightBoard.css";
 import type { GameState, MonsterOnBoard } from "./fight.types";
-import { FREE_SUMMON_CARD_ID, NOYAU_ZETA_CARD_ID } from "./fight.types";
 import FightHUD from "./FightHUD";
 import ZoneRow from "./Zonerow/ZoneRow";
 import FightHand from "./FightHand";
@@ -13,7 +12,11 @@ import GraveyardPile from "./GraveyardPile";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
-import { ephemeralTargetSide, type CombatMode } from "@pipou/shared";
+import {
+  canSummonOnEnemySide,
+  ephemeralTargetSide,
+  type CombatMode,
+} from "@pipou/shared";
 
 interface Props {
   gs: GameState;
@@ -138,10 +141,11 @@ export default function FightBoard({
     selectedHandCard?.type === "support" &&
     selectedHandCard.supportType === "EQUIPMENT";
 
-  // Zeta sélectionné → mode placement sur zone adverse
+  // Carte invocable sur le terrain adverse (passif SUMMONABLE_ON_ENEMY_SIDE)
   const isZeta =
     selectedHandCard?.type === "monster" &&
-    selectedHandCard.id === NOYAU_ZETA_CARD_ID;
+    selectedCard !== null &&
+    canSummonOnEnemySide(gs.me.hand[selectedCard]?.baseCard.effects);
 
   // Valable seulement tant que la même carte Zeta reste sélectionnée
   const selectedOppZone =
@@ -225,8 +229,8 @@ export default function FightBoard({
         if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
         const card = mappedHand[selectedCard];
         const isFreeCard =
-          gs.me.freeSummonAvailable === true &&
-          selectedHandCard?.id === FREE_SUMMON_CARD_ID;
+          selectedHandCard !== null &&
+          gs.me.freeSummonInstanceIds.includes(selectedHandCard.instanceId);
 
         if (card?.type === "monster") {
           onSetSelectedZone(idx);
@@ -266,8 +270,7 @@ export default function FightBoard({
     if (isZeta && selectedCard !== null && !gs.opponent.monsterZones[idx]) {
       setSelectedOppZone(idx);
       const card = mappedHand[selectedCard];
-      const isFreeCard =
-        gs.me.freeSummonAvailable === true && card.id === FREE_SUMMON_CARD_ID;
+      const isFreeCard = gs.me.freeSummonInstanceIds.includes(card.instanceId);
 
       if (!isFreeCard && monsterNeedsPayment(card)) {
         onSetPayIndices([]);
@@ -402,7 +405,8 @@ export default function FightBoard({
 
       {isZeta && gs.isMyTurn && phase === "main" && (
         <div className="fb-zeta-hint">
-          🦠 Sélectionne une zone adverse vide pour implanter Noyau Zeta
+          🦠 Sélectionne une zone adverse vide pour implanter{" "}
+          {selectedHandCard?.name}
         </div>
       )}
 
@@ -455,7 +459,7 @@ export default function FightBoard({
         isMyTurn={gs.isMyTurn}
         selectedCard={selectedCard}
         payIndices={payIndices}
-        freeSummonAvailable={gs.me.freeSummonAvailable}
+        freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
         onCardClick={handleCardClick}
       />
 
@@ -498,7 +502,7 @@ export default function FightBoard({
           onSetSelectedCard(null);
           onSetPayIndices([]);
         }}
-        freeSummonAvailable={gs.me.freeSummonAvailable}
+        freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
         playBlockedReason={playBlockedReason}
       />
 

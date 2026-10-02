@@ -37,11 +37,6 @@ export const isMonsterZone = (zone: BoardZone): zone is MonsterOnBoard =>
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-export const FREE_SUMMON_CARD_ID = 29;
-
-/** ID de Noyau Zeta — invocable sur zone adverse */
-export const NOYAU_ZETA_CARD_ID = 122;
-
 export const RARITY_COLOR: Record<string, string> = {
   common: "#a8a8a8",
   uncommon: "#4fc1a6",

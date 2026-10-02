@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GameState } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
-import { CardType, EffectTrigger } from '@pipou/shared';
+import { CardType, EffectTrigger, canSummonOnEnemySide } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
@@ -10,14 +10,11 @@ import {
   isCurrentPlayer,
 } from '../helpers/game-state.helper';
 
-/** Seul ID autorisé à être posé sur le terrain adverse */
-const ZETA_CARD_ID = 122;
-
 @Injectable()
 export class SummonService {
   constructor(private effectsResolver: EffectsResolverService) {}
 
-  /** Invoque un monstre de la main, sur son terrain ou (Zeta) sur une zone adverse. */
+  /** Invoque un monstre de la main, sur son terrain ou sur une zone adverse libre. */
   summon(
     game: GameState,
     userId: number,
@@ -27,12 +24,11 @@ export class SummonService {
     onOpponentSide: boolean,
   ): { error?: string } {
     if (onOpponentSide) {
-      const player = getPlayerState(game, userId);
-      if (handIndex < 0 || handIndex >= player.hand.length)
-        return { error: 'Index main invalide' };
-      if (player.hand[handIndex].baseCard.id !== ZETA_CARD_ID)
+      const card = getPlayerState(game, userId).hand[handIndex];
+      if (!card) return { error: 'Index main invalide' };
+      if (!canSummonOnEnemySide(card.baseCard.effects))
         return {
-          error: 'Seul Noyau Zeta peut être posé sur le terrain adverse',
+          error: `${card.baseCard.name} ne peut pas être invoqué sur le terrain adverse`,
         };
     }
     return this.doSummon(
@@ -72,8 +68,11 @@ export class SummonService {
     if (card.baseCard.type !== CardType.MONSTER)
       return { error: 'Pas un Monstre' };
 
-    const isFree = player.freeSummonAvailable && card.baseCard.id === 29;
-    if (isFree) player.freeSummonAvailable = false;
+    const isFree = player.freeSummonInstanceIds.includes(card.instanceId);
+    if (isFree)
+      player.freeSummonInstanceIds = player.freeSummonInstanceIds.filter(
+        (id) => id !== card.instanceId,
+      );
 
     const cost = isFree ? 0 : (card.baseCard.cost ?? 0);
     const uniquePayment = isFree ? [] : [...new Set(paymentHandIndices)];

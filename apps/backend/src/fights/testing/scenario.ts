@@ -107,6 +107,7 @@ function buildPlayer(
     handLimitEnforced: false,
     ready: true,
     mulliganDone: true,
+    freeSummonInstanceIds: [],
   };
 }
 

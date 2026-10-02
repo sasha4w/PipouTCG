@@ -12,6 +12,12 @@ import {
   IsInt,
   Max,
   IsIn,
+  Validate,
+  ValidatorConstraint,
+} from 'class-validator';
+import type {
+  ValidationArguments,
+  ValidatorConstraintInterface,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -64,11 +70,28 @@ export class EffectFilterDto implements EffectFilter {
   name?: string;
 }
 
+/** DEAL_DAMAGE ne vise que des monstres. */
+@ValidatorConstraint({ name: 'damageTargetsMonsters' })
+class DamageTargetsMonsters implements ValidatorConstraintInterface {
+  validate(target: EffectTarget, args: ValidationArguments): boolean {
+    const action = args.object as EffectActionDto;
+    return (
+      action.type !== ActionType.DEAL_DAMAGE ||
+      (target !== EffectTarget.PLAYER && target !== EffectTarget.OPPONENT)
+    );
+  }
+
+  defaultMessage(): string {
+    return 'DEAL_DAMAGE ne peut viser que des monstres';
+  }
+}
+
 export class EffectActionDto implements EffectAction {
   @IsEnum(ActionType)
   type!: ActionType;
 
   @IsEnum(EffectTarget)
+  @Validate(DamageTargetsMonsters)
   target!: EffectTarget;
 
   @IsOptional()

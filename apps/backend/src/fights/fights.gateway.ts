@@ -161,21 +161,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       handIndex: data.handIndex,
       zoneIndex: data.zoneIndex,
       paymentHandIndices: data.paymentHandIndices ?? [],
-    });
-  }
-
-  /** Invoque Noyau Zeta sur une zone adverse vide */
-  @SubscribeMessage('fight:summon_opponent')
-  async summonZetaOnOpponent(
-    @ConnectedSocket() client: FightSocket,
-    @MessageBody() data: SummonPayload,
-  ): Promise<void> {
-    await this.play(client, data.matchId, {
-      type: 'summon',
-      handIndex: data.handIndex,
-      zoneIndex: data.zoneIndex,
-      paymentHandIndices: data.paymentHandIndices ?? [],
-      onOpponentSide: true,
+      onOpponentSide: data.onOpponentSide ?? false,
     });
   }
 
