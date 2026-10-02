@@ -1,3 +1,4 @@
+import { HAND_LIMIT } from "@pipou/shared";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
 import { END_PHASE_LABEL } from "./fight.types";
@@ -42,7 +43,7 @@ export default function FightActionBar({
   if (!isMyTurn) return null;
 
   const card = selectedCard !== null ? hand[selectedCard] : null;
-  const overhandLimit = phase === "end" && hand.length > 7;
+  const overhandLimit = phase === "end" && hand.length > HAND_LIMIT;
 
   const isFreeCard =
     card !== null && freeSummonInstanceIds.includes(card.instanceId);
@@ -107,8 +108,8 @@ export default function FightActionBar({
 
       {overhandLimit && (
         <span className="fab-discard-warning">
-          ⚠️ Défausse {hand.length - 7} carte{hand.length - 7 > 1 ? "s" : ""}{" "}
-          (clique sur la carte)
+          ⚠️ Défausse {hand.length - HAND_LIMIT} carte
+          {hand.length - HAND_LIMIT > 1 ? "s" : ""} (clique sur la carte)
         </span>
       )}
 

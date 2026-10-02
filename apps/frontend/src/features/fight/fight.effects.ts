@@ -179,7 +179,7 @@ export function getCardEffectEntries(
   if (supportType === "TERRAIN")
     entries.push({
       icon: "🗺️",
-      label: "Terrain — affecte les deux camps",
+      label: "Terrain — affecte vos monstres",
       type: "neutral",
     });
   if (supportType === "EPHEMERAL")

@@ -13,6 +13,7 @@ import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
 import {
+  HAND_LIMIT,
   canSummonOnEnemySide,
   ephemeralTargetSide,
   type CombatMode,
@@ -218,7 +219,7 @@ export default function FightBoard({
         prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
       );
     } else if (phase === "end") {
-      if (gs.me.hand.length > 7) onDiscardCard(idx);
+      if (gs.me.hand.length > HAND_LIMIT) onDiscardCard(idx);
     }
   };
 
