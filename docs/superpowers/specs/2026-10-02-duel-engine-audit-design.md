@@ -46,11 +46,12 @@ Fiabiliser le moteur de duel avant de construire le sandbox admin. Concrètement
 | Timeout (90 s) | Le joueur passe à la phase suivante, avec défausse automatique en End Phase si nécessaire, et le timer repart. Toute action réussie relance le timer, y compris une défausse ou un choix. Aucun timer ne tourne sur une partie finie. |
 | Déconnexion | Le joueur a 60 s pour se reconnecter. Au retour, il retrouve son match et reçoit l'état. Passé ce délai, il perd (`disconnect`). Le timer de tour continue pendant l'absence. |
 | Terrain | Agit seulement sur les monstres de son propriétaire. |
-| Buffs déclenchés | `BUFF_ATK` et `BUFF_HP` venant d'un déclencheur (ON_SUMMON, ON_PLAY, ON_TURN_START, ON_ATTACK…) sont **permanents** tant que le monstre reste en jeu. `BUFF_ATK_TEMP` dure jusqu'à la fin du tour. Les buffs passifs (PASSIVE, terrain, équipement) sont recalculés à chaque changement. |
+| Buffs déclenchés | `BUFF_ATK` et `BUFF_HP` venant d'un déclencheur (ON_SUMMON, ON_PLAY, ON_TURN_START, ON_ATTACK…) sont **permanents** tant que le monstre reste en jeu. `BUFF_ATK_TEMP` dure jusqu'à la fin du tour où il a été donné, et ce pour les monstres des deux joueurs. Les buffs passifs (PASSIVE, terrain, équipement) sont recalculés à chaque changement. |
+| Pioche à la destruction | Le propriétaire d'un monstre détruit pioche 1 carte : en combat, et quand le monstre est détruit par un effet de l'adversaire. Il ne pioche pas quand il sacrifie lui-même son monstre (Formatage, Recyclage) ni quand un compteur de tour expire (Noyau Zeta). C'est le comportement actuel du moteur, que ce chantier conserve. |
 | Gel `BLOCK_ATTACK` (N) | Le monstre ne peut pas attaquer pendant ses N prochains tours, comptés **sur les tours de son propriétaire**. N vient de la carte. |
 | `SET_DELAY_DOUBLE_ATK` | Le monstre pourra attaquer 2 fois **au prochain tour de son propriétaire seulement**. |
 | `SET_ATTACKS_PER_TURN` | Fixe le nombre d'attaques par tour. En PASSIVE, la valeur ne s'applique que tant que l'effet est actif (par exemple tant que l'équipement est porté). |
-| Choix en attente | Tant qu'un choix n'est pas résolu, le joueur concerné ne peut rien faire d'autre, et aucun nouveau choix ne l'écrase. |
+| Choix en attente | Les choix forment une file : un nouveau choix se range derrière ceux déjà en attente. Tant que la file n'est pas vide, seul le joueur qui doit faire le premier choix peut agir, et uniquement pour le résoudre. Le timeout vide la file. |
 | Supports Éphémères ciblés | Le client envoie `targetInstanceId`. Le serveur vérifie que la cible est légale (bon camp, monstre présent) et l'utilise. Sans cible légale, la carte n'est pas jouable. |
 
 ## Modèle d'effets
@@ -142,10 +143,10 @@ gateway (Socket.io) ──► FightsService ──► GameEngine.dispatch(game, 
 ```
 
 - **`GameEngine`** (`apps/backend/src/fights/engine/game-engine.ts`)
-  - Il expose `dispatch(game, seat, action): EngineResult`. `EngineResult` contient `{ error?, ended?: { winnerSeat | 'draw', reason }, timerReset: boolean }`.
+  - Il expose `dispatch(game, seat, action): EngineResult`, avec `EngineResult = { error?: string }`. Une fin de partie se lit dans l'état : `phase === 'finished'`, `winner` (absent en cas de nul) et `endReason`.
   - Il est synchrone et ne connaît ni Socket.io ni la BDD.
   - Les services gardent leur logique, mais perdent les paramètres `server`, `emitState` et `checkWinAndEmit`.
-- **`seat: 'p1' | 'p2'`** remplace le userId dans le moteur. `FightsService` traduit le userId authentifié en seat. Le sandbox pourra envoyer le seat explicitement.
+- **`seat: 'p1' | 'p2'`** est l'adresse d'un joueur dans l'API du moteur. `FightsService` traduit le userId authentifié en seat, et refuse les utilisateurs qui ne font pas partie du match. Le sandbox pourra envoyer le seat explicitement. À l'intérieur du moteur, les services continuent de manipuler le `userId` du siège : c'est ce qui limite le refactor.
 - **Les actions** forment une union discriminée dans `@pipou/shared` (`game/action.ts`) : `mulligan`, `end_phase`, `summon`, `play_support`, `recycle`, `change_mode`, `attack`, `discard`, `pick_cards`, `surrender`.
 - **Ports.** `Rng` (`shuffle`, `pickFirstPlayer`) est injecté. L'implémentation de production utilise `Math.random`, et les tests utilisent un RNG déterministe.
 - **`FightsService`**
@@ -160,7 +161,7 @@ gateway (Socket.io) ──► FightsService ──► GameEngine.dispatch(game, 
 
 - `MatchEndReason` gagne la valeur `double_ko`, ajoutée à l'enum MySQL `match.end_reason`.
 - Un match nul a le statut `finished` et un `winner_id` NULL.
-- `player_stats` gagne une colonne `draws` (int, défaut 0).
+- La colonne `player_stats.draws` existe déjà en production (vérifié sur le dump) : seul l'enum `end_reason` change.
 
 ### Migration de données
 
@@ -171,12 +172,15 @@ La migration est idempotente et prudente. Elle ne met à jour une carte que si s
 | #9 | Ajout de `CANNOT_ATTACK_ON_SUMMON_TURN` à l'effet ON_SUMMON. |
 | #17 | Ajout de l'effet ON_RECYCLE `DRAW 1` sur `PLAYER`. |
 | #97 | ON_SUMMON devient ON_PLAY. |
+| #99 Rootkit de Transmission | La cible `ALL_ENEMIES` devient `ENEMY_MONSTER`. Sa description parle d'« un monstre adverse », et le moteur applique désormais l'action à toutes les cibles résolues. |
 | #122 | Ajout de l'effet PASSIVE `SUMMONABLE_ON_ENEMY_SIDE`. |
 | #127, #128 | `SPECIFIC_CARD_ON_BOARD` devient `EQUIPPED_ON`. Pour #128, le bonus Delta devient le PASSIVE `SET_ATTACKS_PER_TURN 2`. |
 
 La méthode `down` restaure les JSON d'origine.
 
-La migration est testée sur une base MySQL **locale** chargée depuis `apps/backend/.e2e/aiven-dump.sql`, en lançant `migration:run` puis `migration:revert`. Elle n'est **jamais** lancée sur Aiven à la main : c'est la CI qui l'applique au déploiement (`start:prod:migrate`).
+La migration est testée sur une base MySQL **locale** chargée depuis `apps/backend/.e2e/aiven-dump.sql`, en lançant `migration:run` puis `migration:revert`. Elle n'est **jamais** lancée sur Aiven à la main.
+
+Aujourd'hui, la production n'exécute aucune migration : le conteneur démarre avec `node dist/main`. Le `CMD` du Dockerfile devient donc « migrations puis serveur ». Les migrations en attente s'appliquent ainsi à chaque déploiement, et le conteneur refuse de démarrer si l'une d'elles échoue. La table `migrations` de production ne contient que `InitSchema`, donc seules les nouvelles migrations s'exécuteront.
 
 ### Rapport d'écarts
 
@@ -224,7 +228,8 @@ Les tests utilisent Jest, dans `apps/backend/src/fights/**/*.spec.ts`.
 
 - `FightRules.tsx` est réécrit selon les règles de référence ci-dessus.
 - `fight.effects.ts` reçoit des libellés pour `ON_RECYCLE`, `EQUIPPED_ON`, `CANNOT_ATTACK_ON_SUMMON_TURN`, `SUMMONABLE_ON_ENEMY_SIDE`, `ON_TURN_END` et `DISCARD`. `STEAL_PRIME` est retiré, et le libellé du Terrain est corrigé.
-- Dans `CardManager` (l'admin des effets) : nouveaux enums, champ `match` pour les conditions par nom, champ `filter` envoyé à l'API.
+- `DeckBuilder` reprend les règles de deck partagées (`DECK_RULES` : 30 à 40 cartes, 3 exemplaires max).
+- L'admin des cartes (`CardManager`) n'a aujourd'hui **aucun éditeur d'effets**. Un éditeur visuel fera l'objet d'une spec séparée, après ce chantier. D'ici là, le DTO serveur accepte `filter`, `match` et `EQUIPPED_ON`.
 - Écran du duel :
   - écran de mulligan ;
   - envoi de la cible des Éphémères, sans second choix serveur ;
@@ -235,6 +240,7 @@ Les tests utilisent Jest, dans `apps/backend/src/fights/**/*.spec.ts`.
 ## Hors périmètre
 
 - Le sandbox admin (spec suivante).
+- L'éditeur visuel d'effets dans l'admin des cartes (spec séparée).
 - La correction des descriptions et des effets des cartes listées dans le rapport d'écarts : tu t'en charges via l'admin.
 - La persistance des parties en cours après un redémarrage du serveur.
 
