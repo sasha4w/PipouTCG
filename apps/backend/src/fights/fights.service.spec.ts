@@ -20,14 +20,15 @@ const OUTSIDER = 99;
 
 function setup(game: GameState = scenario()) {
   const { server, emitted } = fakeServer();
-  const decks = { loadDeckCards: jest.fn() };
+  const decks = { loadDeckForMatch: jest.fn() };
   const gameEnd = { persistResult: jest.fn().mockResolvedValue(undefined) };
   const matchmaking = { leaveQueue: jest.fn() };
   const timer = new TurnTimeoutService();
+  const engine = createEngine();
   const service = new FightsService(
     matchmaking as unknown as MatchmakingService,
-    new DeckSubmissionService(decks as unknown as DecksService),
-    createEngine(),
+    new DeckSubmissionService(decks as unknown as DecksService, engine),
+    engine,
     gameEnd as unknown as GameEndService,
     timer,
   );
@@ -84,7 +85,7 @@ describe('FightsService', () => {
 
   it('sérialise les soumissions de deck concurrentes', async () => {
     const { service, server, decks, game } = setup(waitingScenario());
-    decks.loadDeckCards.mockImplementation(() =>
+    decks.loadDeckForMatch.mockImplementation(() =>
       Promise.resolve(
         Array.from({ length: 20 }, (_, i) =>
           instanceOf(fillerCard(`C${i}`), P1_ID),
@@ -99,7 +100,7 @@ describe('FightsService', () => {
 
     expect(first).toEqual({});
     expect(second).toEqual({ error: 'Deck déjà soumis' });
-    expect(decks.loadDeckCards).toHaveBeenCalledTimes(1);
+    expect(decks.loadDeckForMatch).toHaveBeenCalledTimes(1);
   });
 
   it("refuse la soumission de deck d'un utilisateur étranger au match", async () => {

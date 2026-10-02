@@ -49,6 +49,7 @@ export function buildClientState(
       supportZones: me.supportZones,
       recycleEnergy: me.recycleEnergy,
       freeSummonAvailable: me.freeSummonAvailable,
+      mulliganDone: me.mulliganDone,
     },
     opponent: {
       userId: opp.userId,
@@ -60,6 +61,7 @@ export function buildClientState(
       banished: opp.banished,
       monsterZones: opp.monsterZones,
       supportZones: opp.supportZones,
+      mulliganDone: opp.mulliganDone,
     },
     log: game.log.slice(-20),
     winner: game.winner,

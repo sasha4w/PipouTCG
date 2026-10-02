@@ -2,7 +2,13 @@ import type { MatchEndReason } from "../enums/match";
 import type { ClientCard } from "./card";
 import type { CardInstance, MonsterOnBoard } from "./instance";
 
-export type GamePhase = "waiting" | "draw" | "main" | "battle" | "end" | "finished";
+export type GamePhase =
+  | "waiting"
+  | "mulligan"
+  | "main"
+  | "battle"
+  | "end"
+  | "finished";
 
 export type GameEndReason = MatchEndReason;
 
@@ -50,6 +56,7 @@ export interface MyClientState {
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
   freeSummonAvailable?: boolean;
+  mulliganDone: boolean;
 }
 
 export interface OpponentClientState {
@@ -62,6 +69,7 @@ export interface OpponentClientState {
   banished: CardInstance[];
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
+  mulliganDone: boolean;
 }
 
 /** État de partie envoyé à un joueur (fight:state) : sans la main ni le deck adverses. */

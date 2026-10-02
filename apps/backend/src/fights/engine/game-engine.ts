@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { HAND_LIMIT, STARTING_HAND, STARTING_PRIMES } from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
-import { GameState } from '../interfaces/game-state.interface';
-import { HAND_LIMIT, PhaseService } from '../services/phase.service';
+import { CardInstance, GameState } from '../interfaces/game-state.interface';
+import { PhaseService } from '../services/phase.service';
+import { RNG, type Rng } from './rng';
 import { SummonService } from '../services/summon.service';
 import { SupportService } from '../services/support.service';
 import { BattleService } from '../services/battle.service';
@@ -35,19 +37,54 @@ export class GameEngine {
     private pick: PickService,
     private effects: EffectsResolverService,
     private buffs: BuffsCalculatorService,
+    @Inject(RNG) private rng: Rng,
   ) {}
 
   dispatch(game: GameState, seat: Seat, action: GameAction): EngineResult {
     if (game.phase === 'finished') return { error: 'La partie est terminée' };
+    if (game.phase === 'waiting')
+      return { error: "La partie n'a pas commencé" };
+    if (game.phase === 'mulligan' && action.type !== 'mulligan')
+      return { error: 'Phase de mulligan en cours' };
     const userId = seatPlayer(game, seat).userId;
     const result = this.apply(game, userId, action);
     if (!result.error) this.settle(game);
     return result;
   }
 
-  /** Temps écoulé pour le joueur actif : défausse auto, choix annulé, phase suivante. */
+  /** Installe le deck d'un joueur ; lance le mulligan quand les deux sont prêts. */
+  setupDeck(game: GameState, seat: Seat, cards: CardInstance[]): EngineResult {
+    if (game.phase !== 'waiting') return { error: 'Le match a déjà commencé' };
+    const player = seatPlayer(game, seat);
+    if (player.ready) return { error: 'Deck déjà soumis' };
+
+    const deck = this.rng.shuffle([...cards]);
+    player.primeDeck = deck.splice(0, STARTING_PRIMES);
+    player.primes = STARTING_PRIMES;
+    player.hand = deck.splice(0, STARTING_HAND);
+    player.deck = deck;
+    player.ready = true;
+
+    if (game.player1.ready && game.player2.ready) {
+      game.phase = 'mulligan';
+      const first = this.rng.coinFlip() ? game.player1 : game.player2;
+      game.currentTurnUserId = first.userId;
+      addLog(game, `🎲 ${first.username} commencera la partie`);
+    }
+    return {};
+  }
+
+  /** Temps écoulé : mains gardées au mulligan, sinon défausse auto, choix annulé, phase suivante. */
   timeout(game: GameState): void {
-    if (game.phase === 'finished') return;
+    if (game.phase === 'finished' || game.phase === 'waiting') return;
+    if (game.phase === 'mulligan') {
+      game.player1.mulliganDone = true;
+      game.player2.mulliganDone = true;
+      addLog(game, '⏱️ Timeout — mains de départ conservées');
+      this.startMatch(game);
+      this.settle(game);
+      return;
+    }
     const player = getPlayerState(game, game.currentTurnUserId);
     addLog(game, `⏱️ Timeout — passage de phase automatique`);
     if (game.phase === 'end') {
@@ -96,12 +133,41 @@ export class GameEngine {
     }
   }
 
+  private mulligan(
+    game: GameState,
+    userId: number,
+    redraw: boolean,
+  ): EngineResult {
+    if (game.phase !== 'mulligan') return { error: 'Le mulligan est terminé' };
+    const player = getPlayerState(game, userId);
+    if (player.mulliganDone) return { error: 'Mulligan déjà décidé' };
+
+    if (redraw) {
+      player.deck.push(...player.hand);
+      this.rng.shuffle(player.deck);
+      player.hand = player.deck.splice(0, STARTING_HAND);
+      addLog(game, `🔄 ${player.username} refait sa main`);
+    }
+    player.mulliganDone = true;
+    if (game.player1.mulliganDone && game.player2.mulliganDone)
+      this.startMatch(game);
+    return {};
+  }
+
+  private startMatch(game: GameState): void {
+    game.turnNumber = 1;
+    addLog(game, '⚔️ Combat ! Tour 1');
+    this.phase.startTurn(game, getPlayerState(game, game.currentTurnUserId));
+  }
+
   private apply(
     game: GameState,
     userId: number,
     action: GameAction,
   ): EngineResult {
     switch (action.type) {
+      case 'mulligan':
+        return this.mulligan(game, userId, action.redraw);
       case 'end_phase':
         return this.phase.endPhase(game, userId);
       case 'summon':

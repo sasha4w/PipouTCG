@@ -9,10 +9,8 @@ import {
   gainPrime,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
-import { EffectTrigger } from '@pipou/shared';
+import { EffectTrigger, HAND_LIMIT } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-
-export const HAND_LIMIT = 7;
 
 @Injectable()
 export class PhaseService {
@@ -57,15 +55,7 @@ export class PhaseService {
         game.currentTurnUserId = opponent.userId;
         game.turnNumber += 1;
 
-        this.triggerTurnStart(game, opponent);
-
-        const drawn = drawCard(game, opponent.userId);
-        if (!drawn) {
-          finishGame(game, userId, 'deck_empty');
-          return {};
-        }
-        game.phase = 'main';
-        addLog(game, `─── Tour ${game.turnNumber} — ${opponent.username} ───`);
+        this.startTurn(game, opponent);
         return {};
       }
 
@@ -92,6 +82,22 @@ export class PhaseService {
     player.graveyard.push(card);
     addLog(game, `${player.username} défausse ${card.baseCard.name}`);
     return {};
+  }
+
+  /** Début de tour : compteurs, ON_TURN_START, pioche, phase principale. */
+  startTurn(game: GameState, player: PlayerGameState): void {
+    this.triggerTurnStart(game, player);
+    const drawn = drawCard(game, player.userId);
+    if (!drawn) {
+      finishGame(
+        game,
+        getOpponentState(game, player.userId).userId,
+        'deck_empty',
+      );
+      return;
+    }
+    game.phase = 'main';
+    addLog(game, `─── Tour ${game.turnNumber} — ${player.username} ───`);
   }
 
   // ── Private ────────────────────────────────────────────────────────────────

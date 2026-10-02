@@ -69,6 +69,7 @@ export class MatchmakingService {
       hasDrawnThisTurn: false,
       handLimitEnforced: false,
       ready: false,
+      mulliganDone: false,
     };
   }
 

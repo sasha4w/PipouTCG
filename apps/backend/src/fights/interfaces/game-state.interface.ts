@@ -44,6 +44,7 @@ export interface PlayerGameState {
   handLimitEnforced: boolean;
   freeSummonAvailable?: boolean;
   ready: boolean;
+  mulliganDone: boolean;
 }
 
 // ─── Interactive card pick ────────────────────────────────────────────────────

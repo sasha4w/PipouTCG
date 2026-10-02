@@ -54,7 +54,7 @@ export const RARITY_COLOR: Record<string, string> = {
 
 export const PHASE_LABEL: Record<Phase, string> = {
   waiting: "Attente",
-  draw: "Pioche",
+  mulligan: "Mulligan",
   main: "Principale",
   battle: "Combat",
   end: "Fin de tour",
@@ -65,7 +65,7 @@ export const END_PHASE_LABEL: Record<string, string> = {
   main: "Phase de Combat →",
   battle: "Fin de Tour →",
   end: "Terminer le Tour →",
-  draw: "Continuer →",
   waiting: "Continuer →",
+  mulligan: "Continuer →",
   finished: "Continuer →",
 };

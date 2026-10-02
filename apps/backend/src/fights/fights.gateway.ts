@@ -13,6 +13,7 @@ import type {
   DiscardPayload,
   GameAction,
   MatchPayload,
+  MulliganPayload,
   PickCardsPayload,
   PlaySupportPayload,
   RecycleSupportPayload,
@@ -130,6 +131,17 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // ── Actions de jeu ─────────────────────────────────────────────────────────
+
+  @SubscribeMessage('fight:mulligan')
+  async mulligan(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: MulliganPayload,
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'mulligan',
+      redraw: data.redraw,
+    });
+  }
 
   @SubscribeMessage('fight:end_phase')
   async endPhase(

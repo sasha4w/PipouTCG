@@ -49,6 +49,12 @@ export interface AttackPayload {
   direct?: boolean;
 }
 
+export interface MulliganPayload {
+  matchId: number;
+  /** true : la main est remélangée dans le deck et 5 cartes sont repiochées. */
+  redraw: boolean;
+}
+
 export interface DiscardPayload {
   matchId: number;
   handIndex: number;
@@ -63,6 +69,7 @@ export interface ClientToServerEvents {
   "fight:queue": (payload?: EmptyPayload) => void;
   "fight:dequeue": (payload?: EmptyPayload) => void;
   "fight:submit_deck": (payload: SubmitDeckPayload) => void;
+  "fight:mulligan": (payload: MulliganPayload) => void;
   "fight:end_phase": (payload: MatchPayload) => void;
   "fight:summon": (payload: SummonPayload) => void;
   "fight:summon_opponent": (payload: SummonPayload) => void;

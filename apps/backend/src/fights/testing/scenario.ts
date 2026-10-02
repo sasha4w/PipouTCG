@@ -105,6 +105,7 @@ function buildPlayer(
     hasDrawnThisTurn: false,
     handLimitEnforced: false,
     ready: true,
+    mulliganDone: true,
   };
 }
 
@@ -130,6 +131,7 @@ export function waitingScenario(): GameState {
     p.deck = [];
     p.primeDeck = [];
     p.primes = 0;
+    p.mulliganDone = false;
   }
   return game;
 }

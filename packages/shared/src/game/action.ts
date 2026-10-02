@@ -2,6 +2,7 @@ import type { CombatMode } from "./instance";
 
 /** Action de jeu envoyée au moteur pour un siège donné. */
 export type GameAction =
+  | { type: "mulligan"; redraw: boolean }
   | { type: "end_phase" }
   | {
       type: "summon";
