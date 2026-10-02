@@ -1,17 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { FightServer } from '../fight-socket.types';
 import { Match } from '../entities/match.entity';
-import { MatchStatus, MatchEndReason } from '@pipou/shared';
+import { MatchStatus } from '@pipou/shared';
 import { PlayerStats } from '../entities/player-stats.entity';
-import { GameState, GameEndReason } from '../interfaces/game-state.interface';
-import {
-  addLog,
-  getPlayerState,
-  checkWinCondition,
-} from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
+import { GameState } from '../interfaces/game-state.interface';
 
 const ELO_K = 32;
 
@@ -22,69 +15,22 @@ export class GameEndService {
     @InjectRepository(PlayerStats) private statsRepo: Repository<PlayerStats>,
   ) {}
 
-  async endGame(
-    game: GameState,
-    winnerId: number,
-    reason: GameEndReason,
-    server: FightServer,
-    onCleanup: (game: GameState) => void,
-  ): Promise<void> {
-    game.phase = 'finished';
-    game.winner = winnerId;
-    game.endReason = reason;
-    game.pendingChoice = undefined;
-
-    const reasonMap: Record<GameEndReason, MatchEndReason> = {
-      primes_depleted: MatchEndReason.PRIMES_DEPLETED,
-      deck_empty: MatchEndReason.DECK_EMPTY,
-      surrender: MatchEndReason.SURRENDER,
-      disconnect: MatchEndReason.DISCONNECT,
-    };
-
+  /** Enregistre le résultat d'une partie terminée (statut, gagnant, stats, ELO). */
+  async persistResult(game: GameState): Promise<void> {
+    const winnerId = game.winner ?? null;
+    await this.matchRepo.update(game.matchId, {
+      status: MatchStatus.FINISHED,
+      winnerId,
+      endReason: game.endReason ?? null,
+      totalTurns: game.turnNumber,
+      endedAt: new Date(),
+    });
+    if (winnerId === null) return;
     const loserId =
       game.player1.userId === winnerId
         ? game.player2.userId
         : game.player1.userId;
-    const winner = getPlayerState(game, winnerId);
-
-    addLog(game, `🎉 ${winner.username} remporte la victoire !`);
-
-    await this.matchRepo.update(game.matchId, {
-      status: MatchStatus.FINISHED,
-      winnerId,
-      endReason: reasonMap[reason],
-      totalTurns: game.turnNumber,
-      endedAt: new Date(),
-    });
     await this.updateStats(winnerId, loserId);
-
-    emitGameState(game, server);
-    server
-      .to(game.player1.socketId)
-      .emit('fight:game_over', { winner: winnerId, endReason: reason });
-    server
-      .to(game.player2.socketId)
-      .emit('fight:game_over', { winner: winnerId, endReason: reason });
-
-    onCleanup(game);
-  }
-
-  async checkWinAndEmit(
-    game: GameState,
-    server: FightServer,
-    onEndGame: (
-      game: GameState,
-      winnerId: number,
-      reason: GameEndReason,
-      server: FightServer,
-    ) => Promise<void>,
-  ): Promise<void> {
-    const winner = checkWinCondition(game);
-    if (winner !== null) {
-      await onEndGame(game, winner, 'primes_depleted', server);
-    } else {
-      emitGameState(game, server);
-    }
   }
 
   // ── REST endpoints ──────────────────────────────────────────────────────────

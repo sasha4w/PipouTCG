@@ -26,6 +26,7 @@ import { GameEndService } from './services/game-end.service';
 import { TurnTimeoutService } from './services/turn-timeout.service';
 
 // Shared engine services
+import { GameEngine } from './engine/game-engine';
 import { EffectsResolverService } from './effects-resolver.service';
 import { BuffsCalculatorService } from './buffs-calculator.service';
 
@@ -58,6 +59,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     TurnTimeoutService,
 
     // Engine
+    GameEngine,
     EffectsResolverService,
     BuffsCalculatorService,
 

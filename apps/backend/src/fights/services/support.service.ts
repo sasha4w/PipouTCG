@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import {
   GameState,
   CardInstance,
@@ -28,15 +27,13 @@ export class SupportService {
     private buffsCalc: BuffsCalculatorService,
   ) {}
 
-  async playSupport(
+  playSupport(
     game: GameState,
     userId: number,
     handIndex: number,
     zoneIndex: number | undefined,
     targetInstanceId: string | undefined,
-    server: FightServer,
-    checkWinAndEmit: (game: GameState, server: FightServer) => Promise<void>,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
@@ -125,7 +122,6 @@ export class SupportService {
     }
 
     log.forEach((l) => addLog(game, l));
-    await checkWinAndEmit(game, server);
     return {};
   }
 
@@ -133,8 +129,6 @@ export class SupportService {
     game: GameState,
     userId: number,
     handIndex: number,
-    server: FightServer,
-    emitState: (game: GameState, server: FightServer) => void,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -160,8 +154,6 @@ export class SupportService {
       game,
       `♻️ ${player.username} recycle ${card.baseCard.name} → +1 énergie (${player.recycleEnergy} total)`,
     );
-
-    emitState(game, server);
     return {};
   }
 
@@ -170,8 +162,6 @@ export class SupportService {
     userId: number,
     instanceId: string,
     mode: CombatMode,
-    server: FightServer,
-    emitState: (game: GameState, server: FightServer) => void,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -198,7 +188,6 @@ export class SupportService {
       game,
       `${player.username} : ${monster.card.baseCard.name} → mode ${mode === 'attack' ? 'Attaque ⚔️' : 'Garde 🛡️'}`,
     );
-    emitState(game, server);
     return {};
   }
 

@@ -5,6 +5,7 @@ import {
   CardInstance,
 } from '../interfaces/game-state.interface';
 import { EffectTrigger } from '@pipou/shared';
+import type { Seat } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 
 const LOG_MAX = 50;
@@ -12,6 +13,10 @@ const LOG_MAX = 50;
 export function addLog(game: GameState, msg: string): void {
   game.log.push(msg);
   if (game.log.length > LOG_MAX) game.log.shift();
+}
+
+export function seatPlayer(game: GameState, seat: Seat): PlayerGameState {
+  return seat === 'p1' ? game.player1 : game.player2;
 }
 
 export function getPlayerState(

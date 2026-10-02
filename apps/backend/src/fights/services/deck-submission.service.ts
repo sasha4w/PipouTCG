@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import { DecksService } from '../../decks/decks.service';
 import { GameState } from '../interfaces/game-state.interface';
-import { getPlayerState, shuffle } from '../helpers/game-state.helper';
+import { addLog, getPlayerState, shuffle } from '../helpers/game-state.helper';
 
 const STARTING_PRIMES = 6;
 const STARTING_HAND = 5;
@@ -11,12 +10,11 @@ const STARTING_HAND = 5;
 export class DeckSubmissionService {
   constructor(private decksService: DecksService) {}
 
+  /** Charge et installe le deck du joueur ; démarre la partie si les deux sont prêts. */
   async submitDeck(
     game: GameState,
     userId: number,
     deckId: number,
-    server: FightServer,
-    onBothReady: (game: GameState, server: FightServer) => void,
   ): Promise<{ error?: string }> {
     if (game.phase !== 'waiting') return { error: 'Le match a déjà commencé' };
 
@@ -25,14 +23,7 @@ export class DeckSubmissionService {
 
     let cards;
     try {
-      const effectiveUserId =
-        userId < 0
-          ? game.player1.userId > 0
-            ? game.player1.userId
-            : game.player2.userId
-          : userId;
-
-      cards = await this.decksService.loadDeckCards(deckId, effectiveUserId);
+      cards = await this.decksService.loadDeckCards(deckId, userId);
     } catch {
       return { error: 'Deck invalide ou inaccessible' };
     }
@@ -50,14 +41,10 @@ export class DeckSubmissionService {
     }
     player.ready = true;
 
-    const opponent =
-      game.player1.userId === userId ? game.player2 : game.player1;
-    if (opponent.ready) {
-      onBothReady(game, server);
-    } else {
-      server
-        .to(player.socketId)
-        .emit('fight:deck_accepted', { matchId: game.matchId });
+    if (game.player1.ready && game.player2.ready) {
+      game.phase = 'main';
+      game.turnNumber = 1;
+      addLog(game, `⚔️ Combat ! Tour 1 — ${game.player1.username} commence`);
     }
     return {};
   }

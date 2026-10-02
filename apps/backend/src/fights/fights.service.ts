@@ -1,77 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import type { GameAction, Seat } from '@pipou/shared';
 import type { FightServer } from './fight-socket.types';
-import {
-  GameState,
-  GameEndReason,
-  CombatMode,
-} from './interfaces/game-state.interface';
+import { GameState } from './interfaces/game-state.interface';
 import { PlayerStats } from './entities/player-stats.entity';
-
 import {
   MatchmakingService,
   MatchFoundInfo,
-  QueueEntry,
 } from './services/matchmaking.service';
 import { DeckSubmissionService } from './services/deck-submission.service';
-import { PhaseService } from './services/phase.service';
-import { SummonService } from './services/summon.service';
-import { SupportService } from './services/support.service';
-import { BattleService } from './services/battle.service';
-import { PickService } from './services/pick.service';
 import { GameEndService } from './services/game-end.service';
 import { TurnTimeoutService } from './services/turn-timeout.service';
-
+import { GameEngine } from './engine/game-engine';
 import {
   addLog,
   getPlayerState,
   getOpponentState,
 } from './helpers/game-state.helper';
+import { finishGame } from './helpers/game-end.helper';
 import { emitGameState } from './helpers/client-state.builder';
 
 @Injectable()
 export class FightsService {
+  private readonly logger = new Logger(FightsService.name);
   private games = new Map<number, GameState>();
   private userToMatch = new Map<number, number>();
 
   constructor(
     private matchmaking: MatchmakingService,
     private deckSubmission: DeckSubmissionService,
-    private phase: PhaseService,
-    private summon: SummonService,
-    private support: SupportService,
-    private battle: BattleService,
-    private pick: PickService,
+    private engine: GameEngine,
     private gameEnd: GameEndService,
     private turnTimeout: TurnTimeoutService,
   ) {}
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MATCHMAKING
-  // ═══════════════════════════════════════════════════════════════════════════
-  private testMatches = new Set<number>();
-  async createTestMatch(
-    userId: number,
-    username: string,
-    socketId: string,
-  ): Promise<{ matchId: number; p2UserId: number }> {
-    const p2UserId = -userId; // userId négatif, jamais en conflit
-    const p1: QueueEntry = { userId, username, socketId };
-    const p2: QueueEntry = {
-      userId: p2UserId,
-      username: `${username} (Test)`,
-      socketId,
-    };
-
-    const matchId = await this.matchmaking.createMatch(userId, p2UserId, true);
-    const game = this.matchmaking.buildInitialGameState(matchId, p1, p2);
-
-    this.games.set(matchId, game);
-    this.userToMatch.set(userId, matchId);
-    // On n'enregistre PAS p2UserId dans userToMatch pour éviter
-    // que handleDisconnect cherche une partie pour un userId fantôme
-    this.testMatches.add(matchId);
-    return { matchId, p2UserId };
-  }
+  // ── Matchmaking ──────────────────────────────────────────────────────────
 
   async joinQueue(
     userId: number,
@@ -86,15 +48,13 @@ export class FightsService {
     );
     if (!result) return null;
 
-    const game = this.matchmaking.buildInitialGameState(
-      result.matchId,
-      result.p1,
-      result.p2,
+    this.adopt(
+      this.matchmaking.buildInitialGameState(
+        result.matchId,
+        result.p1,
+        result.p2,
+      ),
     );
-    this.games.set(result.matchId, game);
-    this.userToMatch.set(result.p1.userId, result.matchId);
-    this.userToMatch.set(result.p2.userId, result.matchId);
-
     return result;
   }
 
@@ -102,9 +62,14 @@ export class FightsService {
     this.matchmaking.leaveQueue(userId);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DECK SUBMISSION
-  // ═══════════════════════════════════════════════════════════════════════════
+  /** Prend en charge une partie déjà construite (matchmaking, tests, sandbox). */
+  adopt(game: GameState): void {
+    this.games.set(game.matchId, game);
+    this.userToMatch.set(game.player1.userId, game.matchId);
+    this.userToMatch.set(game.player2.userId, game.matchId);
+  }
+
+  // ── Partie ───────────────────────────────────────────────────────────────
 
   async submitDeck(
     matchId: number,
@@ -112,263 +77,60 @@ export class FightsService {
     deckId: number,
     server: FightServer,
   ): Promise<{ error?: string }> {
-    const game = this.getGame(matchId);
+    const game = this.games.get(matchId);
     if (!game) return { error: 'Match introuvable' };
 
-    return this.deckSubmission.submitDeck(
-      game,
-      userId,
-      deckId,
-      server,
-      (g, s) => {
-        g.phase = 'main';
-        g.turnNumber = 1;
-        addLog(g, `⚔️ Combat ! Tour 1 — ${g.player1.username} commence`);
-        this.turnTimeout.start(g, s, (tg, ts) => this.timeoutEndPhase(tg, ts));
-        emitGameState(g, s);
-      },
-    );
-  }
+    const result = await this.deckSubmission.submitDeck(game, userId, deckId);
+    if (result.error) return result;
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PHASE ADVANCEMENT
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  async endPhase(
-    matchId: number,
-    userId: number,
-    server: FightServer,
-  ): Promise<{ error?: string }> {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-
-    const result = await this.phase.endPhase(
-      game,
-      userId,
-      server,
-      this.endGameCallback(),
-      (g, s) =>
-        this.turnTimeout.reset(g, s, (tg, ts) => this.timeoutEndPhase(tg, ts)),
-    );
-    if (!result.error) {
-      this.turnTimeout.reset(game, server, (tg, ts) =>
-        this.timeoutEndPhase(tg, ts),
-      );
+    if (game.phase === 'waiting') {
+      server
+        .to(getPlayerState(game, userId).socketId)
+        .emit('fight:deck_accepted', { matchId });
+    } else {
+      this.afterChange(game, server);
     }
-    return result;
+    return {};
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SUMMON
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  summonMonster(
+  act(
     matchId: number,
     userId: number,
-    handIndex: number,
-    zoneIndex: number,
-    paymentHandIndices: number[],
+    action: GameAction,
     server: FightServer,
   ): { error?: string } {
-    const game = this.getGame(matchId);
+    const game = this.games.get(matchId);
     if (!game) return { error: 'Match introuvable' };
 
-    const result = this.summon.summonMonster(
-      game,
-      userId,
-      handIndex,
-      zoneIndex,
-      paymentHandIndices,
-      server,
-    );
-    if (!result.error) this.resetTimeout(game, server);
+    const seat: Seat = game.player1.userId === userId ? 'p1' : 'p2';
+    const result = this.engine.dispatch(game, seat, action);
+    if (!result.error) this.afterChange(game, server);
     return result;
   }
 
-  /** Invoque Noyau Zeta sur une zone adverse vide */
-  summonZetaOnOpponent(
-    matchId: number,
-    userId: number,
-    handIndex: number,
-    zoneIndex: number,
-    paymentHandIndices: number[],
-    server: FightServer,
-  ): { error?: string } {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
+  surrender(matchId: number, userId: number, server: FightServer): void {
+    const game = this.games.get(matchId);
+    if (!game || game.phase === 'finished') return;
 
-    const result = this.summon.summonZetaOnOpponent(
-      game,
-      userId,
-      handIndex,
-      zoneIndex,
-      paymentHandIndices,
-      server,
-    );
-    if (!result.error) this.resetTimeout(game, server);
-    return result;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SUPPORT
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  async playSupport(
-    matchId: number,
-    userId: number,
-    handIndex: number,
-    zoneIndex: number | undefined,
-    targetInstanceId: string | undefined,
-    server: FightServer,
-  ): Promise<{ error?: string }> {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-
-    const result = await this.support.playSupport(
-      game,
-      userId,
-      handIndex,
-      zoneIndex,
-      targetInstanceId,
-      server,
-      (g, s) => this.gameEnd.checkWinAndEmit(g, s, this.endGameCallback()),
-    );
-    if (!result.error) this.resetTimeout(game, server);
-    return result;
-  }
-
-  recycleFromHand(
-    matchId: number,
-    userId: number,
-    handIndex: number,
-    server: FightServer,
-  ): { error?: string } {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-
-    const result = this.support.recycleFromHand(
-      game,
-      userId,
-      handIndex,
-      server,
-      emitGameState,
-    );
-    if (!result.error) this.resetTimeout(game, server);
-    return result;
-  }
-
-  changeMode(
-    matchId: number,
-    userId: number,
-    instanceId: string,
-    mode: CombatMode,
-    server: FightServer,
-  ): { error?: string } {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-
-    const result = this.support.changeMode(
-      game,
-      userId,
-      instanceId,
-      mode,
-      server,
-      emitGameState,
-    );
-    if (!result.error) this.resetTimeout(game, server);
-    return result;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // BATTLE
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  async attack(
-    matchId: number,
-    userId: number,
-    attackerInstanceId: string,
-    targetInstanceId: string | undefined,
-    direct: boolean,
-    server: FightServer,
-  ): Promise<{ error?: string }> {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-
-    const result = await this.battle.attack(
-      game,
-      userId,
-      attackerInstanceId,
-      targetInstanceId,
-      direct,
-      server,
-      (g, s) => this.gameEnd.checkWinAndEmit(g, s, this.endGameCallback()),
-    );
-    if (!result.error) this.resetTimeout(game, server);
-    return result;
-  }
-
-  discard(
-    matchId: number,
-    userId: number,
-    handIndex: number,
-    server: FightServer,
-  ): { error?: string } {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-    return this.phase.discard(game, userId, handIndex, server);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CARD PICK
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  pickCards(
-    matchId: number,
-    userId: number,
-    instanceIds: string[],
-    server: FightServer,
-  ): { error?: string } {
-    const game = this.getGame(matchId);
-    if (!game) return { error: 'Match introuvable' };
-    return this.pick.pickCards(game, userId, instanceIds, server);
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SURRENDER / DISCONNECT
-  // ═══════════════════════════════════════════════════════════════════════════
-
-  async surrender(
-    matchId: number,
-    userId: number,
-    server: FightServer,
-  ): Promise<void> {
-    const game = this.getGame(matchId);
-    if (!game) return;
-
-    const opp = getOpponentState(game, userId);
     addLog(game, `🏳️ ${getPlayerState(game, userId).username} abandonne`);
-
-    // Utilisation du helper centralisé
-    await this.executeEndGame(game, opp.userId, 'surrender', server);
+    finishGame(game, getOpponentState(game, userId).userId, 'surrender');
+    this.afterChange(game, server);
   }
 
-  async handleDisconnect(userId: number, server: FightServer): Promise<void> {
+  handleDisconnect(userId: number, server: FightServer): void {
     this.leaveQueue(userId);
     const matchId = this.userToMatch.get(userId);
     if (!matchId) return;
 
-    const game = this.getGame(matchId);
+    const game = this.games.get(matchId);
     if (!game || game.phase === 'finished') return;
 
-    const opp = getOpponentState(game, userId);
     addLog(game, `🔌 ${getPlayerState(game, userId).username} déconnecté`);
-
-    // Utilisation du helper centralisé
-    await this.executeEndGame(game, opp.userId, 'disconnect', server);
+    finishGame(game, getOpponentState(game, userId).userId, 'disconnect');
+    this.afterChange(game, server);
   }
-  // ═══════════════════════════════════════════════════════════════════════════
-  // REST
-  // ═══════════════════════════════════════════════════════════════════════════
+
+  // ── REST ─────────────────────────────────────────────────────────────────
 
   async getMatchHistory(userId: number, page = 1, limit = 20) {
     return this.gameEnd.getMatchHistory(userId, page, limit);
@@ -382,65 +144,47 @@ export class FightsService {
     return this.gameEnd.getMyStats(userId);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // PRIVATE HELPERS
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ── Interne ──────────────────────────────────────────────────────────────
 
-  private getGame(matchId: number): GameState | undefined {
-    return this.games.get(matchId);
+  /** Après tout changement : fin de partie, ou émission de l'état + relance du timer. */
+  private afterChange(game: GameState, server: FightServer): void {
+    if (game.phase === 'finished') {
+      void this.finish(game, server);
+      return;
+    }
+    emitGameState(game, server);
+    this.turnTimeout.schedule(game.matchId, () =>
+      this.onTimeout(game.matchId, server),
+    );
+  }
+
+  private onTimeout(matchId: number, server: FightServer): void {
+    const game = this.games.get(matchId);
+    if (!game) return;
+    this.engine.timeout(game);
+    this.afterChange(game, server);
+  }
+
+  private async finish(game: GameState, server: FightServer): Promise<void> {
+    this.turnTimeout.clear(game.matchId);
+    this.cleanupGame(game);
+    try {
+      await this.gameEnd.persistResult(game);
+    } catch (err) {
+      this.logger.error(
+        `Enregistrement du match ${game.matchId} en échec`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+    emitGameState(game, server);
+    const payload = { winner: game.winner!, endReason: game.endReason! };
+    server.to(game.player1.socketId).emit('fight:game_over', payload);
+    server.to(game.player2.socketId).emit('fight:game_over', payload);
   }
 
   private cleanupGame(game: GameState): void {
     this.games.delete(game.matchId);
     this.userToMatch.delete(game.player1.userId);
     this.userToMatch.delete(game.player2.userId);
-    this.testMatches.delete(game.matchId); // ← nettoyage
-  }
-
-  private endGameCallback() {
-    return (
-      game: GameState,
-      winnerId: number,
-      reason: GameEndReason,
-      server: FightServer,
-    ) => {
-      return this.executeEndGame(game, winnerId, reason, server);
-    };
-  }
-
-  private timeoutEndPhase(tg: GameState, ts: FightServer): Promise<void> {
-    return this.phase
-      .endPhase(tg, tg.currentTurnUserId, ts, this.endGameCallback(), () => {})
-      .then(() => void 0);
-  }
-
-  private resetTimeout(game: GameState, server: FightServer): void {
-    this.turnTimeout.reset(game, server, (tg, ts) =>
-      this.timeoutEndPhase(tg, ts),
-    );
-  }
-  private async executeEndGame(
-    game: GameState,
-    winnerId: number,
-    reason: GameEndReason,
-    server: FightServer,
-  ): Promise<void> {
-    // 1. On coupe toujours le timer
-    this.turnTimeout.clear(game.matchId);
-
-    // 2. Si c'est un match de test, on nettoie juste la mémoire sans toucher à la DB
-    if (this.testMatches.has(game.matchId)) {
-      this.cleanupGame(game);
-      return;
-    }
-
-    // 3. Sinon, match normal -> sauvegarde en base de données via le service dédié
-    return this.gameEnd.endGame(
-      game,
-      winnerId,
-      reason,
-      server,
-      this.cleanupGame.bind(this),
-    );
   }
 }

@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
-import {
-  GameState,
-  GameEndReason,
-  PlayerGameState,
-} from '../interfaces/game-state.interface';
+import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
 import {
   addLog,
   getPlayerState,
@@ -12,12 +7,12 @@ import {
   isCurrentPlayer,
   drawCard,
 } from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
+import { finishGame } from '../helpers/game-end.helper';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 
-const HAND_LIMIT = 7;
+export const HAND_LIMIT = 7;
 
 @Injectable()
 export class PhaseService {
@@ -26,18 +21,7 @@ export class PhaseService {
     private buffsCalc: BuffsCalculatorService,
   ) {}
 
-  async endPhase(
-    game: GameState,
-    userId: number,
-    server: FightServer,
-    onEndGame: (
-      game: GameState,
-      winnerId: number,
-      reason: GameEndReason,
-      server: FightServer,
-    ) => Promise<void>,
-    onTurnEnd: (game: GameState, server: FightServer) => void,
-  ): Promise<{ error?: string }> {
+  endPhase(game: GameState, userId: number): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
 
@@ -48,11 +32,11 @@ export class PhaseService {
       case 'main':
         game.phase = 'battle';
         addLog(game, `${player.username} → phase de combat`);
-        break;
+        return {};
 
       case 'battle':
         game.phase = 'end';
-        break;
+        return {};
 
       case 'end': {
         const surplus = player.hand.length - HAND_LIMIT;
@@ -80,28 +64,23 @@ export class PhaseService {
 
         const drawn = drawCard(game, opponent.userId);
         if (!drawn) {
-          await onEndGame(game, userId, 'deck_empty', server);
+          finishGame(game, userId, 'deck_empty');
           return {};
         }
         game.phase = 'main';
         addLog(game, `─── Tour ${game.turnNumber} — ${opponent.username} ───`);
-        onTurnEnd(game, server);
-        break;
+        return {};
       }
 
       default:
         return { error: `Phase invalide : ${game.phase}` };
     }
-
-    emitGameState(game, server);
-    return {};
   }
 
   discard(
     game: GameState,
     userId: number,
     handIndex: number,
-    server: FightServer,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -115,7 +94,6 @@ export class PhaseService {
     const [card] = player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
     addLog(game, `${player.username} défausse ${card.baseCard.name}`);
-    emitGameState(game, server);
     return {};
   }
 

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import { GameState } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { CardType, EffectTrigger } from '@pipou/shared';
@@ -11,7 +10,6 @@ import {
   getOpponentState,
   isCurrentPlayer,
 } from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
 
 /** Seul ID autorisé à être posé sur le terrain adverse */
 const ZETA_CARD_ID = 122;
@@ -23,49 +21,31 @@ export class SummonService {
     private buffsCalc: BuffsCalculatorService,
   ) {}
 
-  /** Invocation normale — pose sur le terrain du joueur courant */
-  summonMonster(
+  /** Invoque un monstre de la main, sur son terrain ou (Zeta) sur une zone adverse. */
+  summon(
     game: GameState,
     userId: number,
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
-    server: FightServer,
+    onOpponentSide: boolean,
   ): { error?: string } {
+    if (onOpponentSide) {
+      const player = getPlayerState(game, userId);
+      if (handIndex < 0 || handIndex >= player.hand.length)
+        return { error: 'Index main invalide' };
+      if (player.hand[handIndex].baseCard.id !== ZETA_CARD_ID)
+        return {
+          error: 'Seul Noyau Zeta peut être posé sur le terrain adverse',
+        };
+    }
     return this.doSummon(
       game,
       userId,
       handIndex,
       zoneIndex,
       paymentHandIndices,
-      false,
-      server,
-    );
-  }
-
-  /** Invocation Zeta — pose sur une zone adverse vide */
-  summonZetaOnOpponent(
-    game: GameState,
-    userId: number,
-    handIndex: number,
-    zoneIndex: number,
-    paymentHandIndices: number[],
-    server: FightServer,
-  ): { error?: string } {
-    const player = getPlayerState(game, userId);
-    if (handIndex < 0 || handIndex >= player.hand.length)
-      return { error: 'Index main invalide' };
-    if (player.hand[handIndex].baseCard.id !== ZETA_CARD_ID)
-      return { error: 'Seul Noyau Zeta peut être posé sur le terrain adverse' };
-
-    return this.doSummon(
-      game,
-      userId,
-      handIndex,
-      zoneIndex,
-      paymentHandIndices,
-      true,
-      server,
+      onOpponentSide,
     );
   }
 
@@ -78,7 +58,6 @@ export class SummonService {
     zoneIndex: number,
     paymentHandIndices: number[],
     onOpponentZone: boolean,
-    server: FightServer,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -164,8 +143,6 @@ export class SummonService {
       });
       allyLog.forEach((l) => addLog(game, l));
     }
-
-    emitGameState(game, server);
     return {};
   }
 }

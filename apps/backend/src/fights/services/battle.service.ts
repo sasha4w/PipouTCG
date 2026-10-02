@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import { GameState } from '../interfaces/game-state.interface';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
@@ -22,15 +21,13 @@ export class BattleService {
     private buffsCalc: BuffsCalculatorService,
   ) {}
 
-  async attack(
+  attack(
     game: GameState,
     userId: number,
     attackerInstanceId: string,
     targetInstanceId: string | undefined,
     direct: boolean,
-    server: FightServer,
-    checkWinAndEmit: (game: GameState, server: FightServer) => Promise<void>,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     // ── Validations communes ─────────────────────────────────────────────────
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -111,7 +108,6 @@ export class BattleService {
       gainPrime(game, userId, attacker.card.baseCard.name);
       // FIX 2 : l'adversaire perd une prime → il pioche une carte
       drawCard(game, opponent.userId);
-      await checkWinAndEmit(game, server);
       return {};
     }
 
@@ -215,8 +211,6 @@ export class BattleService {
 
     this.buffsCalc.recalculate(player);
     this.buffsCalc.recalculate(opponent);
-
-    await checkWinAndEmit(game, server);
     return {};
   }
 }

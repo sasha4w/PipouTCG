@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 import { addLog, getPlayerState, shuffle } from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { EffectTrigger } from '@pipou/shared';
 
@@ -14,7 +12,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const choice = game.pendingChoice;
     if (!choice || choice.forUserId !== userId)
@@ -33,17 +30,17 @@ export class PickService {
 
     switch (resolution) {
       case 'pick_to_hand':
-        return this.resolvePickToHand(game, userId, instanceIds, server);
+        return this.resolvePickToHand(game, userId, instanceIds);
       case 'destroy_ally':
-        return this.resolveDestroyAlly(game, userId, instanceIds, server);
+        return this.resolveDestroyAlly(game, userId, instanceIds);
       case 'return_to_hand':
-        return this.resolveReturnToHand(game, userId, instanceIds, server);
+        return this.resolveReturnToHand(game, userId, instanceIds);
       case 'force_attack_enemy':
-        return this.resolveForceAttackEnemy(game, userId, instanceIds, server);
+        return this.resolveForceAttackEnemy(game, userId, instanceIds);
       case 'block_attack_enemy':
-        return this.resolveBlockAttackEnemy(game, userId, instanceIds, server);
+        return this.resolveBlockAttackEnemy(game, userId, instanceIds);
       case 'force_guard_enemy':
-        return this.resolveForceGuardEnemy(game, userId, instanceIds, server);
+        return this.resolveForceGuardEnemy(game, userId, instanceIds);
       default:
         return { error: `Résolution inconnue : ${String(resolution)}` };
     }
@@ -55,7 +52,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const choice = game.pendingChoice!;
     const player = getPlayerState(game, userId);
@@ -95,7 +91,6 @@ export class PickService {
     if (pickedFromDeck) player.deck = shuffle([...player.deck]);
 
     game.pendingChoice = undefined;
-    emitGameState(game, server);
     return {};
   }
 
@@ -105,7 +100,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const player = getPlayerState(game, userId);
     const [instanceId] = instanceIds;
@@ -135,7 +129,6 @@ export class PickService {
     addLog(game, `💥 ${player.username} détruit ${monster.card.baseCard.name}`);
 
     game.pendingChoice = undefined;
-    emitGameState(game, server);
     return {};
   }
 
@@ -145,7 +138,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const player = getPlayerState(game, userId);
     const [instanceId] = instanceIds;
@@ -175,7 +167,6 @@ export class PickService {
     );
 
     game.pendingChoice = undefined;
-    emitGameState(game, server);
     return {};
   }
 
@@ -185,7 +176,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
@@ -209,7 +199,6 @@ export class PickService {
     );
 
     game.pendingChoice = undefined;
-    emitGameState(game, server);
     return {};
   }
   // ── block_attack_enemy — Protocole de Gel ────────────────────────────────
@@ -218,7 +207,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
@@ -240,7 +228,6 @@ export class PickService {
     );
 
     game.pendingChoice = undefined;
-    emitGameState(game, server);
     return {};
   }
 
@@ -250,7 +237,6 @@ export class PickService {
     game: GameState,
     userId: number,
     instanceIds: string[],
-    server: FightServer,
   ): { error?: string } {
     const opponent =
       game.player1.userId === userId ? game.player2 : game.player1;
@@ -273,7 +259,6 @@ export class PickService {
     );
 
     game.pendingChoice = undefined;
-    emitGameState(game, server);
     return {};
   }
 }
