@@ -43,6 +43,10 @@ export interface MonsterOnBoard<C = ClientCard> {
   forcedAttackMode: boolean;
   summonedThisTurn: boolean;
   doubleAtkNextTurn: boolean;
+  /** Attaques supplémentaires ce tour-ci (double attaque différée). */
+  extraAttacksThisTurn: number;
+  /** Ne peut pas attaquer le tour de son invocation (effet de carte). */
+  cannotAttackOnSummonTurn: boolean;
   damageReduction?: number;
   turnCounter?: number;
   ownerUserId?: number;

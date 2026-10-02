@@ -35,6 +35,8 @@ export function createMonsterOnBoard(
     forcedAttackMode: false,
     summonedThisTurn: true,
     doubleAtkNextTurn: false,
+    extraAttacksThisTurn: 0,
+    cannotAttackOnSummonTurn: false,
     turnCounter: undefined,
     ownerUserId: opts.ownerUserId,
   };

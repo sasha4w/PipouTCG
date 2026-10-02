@@ -50,6 +50,7 @@ export const ActionType = {
   FORCE_ATTACK_MODE_ENEMY: "FORCE_ATTACK_MODE_ENEMY",
   BLOCK_ATTACK: "BLOCK_ATTACK",
   FORCE_GUARD_LOCK_ENEMY: "FORCE_GUARD_LOCK_ENEMY",
+  CANNOT_ATTACK_ON_SUMMON_TURN: "CANNOT_ATTACK_ON_SUMMON_TURN",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

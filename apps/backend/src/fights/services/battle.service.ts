@@ -41,13 +41,12 @@ export class BattleService {
     if (!attacker) return { error: 'Attaquant introuvable' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
 
-    if (attacker.summonedThisTurn && attacker.card.baseCard.id === 9)
+    if (attacker.summonedThisTurn && attacker.cannotAttackOnSummonTurn)
       return {
-        error:
-          "Commandant Quenouille ne peut pas attaquer son tour d'invocation",
+        error: `${attacker.card.baseCard.name} ne peut pas attaquer le tour de son invocation`,
       };
 
-    const maxAttacks = attacker.attacksPerTurn ?? 1;
+    const maxAttacks = attacker.attacksPerTurn + attacker.extraAttacksThisTurn;
     if (attacker.attacksUsedThisTurn >= maxAttacks)
       return { error: 'Ce monstre a déjà utilisé toutes ses attaques ce tour' };
 
@@ -89,8 +88,7 @@ export class BattleService {
 
     // ── Compteur d'attaques (seulement si toutes les validations passent) ───
     attacker.attacksUsedThisTurn += 1;
-    attacker.hasAttackedThisTurn =
-      attacker.attacksUsedThisTurn >= (attacker.attacksPerTurn ?? 1);
+    attacker.hasAttackedThisTurn = attacker.attacksUsedThisTurn >= maxAttacks;
 
     // ── Résolution ON_ATTACK ─────────────────────────────────────────────────
     const onAttackLog: string[] = [];

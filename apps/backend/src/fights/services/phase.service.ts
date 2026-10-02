@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { EffectTrigger, HAND_LIMIT } from '@pipou/shared';
 import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
 import {
   addLog,
-  getPlayerState,
-  getOpponentState,
-  isCurrentPlayer,
   drawCard,
   gainPrime,
+  getOpponentState,
+  getPlayerState,
+  isCurrentPlayer,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
-import { EffectTrigger, HAND_LIMIT } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 
 @Injectable()
@@ -35,26 +35,12 @@ export class PhaseService {
 
       case 'end': {
         const surplus = player.hand.length - HAND_LIMIT;
-        if (surplus > 0) {
+        if (surplus > 0)
           return { error: `Défaussez ${surplus} carte(s) avant de terminer` };
-        }
-        for (const z of player.monsterZones) {
-          if (!z) continue;
-          z.hasAttackedThisTurn = false;
-          z.attacksUsedThisTurn = 0;
-          z.tempAtkBuff = 0;
-          z.summonedThisTurn = false;
-          if (z.doubleAtkNextTurn) {
-            z.attacksPerTurn = 2;
-            z.doubleAtkNextTurn = false;
-          }
-        }
-        player.recycleEnergy = 0;
-        player.hasDrawnThisTurn = false;
 
+        this.endTurn(game, player);
         game.currentTurnUserId = opponent.userId;
         game.turnNumber += 1;
-
         this.startTurn(game, opponent);
         return {};
       }
@@ -84,9 +70,20 @@ export class PhaseService {
     return {};
   }
 
-  /** Début de tour : compteurs, ON_TURN_START, pioche, phase principale. */
+  /** Début de tour : compteurs, ON_TURN_START, double attaque différée, pioche. */
   startTurn(game: GameState, player: PlayerGameState): void {
-    this.triggerTurnStart(game, player);
+    const log: string[] = [];
+    // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
+    // pas son ON_TURN_START ce même tour.
+    this.processTurnCounters(game, player, log);
+    this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);
+    for (const m of player.monsterZones) {
+      if (!m?.doubleAtkNextTurn) continue;
+      m.extraAttacksThisTurn = 1;
+      m.doubleAtkNextTurn = false;
+    }
+    log.forEach((l) => addLog(game, l));
+
     const drawn = drawCard(game, player.userId);
     if (!drawn) {
       finishGame(
@@ -100,38 +97,53 @@ export class PhaseService {
     addLog(game, `─── Tour ${game.turnNumber} — ${player.username} ───`);
   }
 
-  // ── Private ────────────────────────────────────────────────────────────────
-
-  private triggerTurnStart(game: GameState, player: PlayerGameState): void {
+  /** Fin du tour du joueur actif : ON_TURN_END, remises à zéro, gel décompté. */
+  private endTurn(game: GameState, player: PlayerGameState): void {
     const log: string[] = [];
+    this.resolveForBoard(game, player, EffectTrigger.ON_TURN_END, log);
 
-    // Compteurs traités EN PREMIER : un monstre qui meurt au compteur 0
-    // ne déclenche pas son ON_TURN_START ce même tour.
-    this.processTurnCounters(game, player, log);
-    for (const zone of player.monsterZones) {
-      if (!zone || zone.blockAttackTurns === undefined) continue;
-      zone.blockAttackTurns--;
-      if (zone.blockAttackTurns <= 0) {
-        zone.blockAttackTurns = undefined;
-        log.push(`🧊 ${zone.card.baseCard.name} peut à nouveau attaquer`);
-      }
+    // Les bonus d'ATK temporaires expirent pour les deux camps
+    for (const p of [game.player1, game.player2]) {
+      for (const m of p.monsterZones) if (m) m.tempAtkBuff = 0;
     }
 
+    for (const m of player.monsterZones) {
+      if (!m) continue;
+      m.hasAttackedThisTurn = false;
+      m.attacksUsedThisTurn = 0;
+      m.extraAttacksThisTurn = 0;
+      m.summonedThisTurn = false;
+      // Le gel compte les tours du propriétaire du monstre gelé
+      if (m.blockAttackTurns !== undefined) {
+        m.blockAttackTurns -= 1;
+        if (m.blockAttackTurns <= 0) {
+          m.blockAttackTurns = undefined;
+          log.push(`🧊 ${m.card.baseCard.name} pourra de nouveau attaquer`);
+        }
+      }
+    }
+    player.recycleEnergy = 0;
+    log.forEach((l) => addLog(game, l));
+  }
+
+  /** Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et les terrains. */
+  private resolveForBoard(
+    game: GameState,
+    player: PlayerGameState,
+    trigger: EffectTrigger,
+    log: string[],
+  ): void {
     for (const zone of player.monsterZones) {
       if (!zone) continue;
-
-      // ON_TURN_START du monstre
-      this.effectsResolver.resolve(zone.card, EffectTrigger.ON_TURN_START, {
+      this.effectsResolver.resolve(zone.card, trigger, {
         game,
         ownerUserId: player.userId,
         sourceMonster: zone,
         log,
       });
-
-      // ON_TURN_START de chaque équipement attaché.
-      // sourceMonster = zone hôte → les targets SELF résolvent sur le porteur.
+      if (!player.monsterZones.includes(zone)) continue;
       for (const equipment of zone.equipments) {
-        this.effectsResolver.resolve(equipment, EffectTrigger.ON_TURN_START, {
+        this.effectsResolver.resolve(equipment, trigger, {
           game,
           ownerUserId: player.userId,
           sourceMonster: zone,
@@ -139,68 +151,45 @@ export class PhaseService {
         });
       }
     }
-
-    // Terrains ON_TURN_START
     for (const terrain of player.supportZones) {
       if (!terrain) continue;
-      this.effectsResolver.resolve(terrain, EffectTrigger.ON_TURN_START, {
+      this.effectsResolver.resolve(terrain, trigger, {
         game,
         ownerUserId: player.userId,
         log,
       });
     }
-
-    log.forEach((l) => addLog(game, l));
   }
 
   /**
-   * Décrémente le turnCounter de chaque monstre de `player`.
-   * Quand il atteint 0 : le joueur récupère une Prime, puis le monstre
-   * est détruit (ON_DEATH déclenché, équipements au cimetière).
-   *
-   * Utilisé par Noyau Zeta — si détruit avant (Formatage/Recyclage),
-   * pas de Prime gagnée.
+   * Décrémente le turnCounter des monstres posés par `player` (sur les deux
+   * terrains : Zeta peut être posé chez l'adversaire). À 0 : le poseur gagne
+   * une Prime et le monstre est détruit, sans pioche pour l'hôte.
    */
   private processTurnCounters(
     game: GameState,
     player: PlayerGameState,
     log: string[],
   ): void {
-    // On scanne les DEUX terrains : Zeta peut être posé sur le terrain adverse
-    // mais ownerUserId pointe vers le poseur → le compteur décrémente à son tour.
-    const both = [
-      { zones: player.monsterZones, host: player },
-      {
-        zones: (player === game.player1 ? game.player2 : game.player1)
-          .monsterZones,
-        host: player === game.player1 ? game.player2 : game.player1,
-      },
-    ];
-
-    for (const { zones, host } of both) {
-      for (let idx = 0; idx < zones.length; idx++) {
-        const zone = zones[idx];
-        // Décrémente uniquement si ce joueur est le poseur (ownerUserId) ou si
-        // ownerUserId est absent et la zone appartient au joueur courant (comportement normal)
+    const other = player === game.player1 ? game.player2 : game.player1;
+    for (const host of [player, other]) {
+      for (const zone of [...host.monsterZones]) {
         if (!zone || zone.turnCounter === undefined) continue;
-        const realOwner = zone.ownerUserId ?? host.userId;
-        if (realOwner !== player.userId) continue;
+        const poser = zone.ownerUserId ?? host.userId;
+        if (poser !== player.userId) continue;
 
         zone.turnCounter -= 1;
         log.push(
           `⏳ ${zone.card.baseCard.name} — ${zone.turnCounter} tour(s) avant autodestruction`,
         );
-
         if (zone.turnCounter > 0) continue;
 
         log.push(`💀 ${zone.card.baseCard.name} s'autodétruit !`);
-
-        // Prime pour le poseur (player = le joueur dont c'est le tour)
         gainPrime(game, player.userId, zone.card.baseCard.name);
         this.effectsResolver.destroyMonster(game, host, zone.instanceId, log, {
           draw: false,
         });
       }
-    } // end both loop
+    }
   }
 }

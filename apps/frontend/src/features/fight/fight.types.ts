@@ -38,7 +38,6 @@ export const isMonsterZone = (zone: BoardZone): zone is MonsterOnBoard =>
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 export const FREE_SUMMON_CARD_ID = 29;
-export const QUENOUILLE_CARD_ID = 9;
 
 /** ID de Noyau Zeta — invocable sur zone adverse */
 export const NOYAU_ZETA_CARD_ID = 122;

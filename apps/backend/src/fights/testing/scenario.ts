@@ -1,4 +1,5 @@
 import type { CombatMode, GamePhase, Seat } from '@pipou/shared';
+import type { EngineResult, GameEngine } from '../engine/game-engine';
 import type { Card } from '../../cards/card.entity';
 import type {
   CardInstance,
@@ -150,6 +151,39 @@ export function monsterNamed(
   );
   if (!found) throw new Error(`Aucun monstre « ${name} » chez ${seat}`);
   return found;
+}
+
+/** Termine le tour du joueur actif (jusqu'au début du tour suivant). */
+export function passTurn(engine: GameEngine, game: GameState): void {
+  const seat: Seat = game.currentTurnUserId === P1_ID ? 'p1' : 'p2';
+  const turn = game.turnNumber;
+  while (game.turnNumber === turn && game.phase !== 'finished') {
+    const result = engine.dispatch(game, seat, { type: 'end_phase' });
+    if (result.error) throw new Error(result.error);
+  }
+}
+
+/** Attaque un monstre adverse par son nom, ou attaque directe sans cible. */
+export function attackWith(
+  engine: GameEngine,
+  game: GameState,
+  seat: Seat,
+  attacker: string,
+  target?: string,
+): EngineResult {
+  const other: Seat = seat === 'p1' ? 'p2' : 'p1';
+  const attackerInstanceId = monsterNamed(game, seat, attacker).instanceId;
+  return engine.dispatch(
+    game,
+    seat,
+    target
+      ? {
+          type: 'attack',
+          attackerInstanceId,
+          targetInstanceId: monsterNamed(game, other, target).instanceId,
+        }
+      : { type: 'attack', attackerInstanceId, direct: true },
+  );
 }
 
 export const handNames = (game: GameState, seat: Seat): string[] =>

@@ -136,6 +136,11 @@ export const ACTION_META: Record<string, ActionMeta> = {
     label: (v) => `Bloque les attaques ${v ?? "?"} tour(s)`,
     type: "debuff",
   },
+  CANNOT_ATTACK_ON_SUMMON_TURN: {
+    icon: "💤",
+    label: () => "N'attaque pas le tour de son invocation",
+    type: "debuff",
+  },
   FORCE_GUARD_LOCK_ENEMY: {
     icon: "🔒",
     label: () => "Verrouille en mode Garde",

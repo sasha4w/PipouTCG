@@ -291,10 +291,13 @@ export function applyActions(
 
       case ActionType.SET_DELAY_DOUBLE_ATK:
         for (const m of targets.monsters) {
-          m.summonedThisTurn = true;
           m.doubleAtkNextTurn = true;
           ctx.log.push(`⏳ ${m.card.baseCard.name} prépare son double assaut`);
         }
+        break;
+
+      case ActionType.CANNOT_ATTACK_ON_SUMMON_TURN:
+        for (const m of targets.monsters) m.cannotAttackOnSummonTurn = true;
         break;
 
       case ActionType.SET_DAMAGE_REDUCTION:
