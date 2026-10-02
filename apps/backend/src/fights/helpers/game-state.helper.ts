@@ -3,6 +3,7 @@ import {
   PlayerGameState,
   MonsterOnBoard,
   CardInstance,
+  PendingChoice,
 } from '../interfaces/game-state.interface';
 import type { Seat } from '@pipou/shared';
 
@@ -41,6 +42,16 @@ export function getOpponentState(
   if (!seat)
     throw new Error(`Joueur ${userId} absent du match ${game.matchId}`);
   return seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
+}
+
+/** Choix à résoudre en premier, s'il y en a un. */
+export function currentChoice(game: GameState): PendingChoice | undefined {
+  return game.pendingChoices[0];
+}
+
+/** Range un choix derrière ceux déjà en attente. */
+export function queueChoice(game: GameState, choice: PendingChoice): void {
+  game.pendingChoices.push(choice);
 }
 
 export function isCurrentPlayer(game: GameState, userId: number): boolean {

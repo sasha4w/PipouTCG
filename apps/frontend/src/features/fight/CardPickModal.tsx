@@ -13,83 +13,57 @@ interface Props {
   onConfirm: (instanceIds: string[]) => void;
   /** Optionnel — affiché uniquement quand fourni (ex: modal de ciblage interne) */
   onCancel?: () => void;
+  /** Remplace le libellé du bouton de confirmation (ex: ciblage d'un Éphémère). */
+  confirmLabel?: string;
 }
 
 // ── Helpers par résolution ────────────────────────────────────────────────────
 
 const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "🔮",
-  destroy_ally: "💥",
-  return_to_hand: "↩️",
-  force_attack_enemy: "🔒",
-  block_attack_enemy: "🧊",
-  force_guard_enemy: "🔒",
+  discard: "🗑️",
 };
 
 const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "✅ Récupérer",
-  destroy_ally: "💥 Détruire",
-  return_to_hand: "↩️ Retourner en main",
-  force_attack_enemy: "🔒 Verrouiller en Attaque",
-  block_attack_enemy: "🧊 Bloquer",
-  force_guard_enemy: "🔒 Verrouiller en Garde",
+  discard: "🗑️ Défausser",
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
 const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#fdf6f9",
-  destroy_ally: "#fff5f5",
-  return_to_hand: "#f5f8ff",
-  force_attack_enemy: "#fffbf0",
-  block_attack_enemy: "#f0f8ff",
-  force_guard_enemy: "#f5f0ff",
+  discard: "#fff5f5",
 };
 
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
-  destroy_ally: "#c0392b",
-  return_to_hand: "#2471a3",
-  force_attack_enemy: "#d35400",
-  block_attack_enemy: "#1a6b9a",
-  force_guard_enemy: "#6b1a9a",
+  discard: "#c0392b",
 };
 
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
-  destroy_ally: "#c0392b",
-  return_to_hand: "#2471a3",
-  force_attack_enemy: "#d35400",
-  block_attack_enemy: "#1a6b9a",
-  force_guard_enemy: "#6b1a9a",
+  discard: "#c0392b",
 };
 
-function sourceLabel(
-  source: "graveyard" | "deck" | "board",
-  resolution?: PendingChoiceResolution,
-): string {
+function sourceLabel(source: ClientChoiceCandidate["source"]): string {
   if (source === "graveyard") return "🪦 Cimetière";
   if (source === "deck") return "📚 Deck";
-  // board — label according to context
-  if (resolution === "destroy_ally") return "🗡 Terrain allié";
-  if (resolution === "return_to_hand") return "↩️ Terrain allié";
-  if (resolution === "force_attack_enemy") return "⚔️ Terrain ennemi";
-  if (resolution === "block_attack_enemy") return "⚔️ Terrain ennemi";
-  if (resolution === "force_guard_enemy") return "🛡 Terrain ennemi";
+  if (source === "hand") return "🖐 Main";
   return "🎴 Terrain";
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
+export default function CardPickModal({
+  choice,
+  onConfirm,
+  onCancel,
+  confirmLabel,
+}: Props) {
   const [selected, setSelected] = useState<string[]>([]);
 
   const resolution = choice.resolution ?? "pick_to_hand";
-  const isBoardPick =
-    resolution === "destroy_ally" ||
-    resolution === "return_to_hand" ||
-    resolution === "force_attack_enemy" ||
-    resolution === "block_attack_enemy" ||
-    resolution === "force_guard_enemy";
+  const isBoardPick = choice.candidates.every((c) => c.source === "board");
 
   const toggle = (instanceId: string) => {
     setSelected((prev) => {
@@ -104,7 +78,7 @@ export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
     selected.length === Math.min(choice.count, choice.candidates.length);
 
   const icon = RESOLUTION_ICON[resolution];
-  const confirmLabel = RESOLUTION_CONFIRM[resolution];
+  const confirmText = confirmLabel ?? RESOLUTION_CONFIRM[resolution];
   const headerBg = RESOLUTION_HEADER_BG[resolution];
   const headerColor = RESOLUTION_HEADER_COLOR[resolution];
   const btnBg = RESOLUTION_BTN_BG[resolution];
@@ -137,9 +111,7 @@ export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
                 className={[
                   "cpm-card",
                   isSelected ? "cpm-card--selected" : "",
-                  isBoardPick
-                    ? `cpm-card--board cpm-card--board-${resolution}`
-                    : "",
+                  isBoardPick ? "cpm-card--board" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -158,9 +130,7 @@ export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
                 )}
 
                 {/* Source badge */}
-                <div className="cpm-source">
-                  {sourceLabel(c.source, resolution)}
-                </div>
+                <div className="cpm-source">{sourceLabel(c.source)}</div>
 
                 <div className="cpm-name">{c.baseCard.name}</div>
 
@@ -169,20 +139,6 @@ export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
                     ? `${c.baseCard.atk}⚔ ${c.baseCard.hp}❤`
                     : (c.baseCard.supportType ?? c.baseCard.type)}
                 </div>
-
-                {/* Pour les board picks : indicateur visuel de l'action */}
-                {isBoardPick && (
-                  <div
-                    className="cpm-action-hint"
-                    style={{ color: headerColor }}
-                  >
-                    {resolution === "destroy_ally" && "→ sera détruit"}
-                    {resolution === "return_to_hand" && "→ retour en main"}
-                    {resolution === "force_attack_enemy" && "→ forcé ⚔️"}
-                    {resolution === "block_attack_enemy" && "→ bloqué 🧊"}
-                    {resolution === "force_guard_enemy" && "→ forcé 🛡"}
-                  </div>
-                )}
               </div>
             );
           })}
@@ -201,7 +157,7 @@ export default function CardPickModal({ choice, onConfirm, onCancel }: Props) {
             disabled={!canConfirm}
             onClick={() => onConfirm(selected)}
           >
-            {confirmLabel} ({selected.length}/
+            {confirmText} ({selected.length}/
             {Math.min(choice.count, choice.candidates.length)})
           </button>
         </div>

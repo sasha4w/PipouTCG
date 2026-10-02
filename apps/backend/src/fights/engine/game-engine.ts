@@ -11,6 +11,7 @@ import { PickService } from '../services/pick.service';
 import {
   addLog,
   checkWinCondition,
+  currentChoice,
   getPlayerState,
   seatPlayer,
 } from '../helpers/game-state.helper';
@@ -47,6 +48,17 @@ export class GameEngine {
     if (game.phase === 'mulligan' && action.type !== 'mulligan')
       return { error: 'Phase de mulligan en cours' };
     const userId = seatPlayer(game, seat).userId;
+    const choice = currentChoice(game);
+    if (
+      choice &&
+      !(action.type === 'pick_cards' && choice.forUserId === userId)
+    )
+      return {
+        error:
+          choice.forUserId === userId
+            ? "Résous d'abord ton choix en attente"
+            : "L'adversaire doit d'abord faire son choix",
+      };
     const result = this.apply(game, userId, action);
     if (!result.error) this.settle(game);
     return result;
@@ -92,7 +104,7 @@ export class GameEngine {
         player.graveyard.push(player.hand.pop()!);
       }
     }
-    game.pendingChoice = undefined;
+    game.pendingChoices = [];
     this.phase.endPhase(game, player.userId);
     this.settle(game);
   }

@@ -326,6 +326,11 @@ export default function FightPage({
 
           {status === "playing" && gameState && (
             <>
+              {gameState.opponentChoosing && (
+                <div className="fp-waiting-choice">
+                  ⏳ {gameState.opponent.username} fait un choix…
+                </div>
+              )}
               <FightBoard
                 gs={gameState}
                 selectedCard={selectedCard}

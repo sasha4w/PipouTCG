@@ -56,15 +56,19 @@ export function resolveTargets(
       register(monsters, opponent);
       break;
 
-    // ALLY_MONSTER and ENEMY_MONSTER both resolve from ctx.targetMonster
+    // Cible choisie : monstre visé par un Éphémère, ou attaquant (ON_DEFEND)
     case EffectTarget.ALLY_MONSTER:
-    case EffectTarget.ENEMY_MONSTER:
-      if (ctx.targetMonster) {
-        const isAlly = allies.some(
-          (m) => m.instanceId === ctx.targetMonster!.instanceId,
-        );
+    case EffectTarget.TARGET_ALLY:
+      if (ctx.targetMonster && allies.includes(ctx.targetMonster)) {
         monsters = [ctx.targetMonster];
-        register(monsters, isAlly ? owner : opponent);
+        register(monsters, owner);
+      }
+      break;
+
+    case EffectTarget.ENEMY_MONSTER:
+      if (ctx.targetMonster && enemies.includes(ctx.targetMonster)) {
+        monsters = [ctx.targetMonster];
+        register(monsters, opponent);
       }
       break;
 
@@ -90,15 +94,6 @@ export function resolveTargets(
         (m) => m.instanceId !== ctx.sourceMonster?.instanceId,
       );
       register(monsters, owner);
-      break;
-
-    // TARGET_ALLY: interactive pick deferred to PickService via pendingChoice.
-    // monsters stays empty so no action fires immediately.
-    // All allies are registered so ownerOfMonster() resolves after pick.
-    case EffectTarget.TARGET_ALLY:
-      register(allies, owner);
-      monsters = [];
-      players = [];
       break;
   }
 

@@ -86,6 +86,7 @@ export class MatchmakingService {
       phase: 'waiting',
       turnNumber: 0,
       log: [],
+      pendingChoices: [],
     };
   }
 }

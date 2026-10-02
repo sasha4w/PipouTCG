@@ -120,6 +120,7 @@ export function scenario(spec: ScenarioSpec = {}): GameState {
     phase: spec.phase ?? 'main',
     turnNumber: spec.turnNumber ?? 2,
     log: [],
+    pendingChoices: [],
   };
 }
 

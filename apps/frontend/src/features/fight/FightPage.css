@@ -40,3 +40,14 @@
   margin: 0 auto;
   width: 100%;
 }
+
+.fp-waiting-choice {
+  margin: 0 auto 8px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--color-cream);
+  color: var(--color-bordeaux);
+  font-weight: 600;
+  text-align: center;
+  width: fit-content;
+}

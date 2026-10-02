@@ -1,5 +1,5 @@
 import "./FightActionBar.css";
-import type { Phase, MonsterOnBoard } from "./fight.types";
+import type { Phase } from "./fight.types";
 import { END_PHASE_LABEL, FREE_SUMMON_CARD_ID } from "./fight.types";
 import type { HandCard } from "./handCard";
 
@@ -9,7 +9,6 @@ interface Props {
   selectedCard: number | null;
   selectedZone: number | null;
   hand: HandCard[];
-  monsterZones: (MonsterOnBoard | null)[];
   freeSummonAvailable?: boolean;
   onSummon: () => void;
   onOpenSummonModal: () => void; // ouvre la modal de coût
@@ -21,6 +20,8 @@ interface Props {
   onEndPhase: () => void;
   onSurrender: () => void;
   onRecycleFromHand: (handIndex: number) => void;
+  /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
+  playBlockedReason?: string;
 }
 
 export default function FightActionBar({
@@ -29,7 +30,6 @@ export default function FightActionBar({
   selectedCard,
   selectedZone,
   hand,
-  monsterZones,
   freeSummonAvailable = false,
   onSummon,
   onOpenSummonModal,
@@ -37,6 +37,7 @@ export default function FightActionBar({
   onEndPhase,
   onSurrender,
   onRecycleFromHand,
+  playBlockedReason,
 }: Props) {
   if (!isMyTurn) return null;
 
@@ -70,24 +71,15 @@ export default function FightActionBar({
             </button>
           )}
 
-          {/* Carte EPHEMERAL : jouée sans cible ou avec cible monstre */}
+          {/* Carte EPHEMERAL : le choix de cible éventuel est géré par le plateau */}
           {card.type === "support" && card.supportType === "EPHEMERAL" && (
             <button
-              onClick={() =>
-                selectedZone !== null && monsterZones[selectedZone]
-                  ? onPlaySupport(
-                      selectedCard!,
-                      undefined,
-                      monsterZones[selectedZone!]!.instanceId,
-                    )
-                  : onPlaySupport(selectedCard!)
-              }
+              onClick={() => onPlaySupport(selectedCard!)}
               className="fab-btn"
+              disabled={playBlockedReason !== undefined}
+              title={playBlockedReason}
             >
-              ✨ Jouer
-              {selectedZone !== null && monsterZones[selectedZone]
-                ? ` → ${monsterZones[selectedZone]!.card?.baseCard?.name ?? "monstre"}`
-                : ""}
+              ✨ Jouer{playBlockedReason ? ` — ${playBlockedReason}` : ""}
             </button>
           )}
 

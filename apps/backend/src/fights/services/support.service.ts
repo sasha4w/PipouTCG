@@ -2,18 +2,20 @@ import { Injectable } from '@nestjs/common';
 import {
   GameState,
   CardInstance,
-  PlayerGameState,
+  MonsterOnBoard,
 } from '../interfaces/game-state.interface';
 import {
   CardType,
   SupportType,
   EffectTrigger,
-  EffectConditionType as ConditionType,
+  ephemeralTargetSide,
 } from '@pipou/shared';
+import { checkCondition } from '../effects/effect-conditions';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
   getPlayerState,
+  getOpponentState,
   isCurrentPlayer,
   drawCard,
 } from '../helpers/game-state.helper';
@@ -42,9 +44,29 @@ export class SupportService {
     if (card.baseCard.type !== CardType.SUPPORT)
       return { error: 'Pas un Support' };
 
+    let targetMonster: MonsterOnBoard | undefined;
     if (card.baseCard.supportType === SupportType.EPHEMERAL) {
-      if (!this.isSupportPlayable(card, player))
+      if (!this.isSupportPlayable(game, card, userId))
         return { error: 'Condition non remplie pour jouer cette carte' };
+
+      const side = ephemeralTargetSide(card.baseCard.effects);
+      if (side) {
+        const pool =
+          side === 'ally'
+            ? player.monsterZones
+            : getOpponentState(game, userId).monsterZones;
+        if (!pool.some((m) => m !== null))
+          return { error: 'Aucune cible valide pour cette carte' };
+        targetMonster =
+          pool.find((m) => m?.instanceId === targetInstanceId) ?? undefined;
+        if (!targetMonster)
+          return {
+            error:
+              side === 'ally'
+                ? 'Choisis un de tes monstres comme cible'
+                : 'Choisis un monstre adverse comme cible',
+          };
+      }
     }
 
     const [support] = player.hand.splice(handIndex, 1);
@@ -57,6 +79,7 @@ export class SupportService {
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
           ownerUserId: userId,
+          targetMonster,
           log,
         });
         break;
@@ -187,35 +210,25 @@ export class SupportService {
     return {};
   }
 
+  /** Jouable sans effet ON_PLAY, ou si au moins un effet ON_PLAY a sa condition remplie. */
   private isSupportPlayable(
+    game: GameState,
     card: CardInstance,
-    player: PlayerGameState,
+    userId: number,
   ): boolean {
-    const effects = card.baseCard.effects;
-    if (!effects?.length) return true;
-
-    for (const effect of effects) {
-      if (effect.trigger !== EffectTrigger.ON_PLAY) continue;
-      if (!effect.condition) return true;
-
-      switch (effect.condition.type) {
-        case ConditionType.ARCHETYPE_ON_BOARD: {
-          const arch = effect.condition.value as string;
-          const hasOnBoard = player.monsterZones.some(
-            (m) =>
-              m?.card.baseCard.archetype?.toLowerCase() === arch.toLowerCase(),
-          );
-          if (!hasOnBoard) return false;
-          break;
-        }
-        case ConditionType.HAND_SIZE_MIN:
-          if (player.hand.length < (effect.condition.value as number))
-            return false;
-          break;
-        default:
-          return true;
-      }
-    }
-    return true;
+    const onPlay = (card.baseCard.effects ?? []).filter(
+      (e) => e.trigger === EffectTrigger.ON_PLAY,
+    );
+    return (
+      onPlay.length === 0 ||
+      onPlay.some((e) =>
+        checkCondition(e, {
+          game,
+          ownerUserId: userId,
+          sourceCard: card,
+          log: [],
+        }),
+      )
+    );
   }
 }

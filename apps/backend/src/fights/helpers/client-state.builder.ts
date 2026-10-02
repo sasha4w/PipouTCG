@@ -9,10 +9,11 @@ export function buildClientState(
   const me = getPlayerState(game, userId);
   const opp = getOpponentState(game, userId);
 
+  const choice = game.pendingChoices[0];
   const pendingChoice =
-    game.pendingChoice?.forUserId === userId
+    choice?.forUserId === userId
       ? {
-          candidates: game.pendingChoice.candidates.map((c) => ({
+          candidates: choice.candidates.map((c) => ({
             instanceId: c.instanceId,
             baseCard: {
               id: c.baseCard.id,
@@ -25,10 +26,9 @@ export function buildClientState(
             },
             source: c.source,
           })),
-          count: game.pendingChoice.count,
-          prompt: game.pendingChoice.prompt,
-          // ── NEW: forward resolution so the client can render the right UI ──
-          resolution: game.pendingChoice.resolution,
+          count: choice.count,
+          prompt: choice.prompt,
+          resolution: choice.resolution,
         }
       : undefined;
 
@@ -67,6 +67,7 @@ export function buildClientState(
     winner: game.winner,
     endReason: game.endReason,
     pendingChoice,
+    opponentChoosing: !!choice && choice.forUserId !== userId,
   };
 }
 

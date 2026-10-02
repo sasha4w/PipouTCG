@@ -17,7 +17,7 @@ export function createEngine(rng: Rng = fixedRng()): GameEngine {
     new SummonService(effects),
     new SupportService(effects),
     new BattleService(effects),
-    new PickService(effects),
+    new PickService(),
     effects,
     new BuffsCalculatorService(),
     rng,

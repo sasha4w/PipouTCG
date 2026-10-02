@@ -13,20 +13,12 @@ export type GamePhase =
 export type GameEndReason = MatchEndReason;
 
 /**
- * - 'pick_to_hand'      : récupère depuis cimetière/deck
- * - 'destroy_ally'      : détruit le monstre allié choisi (Formatage, Recyclage)
- * - 'return_to_hand'    : retourne le monstre allié + équipements en main (Migration)
- * - 'force_attack_enemy': force un monstre adverse en mode Attaque (Rootkit)
+ * - 'pick_to_hand' : récupère depuis le cimetière ou le deck
+ * - 'discard'      : défausse depuis la main
  */
-export type PendingChoiceResolution =
-  | "pick_to_hand"
-  | "destroy_ally"
-  | "return_to_hand"
-  | "force_attack_enemy"
-  | "block_attack_enemy"
-  | "force_guard_enemy";
+export type PendingChoiceResolution = "pick_to_hand" | "discard";
 
-export type ChoiceSource = "graveyard" | "deck" | "board";
+export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 
 export interface ClientChoiceCandidate {
   instanceId: string;
@@ -84,4 +76,6 @@ export interface ClientGameState {
   winner?: number;
   endReason?: GameEndReason;
   pendingChoice?: ClientPendingChoice;
+  /** L'adversaire doit résoudre un choix avant que la partie continue. */
+  opponentChoosing: boolean;
 }

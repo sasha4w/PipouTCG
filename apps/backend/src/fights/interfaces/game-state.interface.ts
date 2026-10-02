@@ -75,5 +75,6 @@ export interface GameState {
   winner?: number;
   endReason?: GameEndReason;
   log: string[];
-  pendingChoice?: PendingChoice;
+  /** Choix à résoudre, dans l'ordre ; la partie attend tant qu'il en reste. */
+  pendingChoices: PendingChoice[];
 }

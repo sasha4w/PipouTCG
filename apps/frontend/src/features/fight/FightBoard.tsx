@@ -13,7 +13,7 @@ import GraveyardPile from "./GraveyardPile";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
-import type { CombatMode } from "@pipou/shared";
+import { ephemeralTargetSide, type CombatMode } from "@pipou/shared";
 
 interface Props {
   gs: GameState;
@@ -155,31 +155,10 @@ export default function FightBoard({
     return Math.max(0, cost - gs.me.recycleEnergy) > 0;
   };
 
-  /** Détecte si une carte support éphémère doit cibler un monstre spécifique */
-  const ephemeralNeedsMonsterTarget = (
-    card: HandCard,
-  ): "ally" | "enemy" | null => {
-    if (card.type !== "support" || card.supportType !== "EPHEMERAL")
-      return null;
-    const effects = card.effects ?? [];
-    for (const eff of effects) {
-      for (const action of eff.actions ?? []) {
-        if (
-          action.target === "ALLY_MONSTER" ||
-          action.target === "TARGET_ALLY" ||
-          action.target === "ARCHETYPE_ALLIES"
-        )
-          return "ally";
-        if (action.target === "ENEMY_MONSTER") return "enemy";
-      }
-    }
-    return null;
-  };
-
   /** Ouvre le CardPickModal pour choisir la cible d'un support éphémère */
   const openTargetPick = (
     handIdx: number,
-    card: HandCard,
+    cardName: string,
     targetSide: "ally" | "enemy",
   ) => {
     const zones =
@@ -200,12 +179,8 @@ export default function FightBoard({
         source: "board" as const,
       }));
 
-    if (candidates.length === 0) {
-      // Aucune cible dispo → jouer sans cible
-      onPlaySupport(handIdx);
-      onSetSelectedCard(null);
-      return;
-    }
+    // Aucune cible : la barre d'action désactive déjà le bouton
+    if (candidates.length === 0) return;
 
     setTargetSupportHandIdx(handIdx);
     setTargetSupportChoice({
@@ -213,10 +188,9 @@ export default function FightBoard({
       count: 1,
       prompt:
         targetSide === "ally"
-          ? `Choisir le monstre allié à cibler avec « ${card.name} »`
-          : `Choisir le monstre ennemi à cibler avec « ${card.name} »`,
-      resolution:
-        targetSide === "enemy" ? "force_attack_enemy" : "pick_to_hand",
+          ? `Choisir le monstre allié à cibler avec « ${cardName} »`
+          : `Choisir le monstre ennemi à cibler avec « ${cardName} »`,
+      resolution: "pick_to_hand",
     });
   };
 
@@ -358,6 +332,21 @@ export default function FightBoard({
     onDirectAttack();
   };
 
+  // Éphémère ciblé sans cible possible : bouton « Jouer » désactivé
+  const selectedTargetSide =
+    selectedCard !== null
+      ? ephemeralTargetSide(gs.me.hand[selectedCard]?.baseCard.effects)
+      : null;
+  const playBlockedReason =
+    selectedTargetSide !== null &&
+    !(
+      selectedTargetSide === "ally"
+        ? gs.me.monsterZones
+        : gs.opponent.monsterZones
+    ).some(Boolean)
+      ? "Aucune cible valide"
+      : undefined;
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -476,7 +465,6 @@ export default function FightBoard({
         selectedCard={selectedCard}
         selectedZone={isZeta ? selectedOppZone : selectedZone}
         hand={mappedHand}
-        monsterZones={gs.me.monsterZones}
         onSummon={onSummon}
         onOpenSummonModal={() => {
           onSetPayIndices([]);
@@ -491,14 +479,12 @@ export default function FightBoard({
             onSetPayIndices([]);
             return;
           }
-          // Vérifier si la carte nécessite une cible monstre
-          const card = mappedHand[handIdx];
-          if (card) {
-            const needsTarget = ephemeralNeedsMonsterTarget(card);
-            if (needsTarget) {
-              openTargetPick(handIdx, card, needsTarget);
-              return;
-            }
+          // Éphémère ciblé : choisir la cible avant de jouer
+          const instance = gs.me.hand[handIdx];
+          const side = ephemeralTargetSide(instance?.baseCard.effects);
+          if (instance && side) {
+            openTargetPick(handIdx, instance.baseCard.name, side);
+            return;
           }
           onPlaySupport(handIdx);
           onSetSelectedCard(null);
@@ -513,6 +499,7 @@ export default function FightBoard({
           onSetPayIndices([]);
         }}
         freeSummonAvailable={gs.me.freeSummonAvailable}
+        playBlockedReason={playBlockedReason}
       />
 
       {showSummonModal &&
@@ -534,6 +521,7 @@ export default function FightBoard({
       {targetSupportChoice !== null && targetSupportHandIdx !== null && (
         <CardPickModal
           choice={targetSupportChoice}
+          confirmLabel="🎯 Cibler"
           onConfirm={(instanceIds) => {
             const [targetId] = instanceIds;
             onPlaySupport(targetSupportHandIdx, undefined, targetId);

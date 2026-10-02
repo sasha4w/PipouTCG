@@ -17,7 +17,7 @@ export function finishGame(
   game.phase = 'finished';
   game.winner = winnerUserId ?? undefined;
   game.endReason = reason;
-  game.pendingChoice = undefined;
+  game.pendingChoices = [];
   addLog(
     game,
     winnerUserId === null

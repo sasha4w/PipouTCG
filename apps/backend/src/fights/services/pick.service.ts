@@ -1,257 +1,65 @@
 import { Injectable } from '@nestjs/common';
-import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
-import { addLog, getPlayerState, shuffle } from '../helpers/game-state.helper';
-import { EffectsResolverService } from '../effects-resolver.service';
+import { GameState } from '../interfaces/game-state.interface';
+import {
+  addLog,
+  currentChoice,
+  getPlayerState,
+  shuffle,
+} from '../helpers/game-state.helper';
 
 @Injectable()
 export class PickService {
-  constructor(private effectsResolver: EffectsResolverService) {}
-
+  /** Résout le premier choix en attente avec les cartes choisies. */
   pickCards(
     game: GameState,
     userId: number,
     instanceIds: string[],
   ): { error?: string } {
-    const choice = game.pendingChoice;
+    const choice = currentChoice(game);
     if (!choice || choice.forUserId !== userId)
       return { error: 'Aucun choix de carte en attente' };
 
-    const maxPick = Math.min(choice.count, choice.candidates.length);
-    if (instanceIds.length !== maxPick)
-      return { error: `Sélectionnez exactement ${maxPick} carte(s)` };
+    const expected = Math.min(choice.count, choice.candidates.length);
+    const picked = [...new Set(instanceIds)];
+    if (picked.length !== expected)
+      return { error: `Sélectionnez exactement ${expected} carte(s)` };
+    if (
+      picked.some((id) => !choice.candidates.some((c) => c.instanceId === id))
+    )
+      return { error: 'Carte introuvable dans les choix disponibles' };
 
-    for (const instanceId of instanceIds) {
-      if (!choice.candidates.find((c) => c.instanceId === instanceId))
-        return { error: `Carte introuvable dans les choix disponibles` };
-    }
-
-    const resolution = choice.resolution ?? 'pick_to_hand';
-
-    switch (resolution) {
-      case 'pick_to_hand':
-        return this.resolvePickToHand(game, userId, instanceIds);
-      case 'destroy_ally':
-        return this.resolveDestroyAlly(game, userId, instanceIds);
-      case 'return_to_hand':
-        return this.resolveReturnToHand(game, userId, instanceIds);
-      case 'force_attack_enemy':
-        return this.resolveForceAttackEnemy(game, userId, instanceIds);
-      case 'block_attack_enemy':
-        return this.resolveBlockAttackEnemy(game, userId, instanceIds);
-      case 'force_guard_enemy':
-        return this.resolveForceGuardEnemy(game, userId, instanceIds);
-      default:
-        return { error: `Résolution inconnue : ${String(resolution)}` };
-    }
-  }
-
-  // ── pick_to_hand — récupère depuis cimetière / deck ───────────────────────
-
-  private resolvePickToHand(
-    game: GameState,
-    userId: number,
-    instanceIds: string[],
-  ): { error?: string } {
-    const choice = game.pendingChoice!;
     const player = getPlayerState(game, userId);
-    let pickedFromDeck = false;
 
-    for (const instanceId of instanceIds) {
-      const candidate = choice.candidates.find(
-        (c) => c.instanceId === instanceId,
-      )!;
-
-      if (candidate.source === 'graveyard') {
-        const idx = player.graveyard.findIndex(
-          (c) => c.instanceId === instanceId,
-        );
-        if (idx !== -1) {
-          const [card] = player.graveyard.splice(idx, 1);
-          player.hand.push(card);
-          addLog(
-            game,
-            `📥 ${player.username} récupère ${candidate.baseCard.name} depuis son cimetière`,
-          );
-        }
-      } else {
-        const idx = player.deck.findIndex((c) => c.instanceId === instanceId);
-        if (idx !== -1) {
-          const [card] = player.deck.splice(idx, 1);
-          player.hand.push(card);
-          pickedFromDeck = true;
-          addLog(
-            game,
-            `🔮 ${player.username} récupère ${candidate.baseCard.name} depuis son deck`,
-          );
-        }
+    if (choice.resolution === 'discard') {
+      for (const id of picked) {
+        const idx = player.hand.findIndex((c) => c.instanceId === id);
+        if (idx === -1) continue;
+        const [card] = player.hand.splice(idx, 1);
+        player.graveyard.push(card);
+        addLog(game, `🗑️ ${player.username} défausse ${card.baseCard.name}`);
       }
+    } else {
+      let pickedFromDeck = false;
+      for (const id of picked) {
+        const candidate = choice.candidates.find((c) => c.instanceId === id)!;
+        const pile =
+          candidate.source === 'graveyard' ? player.graveyard : player.deck;
+        const idx = pile.findIndex((c) => c.instanceId === id);
+        if (idx === -1) continue;
+        const [card] = pile.splice(idx, 1);
+        player.hand.push(card);
+        if (candidate.source === 'deck') pickedFromDeck = true;
+        addLog(
+          game,
+          candidate.source === 'graveyard'
+            ? `📥 ${player.username} récupère ${card.baseCard.name} depuis son cimetière`
+            : `🔮 ${player.username} récupère ${card.baseCard.name} depuis son deck`,
+        );
+      }
+      if (pickedFromDeck) shuffle(player.deck);
     }
 
-    if (pickedFromDeck) player.deck = shuffle([...player.deck]);
-
-    game.pendingChoice = undefined;
-    return {};
-  }
-
-  // ── destroy_ally — Formatage .exe, Recyclage .bat ─────────────────────────
-
-  private resolveDestroyAlly(
-    game: GameState,
-    userId: number,
-    instanceIds: string[],
-  ): { error?: string } {
-    const player = getPlayerState(game, userId);
-    const [instanceId] = instanceIds;
-
-    const zoneIdx = player.monsterZones.findIndex(
-      (m) => m?.instanceId === instanceId,
-    );
-    if (zoneIdx === -1) {
-      game.pendingChoice = undefined;
-      return { error: 'Monstre allié introuvable sur le terrain' };
-    }
-
-    const monster = player.monsterZones[zoneIdx]!;
-
-    const log: string[] = [];
-    this.effectsResolver.destroyMonster(game, player, instanceId, log, {
-      draw: false,
-    });
-    log.forEach((l) => addLog(game, l));
-
-    addLog(game, `💥 ${player.username} détruit ${monster.card.baseCard.name}`);
-
-    game.pendingChoice = undefined;
-    return {};
-  }
-
-  // ── return_to_hand — Migration .cloud ─────────────────────────────────────
-
-  private resolveReturnToHand(
-    game: GameState,
-    userId: number,
-    instanceIds: string[],
-  ): { error?: string } {
-    const player = getPlayerState(game, userId);
-    const [instanceId] = instanceIds;
-
-    const zoneIdx = player.monsterZones.findIndex(
-      (m) => m?.instanceId === instanceId,
-    );
-    if (zoneIdx === -1) {
-      game.pendingChoice = undefined;
-      return { error: 'Monstre allié introuvable sur le terrain' };
-    }
-
-    const monster = player.monsterZones[zoneIdx]!;
-
-    for (const eq of monster.equipments) {
-      player.hand.push(eq);
-    }
-    player.hand.push(monster.card);
-    player.monsterZones[zoneIdx] = null;
-
-    addLog(
-      game,
-      `↩️ ${player.username} retourne ${monster.card.baseCard.name} en main` +
-        (monster.equipments.length > 0
-          ? ` (+ ${monster.equipments.length} équipement(s) récupéré(s))`
-          : ''),
-    );
-
-    game.pendingChoice = undefined;
-    return {};
-  }
-
-  // ── force_attack_enemy — Rootkit de Transmission ──────────────────────────
-
-  private resolveForceAttackEnemy(
-    game: GameState,
-    userId: number,
-    instanceIds: string[],
-  ): { error?: string } {
-    const opponent =
-      game.player1.userId === userId ? game.player2 : game.player1;
-    const player = getPlayerState(game, userId);
-    const [instanceId] = instanceIds;
-
-    const monster = opponent.monsterZones.find(
-      (m) => m?.instanceId === instanceId,
-    );
-    if (!monster) {
-      game.pendingChoice = undefined;
-      return { error: 'Monstre adverse introuvable' };
-    }
-
-    monster.forcedAttackMode = true;
-    monster.mode = 'attack';
-
-    addLog(
-      game,
-      `🔒 ${player.username} force ${monster.card.baseCard.name} en mode Attaque`,
-    );
-
-    game.pendingChoice = undefined;
-    return {};
-  }
-  // ── block_attack_enemy — Protocole de Gel ────────────────────────────────
-
-  private resolveBlockAttackEnemy(
-    game: GameState,
-    userId: number,
-    instanceIds: string[],
-  ): { error?: string } {
-    const opponent =
-      game.player1.userId === userId ? game.player2 : game.player1;
-    const player = getPlayerState(game, userId);
-    const [instanceId] = instanceIds;
-
-    const monster = opponent.monsterZones.find(
-      (m): m is MonsterOnBoard => m?.instanceId === instanceId,
-    );
-    if (!monster) {
-      game.pendingChoice = undefined;
-      return { error: 'Monstre adverse introuvable' };
-    }
-
-    monster.blockAttackTurns = 3;
-    addLog(
-      game,
-      `🧊 ${player.username} bloque les attaques de ${monster.card.baseCard.name} pendant 3 tour(s)`,
-    );
-
-    game.pendingChoice = undefined;
-    return {};
-  }
-
-  // ── force_guard_enemy — Verrou de Position ────────────────────────────────
-
-  private resolveForceGuardEnemy(
-    game: GameState,
-    userId: number,
-    instanceIds: string[],
-  ): { error?: string } {
-    const opponent =
-      game.player1.userId === userId ? game.player2 : game.player1;
-    const player = getPlayerState(game, userId);
-    const [instanceId] = instanceIds;
-
-    const monster = opponent.monsterZones.find(
-      (m): m is MonsterOnBoard => m?.instanceId === instanceId,
-    );
-    if (!monster) {
-      game.pendingChoice = undefined;
-      return { error: 'Monstre adverse introuvable' };
-    }
-
-    monster.guardLocked = true;
-    monster.mode = 'guard';
-    addLog(
-      game,
-      `🔒 ${player.username} verrouille ${monster.card.baseCard.name} en mode Garde`,
-    );
-
-    game.pendingChoice = undefined;
+    game.pendingChoices.shift();
     return {};
   }
 }
