@@ -10,12 +10,13 @@ import { PickService } from '../services/pick.service';
 /** Moteur câblé à la main, comme le ferait Nest, pour les tests. */
 export function createEngine(): GameEngine {
   const effects = new EffectsResolverService();
-  const buffs = new BuffsCalculatorService();
   return new GameEngine(
-    new PhaseService(effects, buffs),
-    new SummonService(effects, buffs),
-    new SupportService(effects, buffs),
-    new BattleService(effects, buffs),
+    new PhaseService(effects),
+    new SummonService(effects),
+    new SupportService(effects),
+    new BattleService(effects),
     new PickService(effects),
+    effects,
+    new BuffsCalculatorService(),
   );
 }

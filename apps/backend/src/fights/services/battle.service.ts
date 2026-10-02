@@ -6,7 +6,6 @@ import {
 } from '../interfaces/game-state.interface';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {
   addLog,
   getPlayerState,
@@ -19,10 +18,7 @@ import {
 
 @Injectable()
 export class BattleService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
   attack(
     game: GameState,
@@ -214,8 +210,7 @@ export class BattleService {
     }
 
     log.forEach((l) => addLog(game, l));
-    this.buffsCalc.recalculate(player);
-    this.buffsCalc.recalculate(opponent);
+
     return {};
   }
 }

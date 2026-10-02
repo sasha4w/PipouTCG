@@ -11,16 +11,12 @@ import {
 import { finishGame } from '../helpers/game-end.helper';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 
 export const HAND_LIMIT = 7;
 
 @Injectable()
 export class PhaseService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
   endPhase(game: GameState, userId: number): { error?: string } {
     if (!isCurrentPlayer(game, userId))
@@ -149,7 +145,6 @@ export class PhaseService {
     }
 
     log.forEach((l) => addLog(game, l));
-    this.buffsCalc.recalculate(player);
   }
 
   /**

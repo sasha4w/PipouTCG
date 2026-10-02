@@ -13,6 +13,17 @@ export interface CardInstance<C = ClientCard> {
 
 export type CombatMode = "attack" | "guard";
 
+/** Bonus posés par des effets déclenchés : socle du recalcul des passifs. */
+export interface MonsterPermanentStats {
+  atk: number;
+  hp: number;
+  taunt: boolean;
+  piercing: boolean;
+  debuffImmune: boolean;
+  damageReduction?: number;
+  attacksPerTurn: number;
+}
+
 export interface MonsterOnBoard<C = ClientCard> {
   instanceId: string;
   card: CardInstance<C>;
@@ -22,6 +33,7 @@ export interface MonsterOnBoard<C = ClientCard> {
   atkBuff: number;
   hpBuff: number;
   tempAtkBuff: number;
+  perm: MonsterPermanentStats;
   hasAttackedThisTurn: boolean;
   attacksPerTurn: number;
   attacksUsedThisTurn: number;

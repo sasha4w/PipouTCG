@@ -3,7 +3,6 @@ import { GameState } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { CardType, EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {
   addLog,
   getPlayerState,
@@ -16,10 +15,7 @@ const ZETA_CARD_ID = 122;
 
 @Injectable()
 export class SummonService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
   /** Invoque un monstre de la main, sur son terrain ou (Zeta) sur une zone adverse. */
   summon(
@@ -130,9 +126,6 @@ export class SummonService {
       log: summonLog,
     });
     summonLog.forEach((l) => addLog(game, l));
-
-    this.buffsCalc.recalculate(player);
-    this.buffsCalc.recalculate(opponent);
 
     for (const handCard of player.hand) {
       const allyLog: string[] = [];

@@ -13,6 +13,8 @@ import {
   seatPlayer,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
+import { EffectsResolverService } from '../effects-resolver.service';
+import { BuffsCalculatorService } from '../buffs-calculator.service';
 
 export interface EngineResult {
   error?: string;
@@ -31,6 +33,8 @@ export class GameEngine {
     private support: SupportService,
     private battle: BattleService,
     private pick: PickService,
+    private effects: EffectsResolverService,
+    private buffs: BuffsCalculatorService,
   ) {}
 
   dispatch(game: GameState, seat: Seat, action: GameAction): EngineResult {
@@ -56,9 +60,12 @@ export class GameEngine {
     this.settle(game);
   }
 
-  /** Stabilise l'état après un changement : contrôle de victoire. */
+  /** Stabilise l'état après un changement : buffs, monstres à 0 PV, victoire. */
   settle(game: GameState): void {
     if (game.phase === 'finished') return;
+    this.buffs.recalculate(game);
+    this.reapDeadMonsters(game);
+
     const outcome = checkWinCondition(game);
     if (outcome)
       finishGame(
@@ -66,6 +73,27 @@ export class GameEngine {
         outcome.winnerUserId,
         outcome.winnerUserId === null ? 'double_ko' : 'primes_depleted',
       );
+  }
+
+  /** Détruit les monstres à 0 PV (perte de bonus, dégâts), jusqu'à stabilité. */
+  private reapDeadMonsters(game: GameState): void {
+    for (let pass = 0; pass < 5; pass++) {
+      const log: string[] = [];
+      let died = false;
+      for (const player of [game.player1, game.player2]) {
+        for (const m of player.monsterZones) {
+          if (!m || m.currentHp > 0) continue;
+          log.push(`💀 ${m.card.baseCard.name} succombe`);
+          this.effects.destroyMonster(game, player, m.instanceId, log, {
+            draw: true,
+          });
+          died = true;
+        }
+      }
+      log.forEach((l) => addLog(game, l));
+      if (!died) return;
+      this.buffs.recalculate(game);
+    }
   }
 
   private apply(

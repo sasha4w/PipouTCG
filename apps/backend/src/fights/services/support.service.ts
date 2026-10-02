@@ -11,7 +11,6 @@ import {
   EffectConditionType as ConditionType,
 } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {
   addLog,
   getPlayerState,
@@ -22,10 +21,7 @@ import { CombatMode } from '../interfaces/game-state.interface';
 
 @Injectable()
 export class SupportService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
   playSupport(
     game: GameState,
@@ -89,7 +85,7 @@ export class SupportService {
           sourceMonster: target,
           log,
         });
-        this.buffsCalc.recalculate(player);
+
         break;
       }
 
@@ -112,7 +108,7 @@ export class SupportService {
           ownerUserId: userId,
           log,
         });
-        this.buffsCalc.recalculate(player);
+
         break;
       }
 

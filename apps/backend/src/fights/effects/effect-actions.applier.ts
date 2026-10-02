@@ -70,13 +70,17 @@ export function applyActions(
 
       // ── Stat buffs ────────────────────────────────────────────────────────
       case ActionType.BUFF_ATK:
-        for (const target of targets.monsters)
-          target.atkBuff += action.value ?? 0;
+        for (const target of targets.monsters) {
+          const v = action.value ?? 0;
+          target.perm.atk += v;
+          target.atkBuff += v;
+        }
         break;
 
       case ActionType.BUFF_HP:
         for (const target of targets.monsters) {
           const v = action.value ?? 0;
+          target.perm.hp += v;
           target.hpBuff += v;
           target.currentHp += v;
         }
@@ -243,55 +247,64 @@ export function applyActions(
 
       // ── Flags ─────────────────────────────────────────────────────────────
       case ActionType.SET_TAUNT:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.hasTaunt = true;
-          ctx.log.push(`🛡️ ${card.baseCard.name} active la Provocation`);
+        for (const m of targets.monsters) {
+          m.perm.taunt = true;
+          m.hasTaunt = true;
+          ctx.log.push(`🛡️ ${m.card.baseCard.name} gagne la Provocation`);
         }
         break;
 
       case ActionType.SET_PIERCING:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.hasPiercing = true;
-          ctx.log.push(`⚔️ ${card.baseCard.name} gagne l'Attaque Perçante`);
+        for (const m of targets.monsters) {
+          m.perm.piercing = true;
+          m.hasPiercing = true;
+          ctx.log.push(`⚔️ ${m.card.baseCard.name} gagne l'Attaque Perçante`);
         }
         break;
 
       case ActionType.SET_ATTACKS_PER_TURN:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.attacksPerTurn = action.value ?? 1;
+        for (const m of targets.monsters) {
+          const v = action.value ?? 1;
+          m.perm.attacksPerTurn = v;
+          m.attacksPerTurn = v;
           ctx.log.push(
-            `🏹 ${card.baseCard.name} peut attaquer ${action.value} fois par tour`,
+            `🏹 ${m.card.baseCard.name} peut attaquer ${v} fois par tour`,
           );
         }
         break;
 
       case ActionType.SET_DEBUFF_IMMUNITY:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.isImmuneToDebuffs = true;
-          ctx.log.push(`✨ ${card.baseCard.name} est immunisé aux débuffs`);
+        for (const m of targets.monsters) {
+          m.perm.debuffImmune = true;
+          m.isImmuneToDebuffs = true;
+          ctx.log.push(`✨ ${m.card.baseCard.name} est immunisé aux débuffs`);
         }
         break;
 
       case ActionType.FORCE_ATTACK_MODE:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.forcedAttackMode = true;
-          ctx.sourceMonster.mode = 'attack';
-          ctx.log.push(`⚔️ ${card.baseCard.name} est forcé en mode Attaque`);
+        for (const m of targets.monsters) {
+          m.forcedAttackMode = true;
+          m.mode = 'attack';
+          ctx.log.push(`⚔️ ${m.card.baseCard.name} est forcé en mode Attaque`);
         }
         break;
 
       case ActionType.SET_DELAY_DOUBLE_ATK:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.summonedThisTurn = true;
-          ctx.sourceMonster.doubleAtkNextTurn = true;
-          ctx.log.push(`⏳ ${card.baseCard.name} prépare son double assaut`);
+        for (const m of targets.monsters) {
+          m.summonedThisTurn = true;
+          m.doubleAtkNextTurn = true;
+          ctx.log.push(`⏳ ${m.card.baseCard.name} prépare son double assaut`);
         }
         break;
 
       case ActionType.SET_DAMAGE_REDUCTION:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.damageReduction = action.value ?? 1;
-          ctx.log.push(`🛡️ ${card.baseCard.name} réduit les dégâts de moitié`);
+        for (const m of targets.monsters) {
+          const v = action.value ?? 2;
+          m.perm.damageReduction = Math.max(m.perm.damageReduction ?? 1, v);
+          m.damageReduction = Math.max(m.damageReduction ?? 1, v);
+          ctx.log.push(
+            `🛡️ ${m.card.baseCard.name} divise les dégâts reçus par ${v}`,
+          );
         }
         break;
 
