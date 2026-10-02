@@ -121,6 +121,19 @@ export function scenario(spec: ScenarioSpec = {}): GameState {
   };
 }
 
+/** Match créé par le matchmaking, decks pas encore soumis. */
+export function waitingScenario(): GameState {
+  const game = scenario({ phase: 'waiting', turnNumber: 0 });
+  for (const p of [game.player1, game.player2]) {
+    p.ready = false;
+    p.hand = [];
+    p.deck = [];
+    p.primeDeck = [];
+    p.primes = 0;
+  }
+  return game;
+}
+
 export function seatState(game: GameState, seat: Seat): PlayerGameState {
   return seat === 'p1' ? game.player1 : game.player2;
 }

@@ -19,18 +19,30 @@ export function seatPlayer(game: GameState, seat: Seat): PlayerGameState {
   return seat === 'p1' ? game.player1 : game.player2;
 }
 
+export function seatOf(game: GameState, userId: number): Seat | null {
+  if (game.player1.userId === userId) return 'p1';
+  if (game.player2.userId === userId) return 'p2';
+  return null;
+}
+
 export function getPlayerState(
   game: GameState,
   userId: number,
 ): PlayerGameState {
-  return game.player1.userId === userId ? game.player1 : game.player2;
+  const seat = seatOf(game, userId);
+  if (!seat)
+    throw new Error(`Joueur ${userId} absent du match ${game.matchId}`);
+  return seatPlayer(game, seat);
 }
 
 export function getOpponentState(
   game: GameState,
   userId: number,
 ): PlayerGameState {
-  return game.player1.userId === userId ? game.player2 : game.player1;
+  const seat = seatOf(game, userId);
+  if (!seat)
+    throw new Error(`Joueur ${userId} absent du match ${game.matchId}`);
+  return seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
 }
 
 export function isCurrentPlayer(game: GameState, userId: number): boolean {

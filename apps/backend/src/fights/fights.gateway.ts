@@ -71,9 +71,12 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(client: FightSocket): void {
+  async handleDisconnect(client: FightSocket): Promise<void> {
     if (client.data.userId) {
-      this.fightsService.handleDisconnect(client.data.userId, this.server);
+      await this.fightsService.handleDisconnect(
+        client.data.userId,
+        this.server,
+      );
     }
   }
 
@@ -129,19 +132,19 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ── Actions de jeu ─────────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:end_phase')
-  endPhase(
+  async endPhase(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: MatchPayload,
-  ): void {
-    this.play(client, data.matchId, { type: 'end_phase' });
+  ): Promise<void> {
+    await this.play(client, data.matchId, { type: 'end_phase' });
   }
 
   @SubscribeMessage('fight:summon')
-  summonMonster(
+  async summonMonster(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'summon',
       handIndex: data.handIndex,
       zoneIndex: data.zoneIndex,
@@ -151,11 +154,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   /** Invoque Noyau Zeta sur une zone adverse vide */
   @SubscribeMessage('fight:summon_opponent')
-  summonZetaOnOpponent(
+  async summonZetaOnOpponent(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'summon',
       handIndex: data.handIndex,
       zoneIndex: data.zoneIndex,
@@ -165,11 +168,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:play_support')
-  playSupport(
+  async playSupport(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: PlaySupportPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'play_support',
       handIndex: data.handIndex,
       zoneIndex: data.zoneIndex,
@@ -178,22 +181,22 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:recycle_support')
-  recycleFromHand(
+  async recycleFromHand(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: RecycleSupportPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'recycle',
       handIndex: data.handIndex,
     });
   }
 
   @SubscribeMessage('fight:change_mode')
-  changeMode(
+  async changeMode(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: ChangeModePayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'change_mode',
       instanceId: data.instanceId,
       mode: data.mode,
@@ -201,11 +204,11 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:attack')
-  attack(
+  async attack(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: AttackPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'attack',
       attackerInstanceId: data.attackerInstanceId,
       targetInstanceId: data.targetInstanceId,
@@ -214,39 +217,55 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('fight:discard')
-  discard(
+  async discard(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: DiscardPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'discard',
       handIndex: data.handIndex,
     });
   }
 
   @SubscribeMessage('fight:pick_cards')
-  pickCards(
+  async pickCards(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: PickCardsPayload,
-  ): void {
-    this.play(client, data.matchId, {
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
       type: 'pick_cards',
       instanceIds: data.instanceIds,
     });
   }
 
   @SubscribeMessage('fight:surrender')
-  surrender(
+  async surrender(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: MatchPayload,
-  ): void {
-    this.fightsService.surrender(data.matchId, client.data.userId, this.server);
-  }
-
-  private play(client: FightSocket, matchId: number, action: GameAction): void {
+  ): Promise<void> {
     this.reply(
       client,
-      this.fightsService.act(matchId, client.data.userId, action, this.server),
+      await this.fightsService.surrender(
+        data.matchId,
+        client.data.userId,
+        this.server,
+      ),
+    );
+  }
+
+  private async play(
+    client: FightSocket,
+    matchId: number,
+    action: GameAction,
+  ): Promise<void> {
+    this.reply(
+      client,
+      await this.fightsService.act(
+        matchId,
+        client.data.userId,
+        action,
+        this.server,
+      ),
     );
   }
 
