@@ -11,6 +11,7 @@ import BoosterManager from "../features/boosters/BoosterManager";
 import BundleManager from "../features/bundles/BundleManager";
 import QuestManager from "../features/quests/QuestManager";
 import BannerManager from "../features/shop/BannerManager";
+import ScenarioList from "../features/sandbox/ScenarioList";
 import "./Admin.css";
 
 type AdminTab =
@@ -19,7 +20,8 @@ type AdminTab =
   | "boosters"
   | "bundles"
   | "quests"
-  | "banners";
+  | "banners"
+  | "sandbox";
 
 const TABS: { key: AdminTab; label: string; icon: string }[] = [
   { key: "cardsets", label: "Card Sets", icon: "🗂" },
@@ -28,6 +30,7 @@ const TABS: { key: AdminTab; label: string; icon: string }[] = [
   { key: "bundles", label: "Bundles", icon: "🎁" },
   { key: "quests", label: "Quêtes", icon: "📋" },
   { key: "banners", label: "Bannières", icon: "🏷" },
+  { key: "sandbox", label: "Sandbox", icon: "🧪" },
 ];
 
 export default function Admin() {
@@ -66,6 +69,7 @@ export default function Admin() {
       {tab === "bundles" && <BundleManager />}
       {tab === "quests" && <QuestManager />}
       {tab === "banners" && <BannerManager />}
+      {tab === "sandbox" && <ScenarioList />}
     </div>
   );
 }
