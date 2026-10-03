@@ -1,71 +1,43 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
-import { v4 as uuidv4 } from 'uuid';
-import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
-import { CardType, EffectTrigger } from '@pipou/shared';
+import { GameState } from '../interfaces/game-state.interface';
+import { createMonsterOnBoard } from '../helpers/monster.factory';
+import { CardType, EffectTrigger, canSummonOnEnemySide } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {
   addLog,
   getPlayerState,
   getOpponentState,
   isCurrentPlayer,
 } from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
-
-/** Seul ID autorisé à être posé sur le terrain adverse */
-const ZETA_CARD_ID = 122;
 
 @Injectable()
 export class SummonService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
-  /** Invocation normale — pose sur le terrain du joueur courant */
-  summonMonster(
+  /** Invoque un monstre de la main, sur son terrain ou sur une zone adverse libre. */
+  summon(
     game: GameState,
     userId: number,
     handIndex: number,
     zoneIndex: number,
     paymentHandIndices: number[],
-    server: FightServer,
+    onOpponentSide: boolean,
   ): { error?: string } {
+    if (onOpponentSide) {
+      const card = getPlayerState(game, userId).hand[handIndex];
+      if (!card) return { error: 'Index main invalide' };
+      if (!canSummonOnEnemySide(card.baseCard.effects))
+        return {
+          error: `${card.baseCard.name} ne peut pas être invoqué sur le terrain adverse`,
+        };
+    }
     return this.doSummon(
       game,
       userId,
       handIndex,
       zoneIndex,
       paymentHandIndices,
-      false,
-      server,
-    );
-  }
-
-  /** Invocation Zeta — pose sur une zone adverse vide */
-  summonZetaOnOpponent(
-    game: GameState,
-    userId: number,
-    handIndex: number,
-    zoneIndex: number,
-    paymentHandIndices: number[],
-    server: FightServer,
-  ): { error?: string } {
-    const player = getPlayerState(game, userId);
-    if (handIndex < 0 || handIndex >= player.hand.length)
-      return { error: 'Index main invalide' };
-    if (player.hand[handIndex].baseCard.id !== ZETA_CARD_ID)
-      return { error: 'Seul Noyau Zeta peut être posé sur le terrain adverse' };
-
-    return this.doSummon(
-      game,
-      userId,
-      handIndex,
-      zoneIndex,
-      paymentHandIndices,
-      true,
-      server,
+      onOpponentSide,
     );
   }
 
@@ -78,7 +50,6 @@ export class SummonService {
     zoneIndex: number,
     paymentHandIndices: number[],
     onOpponentZone: boolean,
-    server: FightServer,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -97,8 +68,11 @@ export class SummonService {
     if (card.baseCard.type !== CardType.MONSTER)
       return { error: 'Pas un Monstre' };
 
-    const isFree = player.freeSummonAvailable && card.baseCard.id === 29;
-    if (isFree) player.freeSummonAvailable = false;
+    const isFree = player.freeSummonInstanceIds.includes(card.instanceId);
+    if (isFree)
+      player.freeSummonInstanceIds = player.freeSummonInstanceIds.filter(
+        (id) => id !== card.instanceId,
+      );
 
     const cost = isFree ? 0 : (card.baseCard.cost ?? 0);
     const uniquePayment = isFree ? [] : [...new Set(paymentHandIndices)];
@@ -129,28 +103,10 @@ export class SummonService {
     ).length;
     const [monster] = player.hand.splice(handIndex - removedBefore, 1);
 
-    const instance: MonsterOnBoard = {
-      instanceId: uuidv4(),
-      card: monster,
-      currentHp: monster.baseCard.hp,
-      mode: 'attack',
-      equipments: [],
-      atkBuff: 0,
-      hpBuff: 0,
-      tempAtkBuff: 0,
-      hasAttackedThisTurn: false,
-      attacksPerTurn: 1,
-      attacksUsedThisTurn: 0,
-      hasTaunt: false,
-      hasPiercing: false,
-      isImmuneToDebuffs: false,
-      forcedAttackMode: false,
-      summonedThisTurn: true,
-      doubleAtkNextTurn: false,
-      turnCounter: undefined,
+    const instance = createMonsterOnBoard(monster, {
       // Mémorise le poseur quand c'est une zone adverse (Zeta)
       ownerUserId: onOpponentZone ? userId : undefined,
-    };
+    });
 
     target.monsterZones[zoneIndex] = instance;
 
@@ -170,9 +126,6 @@ export class SummonService {
     });
     summonLog.forEach((l) => addLog(game, l));
 
-    this.buffsCalc.recalculate(player);
-    this.buffsCalc.recalculate(opponent);
-
     for (const handCard of player.hand) {
       const allyLog: string[] = [];
       this.effectsResolver.resolve(handCard, EffectTrigger.ON_ALLY_SUMMON, {
@@ -182,8 +135,6 @@ export class SummonService {
       });
       allyLog.forEach((l) => addLog(game, l));
     }
-
-    emitGameState(game, server);
     return {};
   }
 }

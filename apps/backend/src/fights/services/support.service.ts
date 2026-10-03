@@ -1,42 +1,37 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import {
   GameState,
   CardInstance,
-  PlayerGameState,
+  MonsterOnBoard,
 } from '../interfaces/game-state.interface';
 import {
   CardType,
   SupportType,
   EffectTrigger,
-  EffectConditionType as ConditionType,
+  ephemeralTargetSide,
 } from '@pipou/shared';
+import { checkCondition } from '../effects/effect-conditions';
+import { canResolveAction } from '../effects/effect-resolvability';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {
   addLog,
   getPlayerState,
+  getOpponentState,
   isCurrentPlayer,
-  drawCard,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
 
 @Injectable()
 export class SupportService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
-  async playSupport(
+  playSupport(
     game: GameState,
     userId: number,
     handIndex: number,
     zoneIndex: number | undefined,
     targetInstanceId: string | undefined,
-    server: FightServer,
-    checkWinAndEmit: (game: GameState, server: FightServer) => Promise<void>,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
     if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
@@ -49,9 +44,29 @@ export class SupportService {
     if (card.baseCard.type !== CardType.SUPPORT)
       return { error: 'Pas un Support' };
 
+    let targetMonster: MonsterOnBoard | undefined;
     if (card.baseCard.supportType === SupportType.EPHEMERAL) {
-      if (!this.isSupportPlayable(card, player))
-        return { error: 'Condition non remplie pour jouer cette carte' };
+      const unplayable = this.unplayableReason(game, card, userId);
+      if (unplayable) return { error: unplayable };
+
+      const side = ephemeralTargetSide(card.baseCard.effects);
+      if (side) {
+        const pool =
+          side === 'ally'
+            ? player.monsterZones
+            : getOpponentState(game, userId).monsterZones;
+        if (!pool.some((m) => m !== null))
+          return { error: 'Aucune cible valide pour cette carte' };
+        targetMonster =
+          pool.find((m) => m?.instanceId === targetInstanceId) ?? undefined;
+        if (!targetMonster)
+          return {
+            error:
+              side === 'ally'
+                ? 'Choisis un de tes monstres comme cible'
+                : 'Choisis un monstre adverse comme cible',
+          };
+      }
     }
 
     const [support] = player.hand.splice(handIndex, 1);
@@ -64,6 +79,7 @@ export class SupportService {
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
           ownerUserId: userId,
+          targetMonster,
           log,
         });
         break;
@@ -92,7 +108,7 @@ export class SupportService {
           sourceMonster: target,
           log,
         });
-        this.buffsCalc.recalculate(player);
+
         break;
       }
 
@@ -115,7 +131,7 @@ export class SupportService {
           ownerUserId: userId,
           log,
         });
-        this.buffsCalc.recalculate(player);
+
         break;
       }
 
@@ -125,7 +141,6 @@ export class SupportService {
     }
 
     log.forEach((l) => addLog(game, l));
-    await checkWinAndEmit(game, server);
     return {};
   }
 
@@ -133,8 +148,6 @@ export class SupportService {
     game: GameState,
     userId: number,
     handIndex: number,
-    server: FightServer,
-    emitState: (game: GameState, server: FightServer) => void,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -147,21 +160,19 @@ export class SupportService {
     const [card] = player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
 
-    if (card.baseCard.id === 17) {
-      const drawn = drawCard(game, userId);
-      if (drawn)
-        addLog(
-          game,
-          `🎺 Clairon recyclé — ${player.username} pioche une carte`,
-        );
-    }
     player.recycleEnergy += 1;
     addLog(
       game,
       `♻️ ${player.username} recycle ${card.baseCard.name} → +1 énergie (${player.recycleEnergy} total)`,
     );
 
-    emitState(game, server);
+    const log: string[] = [];
+    this.effectsResolver.resolve(card, EffectTrigger.ON_RECYCLE, {
+      game,
+      ownerUserId: userId,
+      log,
+    });
+    log.forEach((l) => addLog(game, l));
     return {};
   }
 
@@ -170,8 +181,6 @@ export class SupportService {
     userId: number,
     instanceId: string,
     mode: CombatMode,
-    server: FightServer,
-    emitState: (game: GameState, server: FightServer) => void,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -198,39 +207,30 @@ export class SupportService {
       game,
       `${player.username} : ${monster.card.baseCard.name} → mode ${mode === 'attack' ? 'Attaque ⚔️' : 'Garde 🛡️'}`,
     );
-    emitState(game, server);
     return {};
   }
 
-  private isSupportPlayable(
+  /**
+   * Raison pour laquelle un Éphémère ne peut pas être joué, ou null.
+   * Il faut qu'au moins un effet ON_PLAY ait sa condition remplie, et que
+   * l'un d'eux puisse produire quelque chose (sinon la carte serait gâchée).
+   */
+  private unplayableReason(
+    game: GameState,
     card: CardInstance,
-    player: PlayerGameState,
-  ): boolean {
-    const effects = card.baseCard.effects;
-    if (!effects?.length) return true;
+    userId: number,
+  ): string | null {
+    const onPlay = (card.baseCard.effects ?? []).filter(
+      (e) => e.trigger === EffectTrigger.ON_PLAY,
+    );
+    if (onPlay.length === 0) return null;
 
-    for (const effect of effects) {
-      if (effect.trigger !== EffectTrigger.ON_PLAY) continue;
-      if (!effect.condition) return true;
-
-      switch (effect.condition.type) {
-        case ConditionType.ARCHETYPE_ON_BOARD: {
-          const arch = effect.condition.value as string;
-          const hasOnBoard = player.monsterZones.some(
-            (m) =>
-              m?.card.baseCard.archetype?.toLowerCase() === arch.toLowerCase(),
-          );
-          if (!hasOnBoard) return false;
-          break;
-        }
-        case ConditionType.HAND_SIZE_MIN:
-          if (player.hand.length < (effect.condition.value as number))
-            return false;
-          break;
-        default:
-          return true;
-      }
-    }
-    return true;
+    const ctx = { game, ownerUserId: userId, sourceCard: card, log: [] };
+    const active = onPlay.filter((e) => checkCondition(e, ctx));
+    if (active.length === 0)
+      return 'Condition non remplie pour jouer cette carte';
+    if (!active.some((e) => e.actions.some((a) => canResolveAction(a, ctx))))
+      return "Cette carte n'aurait aucun effet pour l'instant";
+    return null;
   }
 }

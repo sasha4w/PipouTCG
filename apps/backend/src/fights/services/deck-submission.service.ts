@@ -1,64 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DecksService } from '../../decks/decks.service';
-import { GameState } from '../interfaces/game-state.interface';
-import { getPlayerState, shuffle } from '../helpers/game-state.helper';
-
-const STARTING_PRIMES = 6;
-const STARTING_HAND = 5;
+import { GameEngine } from '../engine/game-engine';
+import { CardInstance, GameState } from '../interfaces/game-state.interface';
+import { seatOf, seatPlayer } from '../helpers/game-state.helper';
 
 @Injectable()
 export class DeckSubmissionService {
-  constructor(private decksService: DecksService) {}
+  constructor(
+    private decksService: DecksService,
+    private engine: GameEngine,
+  ) {}
 
+  /** Charge, valide et installe le deck du joueur. */
   async submitDeck(
     game: GameState,
     userId: number,
     deckId: number,
-    server: FightServer,
-    onBothReady: (game: GameState, server: FightServer) => void,
   ): Promise<{ error?: string }> {
+    const seat = seatOf(game, userId);
+    if (!seat) return { error: 'Tu ne participes pas à ce match' };
     if (game.phase !== 'waiting') return { error: 'Le match a déjà commencé' };
+    if (seatPlayer(game, seat).ready) return { error: 'Deck déjà soumis' };
 
-    const player = getPlayerState(game, userId);
-    if (player.ready) return { error: 'Deck déjà soumis' };
-
-    let cards;
+    let cards: CardInstance[];
     try {
-      const effectiveUserId =
-        userId < 0
-          ? game.player1.userId > 0
-            ? game.player1.userId
-            : game.player2.userId
-          : userId;
-
-      cards = await this.decksService.loadDeckCards(deckId, effectiveUserId);
-    } catch {
+      cards = await this.decksService.loadDeckForMatch(deckId, userId);
+    } catch (err) {
+      if (
+        err instanceof BadRequestException ||
+        err instanceof NotFoundException
+      )
+        return { error: err.message };
       return { error: 'Deck invalide ou inaccessible' };
     }
-
-    if (cards.length < 20)
-      return { error: 'Le deck doit contenir au moins 20 cartes' };
-
-    const shuffled = shuffle(cards);
-    player.primeDeck = shuffled.splice(0, STARTING_PRIMES);
-    player.primes = STARTING_PRIMES;
-    player.deck = shuffled;
-    for (let i = 0; i < STARTING_HAND; i++) {
-      const c = player.deck.shift();
-      if (c) player.hand.push(c);
-    }
-    player.ready = true;
-
-    const opponent =
-      game.player1.userId === userId ? game.player2 : game.player1;
-    if (opponent.ready) {
-      onBothReady(game, server);
-    } else {
-      server
-        .to(player.socketId)
-        .emit('fight:deck_accepted', { matchId: game.matchId });
-    }
-    return {};
+    return this.engine.setupDeck(game, seat, cards);
   }
 }

@@ -26,6 +26,8 @@ import { GameEndService } from './services/game-end.service';
 import { TurnTimeoutService } from './services/turn-timeout.service';
 
 // Shared engine services
+import { GameEngine } from './engine/game-engine';
+import { RNG, mathRandomRng } from './engine/rng';
 import { EffectsResolverService } from './effects-resolver.service';
 import { BuffsCalculatorService } from './buffs-calculator.service';
 
@@ -58,6 +60,8 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     TurnTimeoutService,
 
     // Engine
+    GameEngine,
+    { provide: RNG, useValue: mathRandomRng },
     EffectsResolverService,
     BuffsCalculatorService,
 

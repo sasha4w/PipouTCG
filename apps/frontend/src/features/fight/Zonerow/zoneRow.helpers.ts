@@ -1,5 +1,4 @@
 import {
-  QUENOUILLE_CARD_ID,
   RARITY_COLOR,
   isMonsterZone,
   type BoardZone,
@@ -9,7 +8,8 @@ import {
 export function isBlockedFromAttacking(zone: MonsterOnBoard | null): boolean {
   if (!zone) return false;
   return (
-    zone.summonedThisTurn && zone.card?.baseCard?.id === QUENOUILLE_CARD_ID
+    (zone.summonedThisTurn && zone.cannotAttackOnSummonTurn) ||
+    (zone.blockAttackTurns ?? 0) > 0
   );
 }
 

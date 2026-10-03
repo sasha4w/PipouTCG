@@ -3,9 +3,9 @@ import {
   PlayerGameState,
   MonsterOnBoard,
   CardInstance,
+  PendingChoice,
 } from '../interfaces/game-state.interface';
-import { EffectTrigger } from '@pipou/shared';
-import { EffectsResolverService } from '../effects-resolver.service';
+import type { Seat } from '@pipou/shared';
 
 const LOG_MAX = 50;
 
@@ -14,18 +14,44 @@ export function addLog(game: GameState, msg: string): void {
   if (game.log.length > LOG_MAX) game.log.shift();
 }
 
+export function seatPlayer(game: GameState, seat: Seat): PlayerGameState {
+  return seat === 'p1' ? game.player1 : game.player2;
+}
+
+export function seatOf(game: GameState, userId: number): Seat | null {
+  if (game.player1.userId === userId) return 'p1';
+  if (game.player2.userId === userId) return 'p2';
+  return null;
+}
+
 export function getPlayerState(
   game: GameState,
   userId: number,
 ): PlayerGameState {
-  return game.player1.userId === userId ? game.player1 : game.player2;
+  const seat = seatOf(game, userId);
+  if (!seat)
+    throw new Error(`Joueur ${userId} absent du match ${game.matchId}`);
+  return seatPlayer(game, seat);
 }
 
 export function getOpponentState(
   game: GameState,
   userId: number,
 ): PlayerGameState {
-  return game.player1.userId === userId ? game.player2 : game.player1;
+  const seat = seatOf(game, userId);
+  if (!seat)
+    throw new Error(`Joueur ${userId} absent du match ${game.matchId}`);
+  return seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
+}
+
+/** Choix à résoudre en premier, s'il y en a un. */
+export function currentChoice(game: GameState): PendingChoice | undefined {
+  return game.pendingChoices[0];
+}
+
+/** Range un choix derrière ceux déjà en attente. */
+export function queueChoice(game: GameState, choice: PendingChoice): void {
+  game.pendingChoices.push(choice);
 }
 
 export function isCurrentPlayer(game: GameState, userId: number): boolean {
@@ -39,12 +65,22 @@ export function drawCard(game: GameState, userId: number): CardInstance | null {
   return card;
 }
 
-export function applyDamage(target: MonsterOnBoard, dmg: number): number {
-  const reduced = target.damageReduction
-    ? Math.ceil(dmg / target.damageReduction)
-    : dmg;
+export function applyDamage(
+  target: MonsterOnBoard,
+  dmg: number,
+  opts: { ignoreReduction?: boolean } = {},
+): number {
+  const reduced =
+    target.damageReduction && !opts.ignoreReduction
+      ? Math.ceil(dmg / target.damageReduction)
+      : dmg;
   target.currentHp -= reduced;
   return reduced;
+}
+
+/** ATK effective : base + bonus (permanents et passifs) + bonus temporaire. */
+export function effectiveAtk(m: MonsterOnBoard): number {
+  return m.card.baseCard.atk + m.atkBuff + (m.tempAtkBuff ?? 0);
 }
 
 export function gainPrime(
@@ -63,31 +99,6 @@ export function gainPrime(
   );
 }
 
-export function removeMonster(
-  player: PlayerGameState,
-  instanceId: string,
-  game: GameState,
-  effectsResolver: EffectsResolverService,
-): void {
-  const idx = player.monsterZones.findIndex(
-    (m) => m?.instanceId === instanceId,
-  );
-  if (idx === -1) return;
-  const monster = player.monsterZones[idx]!;
-
-  const log: string[] = [];
-  effectsResolver.resolve(monster.card, EffectTrigger.ON_DEATH, {
-    game,
-    ownerUserId: player.userId,
-    sourceMonster: monster,
-    log,
-  });
-  log.forEach((l) => addLog(game, l));
-
-  player.graveyard.push(...monster.equipments, monster.card);
-  player.monsterZones[idx] = null;
-}
-
 export function shuffle<T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -96,8 +107,14 @@ export function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
-export function checkWinCondition(game: GameState): number | null {
-  if (game.player1.primes <= 0) return game.player1.userId;
-  if (game.player2.primes <= 0) return game.player2.userId;
+/** Joueur ayant récupéré toutes ses Primes ; winnerUserId null si les deux (match nul). */
+export function checkWinCondition(
+  game: GameState,
+): { winnerUserId: number | null } | null {
+  const p1Done = game.player1.primes <= 0;
+  const p2Done = game.player2.primes <= 0;
+  if (p1Done && p2Done) return { winnerUserId: null };
+  if (p1Done) return { winnerUserId: game.player1.userId };
+  if (p2Done) return { winnerUserId: game.player2.userId };
   return null;
 }

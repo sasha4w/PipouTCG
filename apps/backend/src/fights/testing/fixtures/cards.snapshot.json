@@ -1,0 +1,1588 @@
+[
+  {
+    "id": 1,
+    "name": "Capitaine Gribouille",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 500,
+    "hp": 1100,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_TAUNT",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Leader de le Brigade Ouille reconnu pour c'est attention noble de protèger son prochain."
+  },
+  {
+    "id": 2,
+    "name": "Lieutenant Bidouille",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 300,
+    "hp": 500,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 150,
+            "target": "SELF"
+          },
+          {
+            "type": "BUFF_HP",
+            "value": 150,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Lieutenant Fripouille"
+        }
+      }
+    ],
+    "description": "Bras droit de Gribouille, chargé de l'encadrement des nouvelles recrues au sein de la brigade."
+  },
+  {
+    "id": 3,
+    "name": "Force Delta",
+    "rarity": "epic",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "DESTROY_MONSTER",
+            "target": "ENEMY_MONSTER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Frappe de suppression. Détruit un monstre adverse de votre choix."
+  },
+  {
+    "id": 4,
+    "name": "Œuf de la Gènese",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 0,
+    "hp": 0,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Que peut-il bien se cacher à l'intérieur de cet Œuf ?"
+  },
+  {
+    "id": 5,
+    "name": "Recrue Andouille",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 200,
+    "hp": 500,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": null,
+    "description": "Tête brulée de la brigade Ouille, semble plus préoccupé par son allure et que sa santé."
+  },
+  {
+    "id": 6,
+    "name": "Éclaireur Nouille",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 100,
+    "hp": 400,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": null,
+    "description": "Son esprit de curiosité la pousser à s'engager dans la Brigade Ouille."
+  },
+  {
+    "id": 7,
+    "name": "Général Chatouille",
+    "rarity": "legendary",
+    "type": "monster",
+    "atk": 800,
+    "hp": 1500,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK_TEMP",
+            "value": 200,
+            "target": "ALL_ALLIES"
+          }
+        ],
+        "trigger": "ON_ATTACK",
+        "condition": null
+      }
+    ],
+    "description": "Ancien membre de la brigade Ouille. Sa puissance équivaut à une brigade entière. Souvent en expédition dans les grottes oubliées."
+  },
+  {
+    "id": 8,
+    "name": "Lieutenant Fripouille",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 100,
+    "hp": 700,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 150,
+            "target": "SELF"
+          },
+          {
+            "type": "BUFF_HP",
+            "value": 150,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Lieutenant Bidouille"
+        }
+      }
+    ],
+    "description": "Rival de Bidouille leur entrée dans la pipoSquad ils sont comme chienn et chat"
+  },
+  {
+    "id": 9,
+    "name": "Commandant Quenouille",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 500,
+    "hp": 1300,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_DELAY_DOUBLE_ATK",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Paresseux, à son poste malgré lui mais jamais en avance et jamais en retard. Si on en vraiment besoin il vient."
+  },
+  {
+    "id": 10,
+    "name": "Maître Magouille",
+    "rarity": "secret",
+    "type": "monster",
+    "atk": 500,
+    "hp": 2000,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_DEBUFF_IMMUNITY",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Membre fondateur de la PipouSquad, ne se présente qu'à de rares occasions."
+  },
+  {
+    "id": 11,
+    "name": "Guerrier Bafouille",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 200,
+    "hp": 500,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": null,
+    "description": null
+  },
+  {
+    "id": 12,
+    "name": "Médecin Citrouille",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 100,
+    "hp": 1800,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "HEAL",
+            "value": 200,
+            "target": "ALLIES_EXCEPT_SELF"
+          }
+        ],
+        "trigger": "ON_TURN_START",
+        "condition": null
+      }
+    ],
+    "description": "Un peu fou sur les bords, il sait exploiter le maximum du potentiel de la médecine végétale "
+  },
+  {
+    "id": 13,
+    "name": "Soin d'urgence",
+    "rarity": "epic",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "HEAL",
+            "value": 600,
+            "target": "TARGET_ALLY"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      },
+      {
+        "actions": [
+          {
+            "type": "HEAL",
+            "value": 200,
+            "target": "TARGET_ALLY"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Médecin Citrouille"
+        }
+      }
+    ],
+    "description": "Soin de 30% des points de vie max ou 60% si un pipouman médecin est sur le terrain"
+  },
+  {
+    "id": 14,
+    "name": "Ouille au rapport",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "RETURN_FROM_GRAVEYARD",
+            "value": 3,
+            "filter": {
+              "rarities": [
+                "common",
+                "uncommon"
+              ],
+              "archetype": "pipou"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Permet de récupérer un ouille commun ou non commun. Si Capitaine présent sur le terrain il peut l'invoquer sans utilisé de cost"
+  },
+  {
+    "id": 16,
+    "name": "Canouille le Bleu",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 100,
+    "hp": 400,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": null,
+    "description": null
+  },
+  {
+    "id": 17,
+    "name": "Clairon de l'Union",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "GAIN_RECYCLE_ENERGY",
+            "value": 2,
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Appel au rassemblement général !"
+  },
+  {
+    "id": 18,
+    "name": "Vice Capitaine Patouille",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 600,
+    "hp": 900,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "RETURN_FROM_GRAVEYARD_OR_DECK",
+            "value": 1,
+            "filter": {
+              "name": "Capitaine Gribouille"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_DEATH",
+        "condition": null
+      }
+    ],
+    "description": null
+  },
+  {
+    "id": 19,
+    "name": "Caporal Gazouille",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 200,
+    "hp": 600,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": null,
+    "description": "Expert en communication de la brigade."
+  },
+  {
+    "id": 20,
+    "name": "Tactique Gang Gang",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "TERRAIN",
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 300,
+            "target": "ALL_ALLIES"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      }
+    ],
+    "description": ""
+  },
+  {
+    "id": 21,
+    "name": "Sentinelle Gargouille",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 100,
+    "hp": 1000,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": null,
+    "description": null
+  },
+  {
+    "id": 22,
+    "name": "Noyau Alpha ",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 100,
+    "hp": 2200,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_TAUNT",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      },
+      {
+        "actions": [
+          {
+            "type": "SET_DAMAGE_REDUCTION",
+            "value": 2,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      }
+    ],
+    "description": "Noyau de défense absolu. Provocation permanente, encaisse tout en mode Garde."
+  },
+  {
+    "id": 24,
+    "name": "Maraudeur Friponouille",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 500,
+    "hp": 700,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_PIERCING",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Voleur de plans."
+  },
+  {
+    "id": 25,
+    "name": "Mastodonte Grossebouille",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 700,
+    "hp": 1700,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_TAUNT",
+            "value": 1,
+            "target": "SELF"
+          },
+          {
+            "type": "FORCE_ATTACK_MODE",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Une montagne de tendresse."
+  },
+  {
+    "id": 26,
+    "name": "Alchimiste Patrouille",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 200,
+    "hp": 600,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "RETURN_FROM_GRAVEYARD",
+            "value": 1,
+            "filter": {
+              "type": "support",
+              "archetype": "pipou"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Boost de potions."
+  },
+  {
+    "id": 27,
+    "name": "Prêtre Fouille",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 100,
+    "hp": 1100,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "RETURN_FROM_GRAVEYARD",
+            "value": 1,
+            "filter": {
+              "rarities": [
+                "common",
+                "uncommon"
+              ],
+              "archetype": "pipou"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Ramène les petits."
+  },
+  {
+    "id": 28,
+    "name": "Archer Crapouille",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 300,
+    "hp": 400,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_ATTACKS_PER_TURN",
+            "value": 2,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Tire des noyaux."
+  },
+  {
+    "id": 29,
+    "name": "Chevalier Touille",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 500,
+    "hp": 1000,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_FREE_SUMMON",
+            "value": 1,
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_ALLY_SUMMON",
+        "condition": {
+          "type": "ARCHETYPE_ON_BOARD",
+          "value": "pipou"
+        }
+      }
+    ],
+    "description": "Arrive en courant."
+  },
+  {
+    "id": 30,
+    "name": "Sorcier Ratatouille ",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 400,
+    "hp": 900,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SEARCH_DECK",
+            "value": 1,
+            "filter": {
+              "type": "support",
+              "archetype": "pipou"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Pluie d'encre."
+  },
+  {
+    "id": 31,
+    "name": "Gardien Ratouile",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 100,
+    "hp": 1200,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_DAMAGE_REDUCTION",
+            "value": 2,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Immobile et sûr."
+  },
+  {
+    "id": 32,
+    "name": "Champion Ouille-Ouille",
+    "rarity": "legendary",
+    "type": "monster",
+    "atk": 900,
+    "hp": 1800,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pipou",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_HP_PER_ADJACENT_ALLY",
+            "value": 300,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      }
+    ],
+    "description": "Le héros de la légende."
+  },
+  {
+    "id": 94,
+    "name": "Noyau Delta",
+    "rarity": "secret",
+    "type": "monster",
+    "atk": 1300,
+    "hp": 800,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_PIERCING",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Noyau d'extermination. Frappe de façon perçante et ignore la Garde."
+  },
+  {
+    "id": 95,
+    "name": "Module de Réparation .exe",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 400,
+    "cost": 0,
+    "supportType": "EQUIPMENT",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "HEAL",
+            "value": 200,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_TURN_START",
+        "condition": null
+      }
+    ],
+    "description": "Patch correctif. Soigne le porteur de 200 HP chaque début de tour."
+  },
+  {
+    "id": 96,
+    "name": "Processeur de Calcul .bin",
+    "rarity": "uncommon",
+    "type": "support",
+    "atk": 100,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EQUIPMENT",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 100,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      }
+    ],
+    "description": "Optimisation système. Augmente l'ATK du porteur de 100."
+  },
+  {
+    "id": 97,
+    "name": "Canon à Particules .vxd",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 400,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EQUIPMENT",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 400,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      },
+      {
+        "actions": [
+          {
+            "type": "SET_PIERCING",
+            "value": 1,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Dégâts directs. Augmente l'ATK de 400 et confère l'Attaque Perçante."
+  },
+  {
+    "id": 98,
+    "name": "Firewall .sys",
+    "rarity": "uncommon",
+    "type": "support",
+    "atk": 0,
+    "hp": 600,
+    "cost": 0,
+    "supportType": "EQUIPMENT",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_DAMAGE_REDUCTION",
+            "value": 2,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      }
+    ],
+    "description": "Sécurité réseau. Réduit de moitié les dégâts reçus par le porteur."
+  },
+  {
+    "id": 99,
+    "name": "Rootkit de Transmission",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "FORCE_ATTACK_MODE_ENEMY",
+            "target": "ALL_ENEMIES"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Intrusion forcée. Force un monstre adverse en mode Attaque — il ne peut plus se défendre."
+  },
+  {
+    "id": 100,
+    "name": "Mise à jour Système",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "RETURN_FROM_GRAVEYARD",
+            "value": 1,
+            "filter": {
+              "type": "support",
+              "archetype": "pixelman"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Nettoyage cache. Récupère 1 carte support Pixelman depuis votre cimetière."
+  },
+  {
+    "id": 101,
+    "name": "Surcharge Overclock",
+    "rarity": "epic",
+    "type": "support",
+    "atk": 500,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK_TEMP",
+            "value": 500,
+            "target": "ALL_ALLIES"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Boost instable. Donne +500 ATK temporaire à tous vos monstres ce tour."
+  },
+  {
+    "id": 103,
+    "name": "Bébé Teros",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 100,
+    "hp": 1000,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Petit mur de pierre."
+  },
+  {
+    "id": 104,
+    "name": "Jeune Teros",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 300,
+    "hp": 1800,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Rocaille résistante."
+  },
+  {
+    "id": 105,
+    "name": "Adulte Teros",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 600,
+    "hp": 3000,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "La montagne vivante."
+  },
+  {
+    "id": 106,
+    "name": "Bébé Ackos",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 200,
+    "hp": 600,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Goutte de vie."
+  },
+  {
+    "id": 107,
+    "name": "Jeune Ackos",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 400,
+    "hp": 1200,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Source pure."
+  },
+  {
+    "id": 108,
+    "name": "Adulte Ackos",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 800,
+    "hp": 2200,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Océan de soin."
+  },
+  {
+    "id": 109,
+    "name": "Bébé Feros",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 400,
+    "hp": 400,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Petite braise."
+  },
+  {
+    "id": 110,
+    "name": "Jeune Feros",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 800,
+    "hp": 900,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Flamme vive."
+  },
+  {
+    "id": 111,
+    "name": "Adulte Feros",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 1600,
+    "hp": 1400,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Incendie dévastateur."
+  },
+  {
+    "id": 112,
+    "name": "Bébé Tempestu",
+    "rarity": "uncommon",
+    "type": "monster",
+    "atk": 300,
+    "hp": 500,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Brise légère."
+  },
+  {
+    "id": 113,
+    "name": "Jeune Tempestu",
+    "rarity": "rare",
+    "type": "monster",
+    "atk": 500,
+    "hp": 1000,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Tourbillon gênant."
+  },
+  {
+    "id": 114,
+    "name": "Adulte Tempestu",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 1000,
+    "hp": 1600,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Ouragan de contrôle."
+  },
+  {
+    "id": 115,
+    "name": "Incubation Rapide",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 1,
+    "supportType": "EPHEMERAL",
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Accélère l'éclosion."
+  },
+  {
+    "id": 116,
+    "name": "Ecaille de Dragon",
+    "rarity": "uncommon",
+    "type": "support",
+    "atk": 0,
+    "hp": 400,
+    "cost": 1,
+    "supportType": "EQUIPMENT",
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Protection naturelle."
+  },
+  {
+    "id": 117,
+    "name": "Souffle Primordial",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 2,
+    "supportType": "EPHEMERAL",
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Puissance élémentaire."
+  },
+  {
+    "id": 118,
+    "name": "Potion de Lucidité",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Simple et efficace."
+  },
+  {
+    "id": 119,
+    "name": "Bouclier de Fortune",
+    "rarity": "uncommon",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Protection de fortune."
+  },
+  {
+    "id": 120,
+    "name": "Frappe Préventive",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "dragon",
+    "effects": null,
+    "description": "Premier coup."
+  },
+  {
+    "id": 121,
+    "name": "Noyau Beta",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 500,
+    "hp": 1200,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "DEAL_DAMAGE",
+            "value": 300,
+            "target": "ALL_ENEMIES"
+          }
+        ],
+        "trigger": "ON_TURN_START",
+        "condition": null
+      }
+    ],
+    "description": "Noyau corrupteur. Ronge les vies des monstres adverses tour après tour."
+  },
+  {
+    "id": 122,
+    "name": "Noyau Zeta",
+    "rarity": "epic",
+    "type": "monster",
+    "atk": 0,
+    "hp": 400,
+    "cost": 2,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_TURN_COUNTER",
+            "value": 3,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_SUMMON",
+        "condition": null
+      }
+    ],
+    "description": "Virus à durée limitée. S'autodétruit après 3 tours du poseur — qui récupère alors une Prime. Bloque une zone adverse."
+  },
+  {
+    "id": 123,
+    "name": "Noyau Omega",
+    "rarity": "legendary",
+    "type": "monster",
+    "atk": 800,
+    "hp": 1800,
+    "cost": 3,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 300,
+            "target": "ARCHETYPE_ALLIES"
+          },
+          {
+            "type": "BUFF_HP",
+            "value": 300,
+            "target": "ARCHETYPE_ALLIES"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": null
+      }
+    ],
+    "description": "Le cerveau du réseau. Booste en permanence tous les Noyaux alliés."
+  },
+  {
+    "id": 124,
+    "name": "Formatage .exe",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "DESTROY_MONSTER",
+            "target": "TARGET_ALLY"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Libère instantanément une zone en détruisant l'un de vos propres monstres."
+  },
+  {
+    "id": 125,
+    "name": "Recyclage .bat",
+    "rarity": "common",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "DESTROY_MONSTER",
+            "target": "TARGET_ALLY"
+          },
+          {
+            "type": "DRAW",
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Détruisez un de vos monstres pour piocher 1 carte."
+  },
+  {
+    "id": 126,
+    "name": "Migration .cloud",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "RETURN_TO_HAND",
+            "target": "TARGET_ALLY"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Retourne un de vos monstres en main pour le réinvoquer plus tard."
+  },
+  {
+    "id": 127,
+    "name": "Module d'Extension .v2",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EQUIPMENT",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_TAUNT",
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Noyau Alpha"
+        }
+      },
+      {
+        "actions": [
+          {
+            "type": "DEAL_DAMAGE",
+            "value": 400,
+            "target": "ALL_ENEMIES"
+          }
+        ],
+        "trigger": "ON_TURN_START",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Noyau Beta"
+        }
+      },
+      {
+        "actions": [
+          {
+            "type": "BUFF_ATK",
+            "value": 600,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Noyau Delta"
+        }
+      }
+    ],
+    "description": "Sur Alpha : Provocation. Sur Beta : Burn +400 sur tous les ennemis/tour. Sur Delta : +600 ATK."
+  },
+  {
+    "id": 128,
+    "name": "Firewall de Surcharge .sys",
+    "rarity": "epic",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EQUIPMENT",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SET_DAMAGE_REDUCTION",
+            "value": 2,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "PASSIVE",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Noyau Alpha"
+        }
+      },
+      {
+        "actions": [
+          {
+            "type": "HEAL",
+            "value": 300,
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_TURN_START",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Noyau Beta"
+        }
+      },
+      {
+        "actions": [
+          {
+            "type": "SET_DELAY_DOUBLE_ATK",
+            "target": "SELF"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": {
+          "type": "SPECIFIC_CARD_ON_BOARD",
+          "value": "Noyau Delta"
+        }
+      }
+    ],
+    "description": "Sur Alpha : Réduction dégâts ×2. Sur Beta : +300 HP/tour. Sur Delta : Double attaque."
+  },
+  {
+    "id": 129,
+    "name": "Pixel Ghost .tmp",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 200,
+    "hp": 600,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SEARCH_DECK",
+            "filter": {
+              "name": "Noyau",
+              "archetype": "pixelman"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_DEATH",
+        "condition": null
+      }
+    ],
+    "description": "Fragment résiduel. À sa destruction, cherche un Noyau Pixelman dans votre deck et l'ajoute en main."
+  },
+  {
+    "id": 130,
+    "name": "Drone Éclaireur .log",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 300,
+    "hp": 500,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SEARCH_DECK",
+            "filter": {
+              "name": "Noyau",
+              "archetype": "pixelman"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_DEATH",
+        "condition": null
+      }
+    ],
+    "description": "Unité sacrificielle. À sa destruction, cherche un Noyau Pixelman dans votre deck et l'ajoute en main."
+  },
+  {
+    "id": 131,
+    "name": "Sentinelle .cfg",
+    "rarity": "common",
+    "type": "monster",
+    "atk": 400,
+    "hp": 400,
+    "cost": 1,
+    "supportType": null,
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "SEARCH_DECK",
+            "filter": {
+              "name": "Noyau",
+              "archetype": "pixelman"
+            },
+            "target": "PLAYER"
+          }
+        ],
+        "trigger": "ON_DEATH",
+        "condition": null
+      }
+    ],
+    "description": "Garde-corps numérique. À sa destruction, cherche un Noyau Pixelman dans votre deck et l'ajoute en main."
+  },
+  {
+    "id": 132,
+    "name": "Protocole de Gel .frz",
+    "rarity": "rare",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "BLOCK_ATTACK",
+            "value": 3,
+            "target": "ENEMY_MONSTER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Suspension forcée. Empêche un monstre adverse d'attaquer pendant 3 tours."
+  },
+  {
+    "id": 133,
+    "name": "Verrou de Position .lock",
+    "rarity": "uncommon",
+    "type": "support",
+    "atk": 0,
+    "hp": 0,
+    "cost": 0,
+    "supportType": "EPHEMERAL",
+    "archetype": "pixelman",
+    "effects": [
+      {
+        "actions": [
+          {
+            "type": "FORCE_GUARD_LOCK_ENEMY",
+            "target": "ENEMY_MONSTER"
+          }
+        ],
+        "trigger": "ON_PLAY",
+        "condition": null
+      }
+    ],
+    "description": "Ancrage défensif. Force un monstre adverse en mode Garde — il ne peut pas changer de position tant qu'il n'a pas été attaqué."
+  }
+]

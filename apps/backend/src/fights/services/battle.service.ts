@@ -1,36 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
-import { GameState } from '../interfaces/game-state.interface';
+import {
+  GameState,
+  MonsterOnBoard,
+  PlayerGameState,
+} from '../interfaces/game-state.interface';
 import { EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
 import {
   addLog,
   getPlayerState,
   getOpponentState,
   isCurrentPlayer,
   applyDamage,
+  effectiveAtk,
   gainPrime,
-  removeMonster,
   drawCard,
 } from '../helpers/game-state.helper';
 
 @Injectable()
 export class BattleService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
-  async attack(
+  attack(
     game: GameState,
     userId: number,
     attackerInstanceId: string,
     targetInstanceId: string | undefined,
     direct: boolean,
-    server: FightServer,
-    checkWinAndEmit: (game: GameState, server: FightServer) => Promise<void>,
-  ): Promise<{ error?: string }> {
+  ): { error?: string } {
     // ── Validations communes ─────────────────────────────────────────────────
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -45,28 +42,25 @@ export class BattleService {
     if (!attacker) return { error: 'Attaquant introuvable' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
 
-    if (attacker.summonedThisTurn && attacker.card.baseCard.id === 9)
+    if (attacker.summonedThisTurn && attacker.cannotAttackOnSummonTurn)
       return {
-        error:
-          "Commandant Quenouille ne peut pas attaquer son tour d'invocation",
+        error: `${attacker.card.baseCard.name} ne peut pas attaquer le tour de son invocation`,
       };
 
-    const maxAttacks = attacker.attacksPerTurn ?? 1;
+    const maxAttacks = attacker.attacksPerTurn + attacker.extraAttacksThisTurn;
     if (attacker.attacksUsedThisTurn >= maxAttacks)
       return { error: 'Ce monstre a déjà utilisé toutes ses attaques ce tour' };
 
     if (
       attacker.blockAttackTurns !== undefined &&
       attacker.blockAttackTurns > 0
-    ) {
+    )
       return {
         error: `${attacker.card.baseCard.name} ne peut pas attaquer (bloqué encore ${attacker.blockAttackTurns} tour(s))`,
       };
-    }
 
     // ── Validations spécifiques au mode ─────────────────────────────────────
     if (direct) {
-      // FIX 1 : ces checks AVANT l'incrément du compteur d'attaques
       if (game.turnNumber === 1)
         return { error: 'Attaque directe interdite au premier tour' };
       if (opponent.monsterZones.some((z) => z !== null))
@@ -85,48 +79,50 @@ export class BattleService {
         };
 
       if (!targetInstanceId) return { error: 'Cible requise' };
-      const targetCheck = opponent.monsterZones.find(
-        (m) => m?.instanceId === targetInstanceId,
-      );
-      if (!targetCheck) return { error: 'Cible introuvable' };
+      if (
+        !opponent.monsterZones.some((m) => m?.instanceId === targetInstanceId)
+      )
+        return { error: 'Cible introuvable' };
     }
 
-    // ── Compteur d'attaques (seulement si toutes les validations passent) ───
     attacker.attacksUsedThisTurn += 1;
-    attacker.hasAttackedThisTurn =
-      attacker.attacksUsedThisTurn >= (attacker.attacksPerTurn ?? 1);
+    attacker.hasAttackedThisTurn = attacker.attacksUsedThisTurn >= maxAttacks;
 
-    // ── Résolution ON_ATTACK ─────────────────────────────────────────────────
-    const onAttackLog: string[] = [];
+    const log: string[] = [];
+    const flush = () => log.splice(0).forEach((l) => addLog(game, l));
+    const destroy = (host: PlayerGameState, m: MonsterOnBoard) =>
+      this.effectsResolver.destroyMonster(game, host, m.instanceId, log, {
+        draw: true,
+      });
+
+    // ── ON_ATTACK ────────────────────────────────────────────────────────────
     this.effectsResolver.resolve(attacker.card, EffectTrigger.ON_ATTACK, {
       game,
       ownerUserId: userId,
       sourceMonster: attacker,
-      log: onAttackLog,
+      log,
     });
-    onAttackLog.forEach((l) => addLog(game, l));
+    flush();
 
     // ── Attaque directe ──────────────────────────────────────────────────────
     if (direct) {
       gainPrime(game, userId, attacker.card.baseCard.name);
-      // FIX 2 : l'adversaire perd une prime → il pioche une carte
+      // L'adversaire perd une Prime : il pioche une carte
       drawCard(game, opponent.userId);
-      await checkWinAndEmit(game, server);
       return {};
     }
 
-    // ── Monstre vs Monstre ───────────────────────────────────────────────────
-    const attackerAtk =
-      attacker.card.baseCard.atk +
-      attacker.atkBuff +
-      (attacker.tempAtkBuff ?? 0);
-
-    // targetInstanceId est garanti défini ici (vérifié plus haut)
+    // ── Monstre contre monstre ───────────────────────────────────────────────
     const target = opponent.monsterZones.find(
       (m) => m?.instanceId === targetInstanceId,
-    )!;
-
-    const targetAtk = target.card.baseCard.atk + target.atkBuff;
+    );
+    if (!target) {
+      addLog(
+        game,
+        `💨 La cible a disparu : l'attaque de ${attacker.card.baseCard.name} se perd`,
+      );
+      return {};
+    }
 
     if (target.guardLocked) {
       target.guardLocked = false;
@@ -136,19 +132,29 @@ export class BattleService {
       );
     }
 
-    const onDefendLog: string[] = [];
     this.effectsResolver.resolve(target.card, EffectTrigger.ON_DEFEND, {
       game,
       ownerUserId: opponent.userId,
       sourceMonster: target,
       targetMonster: attacker,
-      log: onDefendLog,
+      log,
     });
-    onDefendLog.forEach((l) => addLog(game, l));
+    flush();
+    if (
+      !player.monsterZones.includes(attacker) ||
+      !opponent.monsterZones.includes(target)
+    )
+      return {};
+
+    // Lu après ON_DEFEND : les bonus de défense comptent
+    const attackerAtk = effectiveAtk(attacker);
+    const targetAtk = effectiveAtk(target);
 
     if (target.mode === 'attack') {
-      applyDamage(attacker, targetAtk);
-      applyDamage(target, attackerAtk);
+      applyDamage(attacker, targetAtk, { ignoreReduction: target.hasPiercing });
+      applyDamage(target, attackerAtk, {
+        ignoreReduction: attacker.hasPiercing,
+      });
 
       const aDied = attacker.currentHp <= 0;
       const tDied = target.currentHp <= 0;
@@ -158,28 +164,24 @@ export class BattleService {
           game,
           `⚔️ Double KO ! ${attacker.card.baseCard.name} & ${target.card.baseCard.name} — chacun récupère une Prime`,
         );
-        removeMonster(player, attackerInstanceId, game, this.effectsResolver);
-        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
+        destroy(player, attacker);
+        destroy(opponent, target);
         gainPrime(game, userId, attacker.card.baseCard.name);
         gainPrime(game, opponent.userId, target.card.baseCard.name);
-        drawCard(game, userId);
-        drawCard(game, opponent.userId);
       } else if (tDied) {
         addLog(
           game,
           `⚔️ ${attacker.card.baseCard.name} détruit ${target.card.baseCard.name}`,
         );
-        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
+        destroy(opponent, target);
         gainPrime(game, userId, attacker.card.baseCard.name);
-        drawCard(game, opponent.userId);
       } else if (aDied) {
         addLog(
           game,
           `⚔️ ${target.card.baseCard.name} détruit ${attacker.card.baseCard.name}`,
         );
-        removeMonster(player, attackerInstanceId, game, this.effectsResolver);
+        destroy(player, attacker);
         gainPrime(game, opponent.userId, target.card.baseCard.name);
-        drawCard(game, userId);
       } else {
         addLog(
           game,
@@ -187,12 +189,13 @@ export class BattleService {
         );
       }
     } else {
-      // ATK vs GUARD
-      applyDamage(target, attackerAtk);
+      // ATK contre Garde : pas de riposte
+      applyDamage(target, attackerAtk, {
+        ignoreReduction: attacker.hasPiercing,
+      });
 
       if (target.currentHp <= 0) {
-        removeMonster(opponent, targetInstanceId!, game, this.effectsResolver);
-        drawCard(game, opponent.userId);
+        destroy(opponent, target);
         if (attacker.hasPiercing) {
           gainPrime(game, userId, attacker.card.baseCard.name);
           addLog(
@@ -213,10 +216,7 @@ export class BattleService {
       }
     }
 
-    this.buffsCalc.recalculate(player);
-    this.buffsCalc.recalculate(opponent);
-
-    await checkWinAndEmit(game, server);
+    flush();
     return {};
   }
 }

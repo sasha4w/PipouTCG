@@ -1,6 +1,7 @@
+import { HAND_LIMIT } from "@pipou/shared";
 import "./FightActionBar.css";
-import type { Phase, MonsterOnBoard } from "./fight.types";
-import { END_PHASE_LABEL, FREE_SUMMON_CARD_ID } from "./fight.types";
+import type { Phase } from "./fight.types";
+import { END_PHASE_LABEL } from "./fight.types";
 import type { HandCard } from "./handCard";
 
 interface Props {
@@ -9,8 +10,7 @@ interface Props {
   selectedCard: number | null;
   selectedZone: number | null;
   hand: HandCard[];
-  monsterZones: (MonsterOnBoard | null)[];
-  freeSummonAvailable?: boolean;
+  freeSummonInstanceIds: string[];
   onSummon: () => void;
   onOpenSummonModal: () => void; // ouvre la modal de coût
   onPlaySupport: (
@@ -21,6 +21,8 @@ interface Props {
   onEndPhase: () => void;
   onSurrender: () => void;
   onRecycleFromHand: (handIndex: number) => void;
+  /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
+  playBlockedReason?: string;
 }
 
 export default function FightActionBar({
@@ -29,25 +31,26 @@ export default function FightActionBar({
   selectedCard,
   selectedZone,
   hand,
-  monsterZones,
-  freeSummonAvailable = false,
+  freeSummonInstanceIds,
   onSummon,
   onOpenSummonModal,
   onPlaySupport,
   onEndPhase,
   onSurrender,
   onRecycleFromHand,
+  playBlockedReason,
 }: Props) {
   if (!isMyTurn) return null;
 
   const card = selectedCard !== null ? hand[selectedCard] : null;
-  const overhandLimit = phase === "end" && hand.length > 7;
+  const overhandLimit = phase === "end" && hand.length > HAND_LIMIT;
 
-  const isFreeCard = freeSummonAvailable && card?.id === FREE_SUMMON_CARD_ID;
+  const isFreeCard =
+    card !== null && freeSummonInstanceIds.includes(card.instanceId);
 
   /**
    * Summon button logic:
-   * - Free card (Chevalier Touille + freeSummonAvailable) → invoke directly, no modal
+   * - Free card (rendue gratuite par SET_FREE_SUMMON) → invoke directly, no modal
    * - Cost = 0 → invoke directly, no modal
    * - Otherwise → open cost modal
    */
@@ -70,24 +73,15 @@ export default function FightActionBar({
             </button>
           )}
 
-          {/* Carte EPHEMERAL : jouée sans cible ou avec cible monstre */}
+          {/* Carte EPHEMERAL : le choix de cible éventuel est géré par le plateau */}
           {card.type === "support" && card.supportType === "EPHEMERAL" && (
             <button
-              onClick={() =>
-                selectedZone !== null && monsterZones[selectedZone]
-                  ? onPlaySupport(
-                      selectedCard!,
-                      undefined,
-                      monsterZones[selectedZone!]!.instanceId,
-                    )
-                  : onPlaySupport(selectedCard!)
-              }
+              onClick={() => onPlaySupport(selectedCard!)}
               className="fab-btn"
+              disabled={playBlockedReason !== undefined}
+              title={playBlockedReason}
             >
-              ✨ Jouer
-              {selectedZone !== null && monsterZones[selectedZone]
-                ? ` → ${monsterZones[selectedZone]!.card?.baseCard?.name ?? "monstre"}`
-                : ""}
+              ✨ Jouer{playBlockedReason ? ` — ${playBlockedReason}` : ""}
             </button>
           )}
 
@@ -114,8 +108,8 @@ export default function FightActionBar({
 
       {overhandLimit && (
         <span className="fab-discard-warning">
-          ⚠️ Défausse {hand.length - 7} carte{hand.length - 7 > 1 ? "s" : ""}{" "}
-          (clique sur la carte)
+          ⚠️ Défausse {hand.length - HAND_LIMIT} carte
+          {hand.length - HAND_LIMIT > 1 ? "s" : ""} (clique sur la carte)
         </span>
       )}
 

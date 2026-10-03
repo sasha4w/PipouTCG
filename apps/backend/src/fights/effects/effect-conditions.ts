@@ -1,69 +1,70 @@
 import {
   CardEffect,
   EffectConditionType as ConditionType,
+  SupportType,
 } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
+import { cardNameMatches } from './card-name';
 
-/**
- * Pure function — returns true if the effect's condition is met (or absent).
- */
+/** Vrai si la condition de l'effet est remplie (ou absente). */
 export function checkCondition(
   effect: CardEffect,
   ctx: EffectContext,
 ): boolean {
-  if (!effect.condition) return true;
+  const condition = effect.condition;
+  if (!condition) return true;
 
   const owner =
     ctx.game.player1.userId === ctx.ownerUserId
       ? ctx.game.player1
       : ctx.game.player2;
   const opponent =
-    ctx.game.player1.userId === ctx.ownerUserId
-      ? ctx.game.player2
-      : ctx.game.player1;
+    owner === ctx.game.player1 ? ctx.game.player2 : ctx.game.player1;
+  const expectedName = String(condition.value ?? '');
 
-  switch (effect.condition.type) {
+  switch (condition.type) {
     case ConditionType.ARCHETYPE_ON_BOARD: {
-      const arch = effect.condition.value as string;
+      const arch = expectedName.toLowerCase();
       return owner.monsterZones.some(
-        (m) =>
-          m && m.card.baseCard.archetype?.toLowerCase() === arch.toLowerCase(),
+        (m) => m?.card.baseCard.archetype?.toLowerCase() === arch,
       );
     }
 
     case ConditionType.HP_BELOW:
       return (
         !!ctx.sourceMonster &&
-        ctx.sourceMonster.currentHp < (effect.condition.value as number)
+        ctx.sourceMonster.currentHp < Number(condition.value)
       );
 
     case ConditionType.HAND_SIZE_MIN:
-      return owner.hand.length >= (effect.condition.value as number);
+      return owner.hand.length >= Number(condition.value);
 
     case ConditionType.OPPONENT_HAS_NO_MONSTERS:
       return opponent.monsterZones.every((z) => z === null);
 
-    // ── NEW ──────────────────────────────────────────────────────────────────
     case ConditionType.SPECIFIC_CARD_ON_BOARD: {
-      const cardName = (effect.condition.value as string).toLowerCase();
-
-      // Check monsters in zones
-      const inZone = owner.monsterZones.some(
-        (m) => m && m.card.baseCard.name.toLowerCase() === cardName,
-      );
-      if (inZone) return true;
-
-      // Also check equipments on monsters (for equipment-on-equipment conditions)
-      const inEquipment = owner.monsterZones.some(
+      const matches = (name: string) =>
+        cardNameMatches(name, expectedName, condition.match);
+      return owner.monsterZones.some(
         (m) =>
-          m &&
-          m.equipments.some((e) => e.baseCard.name.toLowerCase() === cardName),
+          !!m &&
+          (matches(m.card.baseCard.name) ||
+            m.equipments.some((e) => matches(e.baseCard.name))),
       );
-      return inEquipment;
     }
-    // ─────────────────────────────────────────────────────────────────────────
+
+    case ConditionType.EQUIPPED_ON:
+      return (
+        ctx.sourceCard?.baseCard.supportType === SupportType.EQUIPMENT &&
+        !!ctx.sourceMonster &&
+        cardNameMatches(
+          ctx.sourceMonster.card.baseCard.name,
+          expectedName,
+          condition.match,
+        )
+      );
 
     default:
-      return true;
+      return false;
   }
 }

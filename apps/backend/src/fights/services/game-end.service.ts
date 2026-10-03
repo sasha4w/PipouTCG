@@ -1,17 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { FightServer } from '../fight-socket.types';
 import { Match } from '../entities/match.entity';
-import { MatchStatus, MatchEndReason } from '@pipou/shared';
+import { MatchStatus } from '@pipou/shared';
 import { PlayerStats } from '../entities/player-stats.entity';
-import { GameState, GameEndReason } from '../interfaces/game-state.interface';
-import {
-  addLog,
-  getPlayerState,
-  checkWinCondition,
-} from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
+import { GameState } from '../interfaces/game-state.interface';
 
 const ELO_K = 32;
 
@@ -22,69 +15,34 @@ export class GameEndService {
     @InjectRepository(PlayerStats) private statsRepo: Repository<PlayerStats>,
   ) {}
 
-  async endGame(
-    game: GameState,
-    winnerId: number,
-    reason: GameEndReason,
-    server: FightServer,
-    onCleanup: (game: GameState) => void,
-  ): Promise<void> {
-    game.phase = 'finished';
-    game.winner = winnerId;
-    game.endReason = reason;
-    game.pendingChoice = undefined;
-
-    const reasonMap: Record<GameEndReason, MatchEndReason> = {
-      primes_depleted: MatchEndReason.PRIMES_DEPLETED,
-      deck_empty: MatchEndReason.DECK_EMPTY,
-      surrender: MatchEndReason.SURRENDER,
-      disconnect: MatchEndReason.DISCONNECT,
-    };
-
-    const loserId =
-      game.player1.userId === winnerId
-        ? game.player2.userId
-        : game.player1.userId;
-    const winner = getPlayerState(game, winnerId);
-
-    addLog(game, `🎉 ${winner.username} remporte la victoire !`);
-
+  /** Enregistre le résultat d'une partie terminée (statut, gagnant, stats, ELO). */
+  async persistResult(game: GameState): Promise<void> {
+    const winnerId = game.winner ?? null;
     await this.matchRepo.update(game.matchId, {
       status: MatchStatus.FINISHED,
       winnerId,
-      endReason: reasonMap[reason],
+      endReason: game.endReason ?? null,
       totalTurns: game.turnNumber,
       endedAt: new Date(),
     });
-    await this.updateStats(winnerId, loserId);
-
-    emitGameState(game, server);
-    server
-      .to(game.player1.socketId)
-      .emit('fight:game_over', { winner: winnerId, endReason: reason });
-    server
-      .to(game.player2.socketId)
-      .emit('fight:game_over', { winner: winnerId, endReason: reason });
-
-    onCleanup(game);
-  }
-
-  async checkWinAndEmit(
-    game: GameState,
-    server: FightServer,
-    onEndGame: (
-      game: GameState,
-      winnerId: number,
-      reason: GameEndReason,
-      server: FightServer,
-    ) => Promise<void>,
-  ): Promise<void> {
-    const winner = checkWinCondition(game);
-    if (winner !== null) {
-      await onEndGame(game, winner, 'primes_depleted', server);
+    const [s1, s2] = await Promise.all([
+      this.getOrCreateStats(game.player1.userId),
+      this.getOrCreateStats(game.player2.userId),
+    ]);
+    const score1 =
+      winnerId === null ? 0.5 : winnerId === game.player1.userId ? 1 : 0;
+    if (score1 === 1) {
+      s1.wins += 1;
+      s2.losses += 1;
+    } else if (score1 === 0) {
+      s1.losses += 1;
+      s2.wins += 1;
     } else {
-      emitGameState(game, server);
+      s1.draws += 1;
+      s2.draws += 1;
     }
+    [s1.elo, s2.elo] = calcElo(s1.elo, s2.elo, score1);
+    await this.statsRepo.save([s1, s2]);
   }
 
   // ── REST endpoints ──────────────────────────────────────────────────────────
@@ -130,19 +88,6 @@ export class GameEndService {
 
   // ── Private ─────────────────────────────────────────────────────────────────
 
-  private async updateStats(winnerId: number, loserId: number): Promise<void> {
-    const [w, l] = await Promise.all([
-      this.getOrCreateStats(winnerId),
-      this.getOrCreateStats(loserId),
-    ]);
-    w.wins += 1;
-    l.losses += 1;
-    const { newWinnerElo, newLoserElo } = this.calcElo(w.elo, l.elo);
-    w.elo = newWinnerElo;
-    l.elo = newLoserElo;
-    await this.statsRepo.save([w, l]);
-  }
-
   private async getOrCreateStats(userId: number): Promise<PlayerStats> {
     let s = await this.statsRepo.findOne({ where: { userId } });
     if (!s) {
@@ -151,15 +96,18 @@ export class GameEndService {
     }
     return s;
   }
+}
 
-  private calcElo(winnerElo: number, loserElo: number) {
-    const exp = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400));
-    return {
-      newWinnerElo: Math.round(winnerElo + ELO_K * (1 - exp)),
-      newLoserElo: Math.max(
-        100,
-        Math.round(loserElo + ELO_K * (0 - (1 - exp))),
-      ),
-    };
-  }
+/** ELO après une partie ; scoreA = 1 (A gagne), 0,5 (nul) ou 0 (A perd). Plancher à 100. */
+export function calcElo(
+  eloA: number,
+  eloB: number,
+  scoreA: number,
+): [number, number] {
+  const expectedA = 1 / (1 + Math.pow(10, (eloB - eloA) / 400));
+  const deltaA = ELO_K * (scoreA - expectedA);
+  return [
+    Math.max(100, Math.round(eloA + deltaA)),
+    Math.max(100, Math.round(eloB - deltaA)),
+  ];
 }

@@ -1,3 +1,4 @@
+import { MatchEndReason } from "@pipou/shared";
 import Button from "../../components/Button";
 import { IconArrowRight } from "../../components/Icons";
 import "./FightLobby.css";
@@ -30,12 +31,17 @@ export default function FightLobby({
   onReplay,
 }: Props) {
   if (status === "finished") {
-    const won = winner === userId;
+    const draw = endReason === MatchEndReason.DOUBLE_KO;
+    const won = !draw && winner === userId;
     return (
       <div className="lobby-center">
-        <div className="lobby-result-icon">{won ? "🏆" : "💀"}</div>
-        <h2 className={`lobby-hero-title ${won ? "lobby-hero-title--win" : "lobby-hero-title--loss"}`}>
-          {won ? "Victoire !" : "Défaite"}
+        <div className="lobby-result-icon">
+          {draw ? "🤝" : won ? "🏆" : "💀"}
+        </div>
+        <h2
+          className={`lobby-hero-title ${draw ? "" : won ? "lobby-hero-title--win" : "lobby-hero-title--loss"}`}
+        >
+          {draw ? "Match nul" : won ? "Victoire !" : "Défaite"}
         </h2>
         <p className="lobby-muted">{endReason}</p>
         <Button size="lg" onClick={onReplay}>
@@ -56,13 +62,11 @@ export default function FightLobby({
         {selectedDeck ? (
           <div className="lobby-deck-chosen">Deck #{selectedDeck} prêt</div>
         ) : (
-          <p className="lobby-deck-warning">Sélectionne un deck via le widget « Decks »</p>
+          <p className="lobby-deck-warning">
+            Sélectionne un deck via le widget « Decks »
+          </p>
         )}
-        <Button
-          size="lg"
-          onClick={onSubmitDeck}
-          disabled={!selectedDeck}
-        >
+        <Button size="lg" onClick={onSubmitDeck} disabled={!selectedDeck}>
           Lancer la partie
           <IconArrowRight size={16} />
         </Button>
@@ -74,11 +78,14 @@ export default function FightLobby({
   return (
     <div className="lobby-center">
       <h2 className="lobby-hero-title">⚔️ Prêt au combat ?</h2>
-      <p className="lobby-hero-sub">Rejoins la file d'attente et affronte un adversaire en 1v1</p>
+      <p className="lobby-hero-sub">
+        Rejoins la file d'attente et affronte un adversaire en 1v1
+      </p>
 
       {selectedDeck ? (
         <div className="lobby-deck-chosen">
-          ✓ Deck sélectionné <span className="lobby-deck-id">#{selectedDeck}</span>
+          ✓ Deck sélectionné{" "}
+          <span className="lobby-deck-id">#{selectedDeck}</span>
         </div>
       ) : (
         <p className="lobby-muted lobby-muted--mb">
@@ -87,11 +94,7 @@ export default function FightLobby({
       )}
 
       {status === "idle" ? (
-        <Button
-          size="lg"
-          onClick={onJoinQueue}
-          disabled={!selectedDeck}
-        >
+        <Button size="lg" onClick={onJoinQueue} disabled={!selectedDeck}>
           🔍 Rechercher une partie
         </Button>
       ) : (

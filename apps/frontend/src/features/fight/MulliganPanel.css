@@ -1,0 +1,47 @@
+.mull-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+}
+
+.mull-title {
+  margin: 0;
+  color: var(--color-bordeaux);
+}
+
+.mull-hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.mull-card {
+  width: 120px;
+  padding: 10px;
+  border: 2px solid var(--color-bordeaux);
+  border-radius: 10px;
+  background: var(--color-cream);
+  text-align: center;
+}
+
+.mull-card-name {
+  font-weight: 700;
+}
+
+.mull-card-sub {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.mull-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.mull-wait {
+  margin: 0;
+  font-style: italic;
+}

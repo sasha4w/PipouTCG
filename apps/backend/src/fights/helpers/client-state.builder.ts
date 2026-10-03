@@ -9,10 +9,11 @@ export function buildClientState(
   const me = getPlayerState(game, userId);
   const opp = getOpponentState(game, userId);
 
+  const choice = game.pendingChoices[0];
   const pendingChoice =
-    game.pendingChoice?.forUserId === userId
+    choice?.forUserId === userId
       ? {
-          candidates: game.pendingChoice.candidates.map((c) => ({
+          candidates: choice.candidates.map((c) => ({
             instanceId: c.instanceId,
             baseCard: {
               id: c.baseCard.id,
@@ -25,10 +26,9 @@ export function buildClientState(
             },
             source: c.source,
           })),
-          count: game.pendingChoice.count,
-          prompt: game.pendingChoice.prompt,
-          // ── NEW: forward resolution so the client can render the right UI ──
-          resolution: game.pendingChoice.resolution,
+          count: choice.count,
+          prompt: choice.prompt,
+          resolution: choice.resolution,
         }
       : undefined;
 
@@ -48,7 +48,8 @@ export function buildClientState(
       monsterZones: me.monsterZones,
       supportZones: me.supportZones,
       recycleEnergy: me.recycleEnergy,
-      freeSummonAvailable: me.freeSummonAvailable,
+      freeSummonInstanceIds: me.freeSummonInstanceIds,
+      mulliganDone: me.mulliganDone,
     },
     opponent: {
       userId: opp.userId,
@@ -60,11 +61,13 @@ export function buildClientState(
       banished: opp.banished,
       monsterZones: opp.monsterZones,
       supportZones: opp.supportZones,
+      mulliganDone: opp.mulliganDone,
     },
     log: game.log.slice(-20),
     winner: game.winner,
     endReason: game.endReason,
     pendingChoice,
+    opponentChoosing: !!choice && choice.forUserId !== userId,
   };
 }
 

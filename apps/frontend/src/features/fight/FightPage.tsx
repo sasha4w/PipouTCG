@@ -17,6 +17,7 @@ import MatchHistory from "./MatchHistory";
 import FightRules from "./FightRules";
 import FightBoard from "./FightBoard";
 import CardPickModal from "./CardPickModal";
+import MulliganPanel from "./MulliganPanel";
 import type { CombatMode } from "@pipou/shared";
 import "./FightPage.css";
 
@@ -111,6 +112,13 @@ export default function FightPage({
         showToast(`⚔️ Adversaire trouvé : ${oName} !`, "ok");
       },
     );
+    socket.on("fight:resumed", ({ matchId: mid, opponentName: oName }) => {
+      setMatchId(mid);
+      setOpponentName(oName);
+      // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
+      setStatus((s) => (s === "playing" ? s : "selecting"));
+      showToast("🔌 Partie en cours retrouvée", "ok");
+    });
     socket.on("fight:deck_accepted", () =>
       showToast("Deck accepté — en attente de l'adversaire…"),
     );
@@ -122,20 +130,21 @@ export default function FightPage({
       setPayIndices([]);
       if (state.isMyTurn) startCountdown();
     });
-    socket.on(
-      "fight:game_over",
-      ({ winner, endReason }: { winner: number; endReason: string }) => {
-        setStatus("finished");
-        if (timerRef.current) clearInterval(timerRef.current);
+    socket.on("fight:game_over", ({ winner, endReason }) => {
+      setStatus("finished");
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (winner === null) {
+        showToast(`🤝 Match nul (${endReason})`, "ok");
+      } else {
         showToast(
           winner === userId
             ? `🎉 Victoire ! (${endReason})`
             : `💀 Défaite… (${endReason})`,
           winner === userId ? "ok" : "err",
         );
-        setTimeout(() => refetchHistory(), 2000);
-      },
-    );
+      }
+      setTimeout(() => refetchHistory(), 2000);
+    });
     socket.on("fight:error", ({ message }: { message: string }) =>
       showToast(message, "err"),
     );
@@ -198,11 +207,12 @@ export default function FightPage({
     paymentIndices: number[] = payIndices,
   ) => {
     if (selectedCard === null || !matchId) return;
-    emit("fight:summon_opponent", {
+    emit("fight:summon", {
       matchId,
       handIndex: selectedCard,
       zoneIndex,
       paymentHandIndices: paymentIndices,
+      onOpponentSide: true,
     });
     setSelectedCard(null);
     setSelectedZone(null);
@@ -260,6 +270,9 @@ export default function FightPage({
     if (!matchId) return;
     emit("fight:discard", { matchId, handIndex });
   };
+
+  const decideMulligan = (redraw: boolean) =>
+    matchId && emit("fight:mulligan", { matchId, redraw });
 
   const pickCards = (instanceIds: string[]) => {
     if (!matchId) return;
@@ -323,37 +336,54 @@ export default function FightPage({
             />
           )}
 
-          {status === "playing" && gameState && (
-            <>
-              <FightBoard
-                gs={gameState}
-                selectedCard={selectedCard}
-                selectedZone={selectedZone}
-                payIndices={payIndices}
-                timeLeft={timeLeft}
-                onSetSelectedCard={setSelectedCard}
-                onSetSelectedZone={setSelectedZone}
-                onSetPayIndices={setPayIndices}
-                onAttackMonster={attackMonster}
-                onDirectAttack={directAttack}
-                onSummon={summon}
-                onSummonZeta={summonZeta}
-                onPlaySupport={playSupport}
-                onChangeMode={changeMode}
-                onRecycleSupport={recycleFromHand}
-                onDiscardCard={discardCard}
-                onEndPhase={endPhase}
-                onSurrender={surrender}
-              />
-
-              {gameState.pendingChoice && (
-                <CardPickModal
-                  choice={gameState.pendingChoice}
-                  onConfirm={pickCards}
-                />
-              )}
-            </>
+          {status === "playing" && gameState?.phase === "mulligan" && (
+            <MulliganPanel
+              hand={gameState.me.hand}
+              decided={gameState.me.mulliganDone}
+              opponentDecided={gameState.opponent.mulliganDone}
+              opponentName={gameState.opponent.username}
+              onDecide={decideMulligan}
+            />
           )}
+
+          {status === "playing" &&
+            gameState &&
+            gameState.phase !== "mulligan" && (
+              <>
+                {gameState.opponentChoosing && (
+                  <div className="fp-waiting-choice">
+                    ⏳ {gameState.opponent.username} fait un choix…
+                  </div>
+                )}
+                <FightBoard
+                  gs={gameState}
+                  selectedCard={selectedCard}
+                  selectedZone={selectedZone}
+                  payIndices={payIndices}
+                  timeLeft={timeLeft}
+                  onSetSelectedCard={setSelectedCard}
+                  onSetSelectedZone={setSelectedZone}
+                  onSetPayIndices={setPayIndices}
+                  onAttackMonster={attackMonster}
+                  onDirectAttack={directAttack}
+                  onSummon={summon}
+                  onSummonZeta={summonZeta}
+                  onPlaySupport={playSupport}
+                  onChangeMode={changeMode}
+                  onRecycleSupport={recycleFromHand}
+                  onDiscardCard={discardCard}
+                  onEndPhase={endPhase}
+                  onSurrender={surrender}
+                />
+
+                {gameState.pendingChoice && (
+                  <CardPickModal
+                    choice={gameState.pendingChoice}
+                    onConfirm={pickCards}
+                  />
+                )}
+              </>
+            )}
         </div>
       )}
     </div>

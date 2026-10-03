@@ -6,9 +6,14 @@ import type {
   EffectTrigger,
 } from "../enums/effect";
 
+/** Comparaison de noms de cartes : égalité, ou « contient » pour viser une série. */
+export type CardNameMatch = "exact" | "contains";
+
 export interface EffectCondition {
   type: EffectConditionType;
   value?: number | string;
+  /** Conditions portant sur un nom de carte uniquement ("exact" par défaut). */
+  match?: CardNameMatch;
 }
 
 export interface EffectFilter {

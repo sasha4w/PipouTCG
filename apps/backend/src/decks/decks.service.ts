@@ -12,9 +12,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { UserCard } from '../users/user-card.entity';
 import { CardInstance } from '../fights/interfaces/game-state.interface';
-const MIN_DECK_SIZE = 20;
-const MAX_DECK_SIZE = 40;
-const MAX_COPIES = 3;
+import { DECK_RULES } from '@pipou/shared';
+import { checkDeckForMatch } from './deck-rules';
 
 @Injectable()
 export class DecksService {
@@ -37,19 +36,30 @@ export class DecksService {
   }
 
   /**
-   * Load a deck with full card objects, ready for a fight.
-   * Returns the flat list of cards (respecting quantities).
+   * Charge un deck pour un match, après avoir vérifié qu'il respecte les
+   * règles et que le joueur possède toujours ses cartes.
    */
-  async loadDeckCards(deckId: number, userId: number): Promise<CardInstance[]> {
+  async loadDeckForMatch(
+    deckId: number,
+    userId: number,
+  ): Promise<CardInstance[]> {
     const deck = await this.deckRepo.findOne({
       where: { id: deckId, userId },
       relations: ['deckCards', 'deckCards.userCard', 'deckCards.userCard.card'],
     });
+    if (!deck) throw new NotFoundException('Deck introuvable');
 
-    if (!deck) throw new Error('Deck introuvable');
+    const problem = checkDeckForMatch(
+      deck.deckCards.map((dc) => ({
+        cardId: dc.userCard.card.id,
+        cardName: dc.userCard.card.name,
+        quantity: dc.quantity,
+        owned: dc.userCard.quantity,
+      })),
+    );
+    if (problem) throw new BadRequestException(problem);
 
     const cards: CardInstance[] = [];
-
     for (const deckCard of deck.deckCards) {
       for (let i = 0; i < deckCard.quantity; i++) {
         cards.push({
@@ -59,7 +69,6 @@ export class DecksService {
         });
       }
     }
-
     return cards;
   }
 
@@ -69,17 +78,17 @@ export class DecksService {
   ): Promise<UserCard[]> {
     // Taille totale
     const total = dto.cards.reduce((sum, c) => sum + c.quantity, 0);
-    if (total < MIN_DECK_SIZE || total > MAX_DECK_SIZE) {
+    if (total < DECK_RULES.MIN_CARDS || total > DECK_RULES.MAX_CARDS) {
       throw new BadRequestException(
-        `Un deck doit contenir entre ${MIN_DECK_SIZE} et ${MAX_DECK_SIZE} cartes (total actuel : ${total})`,
+        `Un deck doit contenir entre ${DECK_RULES.MIN_CARDS} et ${DECK_RULES.MAX_CARDS} cartes (total actuel : ${total})`,
       );
     }
 
     // Limite d'exemplaires
-    const offender = dto.cards.find((c) => c.quantity > MAX_COPIES);
+    const offender = dto.cards.find((c) => c.quantity > DECK_RULES.MAX_COPIES);
     if (offender) {
       throw new BadRequestException(
-        `Maximum ${MAX_COPIES} exemplaires de la même carte (userCardId ${offender.userCardId})`,
+        `Maximum ${DECK_RULES.MAX_COPIES} exemplaires de la même carte (userCardId ${offender.userCardId})`,
       );
     }
 
