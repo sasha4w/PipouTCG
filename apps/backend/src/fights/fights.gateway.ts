@@ -23,7 +23,7 @@ import type {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FightsService } from './fights.service';
-import * as cookie from 'cookie';
+import { readSocketUser } from './socket-auth';
 import type { FightServer, FightSocket } from './fight-socket.types';
 
 @WebSocketGateway({
@@ -45,42 +45,27 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   handleConnection(client: FightSocket): void {
-    try {
-      const rawCookies = client.handshake.headers.cookie ?? '';
-      const cookies = cookie.parse(rawCookies);
-      const token = cookies['token'];
-
-      if (!token) throw new Error('No token');
-
-      const payload = this.jwtService.verify<{
-        sub: number;
-        username: string;
-      }>(token, {
-        secret: this.configService.getOrThrow<string>('JWT_SECRET'),
-      });
-
-      client.data.userId = Number(payload.sub);
-      client.data.username = payload.username;
-
-      const resumed = this.fightsService.reconnect(
-        client.data.userId,
-        client.id,
-      );
-      if (resumed) {
-        client.emit('fight:resumed', {
-          matchId: resumed.matchId,
-          opponentName: resumed.opponentName,
-        });
-        this.fightsService.emitState(resumed.matchId, this.server);
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        console.error('WS auth error:', err.message);
-      } else {
-        console.error('WS auth error:', err);
-      }
+    const user = readSocketUser(
+      client.handshake.headers.cookie,
+      this.jwtService,
+      this.configService.getOrThrow<string>('JWT_SECRET'),
+    );
+    if (!user) {
+      console.error('WS auth error: jeton absent ou invalide');
       client.emit('fight:error', { message: 'Authentification invalide' });
       client.disconnect();
+      return;
+    }
+    client.data.userId = user.userId;
+    client.data.username = user.username;
+
+    const resumed = this.fightsService.reconnect(user.userId, client.id);
+    if (resumed) {
+      client.emit('fight:resumed', {
+        matchId: resumed.matchId,
+        opponentName: resumed.opponentName,
+      });
+      this.fightsService.emitState(resumed.matchId, this.server);
     }
   }
 

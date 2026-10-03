@@ -68,5 +68,6 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     // Gateway
     FightsGateway,
   ],
+  exports: [GameEngine],
 })
 export class FightsModule {}
