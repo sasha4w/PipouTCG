@@ -7,6 +7,7 @@ import {
   type GameAction,
   type SandboxClientEvents,
   type SandboxServerEvents,
+  type SandboxSetupCommand,
   type SandboxState,
   type Seat,
 } from "@pipou/shared";
@@ -20,6 +21,8 @@ import { QUERY_KEYS } from "../../utils/querykeys";
 import SandboxSetup from "./SandboxSetup";
 import SandboxToolbar from "./SandboxToolbar";
 import OpponentHand from "./OpponentHand";
+import DeckPanel from "./DeckPanel";
+import SetupDrawer from "./SetupDrawer";
 import { autoViewSeat } from "./viewSeat";
 import "../fight/FightPage.css";
 import "./Sandbox.css";
@@ -70,6 +73,9 @@ export default function SandboxPage() {
   );
   const controls = useBoardControls(state?.views[seat] ?? null, send);
   const { clearSelection } = controls;
+
+  const sendSetup = (command: SandboxSetupCommand) =>
+    socketRef.current?.emit("sandbox:setup", command);
 
   const showToast = useCallback((msg: string, type: "ok" | "err" = "ok") => {
     setToast({ msg, type });
@@ -182,9 +188,16 @@ export default function SandboxPage() {
           )}
         </div>
         <aside className="sb-side">
+          <DeckPanel
+            seat={seat}
+            deck={state.decks[seat]}
+            hand={view.me.hand}
+            onCommand={sendSetup}
+          />
           {showOpponentHand && (
             <OpponentHand cards={other.me.hand} name={other.me.username} />
           )}
+          <SetupDrawer state={state} seat={seat} onCommand={sendSetup} />
         </aside>
       </div>
     </div>

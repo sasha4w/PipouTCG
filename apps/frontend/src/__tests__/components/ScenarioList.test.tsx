@@ -4,7 +4,21 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import ScenarioList from "../../features/sandbox/ScenarioList";
-import { sandboxService } from "../../services/sandbox.service";
+import {
+  sandboxService,
+  type SandboxScenarioSummary,
+} from "../../services/sandbox.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
+
+const SCENARIOS: SandboxScenarioSummary[] = [
+  {
+    id: 3,
+    name: "Combo Noyaux",
+    description: "Alpha + Module .v2",
+    createdBy: "Admin",
+    updatedAt: "2026-10-03T10:00:00.000Z",
+  },
+];
 
 vi.mock("../../services/sandbox.service", () => ({
   sandboxService: {
@@ -22,6 +36,8 @@ function renderList() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
+  // Liste déjà en cache : le rendu ne dépend pas du délai du premier fetch
+  client.setQueryData(QUERY_KEYS.sandbox.scenarios, SCENARIOS);
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={["/admin"]}>
@@ -36,15 +52,7 @@ function renderList() {
 
 describe("ScenarioList", () => {
   beforeEach(() => {
-    vi.mocked(sandboxService.listScenarios).mockResolvedValue([
-      {
-        id: 3,
-        name: "Combo Noyaux",
-        description: "Alpha + Module .v2",
-        createdBy: "Admin",
-        updatedAt: "2026-10-03T10:00:00.000Z",
-      },
-    ]);
+    vi.mocked(sandboxService.listScenarios).mockResolvedValue(SCENARIOS);
     vi.mocked(sandboxService.deleteScenario).mockResolvedValue();
   });
 
@@ -55,7 +63,7 @@ describe("ScenarioList", () => {
       await screen.findByRole("button", { name: "Charger" }),
     );
 
-    expect(screen.getByTestId("where")).toHaveTextContent(
+    expect(await screen.findByTestId("where")).toHaveTextContent(
       "/admin/sandbox?scenario=3",
     );
   });
@@ -78,6 +86,8 @@ describe("ScenarioList", () => {
       screen.getByRole("button", { name: /Nouveau sandbox/ }),
     );
 
-    expect(screen.getByTestId("where")).toHaveTextContent("/admin/sandbox");
+    expect(await screen.findByTestId("where")).toHaveTextContent(
+      "/admin/sandbox",
+    );
   });
 });
