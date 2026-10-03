@@ -3,30 +3,18 @@ import {
   CardInstance,
   MonsterOnBoard,
   PlayerGameState,
-  ChoiceCandidate,
 } from '../interfaces/game-state.interface';
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
+import { drawCard, queueChoice } from '../helpers/game-state.helper';
+import { pickCandidates } from './pick-candidates';
 
 export function applyActions(
   effect: CardEffect,
   card: CardInstance,
   ctx: EffectContext,
-  resolveOnDeath: (
-    instanceId: string,
-    owner: PlayerGameState,
-    ctx: EffectContext,
-  ) => void,
+  destroy: (host: PlayerGameState, instanceId: string) => void,
 ): void {
-  const owner =
-    ctx.game.player1.userId === ctx.ownerUserId
-      ? ctx.game.player1
-      : ctx.game.player2;
-  const opponent =
-    ctx.game.player1.userId === ctx.ownerUserId
-      ? ctx.game.player2
-      : ctx.game.player1;
-
   for (const action of effect.actions) {
     const targets = resolveTargets(action.target, ctx);
 
@@ -43,21 +31,7 @@ export function applyActions(
             `✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`,
           );
           if (target.currentHp <= 0) {
-            resolveOnDeath(
-              target.instanceId,
-              targets.ownerOfMonster(target),
-              ctx,
-            );
-          }
-        }
-        for (const p of targets.players) {
-          if (p.primes > 0 && p.primeDeck.length > 0) {
-            const prime = p.primeDeck.shift()!;
-            p.primes--;
-            p.banished.push(prime);
-            ctx.log.push(
-              `💥 ${card.baseCard.name} détruit une Prime de ${p.username}`,
-            );
+            destroy(targets.ownerOfMonster(target), target.instanceId);
           }
         }
         break;
@@ -78,13 +52,17 @@ export function applyActions(
 
       // ── Stat buffs ────────────────────────────────────────────────────────
       case ActionType.BUFF_ATK:
-        for (const target of targets.monsters)
-          target.atkBuff += action.value ?? 0;
+        for (const target of targets.monsters) {
+          const v = action.value ?? 0;
+          target.perm.atk += v;
+          target.atkBuff += v;
+        }
         break;
 
       case ActionType.BUFF_HP:
         for (const target of targets.monsters) {
           const v = action.value ?? 0;
+          target.perm.hp += v;
           target.hpBuff += v;
           target.currentHp += v;
         }
@@ -103,92 +81,25 @@ export function applyActions(
       // ── Draw ──────────────────────────────────────────────────────────────
       case ActionType.DRAW:
         for (const p of targets.players) {
-          const draw = p.deck.shift();
-          if (draw) p.hand.push(draw);
+          for (let i = 0; i < (action.value ?? 1); i++)
+            drawCard(ctx.game, p.userId);
         }
         break;
 
-      // ── Destroy ───────────────────────────────────────────────────────────
-      // DESTROY_MONSTER + SELF/ALL_ENEMIES/ENEMY_MONSTER → direct
-      // DESTROY_MONSTER + TARGET_ALLY → pendingChoice (joueur choisit l'allié)
-      case ActionType.DESTROY_MONSTER: {
-        if (targets.monsters.length > 0) {
-          for (const target of targets.monsters) {
-            resolveOnDeath(
-              target.instanceId,
-              targets.ownerOfMonster(target),
-              ctx,
-            );
-          }
-        } else {
-          // TARGET_ALLY — choix interactif
-          const allies = owner.monsterZones.filter(
-            (m): m is MonsterOnBoard => m !== null,
-          );
-          if (allies.length === 0) {
-            ctx.log.push(`⚠️ ${card.baseCard.name} — aucun allié à détruire`);
-            break;
-          }
-          const candidates: ChoiceCandidate[] = allies.map((m) => ({
-            instanceId: m.instanceId,
-            baseCard: m.card.baseCard,
-            source: 'board' as const,
-          }));
-          ctx.game.pendingChoice = {
-            forUserId: owner.userId,
-            candidates,
-            count: 1,
-            prompt: 'Choisissez un allié à détruire',
-            resolution: 'destroy_ally',
-          };
-          ctx.log.push(
-            `💥 ${owner.username} doit choisir un allié à détruire…`,
-          );
-        }
+      case ActionType.DESTROY_MONSTER:
+        for (const target of targets.monsters)
+          destroy(targets.ownerOfMonster(target), target.instanceId);
         break;
-      }
 
-      // ── Return to hand ────────────────────────────────────────────────────
-      // RETURN_TO_HAND + SELF → retourne sourceMonster directement
-      // RETURN_TO_HAND + TARGET_ALLY → pendingChoice (joueur choisit)
-      case ActionType.RETURN_TO_HAND: {
-        if (targets.monsters.length > 0) {
-          for (const target of targets.monsters) {
-            returnMonsterToHand(
-              target,
-              targets.ownerOfMonster(target),
-              ctx,
-              card,
-            );
-          }
-        } else {
-          const allies = owner.monsterZones.filter(
-            (m): m is MonsterOnBoard => m !== null,
+      case ActionType.RETURN_TO_HAND:
+        for (const target of targets.monsters)
+          returnMonsterToHand(
+            target,
+            targets.ownerOfMonster(target),
+            ctx,
+            card,
           );
-          if (allies.length === 0) {
-            ctx.log.push(
-              `⚠️ ${card.baseCard.name} — aucun allié à retourner en main`,
-            );
-            break;
-          }
-          const candidates: ChoiceCandidate[] = allies.map((m) => ({
-            instanceId: m.instanceId,
-            baseCard: m.card.baseCard,
-            source: 'board' as const,
-          }));
-          ctx.game.pendingChoice = {
-            forUserId: owner.userId,
-            candidates,
-            count: 1,
-            prompt: 'Choisissez un allié à retourner en main',
-            resolution: 'return_to_hand',
-          };
-          ctx.log.push(
-            `↩️ ${owner.username} doit choisir un allié à retourner en main…`,
-          );
-        }
         break;
-      }
 
       // ── Compteur de tour (Noyau Zeta) ─────────────────────────────────────
       // Initialise un countdown sur sourceMonster.
@@ -202,115 +113,91 @@ export function applyActions(
         }
         break;
 
-      // ── Forcer mode attaque ennemi (Rootkit de Transmission) ─────────────
-      // Si un seul ennemi → appliqué directement.
-      // Si plusieurs → pendingChoice pour que le joueur choisisse.
-      case ActionType.FORCE_ATTACK_MODE_ENEMY: {
-        const enemies = opponent.monsterZones.filter(
-          (m): m is MonsterOnBoard => m !== null,
-        );
-        if (enemies.length === 0) {
+      case ActionType.FORCE_ATTACK_MODE_ENEMY:
+        for (const m of targets.monsters) {
+          m.forcedAttackMode = true;
+          m.mode = 'attack';
           ctx.log.push(
-            `⚠️ ${card.baseCard.name} — aucun monstre adverse à cibler`,
+            `🔒 ${card.baseCard.name} force ${m.card.baseCard.name} en mode Attaque`,
           );
-          break;
-        }
-        if (enemies.length === 1) {
-          const target = enemies[0];
-          target.forcedAttackMode = true;
-          target.mode = 'attack';
-          ctx.log.push(
-            `🔒 ${card.baseCard.name} force ${target.card.baseCard.name} en mode Attaque`,
-          );
-          break;
-        }
-        const candidates: ChoiceCandidate[] = enemies.map((m) => ({
-          instanceId: m.instanceId,
-          baseCard: m.card.baseCard,
-          source: 'board' as const,
-        }));
-        ctx.game.pendingChoice = {
-          forUserId: owner.userId,
-          candidates,
-          count: 1,
-          prompt: 'Choisissez un monstre adverse à verrouiller en mode Attaque',
-          resolution: 'force_attack_enemy',
-        };
-        ctx.log.push(
-          `🔒 ${owner.username} choisit un monstre adverse à verrouiller…`,
-        );
-        break;
-      }
-
-      // ── Steal prime ───────────────────────────────────────────────────────
-      case ActionType.STEAL_PRIME: {
-        if (opponent.primes > 0 && opponent.primeDeck.length > 0) {
-          const prime = opponent.primeDeck.shift()!;
-          opponent.primes--;
-          owner.hand.push(prime);
-          ctx.log.push(`🏆 ${card.baseCard.name} vole une Prime`);
         }
         break;
-      }
 
       // ── Flags ─────────────────────────────────────────────────────────────
       case ActionType.SET_TAUNT:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.hasTaunt = true;
-          ctx.log.push(`🛡️ ${card.baseCard.name} active la Provocation`);
+        for (const m of targets.monsters) {
+          m.perm.taunt = true;
+          m.hasTaunt = true;
+          ctx.log.push(`🛡️ ${m.card.baseCard.name} gagne la Provocation`);
         }
         break;
 
       case ActionType.SET_PIERCING:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.hasPiercing = true;
-          ctx.log.push(`⚔️ ${card.baseCard.name} gagne l'Attaque Perçante`);
+        for (const m of targets.monsters) {
+          m.perm.piercing = true;
+          m.hasPiercing = true;
+          ctx.log.push(`⚔️ ${m.card.baseCard.name} gagne l'Attaque Perçante`);
         }
         break;
 
       case ActionType.SET_ATTACKS_PER_TURN:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.attacksPerTurn = action.value ?? 1;
+        for (const m of targets.monsters) {
+          const v = action.value ?? 1;
+          m.perm.attacksPerTurn = v;
+          m.attacksPerTurn = v;
           ctx.log.push(
-            `🏹 ${card.baseCard.name} peut attaquer ${action.value} fois par tour`,
+            `🏹 ${m.card.baseCard.name} peut attaquer ${v} fois par tour`,
           );
         }
         break;
 
       case ActionType.SET_DEBUFF_IMMUNITY:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.isImmuneToDebuffs = true;
-          ctx.log.push(`✨ ${card.baseCard.name} est immunisé aux débuffs`);
+        for (const m of targets.monsters) {
+          m.perm.debuffImmune = true;
+          m.isImmuneToDebuffs = true;
+          ctx.log.push(`✨ ${m.card.baseCard.name} est immunisé aux débuffs`);
         }
         break;
 
       case ActionType.FORCE_ATTACK_MODE:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.forcedAttackMode = true;
-          ctx.sourceMonster.mode = 'attack';
-          ctx.log.push(`⚔️ ${card.baseCard.name} est forcé en mode Attaque`);
+        for (const m of targets.monsters) {
+          m.forcedAttackMode = true;
+          m.mode = 'attack';
+          ctx.log.push(`⚔️ ${m.card.baseCard.name} est forcé en mode Attaque`);
         }
         break;
 
       case ActionType.SET_DELAY_DOUBLE_ATK:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.summonedThisTurn = true;
-          ctx.sourceMonster.doubleAtkNextTurn = true;
-          ctx.log.push(`⏳ ${card.baseCard.name} prépare son double assaut`);
+        for (const m of targets.monsters) {
+          m.doubleAtkNextTurn = true;
+          ctx.log.push(`⏳ ${m.card.baseCard.name} prépare son double assaut`);
         }
         break;
 
+      case ActionType.CANNOT_ATTACK_ON_SUMMON_TURN:
+        for (const m of targets.monsters) m.cannotAttackOnSummonTurn = true;
+        break;
+
       case ActionType.SET_DAMAGE_REDUCTION:
-        if (ctx.sourceMonster) {
-          ctx.sourceMonster.damageReduction = action.value ?? 1;
-          ctx.log.push(`🛡️ ${card.baseCard.name} réduit les dégâts de moitié`);
+        for (const m of targets.monsters) {
+          const v = action.value ?? 2;
+          m.perm.damageReduction = Math.max(m.perm.damageReduction ?? 1, v);
+          m.damageReduction = Math.max(m.damageReduction ?? 1, v);
+          ctx.log.push(
+            `🛡️ ${m.card.baseCard.name} divise les dégâts reçus par ${v}`,
+          );
         }
         break;
 
       case ActionType.SET_FREE_SUMMON:
+        // La carte source (en main) devient invocable gratuitement
         for (const p of targets.players) {
-          p.freeSummonAvailable = true;
-          ctx.log.push(`⚡ Chevalier Touille peut être invoqué gratuitement !`);
+          if (!p.hand.includes(card)) continue;
+          if (p.freeSummonInstanceIds.includes(card.instanceId)) continue;
+          p.freeSummonInstanceIds.push(card.instanceId);
+          ctx.log.push(
+            `⚡ ${card.baseCard.name} peut être invoqué gratuitement !`,
+          );
         }
         break;
 
@@ -324,223 +211,83 @@ export function applyActions(
         break;
 
       // ── Interactive picks ─────────────────────────────────────────────────
-      case ActionType.RETURN_FROM_GRAVEYARD: {
-        const filter = action.filter;
+      case ActionType.RETURN_FROM_GRAVEYARD:
+      case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK:
+      case ActionType.SEARCH_DECK: {
+        const fromGraveyardOnly =
+          action.type === ActionType.RETURN_FROM_GRAVEYARD;
+        const count = fromGraveyardOnly ? (action.value ?? 1) : 1;
+        for (const p of targets.players) {
+          const candidates = pickCandidates(action, p);
+          if (candidates.length === 0) {
+            ctx.log.push(
+              `📥 ${card.baseCard.name} — aucune carte récupérable pour ${p.username}`,
+            );
+            continue;
+          }
+          const picked = Math.min(count, candidates.length);
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates,
+            count: picked,
+            prompt:
+              action.type === ActionType.SEARCH_DECK
+                ? 'Cherchez une carte dans votre deck'
+                : fromGraveyardOnly
+                  ? `Choisissez ${picked} carte(s) à récupérer du cimetière`
+                  : 'Choisissez une carte à récupérer (cimetière ou deck)',
+            resolution: 'pick_to_hand',
+          });
+          ctx.log.push(`📥 ${p.username} doit choisir une carte…`);
+        }
+        break;
+      }
+
+      case ActionType.BLOCK_ATTACK:
+        for (const m of targets.monsters) {
+          const turns = action.value ?? 1;
+          m.blockAttackTurns = turns;
+          ctx.log.push(
+            `🧊 ${card.baseCard.name} empêche ${m.card.baseCard.name} d'attaquer pendant ${turns} tour(s)`,
+          );
+        }
+        break;
+
+      case ActionType.FORCE_GUARD_LOCK_ENEMY:
+        for (const m of targets.monsters) {
+          m.guardLocked = true;
+          m.mode = 'guard';
+          ctx.log.push(
+            `🔒 ${card.baseCard.name} verrouille ${m.card.baseCard.name} en mode Garde`,
+          );
+        }
+        break;
+
+      case ActionType.DISCARD: {
         const count = action.value ?? 1;
         for (const p of targets.players) {
-          const candidates: ChoiceCandidate[] = p.graveyard
-            .filter((c) => {
-              if (
-                filter?.archetype &&
-                c.baseCard.archetype !== filter.archetype
-              )
-                return false;
-              if (
-                filter?.rarities &&
-                !filter.rarities.includes(c.baseCard.rarity)
-              )
-                return false;
-              if (
-                filter?.name &&
-                !c.baseCard.name
-                  .toLowerCase()
-                  .includes(filter.name.toLowerCase())
-              )
-                return false;
-              if (filter?.type && c.baseCard.type !== filter.type) return false;
-              return true;
-            })
-            .map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'graveyard' as const,
-            }));
-
-          if (candidates.length === 0) {
-            ctx.log.push(
-              `📥 ${p.username} — cimetière vide, aucune carte récupérable`,
-            );
-          } else {
-            ctx.game.pendingChoice = {
-              forUserId: p.userId,
-              candidates,
-              count: Math.min(count, candidates.length),
-              prompt: `Choisissez ${Math.min(count, candidates.length)} carte(s) à récupérer du cimetière`,
-              resolution: 'pick_to_hand',
-            };
-            ctx.log.push(
-              `📥 ${p.username} doit choisir une carte dans son cimetière…`,
-            );
+          if (p.hand.length <= count) {
+            const discarded = p.hand.splice(0);
+            p.graveyard.push(...discarded);
+            if (discarded.length > 0)
+              ctx.log.push(
+                `🗑️ ${p.username} défausse toute sa main (${discarded.length})`,
+              );
+            continue;
           }
-        }
-        break;
-      }
-
-      case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK: {
-        const filter = action.filter;
-        for (const p of targets.players) {
-          const matchFn = (c: CardInstance) => {
-            if (
-              filter?.name &&
-              !c.baseCard.name.toLowerCase().includes(filter.name.toLowerCase())
-            )
-              return false;
-            if (filter?.archetype && c.baseCard.archetype !== filter.archetype)
-              return false;
-            if (
-              filter?.rarities &&
-              !filter.rarities.includes(c.baseCard.rarity)
-            )
-              return false;
-            return true;
-          };
-          const candidates: ChoiceCandidate[] = [
-            ...p.graveyard.filter(matchFn).map((c) => ({
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates: p.hand.map((c) => ({
               instanceId: c.instanceId,
               baseCard: c.baseCard,
-              source: 'graveyard' as const,
+              source: 'hand' as const,
             })),
-            ...p.deck.filter(matchFn).map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'deck' as const,
-            })),
-          ];
-          if (candidates.length === 0) {
-            ctx.log.push(`📥 ${p.username} — aucune carte récupérable`);
-          } else {
-            ctx.game.pendingChoice = {
-              forUserId: p.userId,
-              candidates,
-              count: 1,
-              prompt: 'Choisissez une carte à récupérer (cimetière ou deck)',
-              resolution: 'pick_to_hand',
-            };
-            ctx.log.push(
-              `📥 ${p.username} doit choisir une carte à récupérer…`,
-            );
-          }
+            count,
+            prompt: `Choisissez ${count} carte(s) à défausser`,
+            resolution: 'discard',
+          });
+          ctx.log.push(`🗑️ ${p.username} doit défausser ${count} carte(s)…`);
         }
-        break;
-      }
-
-      case ActionType.SEARCH_DECK: {
-        const filter = action.filter;
-        for (const p of targets.players) {
-          const candidates: ChoiceCandidate[] = p.deck
-            .filter((c) => {
-              if (filter?.type && c.baseCard.type !== filter.type) return false;
-              if (
-                filter?.archetype &&
-                c.baseCard.archetype !== filter.archetype
-              )
-                return false;
-              if (
-                filter?.rarities &&
-                !filter.rarities.includes(c.baseCard.rarity)
-              )
-                return false;
-              if (
-                filter?.name &&
-                !c.baseCard.name
-                  .toLowerCase()
-                  .includes(filter.name.toLowerCase())
-              )
-                return false;
-              return true;
-            })
-            .map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'deck' as const,
-            }));
-
-          if (candidates.length === 0) {
-            ctx.log.push(
-              `🔮 ${card.baseCard.name} — aucune carte trouvée dans le deck`,
-            );
-          } else {
-            ctx.game.pendingChoice = {
-              forUserId: p.userId,
-              candidates,
-              count: 1,
-              prompt: 'Cherchez une carte dans votre deck',
-              resolution: 'pick_to_hand',
-            };
-            ctx.log.push(`🔮 ${p.username} cherche dans son deck…`);
-          }
-        }
-        break;
-      }
-
-      // ── Bloquer les attaques d'un ennemi (Protocole de Gel) ──────────────
-      case ActionType.BLOCK_ATTACK: {
-        const enemies = opponent.monsterZones.filter(
-          (m): m is MonsterOnBoard => m !== null,
-        );
-        if (enemies.length === 0) {
-          ctx.log.push(
-            `⚠️ ${card.baseCard.name} — aucun monstre adverse à cibler`,
-          );
-          break;
-        }
-        if (enemies.length === 1) {
-          enemies[0].blockAttackTurns = action.value ?? 3;
-          ctx.log.push(
-            `🧊 ${card.baseCard.name} bloque les attaques de ${enemies[0].card.baseCard.name} pendant ${action.value ?? 3} tour(s)`,
-          );
-          break;
-        }
-        const candidates: ChoiceCandidate[] = enemies.map((m) => ({
-          instanceId: m.instanceId,
-          baseCard: m.card.baseCard,
-          source: 'board' as const,
-        }));
-        ctx.game.pendingChoice = {
-          forUserId: owner.userId,
-          candidates,
-          count: 1,
-          prompt: 'Choisissez un monstre adverse à bloquer',
-          resolution: 'block_attack_enemy',
-        };
-        ctx.log.push(`🧊 ${owner.username} doit choisir un monstre à bloquer…`);
-        break;
-      }
-
-      // ── Forcer garde verrouillée sur un ennemi (Verrou de Position) ───────
-      case ActionType.FORCE_GUARD_LOCK_ENEMY: {
-        const enemies = opponent.monsterZones.filter(
-          (m): m is MonsterOnBoard => m !== null,
-        );
-        if (enemies.length === 0) {
-          ctx.log.push(
-            `⚠️ ${card.baseCard.name} — aucun monstre adverse à cibler`,
-          );
-          break;
-        }
-        if (enemies.length === 1) {
-          enemies[0].guardLocked = true;
-          enemies[0].mode = 'guard';
-          ctx.log.push(
-            `🔒 ${card.baseCard.name} verrouille ${enemies[0].card.baseCard.name} en mode Garde`,
-          );
-          break;
-        }
-        const candidates: ChoiceCandidate[] = enemies.map((m) => ({
-          instanceId: m.instanceId,
-          baseCard: m.card.baseCard,
-          source: 'board' as const,
-        }));
-        ctx.game.pendingChoice = {
-          forUserId: owner.userId,
-          candidates,
-          count: 1,
-          prompt: 'Choisissez un monstre adverse à verrouiller en Garde',
-          resolution: 'force_guard_enemy',
-        };
-        ctx.log.push(
-          `🔒 ${owner.username} doit choisir un monstre à verrouiller…`,
-        );
         break;
       }
     }

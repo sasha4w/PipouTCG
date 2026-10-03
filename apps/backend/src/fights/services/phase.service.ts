@@ -1,43 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
-import {
-  GameState,
-  GameEndReason,
-  PlayerGameState,
-} from '../interfaces/game-state.interface';
+import { EffectTrigger, HAND_LIMIT } from '@pipou/shared';
+import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
 import {
   addLog,
-  getPlayerState,
-  getOpponentState,
-  isCurrentPlayer,
   drawCard,
+  gainPrime,
+  getOpponentState,
+  getPlayerState,
+  isCurrentPlayer,
 } from '../helpers/game-state.helper';
-import { emitGameState } from '../helpers/client-state.builder';
-import { EffectTrigger } from '@pipou/shared';
+import { finishGame } from '../helpers/game-end.helper';
 import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
-
-const HAND_LIMIT = 7;
 
 @Injectable()
 export class PhaseService {
-  constructor(
-    private effectsResolver: EffectsResolverService,
-    private buffsCalc: BuffsCalculatorService,
-  ) {}
+  constructor(private effectsResolver: EffectsResolverService) {}
 
-  async endPhase(
-    game: GameState,
-    userId: number,
-    server: FightServer,
-    onEndGame: (
-      game: GameState,
-      winnerId: number,
-      reason: GameEndReason,
-      server: FightServer,
-    ) => Promise<void>,
-    onTurnEnd: (game: GameState, server: FightServer) => void,
-  ): Promise<{ error?: string }> {
+  endPhase(game: GameState, userId: number): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
 
@@ -45,63 +24,45 @@ export class PhaseService {
     const opponent = getOpponentState(game, userId);
 
     switch (game.phase) {
-      case 'main':
+      case 'main': {
         game.phase = 'battle';
         addLog(game, `${player.username} → phase de combat`);
-        break;
+        const log: string[] = [];
+        this.resolveForBoard(
+          game,
+          player,
+          EffectTrigger.ON_BATTLE_PHASE_START,
+          log,
+        );
+        log.forEach((l) => addLog(game, l));
+        return {};
+      }
 
       case 'battle':
         game.phase = 'end';
-        break;
+        return {};
 
       case 'end': {
         const surplus = player.hand.length - HAND_LIMIT;
-        if (surplus > 0) {
+        if (surplus > 0)
           return { error: `Défaussez ${surplus} carte(s) avant de terminer` };
-        }
-        for (const z of player.monsterZones) {
-          if (!z) continue;
-          z.hasAttackedThisTurn = false;
-          z.attacksUsedThisTurn = 0;
-          z.tempAtkBuff = 0;
-          z.summonedThisTurn = false;
-          if (z.doubleAtkNextTurn) {
-            z.attacksPerTurn = 2;
-            z.doubleAtkNextTurn = false;
-          }
-        }
-        player.recycleEnergy = 0;
-        player.hasDrawnThisTurn = false;
 
+        this.endTurn(game, player);
         game.currentTurnUserId = opponent.userId;
         game.turnNumber += 1;
-
-        this.triggerTurnStart(game, opponent);
-
-        const drawn = drawCard(game, opponent.userId);
-        if (!drawn) {
-          await onEndGame(game, userId, 'deck_empty', server);
-          return {};
-        }
-        game.phase = 'main';
-        addLog(game, `─── Tour ${game.turnNumber} — ${opponent.username} ───`);
-        onTurnEnd(game, server);
-        break;
+        this.startTurn(game, opponent);
+        return {};
       }
 
       default:
         return { error: `Phase invalide : ${game.phase}` };
     }
-
-    emitGameState(game, server);
-    return {};
   }
 
   discard(
     game: GameState,
     userId: number,
     handIndex: number,
-    server: FightServer,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -115,42 +76,83 @@ export class PhaseService {
     const [card] = player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
     addLog(game, `${player.username} défausse ${card.baseCard.name}`);
-    emitGameState(game, server);
     return {};
   }
 
-  // ── Private ────────────────────────────────────────────────────────────────
-
-  private triggerTurnStart(game: GameState, player: PlayerGameState): void {
+  /** Début de tour : compteurs, ON_TURN_START, double attaque différée, pioche. */
+  startTurn(game: GameState, player: PlayerGameState): void {
     const log: string[] = [];
-
-    // Compteurs traités EN PREMIER : un monstre qui meurt au compteur 0
-    // ne déclenche pas son ON_TURN_START ce même tour.
+    // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
+    // pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);
-    for (const zone of player.monsterZones) {
-      if (!zone || zone.blockAttackTurns === undefined) continue;
-      zone.blockAttackTurns--;
-      if (zone.blockAttackTurns <= 0) {
-        zone.blockAttackTurns = undefined;
-        log.push(`🧊 ${zone.card.baseCard.name} peut à nouveau attaquer`);
-      }
+    this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);
+    for (const m of player.monsterZones) {
+      if (!m?.doubleAtkNextTurn) continue;
+      m.extraAttacksThisTurn = 1;
+      m.doubleAtkNextTurn = false;
+    }
+    log.forEach((l) => addLog(game, l));
+
+    const drawn = drawCard(game, player.userId);
+    if (!drawn) {
+      finishGame(
+        game,
+        getOpponentState(game, player.userId).userId,
+        'deck_empty',
+      );
+      return;
+    }
+    game.phase = 'main';
+    addLog(game, `─── Tour ${game.turnNumber} — ${player.username} ───`);
+  }
+
+  /** Fin du tour du joueur actif : ON_TURN_END, remises à zéro, gel décompté. */
+  private endTurn(game: GameState, player: PlayerGameState): void {
+    const log: string[] = [];
+    this.resolveForBoard(game, player, EffectTrigger.ON_TURN_END, log);
+
+    // Les bonus d'ATK temporaires expirent pour les deux camps
+    for (const p of [game.player1, game.player2]) {
+      for (const m of p.monsterZones) if (m) m.tempAtkBuff = 0;
     }
 
+    for (const m of player.monsterZones) {
+      if (!m) continue;
+      m.hasAttackedThisTurn = false;
+      m.attacksUsedThisTurn = 0;
+      m.extraAttacksThisTurn = 0;
+      m.summonedThisTurn = false;
+      // Le gel compte les tours du propriétaire du monstre gelé
+      if (m.blockAttackTurns !== undefined) {
+        m.blockAttackTurns -= 1;
+        if (m.blockAttackTurns <= 0) {
+          m.blockAttackTurns = undefined;
+          log.push(`🧊 ${m.card.baseCard.name} pourra de nouveau attaquer`);
+        }
+      }
+    }
+    player.recycleEnergy = 0;
+    log.forEach((l) => addLog(game, l));
+  }
+
+  /** Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et les terrains. */
+  private resolveForBoard(
+    game: GameState,
+    player: PlayerGameState,
+    trigger: EffectTrigger,
+    log: string[],
+  ): void {
     for (const zone of player.monsterZones) {
       if (!zone) continue;
-
-      // ON_TURN_START du monstre
-      this.effectsResolver.resolve(zone.card, EffectTrigger.ON_TURN_START, {
+      this.effectsResolver.resolve(zone.card, trigger, {
         game,
         ownerUserId: player.userId,
         sourceMonster: zone,
         log,
       });
-
-      // ON_TURN_START de chaque équipement attaché.
-      // sourceMonster = zone hôte → les targets SELF résolvent sur le porteur.
+      if (!player.monsterZones.includes(zone)) continue;
       for (const equipment of zone.equipments) {
-        this.effectsResolver.resolve(equipment, EffectTrigger.ON_TURN_START, {
+        this.effectsResolver.resolve(equipment, trigger, {
           game,
           ownerUserId: player.userId,
           sourceMonster: zone,
@@ -158,86 +160,45 @@ export class PhaseService {
         });
       }
     }
-
-    // Terrains ON_TURN_START
     for (const terrain of player.supportZones) {
       if (!terrain) continue;
-      this.effectsResolver.resolve(terrain, EffectTrigger.ON_TURN_START, {
+      this.effectsResolver.resolve(terrain, trigger, {
         game,
         ownerUserId: player.userId,
         log,
       });
     }
-
-    log.forEach((l) => addLog(game, l));
-    this.buffsCalc.recalculate(player);
   }
 
   /**
-   * Décrémente le turnCounter de chaque monstre de `player`.
-   * Quand il atteint 0 : le joueur récupère une Prime, puis le monstre
-   * est détruit (ON_DEATH déclenché, équipements au cimetière).
-   *
-   * Utilisé par Noyau Zeta — si détruit avant (Formatage/Recyclage),
-   * pas de Prime gagnée.
+   * Décrémente le turnCounter des monstres posés par `player` (sur les deux
+   * terrains : Zeta peut être posé chez l'adversaire). À 0 : le poseur gagne
+   * une Prime et le monstre est détruit, sans pioche pour l'hôte.
    */
   private processTurnCounters(
     game: GameState,
     player: PlayerGameState,
     log: string[],
   ): void {
-    // On scanne les DEUX terrains : Zeta peut être posé sur le terrain adverse
-    // mais ownerUserId pointe vers le poseur → le compteur décrémente à son tour.
-    const both = [
-      { zones: player.monsterZones, host: player },
-      {
-        zones: (player === game.player1 ? game.player2 : game.player1)
-          .monsterZones,
-        host: player === game.player1 ? game.player2 : game.player1,
-      },
-    ];
-
-    for (const { zones, host } of both) {
-      for (let idx = 0; idx < zones.length; idx++) {
-        const zone = zones[idx];
-        // Décrémente uniquement si ce joueur est le poseur (ownerUserId) ou si
-        // ownerUserId est absent et la zone appartient au joueur courant (comportement normal)
+    const other = player === game.player1 ? game.player2 : game.player1;
+    for (const host of [player, other]) {
+      for (const zone of [...host.monsterZones]) {
         if (!zone || zone.turnCounter === undefined) continue;
-        const realOwner = zone.ownerUserId ?? host.userId;
-        if (realOwner !== player.userId) continue;
+        const poser = zone.ownerUserId ?? host.userId;
+        if (poser !== player.userId) continue;
 
         zone.turnCounter -= 1;
         log.push(
           `⏳ ${zone.card.baseCard.name} — ${zone.turnCounter} tour(s) avant autodestruction`,
         );
-
         if (zone.turnCounter > 0) continue;
 
         log.push(`💀 ${zone.card.baseCard.name} s'autodétruit !`);
-
-        // Prime pour le poseur (player = le joueur dont c'est le tour = le bon)
-        if (player.primeDeck.length > 0) {
-          const prime = player.primeDeck.shift()!;
-          player.primes -= 1;
-          player.hand.push(prime);
-          log.push(
-            `🏆 ${player.username} récupère une Prime (${zone.card.baseCard.name}) — ${player.primes} restante(s)`,
-          );
-        }
-
-        // ON_DEATH avant suppression — ownerUserId = hôte de la zone
-        const deathLog: string[] = [];
-        this.effectsResolver.resolve(zone.card, EffectTrigger.ON_DEATH, {
-          game,
-          ownerUserId: host.userId,
-          sourceMonster: zone,
-          log: deathLog,
+        gainPrime(game, player.userId, zone.card.baseCard.name);
+        this.effectsResolver.destroyMonster(game, host, zone.instanceId, log, {
+          draw: false,
         });
-        deathLog.forEach((l) => log.push(l));
-
-        host.graveyard.push(...zone.equipments, zone.card);
-        zones[idx] = null;
       }
-    } // end both loop
+    }
   }
 }

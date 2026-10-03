@@ -1,28 +1,7 @@
 import { Logger } from '@nestjs/common';
-import type { FightServer } from '../fight-socket.types';
 import { TurnTimeoutService } from './turn-timeout.service';
-import type { GameState } from '../interfaces/game-state.interface';
-
-function fakeGame(): GameState {
-  const player = {
-    userId: 1,
-    hand: [],
-    graveyard: [],
-    monsterZones: [null],
-  };
-  return {
-    matchId: 7,
-    currentTurnUserId: 1,
-    phase: 'main',
-    log: [],
-    player1: player,
-    player2: { ...player, userId: 2 },
-  } as unknown as GameState;
-}
 
 describe('TurnTimeoutService', () => {
-  const server = {} as FightServer;
-
   beforeEach(() => jest.useFakeTimers());
   afterEach(() => {
     jest.useRealTimers();
@@ -30,18 +9,37 @@ describe('TurnTimeoutService', () => {
   });
 
   it('should call onTimeout after the turn delay', async () => {
-    const onTimeout = jest.fn().mockResolvedValue(undefined);
-    new TurnTimeoutService().start(fakeGame(), server, onTimeout);
+    const onTimeout = jest.fn();
+    const service = new TurnTimeoutService();
+    service.schedule(7, onTimeout);
 
     await jest.advanceTimersByTimeAsync(90_000);
 
     expect(onTimeout).toHaveBeenCalledTimes(1);
+    expect(service.has(7)).toBe(false);
+  });
+
+  it('should replace the previous countdown when rescheduled', async () => {
+    const first = jest.fn();
+    const second = jest.fn();
+    const service = new TurnTimeoutService();
+    service.schedule(7, first);
+    await jest.advanceTimersByTimeAsync(60_000);
+    service.schedule(7, second);
+
+    await jest.advanceTimersByTimeAsync(60_000);
+    expect(first).not.toHaveBeenCalled();
+    expect(second).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(30_000);
+    expect(second).toHaveBeenCalledTimes(1);
   });
 
   it('should log a failing onTimeout instead of leaving an unhandled rejection', async () => {
     const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
-    const onTimeout = jest.fn().mockRejectedValue(new Error('boom'));
-    new TurnTimeoutService().start(fakeGame(), server, onTimeout);
+    new TurnTimeoutService().schedule(7, () =>
+      Promise.reject(new Error('boom')),
+    );
 
     await jest.advanceTimersByTimeAsync(90_000);
 

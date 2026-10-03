@@ -42,8 +42,10 @@ export interface PlayerGameState {
   recycleEnergy: number;
   hasDrawnThisTurn: boolean;
   handLimitEnforced: boolean;
-  freeSummonAvailable?: boolean;
+  /** Cartes de la main invocables gratuitement (instanceId). */
+  freeSummonInstanceIds: string[];
   ready: boolean;
+  mulliganDone: boolean;
 }
 
 // ─── Interactive card pick ────────────────────────────────────────────────────
@@ -74,5 +76,6 @@ export interface GameState {
   winner?: number;
   endReason?: GameEndReason;
   log: string[];
-  pendingChoice?: PendingChoice;
+  /** Choix à résoudre, dans l'ordre ; la partie attend tant qu'il en reste. */
+  pendingChoices: PendingChoice[];
 }

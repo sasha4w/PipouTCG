@@ -11,7 +11,9 @@ import type {
   AttackPayload,
   ChangeModePayload,
   DiscardPayload,
+  GameAction,
   MatchPayload,
+  MulliganPayload,
   PickCardsPayload,
   PlaySupportPayload,
   RecycleSupportPayload,
@@ -21,7 +23,7 @@ import type {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { FightsService } from './fights.service';
-import * as cookie from 'cookie';
+import { readSocketUser } from './socket-auth';
 import type { FightServer, FightSocket } from './fight-socket.types';
 
 @WebSocketGateway({
@@ -43,76 +45,42 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   handleConnection(client: FightSocket): void {
-    try {
-      const rawCookies = client.handshake.headers.cookie ?? '';
-      const cookies = cookie.parse(rawCookies);
-      const token = cookies['token'];
-
-      if (!token) throw new Error('No token');
-
-      const payload = this.jwtService.verify<{
-        sub: number;
-        username: string;
-      }>(token, {
-        secret: this.configService.getOrThrow<string>('JWT_SECRET'),
-      });
-
-      client.data.userId = Number(payload.sub);
-      client.data.username = payload.username;
-    } catch (err) {
-      if (err instanceof Error) {
-        console.error('WS auth error:', err.message);
-      } else {
-        console.error('WS auth error:', err);
-      }
+    const user = readSocketUser(
+      client.handshake.headers.cookie,
+      this.jwtService,
+      this.configService.getOrThrow<string>('JWT_SECRET'),
+    );
+    if (!user) {
+      console.error('WS auth error: jeton absent ou invalide');
       client.emit('fight:error', { message: 'Authentification invalide' });
       client.disconnect();
+      return;
+    }
+    client.data.userId = user.userId;
+    client.data.username = user.username;
+
+    const resumed = this.fightsService.reconnect(user.userId, client.id);
+    if (resumed) {
+      client.emit('fight:resumed', {
+        matchId: resumed.matchId,
+        opponentName: resumed.opponentName,
+      });
+      this.fightsService.emitState(resumed.matchId, this.server);
     }
   }
 
-  async handleDisconnect(client: FightSocket): Promise<void> {
+  handleDisconnect(client: FightSocket): void {
     if (client.data.userId) {
-      await this.fightsService.handleDisconnect(
+      this.fightsService.handleDisconnect(
         client.data.userId,
+        client.id,
         this.server,
       );
     }
   }
 
   // ── Matchmaking ────────────────────────────────────────────────────────────
-  @SubscribeMessage('fight:test_match')
-  async createTestMatch(@ConnectedSocket() client: FightSocket): Promise<void> {
-    const { userId, username } = client.data;
 
-    const { matchId, p2UserId } = await this.fightsService.createTestMatch(
-      userId,
-      username,
-      client.id,
-    );
-
-    // On envoie fight:matched avec les deux userIds pour que le frontend sache
-    client.emit('fight:test_matched', {
-      matchId,
-      p2UserId,
-      opponentName: `${username} (Test)`,
-    });
-  }
-  @SubscribeMessage('fight:submit_deck_test_p2')
-  async submitDeckTestP2(
-    @ConnectedSocket() client: FightSocket,
-    @MessageBody() data: SubmitDeckPayload,
-  ): Promise<void> {
-    const p2UserId = -client.data.userId;
-    const result = await this.fightsService.submitDeck(
-      data.matchId,
-      p2UserId, // userId négatif = P2
-      data.deckId,
-      this.server,
-    );
-    if (result.error) {
-      client.emit('fight:error', { message: result.error });
-    }
-  }
   @SubscribeMessage('fight:queue')
   async joinQueue(@ConnectedSocket() client: FightSocket): Promise<void> {
     const match = await this.fightsService.joinQueue(
@@ -149,71 +117,50 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SubmitDeckPayload,
   ): Promise<void> {
-    const result = await this.fightsService.submitDeck(
-      data.matchId,
-      client.data.userId,
-      data.deckId,
-      this.server,
+    this.reply(
+      client,
+      await this.fightsService.submitDeck(
+        data.matchId,
+        client.data.userId,
+        data.deckId,
+        this.server,
+      ),
     );
-    if (result.error) {
-      client.emit('fight:error', { message: result.error });
-    }
   }
 
-  // ── Phase management ───────────────────────────────────────────────────────
+  // ── Actions de jeu ─────────────────────────────────────────────────────────
+
+  @SubscribeMessage('fight:mulligan')
+  async mulligan(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: MulliganPayload,
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'mulligan',
+      redraw: data.redraw,
+    });
+  }
 
   @SubscribeMessage('fight:end_phase')
   async endPhase(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: MatchPayload,
   ): Promise<void> {
-    const result = await this.fightsService.endPhase(
-      data.matchId,
-      client.data.userId,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+    await this.play(client, data.matchId, { type: 'end_phase' });
   }
-
-  // ── Main phase actions ─────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:summon')
-  summonMonster(
+  async summonMonster(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: SummonPayload,
-  ): void {
-    const result = this.fightsService.summonMonster(
-      data.matchId,
-      client.data.userId,
-      data.handIndex,
-      data.zoneIndex,
-      data.paymentHandIndices ?? [],
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
-  }
-
-  /** Invoque Noyau Zeta sur une zone adverse vide */
-  @SubscribeMessage('fight:summon_opponent')
-  summonZetaOnOpponent(
-    @ConnectedSocket() client: FightSocket,
-    @MessageBody() data: SummonPayload,
-  ): void {
-    const result = this.fightsService.summonZetaOnOpponent(
-      data.matchId,
-      client.data.userId,
-      data.handIndex,
-      data.zoneIndex,
-      data.paymentHandIndices ?? [],
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'summon',
+      handIndex: data.handIndex,
+      zoneIndex: data.zoneIndex,
+      paymentHandIndices: data.paymentHandIndices ?? [],
+      onOpponentSide: data.onOpponentSide ?? false,
+    });
   }
 
   @SubscribeMessage('fight:play_support')
@@ -221,117 +168,104 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: PlaySupportPayload,
   ): Promise<void> {
-    const result = await this.fightsService.playSupport(
-      data.matchId,
-      client.data.userId,
-      data.handIndex,
-      data.zoneIndex,
-      data.targetInstanceId,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+    await this.play(client, data.matchId, {
+      type: 'play_support',
+      handIndex: data.handIndex,
+      zoneIndex: data.zoneIndex,
+      targetInstanceId: data.targetInstanceId,
+    });
   }
 
   @SubscribeMessage('fight:recycle_support')
-  recycleFromHand(
+  async recycleFromHand(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: RecycleSupportPayload,
-  ): void {
-    const result = this.fightsService.recycleFromHand(
-      data.matchId,
-      client.data.userId,
-      data.handIndex,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'recycle',
+      handIndex: data.handIndex,
+    });
   }
 
   @SubscribeMessage('fight:change_mode')
-  changeMode(
+  async changeMode(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: ChangeModePayload,
-  ): void {
-    const result = this.fightsService.changeMode(
-      data.matchId,
-      client.data.userId,
-      data.instanceId,
-      data.mode,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'change_mode',
+      instanceId: data.instanceId,
+      mode: data.mode,
+    });
   }
-
-  // ── Battle phase ───────────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:attack')
   async attack(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: AttackPayload,
   ): Promise<void> {
-    const result = await this.fightsService.attack(
-      data.matchId,
-      client.data.userId,
-      data.attackerInstanceId,
-      data.targetInstanceId,
-      data.direct ?? false,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+    await this.play(client, data.matchId, {
+      type: 'attack',
+      attackerInstanceId: data.attackerInstanceId,
+      targetInstanceId: data.targetInstanceId,
+      direct: data.direct ?? false,
+    });
   }
 
-  // ── End phase ──────────────────────────────────────────────────────────────
-
   @SubscribeMessage('fight:discard')
-  discard(
+  async discard(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: DiscardPayload,
-  ): void {
-    const result = this.fightsService.discard(
-      data.matchId,
-      client.data.userId,
-      data.handIndex,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'discard',
+      handIndex: data.handIndex,
+    });
   }
 
   @SubscribeMessage('fight:pick_cards')
-  pickCards(
+  async pickCards(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: PickCardsPayload,
-  ): void {
-    const result = this.fightsService.pickCards(
-      data.matchId,
-      client.data.userId,
-      data.instanceIds,
-      this.server,
-    );
-    if (result?.error) {
-      client.emit('fight:error', { message: result.error });
-    }
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'pick_cards',
+      instanceIds: data.instanceIds,
+    });
   }
-
-  // ── Surrender ──────────────────────────────────────────────────────────────
 
   @SubscribeMessage('fight:surrender')
   async surrender(
     @ConnectedSocket() client: FightSocket,
     @MessageBody() data: MatchPayload,
   ): Promise<void> {
-    await this.fightsService.surrender(
-      data.matchId,
-      client.data.userId,
-      this.server,
+    this.reply(
+      client,
+      await this.fightsService.surrender(
+        data.matchId,
+        client.data.userId,
+        this.server,
+      ),
     );
+  }
+
+  private async play(
+    client: FightSocket,
+    matchId: number,
+    action: GameAction,
+  ): Promise<void> {
+    this.reply(
+      client,
+      await this.fightsService.act(
+        matchId,
+        client.data.userId,
+        action,
+        this.server,
+      ),
+    );
+  }
+
+  private reply(client: FightSocket, result: { error?: string }): void {
+    if (result.error) client.emit('fight:error', { message: result.error });
   }
 }

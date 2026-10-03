@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { DECK_RULES } from "@pipou/shared";
 import {
   deckService,
   type CardInDeck,
@@ -123,15 +124,19 @@ export default function DeckBuilder() {
   );
 
   const totalCards = cards.reduce((s, c) => s + c.quantity, 0);
-  const isValid = totalCards >= 20 && totalCards <= 40;
+  const isValid =
+    totalCards >= DECK_RULES.MIN_CARDS && totalCards <= DECK_RULES.MAX_CARDS;
 
   // ─── LOGIC CARTES ─────────────────────────────
   const addCard = (userCardId: number) => {
     setCards((prev) => {
       const total = prev.reduce((s, c) => s + c.quantity, 0);
-      if (total >= 40) return prev;
+      if (total >= DECK_RULES.MAX_CARDS) return prev;
       const inventoryCard = allCardsMap.get(userCardId);
-      const maxAllowed = Math.min(3, inventoryCard?.quantity ?? 0);
+      const maxAllowed = Math.min(
+        DECK_RULES.MAX_COPIES,
+        inventoryCard?.quantity ?? 0,
+      );
       const found = prev.find((c) => c.userCardId === userCardId);
       if (found) {
         if (found.quantity >= maxAllowed) return prev;
@@ -185,9 +190,9 @@ export default function DeckBuilder() {
     if (!selectedCard) return null;
     const c = selectedCard;
     const inDeck = cards.find((x) => x.userCardId === c.userCardId);
-    const maxAllowed = Math.min(3, c.quantity);
+    const maxAllowed = Math.min(DECK_RULES.MAX_COPIES, c.quantity);
     const atMax = inDeck ? inDeck.quantity >= maxAllowed : false;
-    const deckFull = totalCards >= 40;
+    const deckFull = totalCards >= DECK_RULES.MAX_CARDS;
     const inDeckQty = inDeck?.quantity ?? 0;
 
     return (
@@ -246,7 +251,7 @@ export default function DeckBuilder() {
           {(atMax || deckFull) && (
             <p className="deck-modal-hint">
               {deckFull
-                ? "Deck plein (40 cartes)"
+                ? `Deck plein (${DECK_RULES.MAX_CARDS} cartes)`
                 : `Maximum ${maxAllowed} exemplaire${maxAllowed > 1 ? "s" : ""}`}
             </p>
           )}
@@ -278,7 +283,8 @@ export default function DeckBuilder() {
           <div className="manager-list">
             {decks.map((d) => {
               const total = d.deckCards.reduce((s, c) => s + c.quantity, 0);
-              const isValidDeck = total >= 20 && total <= 40;
+              const isValidDeck =
+                total >= DECK_RULES.MIN_CARDS && total <= DECK_RULES.MAX_CARDS;
               return (
                 <div key={d.id} className="manager-item deck-item">
                   <div className="manager-item__info">
@@ -287,7 +293,7 @@ export default function DeckBuilder() {
                       <span
                         className={`deck-badge ${isValidDeck ? "deck-badge--valid" : "deck-badge--invalid"}`}
                       >
-                        {total} / 40 cartes
+                        {total} / {DECK_RULES.MAX_CARDS} cartes
                       </span>
                     </div>
                   </div>
@@ -358,7 +364,7 @@ export default function DeckBuilder() {
           <span
             className={`deck-tab__badge ${totalCards > 0 ? "deck-tab__badge--filled" : ""}`}
           >
-            {totalCards}/40
+            {totalCards}/{DECK_RULES.MAX_CARDS}
           </span>
         </Button>
       </div>
@@ -440,7 +446,10 @@ export default function DeckBuilder() {
                         size="icon"
                         aria-label="Ajouter"
                         onClick={() => addCard(c.userCardId)}
-                        disabled={c.quantity >= maxAllowed || totalCards >= 40}
+                        disabled={
+                          c.quantity >= maxAllowed ||
+                          totalCards >= DECK_RULES.MAX_CARDS
+                        }
                       >
                         <IconPlus size={16} />
                       </Button>
@@ -463,13 +472,13 @@ export default function DeckBuilder() {
         </div>
         <div className="deck-bottom-bar__row">
           <span
-            className={`deck-counter ${totalCards > 40 ? "deck-counter--over" : ""}`}
+            className={`deck-counter ${totalCards > DECK_RULES.MAX_CARDS ? "deck-counter--over" : ""}`}
           >
-            {totalCards} / 40
+            {totalCards} / {DECK_RULES.MAX_CARDS}
             {!isValid && totalCards > 0 && (
               <span className="deck-counter--hint">
-                {totalCards < 20
-                  ? ` · encore ${20 - totalCards}`
+                {totalCards < DECK_RULES.MIN_CARDS
+                  ? ` · encore ${DECK_RULES.MIN_CARDS - totalCards}`
                   : ` · trop de cartes`}
               </span>
             )}

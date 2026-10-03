@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import { SoundProvider } from "./contexts/SoundContext";
 import Admin from "./pages/Admin";
+import AdminSandbox from "./pages/AdminSandbox";
 import { useScrollRestoration } from "./hooks/useScrollRestoration";
 import { AnimatePresence } from "framer-motion";
 import { useDailyRewardModal } from "./hooks/Usedailyrewardmodal";
@@ -100,6 +101,14 @@ function App() {
               <Route path="/decks" element={<DeckBuilder />} />
               <Route path="/fight" element={<FightPageWrapper />} />
             </Route>
+            <Route
+              path="/admin/sandbox"
+              element={
+                <ProtectedRoute>
+                  <AdminSandbox />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

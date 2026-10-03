@@ -45,4 +45,10 @@ export const QUERY_KEYS = {
     quests: ["admin", "quests"] as const,
     banners: ["admin", "banners"] as const,
   },
+
+  // ── Sandbox admin ─────────────────────────────────────────────────────────
+  sandbox: {
+    scenarios: ["sandbox", "scenarios"] as const,
+    catalog: ["sandbox", "catalog"] as const,
+  },
 } as const;

@@ -1,4 +1,10 @@
 import { useState } from "react";
+import {
+  DECK_RULES,
+  HAND_LIMIT,
+  STARTING_HAND,
+  STARTING_PRIMES,
+} from "@pipou/shared";
 import Button from "../../components/Button";
 import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import "./FightRules.css";
@@ -16,7 +22,7 @@ const STEPS: Step[] = [
           <div>
             <div className="fr-win-sub">Condition de victoire</div>
             <div className="fr-win-val">
-              Récupérer ses 6 Cartes Primes en premier
+              Récupérer ses {STARTING_PRIMES} Cartes Primes en premier
             </div>
           </div>
         </div>
@@ -30,8 +36,15 @@ const STEPS: Step[] = [
           <div className="fr-rule">
             <div className="fr-dot" />
             <div className="fr-rule-text">
-              La partie se termine dès qu'un joueur récupère toutes ses{" "}
-              <strong>6 Primes</strong>.
+              Si les deux joueurs récupèrent leur dernière Prime en même temps :{" "}
+              <strong>match nul</strong>.
+            </div>
+          </div>
+          <div className="fr-rule">
+            <div className="fr-dot" />
+            <div className="fr-rule-text">
+              Un joueur qui doit piocher avec un deck vide <strong>perd</strong>
+              .
             </div>
           </div>
         </div>
@@ -46,28 +59,30 @@ const STEPS: Step[] = [
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Deck :</strong> minimum 30 cartes, max 3 exemplaires par
-            carte.
+            <strong>Deck :</strong> {DECK_RULES.MIN_CARDS} à{" "}
+            {DECK_RULES.MAX_CARDS} cartes, {DECK_RULES.MAX_COPIES} exemplaires
+            max par carte.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Zone Prime :</strong> retirez les 6 premières cartes et
-            placez-les face cachée avant le début.
+            <strong>Zone Prime :</strong> les {STARTING_PRIMES} premières cartes
+            du deck mélangé, face cachée.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Main de départ :</strong> piochez 5 cartes.
+            <strong>Main de départ :</strong> {STARTING_HAND} cartes.{" "}
+            <strong>Mulligan :</strong> une fois, tu peux remélanger ta main
+            dans le deck et repiocher {STARTING_HAND} cartes.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Limite de main :</strong> max 9 cartes — défaussez
-            l'excédent immédiatement.
+            Le premier joueur est <strong>tiré au sort</strong>.
           </div>
         </div>
       </div>
@@ -87,19 +102,14 @@ const STEPS: Step[] = [
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>3 Zones Support</strong> pour les Terrains et Équipements.
+            <strong>3 Zones Support</strong> pour les Terrains.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>1 Zone Prime</strong> avec 6 cartes face cachée.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            Chaque joueur a son propre plateau, en miroir de l'adversaire.
+            <strong>1 Zone Prime</strong> avec {STARTING_PRIMES} cartes face
+            cachée.
           </div>
         </div>
       </div>
@@ -113,8 +123,9 @@ const STEPS: Step[] = [
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Monstres :</strong> stats ATK / HP, archétype, coût (1–3
-            Énergies) et effets passifs ou déclenchés.
+            <strong>Monstres :</strong> ATK / PV, archétype, coût de 0 à 3
+            Énergies, effets passifs ou déclenchés. Un monstre peut attaquer dès
+            son invocation, sauf si sa carte dit le contraire.
           </div>
         </div>
         <div className="fr-rule">
@@ -124,15 +135,17 @@ const STEPS: Step[] = [
             <div className="fr-sub">
               <div className="fr-rule-text">
                 <span className="fr-tag fr-tag--support">Éphémère</span>
-                Utilisation unique puis défausse.
+                Utilisation unique puis défausse. Certaines demandent de choisir
+                un monstre cible.
               </div>
               <div className="fr-rule-text">
                 <span className="fr-tag fr-tag--support">Terrain</span>
-                Permanent, buff sur vos 3 zones Monstre.
+                Permanent, agit sur tes monstres uniquement.
               </div>
               <div className="fr-rule-text">
                 <span className="fr-tag fr-tag--support">Équipement</span>
-                Permanent, buff sur un monstre spécifique.
+                Attaché à un de tes monstres ; certains effets ne s'activent que
+                sur un monstre précis.
               </div>
             </div>
           </div>
@@ -149,31 +162,33 @@ const STEPS: Step[] = [
           [
             "🛡",
             "Provocation",
-            "Force les ennemis à attaquer ce monstre en priorité.",
+            "Les ennemis doivent attaquer ce monstre en priorité.",
           ],
           [
             "🗡",
             "Perçant",
-            "Les dégâts ignorent certaines réductions adverses.",
+            "Ignore la réduction de dégâts, et rapporte une Prime en détruisant un monstre en Garde.",
           ],
           [
             "✨",
             "Immunité débuffs",
-            "Le monstre ne peut pas recevoir de débuffs.",
+            "Le monstre ne peut pas recevoir de malus d'ATK temporaire.",
           ],
-          [
-            "⚡",
-            "Double attaque",
-            "Attaque deux fois par tour (au prochain tour).",
-          ],
+          ["⚡", "Double attaque", "Deux attaques au prochain tour, puis une."],
           ["✖️", "Attaques ×N", "Peut attaquer plusieurs fois par tour."],
           ["😈", "Attaque forcée", "Le monstre est bloqué en mode Attaque."],
+          [
+            "🔒",
+            "Garde verrouillée",
+            "Bloqué en Garde jusqu'à ce qu'il soit attaqué.",
+          ],
+          ["🧊", "Gel", "Ne peut pas attaquer pendant N de ses tours."],
           [
             "🛡",
             "Réduction dégâts",
             "Les dégâts reçus sont divisés par un coefficient.",
           ],
-          ["⚡", "ATK temporaire", "Bonus d'ATK actif uniquement ce tour."],
+          ["⚡", "ATK temporaire", "Bonus d'ATK actif jusqu'à la fin du tour."],
         ].map(([ic, name, desc], i) => (
           <div key={i} className="fr-status-card">
             <div className="fr-status-icon">{ic}</div>
@@ -194,22 +209,22 @@ const STEPS: Step[] = [
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Générer :</strong> défaussez des cartes pendant la Main
-            Phase. <strong>1 carte = 1 Énergie.</strong>
+            <strong>Générer :</strong> recycle des cartes de ta main pendant la
+            Main Phase. <strong>1 carte = 1 Énergie.</strong>
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Réinitialisation :</strong> le compteur tombe à 0 en fin de
-            tour. L'énergie non utilisée est perdue.
+            Sans assez d'énergie, tu paies le reste en défaussant des cartes au
+            moment d'invoquer.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            Bien gérer sa main est crucial — chaque carte peut devenir de
-            l'énergie.
+            <strong>Réinitialisation :</strong> l'énergie retombe à 0 en fin de
+            tour.
           </div>
         </div>
       </div>
@@ -226,11 +241,10 @@ const STEPS: Step[] = [
             <span className="fr-tag fr-tag--atk">Mode ATK</span>
             <div className="fr-sub">
               <div className="fr-rule-text">
-                Peut déclarer une attaque par tour. Contre-attaque s'il est
-                attaqué.
+                Une attaque par tour (sauf effet). Riposte s'il est attaqué.
               </div>
               <div className="fr-rule-text">
-                Si détruit → l'adversaire gagne <strong>1 Carte Prime</strong>.
+                Si détruit → l'adversaire gagne <strong>1 Prime</strong>.
               </div>
             </div>
           </div>
@@ -240,9 +254,12 @@ const STEPS: Step[] = [
           <div className="fr-rule-text">
             <span className="fr-tag fr-tag--guard">Mode Garde</span>
             <div className="fr-sub">
-              <div className="fr-rule-text">Ne peut pas attaquer.</div>
               <div className="fr-rule-text">
-                Si détruit → <strong>aucune Prime</strong> pour l'adversaire.
+                Ne peut pas attaquer ni riposter.
+              </div>
+              <div className="fr-rule-text">
+                Si détruit → <strong>aucune Prime</strong>, sauf contre un
+                attaquant Perçant.
               </div>
             </div>
           </div>
@@ -250,8 +267,8 @@ const STEPS: Step[] = [
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            Terrain adverse vide → <strong>attaque directe</strong> pour
-            récupérer 1 Prime.
+            <strong>Attaque directe</strong> (pas au tour 1) si l'adversaire n'a
+            aucun monstre : tu gagnes 1 Prime et l'adversaire pioche 1 carte.
           </div>
         </div>
       </div>
@@ -265,23 +282,21 @@ const STEPS: Step[] = [
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Destruction :</strong> quand un de vos monstres est détruit,
-            piochez 1 carte.
+            <strong>Destruction :</strong> quand un de tes monstres est détruit
+            en combat ou par un effet adverse, tu pioches 1 carte.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Récupération :</strong> quand vous gagnez une Prime,
-            ajoutez-la à votre main.
+            <strong>Récupération :</strong> une Prime gagnée rejoint ta main.
           </div>
         </div>
         <div className="fr-rule">
           <div className="fr-dot" />
           <div className="fr-rule-text">
-            <strong>Double K.O :</strong> deux monstres ATK se détruisent
-            mutuellement → les deux joueurs piochent 1 carte et récupèrent 1
-            Prime.
+            <strong>Double K.O :</strong> deux monstres ATK se détruisent →
+            chaque joueur pioche 1 carte et récupère 1 Prime.
           </div>
         </div>
       </div>
@@ -293,18 +308,21 @@ const STEPS: Step[] = [
     content: (
       <div className="fr-phase-list">
         {[
-          ["Draw Phase", "Piochez 1 carte."],
+          [
+            "Début de tour",
+            "Effets de début de tour, puis pioche d'1 carte (tour 1 compris).",
+          ],
           [
             "Main Phase",
-            "Défaussez pour générer de l'Énergie. Invoquez, jouez des Supports, changez la position de vos monstres.",
+            "Recycle pour l'Énergie, invoque, joue des Supports, change la position de tes monstres.",
           ],
           [
             "Battle Phase",
-            "Attaquez les monstres adverses. Terrain vide → attaque directe pour 1 Prime.",
+            "Attaque les monstres adverses, ou directement si le terrain adverse est vide.",
           ],
           [
             "Ending Phase",
-            "Résolution des effets finaux. Énergie → 0. Vérification limite de main (max 9).",
+            `Effets de fin de tour, Énergie → 0, ${HAND_LIMIT} cartes max en main (défausse l'excédent).`,
           ],
         ].map(([label, desc], i) => (
           <div key={i} className="fr-phase">
@@ -314,6 +332,10 @@ const STEPS: Step[] = [
             </div>
           </div>
         ))}
+        <p className="fr-rule-text">
+          ⏱ 90 s par phase : à l'expiration, la phase suivante commence
+          automatiquement.
+        </p>
       </div>
     ),
   },

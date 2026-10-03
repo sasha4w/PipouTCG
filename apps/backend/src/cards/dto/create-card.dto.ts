@@ -11,6 +11,13 @@ import {
   MaxLength,
   IsInt,
   Max,
+  IsIn,
+  Validate,
+  ValidatorConstraint,
+} from 'class-validator';
+import type {
+  ValidationArguments,
+  ValidatorConstraintInterface,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -25,6 +32,8 @@ import {
 } from '@pipou/shared';
 import type {
   CardEffect,
+  CardNameMatch,
+  EffectFilter,
   CreateCardRequest,
   EffectAction,
   EffectCondition,
@@ -36,6 +45,45 @@ export class EffectConditionDto implements EffectCondition {
 
   @IsOptional()
   value?: number | string;
+
+  @IsOptional()
+  @IsIn(['exact', 'contains'])
+  match?: CardNameMatch;
+}
+
+export class EffectFilterDto implements EffectFilter {
+  @IsOptional()
+  @IsEnum(Archetype)
+  archetype?: Archetype;
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(Rarity, { each: true })
+  rarities?: Rarity[];
+
+  @IsOptional()
+  @IsEnum(CardType)
+  type?: CardType;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+}
+
+/** DEAL_DAMAGE ne vise que des monstres. */
+@ValidatorConstraint({ name: 'damageTargetsMonsters' })
+class DamageTargetsMonsters implements ValidatorConstraintInterface {
+  validate(target: EffectTarget, args: ValidationArguments): boolean {
+    const action = args.object as EffectActionDto;
+    return (
+      action.type !== ActionType.DEAL_DAMAGE ||
+      (target !== EffectTarget.PLAYER && target !== EffectTarget.OPPONENT)
+    );
+  }
+
+  defaultMessage(): string {
+    return 'DEAL_DAMAGE ne peut viser que des monstres';
+  }
 }
 
 export class EffectActionDto implements EffectAction {
@@ -43,6 +91,7 @@ export class EffectActionDto implements EffectAction {
   type!: ActionType;
 
   @IsEnum(EffectTarget)
+  @Validate(DamageTargetsMonsters)
   target!: EffectTarget;
 
   @IsOptional()
@@ -52,6 +101,11 @@ export class EffectActionDto implements EffectAction {
   @IsOptional()
   @IsEnum(Archetype)
   archetype?: Archetype;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EffectFilterDto)
+  filter?: EffectFilterDto;
 }
 
 export class CardEffectDto implements CardEffect {

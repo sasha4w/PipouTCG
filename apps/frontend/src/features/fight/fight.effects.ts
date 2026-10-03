@@ -12,6 +12,8 @@ export const TRIGGER_LABEL: Record<string, string> = {
   ON_TURN_END: "Fin de tour",
   ON_ALLY_SUMMON: "Invocation alliée",
   PASSIVE: "Passif",
+  ON_RECYCLE: "Recyclage",
+  ON_BATTLE_PHASE_START: "Début du combat",
 };
 
 export const TARGET_SUFFIX: Record<string, string> = {
@@ -25,6 +27,7 @@ export const TARGET_SUFFIX: Record<string, string> = {
   OPPONENT: "à l'adversaire",
   ARCHETYPE_ALLIES: "sur les alliés (archétype)",
   TARGET_ALLY: "sur l'allié ciblé",
+  ADJACENT_ALLIES: "sur les alliés adjacents",
 };
 
 interface ActionMeta {
@@ -52,7 +55,6 @@ export const ACTION_META: Record<string, ActionMeta> = {
     label: (v) => `Pioche ${v ?? "?"} carte(s)`,
     type: "neutral",
   },
-  STEAL_PRIME: { icon: "🏆", label: () => "Vole une Prime", type: "debuff" },
   DESTROY_MONSTER: { icon: "💀", label: () => "Détruit", type: "debuff" },
   RETURN_TO_HAND: {
     icon: "↩️",
@@ -136,6 +138,16 @@ export const ACTION_META: Record<string, ActionMeta> = {
     label: (v) => `Bloque les attaques ${v ?? "?"} tour(s)`,
     type: "debuff",
   },
+  SUMMONABLE_ON_ENEMY_SIDE: {
+    icon: "🦠",
+    label: () => "Invocable sur le terrain adverse",
+    type: "neutral",
+  },
+  CANNOT_ATTACK_ON_SUMMON_TURN: {
+    icon: "💤",
+    label: () => "N'attaque pas le tour de son invocation",
+    type: "debuff",
+  },
   FORCE_GUARD_LOCK_ENEMY: {
     icon: "🔒",
     label: () => "Verrouille en mode Garde",
@@ -169,7 +181,7 @@ export function getCardEffectEntries(
   if (supportType === "TERRAIN")
     entries.push({
       icon: "🗺️",
-      label: "Terrain — affecte les deux camps",
+      label: "Terrain — affecte vos monstres",
       type: "neutral",
     });
   if (supportType === "EPHEMERAL")

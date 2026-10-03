@@ -8,6 +8,8 @@ export const EffectTrigger = {
   ON_TURN_END: "ON_TURN_END",
   ON_ALLY_SUMMON: "ON_ALLY_SUMMON",
   PASSIVE: "PASSIVE",
+  ON_RECYCLE: "ON_RECYCLE",
+  ON_BATTLE_PHASE_START: "ON_BATTLE_PHASE_START",
 } as const;
 export type EffectTrigger = (typeof EffectTrigger)[keyof typeof EffectTrigger];
 
@@ -17,6 +19,7 @@ export const EffectConditionType = {
   HAND_SIZE_MIN: "HAND_SIZE_MIN",
   OPPONENT_HAS_NO_MONSTERS: "OPPONENT_HAS_NO_MONSTERS",
   SPECIFIC_CARD_ON_BOARD: "SPECIFIC_CARD_ON_BOARD",
+  EQUIPPED_ON: "EQUIPPED_ON",
 } as const;
 export type EffectConditionType =
   (typeof EffectConditionType)[keyof typeof EffectConditionType];
@@ -28,7 +31,6 @@ export const ActionType = {
   BUFF_ATK: "BUFF_ATK",
   BUFF_HP: "BUFF_HP",
   BUFF_ATK_TEMP: "BUFF_ATK_TEMP",
-  STEAL_PRIME: "STEAL_PRIME",
   DESTROY_MONSTER: "DESTROY_MONSTER",
   RETURN_TO_HAND: "RETURN_TO_HAND",
   DISCARD: "DISCARD",
@@ -49,6 +51,8 @@ export const ActionType = {
   FORCE_ATTACK_MODE_ENEMY: "FORCE_ATTACK_MODE_ENEMY",
   BLOCK_ATTACK: "BLOCK_ATTACK",
   FORCE_GUARD_LOCK_ENEMY: "FORCE_GUARD_LOCK_ENEMY",
+  CANNOT_ATTACK_ON_SUMMON_TURN: "CANNOT_ATTACK_ON_SUMMON_TURN",
+  SUMMONABLE_ON_ENEMY_SIDE: "SUMMONABLE_ON_ENEMY_SIDE",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
@@ -63,5 +67,6 @@ export const EffectTarget = {
   OPPONENT: "OPPONENT",
   ARCHETYPE_ALLIES: "ARCHETYPE_ALLIES",
   TARGET_ALLY: "TARGET_ALLY",
+  ADJACENT_ALLIES: "ADJACENT_ALLIES",
 } as const;
 export type EffectTarget = (typeof EffectTarget)[keyof typeof EffectTarget];

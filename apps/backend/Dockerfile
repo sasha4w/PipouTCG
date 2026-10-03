@@ -17,4 +17,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /prod ./
 EXPOSE 3000
-CMD ["node", "dist/main"]
+# Applique les migrations en attente avant de démarrer : si l'une échoue,
+# le conteneur s'arrête au lieu de servir un schéma incohérent.
+CMD ["sh", "-c", "node ./node_modules/typeorm/cli.js -d dist/database/data-source.js migration:run && node dist/main"]

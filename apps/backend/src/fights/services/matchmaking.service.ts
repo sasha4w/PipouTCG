@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Match } from '../entities/match.entity';
 import { MatchStatus } from '@pipou/shared';
 import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
+import { createGameState, createPlayerState } from '../helpers/game-factory';
 
 export interface QueueEntry {
   userId: number;
@@ -53,23 +54,7 @@ export class MatchmakingService {
   }
 
   createEmptyPlayerState(entry: QueueEntry): PlayerGameState {
-    return {
-      userId: entry.userId,
-      username: entry.username,
-      socketId: entry.socketId,
-      primes: 0,
-      primeDeck: [],
-      hand: [],
-      deck: [],
-      graveyard: [],
-      banished: [],
-      monsterZones: [null, null, null],
-      supportZones: [null, null, null],
-      recycleEnergy: 0,
-      hasDrawnThisTurn: false,
-      handLimitEnforced: false,
-      ready: false,
-    };
+    return createPlayerState(entry);
   }
 
   buildInitialGameState(
@@ -77,32 +62,6 @@ export class MatchmakingService {
     p1: QueueEntry,
     p2: QueueEntry,
   ): GameState {
-    return {
-      matchId,
-      player1: this.createEmptyPlayerState(p1),
-      player2: this.createEmptyPlayerState(p2),
-      currentTurnUserId: p1.userId,
-      phase: 'waiting',
-      turnNumber: 0,
-      log: [],
-    };
-  }
-  async createMatch(
-    p1Id: number,
-    p2Id: number,
-    isTest = false,
-  ): Promise<number> {
-    if (isTest) {
-      // ID fictif négatif, jamais en DB
-      return -Math.floor(Math.random() * 1_000_000) - 1;
-    }
-    const match = await this.matchRepo.save(
-      this.matchRepo.create({
-        player1Id: p1Id,
-        player2Id: p2Id,
-        status: MatchStatus.IN_PROGRESS,
-      }),
-    );
-    return match.id;
+    return createGameState(matchId, p1, p2);
   }
 }

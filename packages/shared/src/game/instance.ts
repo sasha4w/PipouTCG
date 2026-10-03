@@ -13,6 +13,17 @@ export interface CardInstance<C = ClientCard> {
 
 export type CombatMode = "attack" | "guard";
 
+/** Bonus posés par des effets déclenchés : socle du recalcul des passifs. */
+export interface MonsterPermanentStats {
+  atk: number;
+  hp: number;
+  taunt: boolean;
+  piercing: boolean;
+  debuffImmune: boolean;
+  damageReduction?: number;
+  attacksPerTurn: number;
+}
+
 export interface MonsterOnBoard<C = ClientCard> {
   instanceId: string;
   card: CardInstance<C>;
@@ -22,6 +33,7 @@ export interface MonsterOnBoard<C = ClientCard> {
   atkBuff: number;
   hpBuff: number;
   tempAtkBuff: number;
+  perm: MonsterPermanentStats;
   hasAttackedThisTurn: boolean;
   attacksPerTurn: number;
   attacksUsedThisTurn: number;
@@ -31,6 +43,10 @@ export interface MonsterOnBoard<C = ClientCard> {
   forcedAttackMode: boolean;
   summonedThisTurn: boolean;
   doubleAtkNextTurn: boolean;
+  /** Attaques supplémentaires ce tour-ci (double attaque différée). */
+  extraAttacksThisTurn: number;
+  /** Ne peut pas attaquer le tour de son invocation (effet de carte). */
+  cannotAttackOnSummonTurn: boolean;
   damageReduction?: number;
   turnCounter?: number;
   ownerUserId?: number;

@@ -10,5 +10,6 @@ export const MatchEndReason = {
   DECK_EMPTY: "deck_empty",
   SURRENDER: "surrender",
   DISCONNECT: "disconnect",
+  DOUBLE_KO: "double_ko",
 } as const;
 export type MatchEndReason = (typeof MatchEndReason)[keyof typeof MatchEndReason];

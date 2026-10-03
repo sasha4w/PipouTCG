@@ -1,3 +1,4 @@
+import { MatchEndReason } from "@pipou/shared";
 import "./MatchHistory.css";
 import type {
   PaginatedMatches,
@@ -40,13 +41,16 @@ export default function MatchHistory({ history, myStats, myUserId }: Props) {
       ) : (
         <div className="mh-list">
           {history.data.map((m) => {
-            const won = m.winner?.id === myUserId;
+            const draw = m.endReason === MatchEndReason.DOUBLE_KO;
+            const won = !draw && m.winner?.id === myUserId;
             return (
               <div
                 key={m.id}
                 className={`mh-row ${won ? "mh-row--win" : "mh-row--loss"}`}
               >
-                <div className="mh-row-icon">{won ? "🏆" : "💀"}</div>
+                <div className="mh-row-icon">
+                  {draw ? "🤝" : won ? "🏆" : "💀"}
+                </div>
                 <div>
                   <div className="mh-row-players">
                     {m.player1.username} vs {m.player2.username}
@@ -61,7 +65,7 @@ export default function MatchHistory({ history, myStats, myUserId }: Props) {
                 <div
                   className={`mh-row-result ${won ? "mh-row-result--win" : "mh-row-result--loss"}`}
                 >
-                  {won ? "Victoire" : "Défaite"}
+                  {draw ? "Nul" : won ? "Victoire" : "Défaite"}
                 </div>
               </div>
             );

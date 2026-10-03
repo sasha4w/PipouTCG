@@ -17,7 +17,10 @@ import MatchHistory from "./MatchHistory";
 import FightRules from "./FightRules";
 import FightBoard from "./FightBoard";
 import CardPickModal from "./CardPickModal";
-import type { CombatMode } from "@pipou/shared";
+import MulliganPanel from "./MulliganPanel";
+import type { GameAction } from "@pipou/shared";
+import { emitGameAction } from "./emitGameAction";
+import { useBoardControls } from "./useBoardControls";
 import "./FightPage.css";
 
 export default function FightPage({
@@ -35,9 +38,6 @@ export default function FightPage({
   const [matchId, setMatchId] = useState<number | null>(null);
   const [opponentName, setOpponentName] = useState("");
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
-  const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  const [selectedZone, setSelectedZone] = useState<number | null>(null);
-  const [payIndices, setPayIndices] = useState<number[]>([]);
   const [toast, setToast] = useState<{
     msg: string;
     type: "err" | "ok";
@@ -45,6 +45,16 @@ export default function FightPage({
   const [timeLeft, setTimeLeft] = useState(90);
   const socketRef = useRef<FightClientSocket | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const send = useCallback(
+    (action: GameAction) => {
+      if (socketRef.current && matchId)
+        emitGameAction(socketRef.current, matchId, action);
+    },
+    [matchId],
+  );
+  const controls = useBoardControls(gameState, send);
+  const { clearSelection } = controls;
 
   // ── Queries ───────────────────────────────────────────────────────────────
 
@@ -111,31 +121,37 @@ export default function FightPage({
         showToast(`⚔️ Adversaire trouvé : ${oName} !`, "ok");
       },
     );
+    socket.on("fight:resumed", ({ matchId: mid, opponentName: oName }) => {
+      setMatchId(mid);
+      setOpponentName(oName);
+      // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
+      setStatus((s) => (s === "playing" ? s : "selecting"));
+      showToast("🔌 Partie en cours retrouvée", "ok");
+    });
     socket.on("fight:deck_accepted", () =>
       showToast("Deck accepté — en attente de l'adversaire…"),
     );
     socket.on("fight:state", (state: GameState) => {
       setGameState(state);
       setStatus("playing");
-      setSelectedCard(null);
-      setSelectedZone(null);
-      setPayIndices([]);
+      clearSelection();
       if (state.isMyTurn) startCountdown();
     });
-    socket.on(
-      "fight:game_over",
-      ({ winner, endReason }: { winner: number; endReason: string }) => {
-        setStatus("finished");
-        if (timerRef.current) clearInterval(timerRef.current);
+    socket.on("fight:game_over", ({ winner, endReason }) => {
+      setStatus("finished");
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (winner === null) {
+        showToast(`🤝 Match nul (${endReason})`, "ok");
+      } else {
         showToast(
           winner === userId
             ? `🎉 Victoire ! (${endReason})`
             : `💀 Défaite… (${endReason})`,
           winner === userId ? "ok" : "err",
         );
-        setTimeout(() => refetchHistory(), 2000);
-      },
-    );
+      }
+      setTimeout(() => refetchHistory(), 2000);
+    });
     socket.on("fight:error", ({ message }: { message: string }) =>
       showToast(message, "err"),
     );
@@ -144,7 +160,7 @@ export default function FightPage({
       socket.disconnect();
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [userId, showToast, startCountdown, refetchHistory]);
+  }, [userId, showToast, startCountdown, refetchHistory, clearSelection]);
 
   // ── Emit helper ───────────────────────────────────────────────────────────
 
@@ -171,99 +187,9 @@ export default function FightPage({
     emit("fight:submit_deck", { matchId, deckId: selectedDeck });
   };
 
-  const endPhase = () => matchId && emit("fight:end_phase", { matchId });
-
   const surrender = () => {
     if (!matchId || !window.confirm("Abandonner ?")) return;
     emit("fight:surrender", { matchId });
-  };
-
-  /** Invocation normale (zones alliées) */
-  const summon = (paymentIndices: number[] = payIndices) => {
-    if (selectedCard === null || selectedZone === null || !matchId) return;
-    emit("fight:summon", {
-      matchId,
-      handIndex: selectedCard,
-      zoneIndex: selectedZone,
-      paymentHandIndices: paymentIndices,
-    });
-    setSelectedCard(null);
-    setSelectedZone(null);
-    setPayIndices([]);
-  };
-
-  /** Invocation Noyau Zeta sur zone adverse */
-  const summonZeta = (
-    zoneIndex: number,
-    paymentIndices: number[] = payIndices,
-  ) => {
-    if (selectedCard === null || !matchId) return;
-    emit("fight:summon_opponent", {
-      matchId,
-      handIndex: selectedCard,
-      zoneIndex,
-      paymentHandIndices: paymentIndices,
-    });
-    setSelectedCard(null);
-    setSelectedZone(null);
-    setPayIndices([]);
-  };
-
-  const attackMonster = (targetInstanceId: string) => {
-    if (selectedZone === null || !matchId || !gameState) return;
-    const attacker = gameState.me.monsterZones[selectedZone];
-    if (!attacker) return;
-    emit("fight:attack", {
-      matchId,
-      attackerInstanceId: attacker.instanceId,
-      targetInstanceId,
-    });
-    setSelectedZone(null);
-  };
-
-  const directAttack = () => {
-    if (selectedZone === null || !matchId || !gameState) return;
-    const attacker = gameState.me.monsterZones[selectedZone];
-    if (!attacker) return;
-    emit("fight:attack", {
-      matchId,
-      attackerInstanceId: attacker.instanceId,
-      direct: true,
-    });
-    setSelectedZone(null);
-  };
-
-  const changeMode = (instanceId: string, mode: CombatMode) =>
-    matchId && emit("fight:change_mode", { matchId, instanceId, mode });
-
-  const recycleFromHand = (handIndex: number) =>
-    matchId && emit("fight:recycle_support", { matchId, handIndex });
-
-  const playSupport = (
-    handIndex: number,
-    zoneIndex?: number,
-    targetInstanceId?: string,
-  ) => {
-    if (!matchId) return;
-    emit("fight:play_support", {
-      matchId,
-      handIndex,
-      ...(zoneIndex !== undefined && { zoneIndex }),
-      ...(targetInstanceId !== undefined && { targetInstanceId }),
-    });
-    setSelectedCard(null);
-    setSelectedZone(null);
-    setPayIndices([]);
-  };
-
-  const discardCard = (handIndex: number) => {
-    if (!matchId) return;
-    emit("fight:discard", { matchId, handIndex });
-  };
-
-  const pickCards = (instanceIds: string[]) => {
-    if (!matchId) return;
-    emit("fight:pick_cards", { matchId, instanceIds });
   };
 
   const handleReplay = () => {
@@ -323,37 +249,40 @@ export default function FightPage({
             />
           )}
 
-          {status === "playing" && gameState && (
-            <>
-              <FightBoard
-                gs={gameState}
-                selectedCard={selectedCard}
-                selectedZone={selectedZone}
-                payIndices={payIndices}
-                timeLeft={timeLeft}
-                onSetSelectedCard={setSelectedCard}
-                onSetSelectedZone={setSelectedZone}
-                onSetPayIndices={setPayIndices}
-                onAttackMonster={attackMonster}
-                onDirectAttack={directAttack}
-                onSummon={summon}
-                onSummonZeta={summonZeta}
-                onPlaySupport={playSupport}
-                onChangeMode={changeMode}
-                onRecycleSupport={recycleFromHand}
-                onDiscardCard={discardCard}
-                onEndPhase={endPhase}
-                onSurrender={surrender}
-              />
-
-              {gameState.pendingChoice && (
-                <CardPickModal
-                  choice={gameState.pendingChoice}
-                  onConfirm={pickCards}
-                />
-              )}
-            </>
+          {status === "playing" && gameState?.phase === "mulligan" && (
+            <MulliganPanel
+              hand={gameState.me.hand}
+              decided={gameState.me.mulliganDone}
+              opponentDecided={gameState.opponent.mulliganDone}
+              opponentName={gameState.opponent.username}
+              onDecide={controls.decideMulligan}
+            />
           )}
+
+          {status === "playing" &&
+            gameState &&
+            gameState.phase !== "mulligan" && (
+              <>
+                {gameState.opponentChoosing && (
+                  <div className="fp-waiting-choice">
+                    ⏳ {gameState.opponent.username} fait un choix…
+                  </div>
+                )}
+                <FightBoard
+                  gs={gameState}
+                  {...controls.board}
+                  timeLeft={timeLeft}
+                  onSurrender={surrender}
+                />
+
+                {gameState.pendingChoice && (
+                  <CardPickModal
+                    choice={gameState.pendingChoice}
+                    onConfirm={controls.pickCards}
+                  />
+                )}
+              </>
+            )}
         </div>
       )}
     </div>
