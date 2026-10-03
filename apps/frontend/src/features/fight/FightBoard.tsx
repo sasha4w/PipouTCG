@@ -24,7 +24,8 @@ interface Props {
   selectedCard: number | null;
   selectedZone: number | null;
   payIndices: number[];
-  timeLeft: number;
+  /** null : pas de timer (sandbox sans timer). */
+  timeLeft: number | null;
   onSetSelectedCard: React.Dispatch<React.SetStateAction<number | null>>;
   onSetSelectedZone: React.Dispatch<React.SetStateAction<number | null>>;
   onSetPayIndices: React.Dispatch<React.SetStateAction<number[]>>;
@@ -42,7 +43,8 @@ interface Props {
   onRecycleSupport: (handIndex: number) => void;
   onDiscardCard: (handIndex: number) => void;
   onEndPhase: () => void;
-  onSurrender: () => void;
+  /** Absent : pas de bouton d'abandon. */
+  onSurrender?: () => void;
 }
 
 export default function FightBoard({

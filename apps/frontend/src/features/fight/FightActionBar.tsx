@@ -19,7 +19,8 @@ interface Props {
     targetInstanceId?: string,
   ) => void;
   onEndPhase: () => void;
-  onSurrender: () => void;
+  /** Absent : pas de bouton d'abandon. */
+  onSurrender?: () => void;
   onRecycleFromHand: (handIndex: number) => void;
   /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
   playBlockedReason?: string;
@@ -121,9 +122,11 @@ export default function FightActionBar({
         {END_PHASE_LABEL[phase ?? "main"] ?? "Continuer →"}
       </button>
 
-      <button onClick={onSurrender} className="fab-btn-surrender">
-        🏳️ Abandonner
-      </button>
+      {onSurrender && (
+        <button onClick={onSurrender} className="fab-btn-surrender">
+          🏳️ Abandonner
+        </button>
+      )}
     </div>
   );
 }
