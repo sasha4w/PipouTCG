@@ -24,6 +24,7 @@ import { Buffer } from 'buffer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DecksModule } from './decks/decks.module';
 import { FightsModule } from './fights/fights.module';
+import { SandboxModule } from './sandbox/sandbox.module';
 import { ForeignKeyViolationFilter } from './common/filters/foreign-key.filter';
 import { shouldSynchronize } from './database/synchronize';
 @Module({
@@ -79,6 +80,7 @@ import { shouldSynchronize } from './database/synchronize';
     DailyRewardModule,
     DecksModule,
     FightsModule,
+    SandboxModule,
   ],
   controllers: [AppController],
   providers: [
