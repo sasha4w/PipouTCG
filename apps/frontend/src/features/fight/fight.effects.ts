@@ -13,6 +13,7 @@ export const TRIGGER_LABEL: Record<string, string> = {
   ON_ALLY_SUMMON: "Invocation alliée",
   PASSIVE: "Passif",
   ON_RECYCLE: "Recyclage",
+  ON_BATTLE_PHASE_START: "Début du combat",
 };
 
 export const TARGET_SUFFIX: Record<string, string> = {
@@ -26,6 +27,7 @@ export const TARGET_SUFFIX: Record<string, string> = {
   OPPONENT: "à l'adversaire",
   ARCHETYPE_ALLIES: "sur les alliés (archétype)",
   TARGET_ALLY: "sur l'allié ciblé",
+  ADJACENT_ALLIES: "sur les alliés adjacents",
 };
 
 interface ActionMeta {

@@ -4,7 +4,9 @@ import { CARD_EFFECT_PATCHES, planPatch } from '../card-effect-patches';
 
 /**
  * Remplace les comportements codés en dur (#9, #17, #29, #122) et les
- * conditions « Sur X » des équipements (#127, #128) par des effets génériques.
+ * conditions « Sur X » des équipements (#127, #128) par des effets génériques,
+ * et corrige les bonus de coéquipiers de #7 (début du combat) et #32
+ * (alliés adjacents).
  * Une carte modifiée depuis le dump du 23/09 n'est pas touchée : elle est
  * signalée dans les logs pour être corrigée via l'admin.
  */

@@ -19,6 +19,7 @@ export const SUPPORTED_TRIGGERS: ReadonlySet<EffectTrigger> = new Set([
   EffectTrigger.ON_ALLY_SUMMON,
   EffectTrigger.PASSIVE,
   EffectTrigger.ON_RECYCLE,
+  EffectTrigger.ON_BATTLE_PHASE_START,
 ]);
 
 export const SUPPORTED_CONDITIONS: ReadonlySet<EffectConditionType> = new Set([

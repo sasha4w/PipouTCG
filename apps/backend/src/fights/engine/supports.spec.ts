@@ -1,5 +1,6 @@
 import {
   ActionType,
+  Archetype,
   EffectConditionType,
   EffectTarget,
   EffectTrigger,
@@ -204,5 +205,69 @@ describe('GameEngine — supports Éphémères ciblés', () => {
     expect(play(game, 'p1').error).toBe(
       'Condition non remplie pour jouer cette carte',
     );
+  });
+
+  describe("refuse un Éphémère qui n'aurait aucun effet", () => {
+    const ouilleAuRapport = () =>
+      ephemeralCard('Ouille au rapport', [
+        effect(ON_PLAY, [
+          act(A.RETURN_FROM_GRAVEYARD, T.PLAYER, {
+            value: 1,
+            filter: { archetype: Archetype.PIPOU },
+          }),
+        ]),
+      ]);
+
+    it('récupération dans un cimetière sans carte éligible', () => {
+      const game = scenario({
+        p1: {
+          hand: [ouilleAuRapport()],
+          graveyard: [
+            monsterCard('Dragon mort', { archetype: Archetype.DRAGON }),
+          ],
+        },
+      });
+
+      expect(play(game, 'p1').error).toBe(
+        "Cette carte n'aurait aucun effet pour l'instant",
+      );
+      expect(handNames(game, 'p1')).toEqual(['Ouille au rapport']);
+    });
+
+    it('la même carte se joue dès qu’une carte est éligible', () => {
+      const game = scenario({
+        p1: {
+          hand: [ouilleAuRapport()],
+          graveyard: [
+            monsterCard('Pipou mort', { archetype: Archetype.PIPOU }),
+          ],
+        },
+      });
+
+      expect(play(game, 'p1')).toEqual({});
+      expect(game.pendingChoices).toHaveLength(1);
+    });
+
+    it('bonus à tous les alliés sans aucun allié', () => {
+      const overclock = ephemeralCard('Overclock', [
+        effect(ON_PLAY, [act(A.BUFF_ATK_TEMP, T.ALL_ALLIES, { value: 500 })]),
+      ]);
+      const game = scenario({ p1: { hand: [overclock] } });
+
+      expect(play(game, 'p1').error).toBe(
+        "Cette carte n'aurait aucun effet pour l'instant",
+      );
+    });
+
+    it('pioche avec un deck vide', () => {
+      const pioche = ephemeralCard('Pioche', [
+        effect(ON_PLAY, [act(A.DRAW, T.PLAYER)]),
+      ]);
+      const game = scenario({ p1: { hand: [pioche], deck: [] } });
+
+      expect(play(game, 'p1').error).toBe(
+        "Cette carte n'aurait aucun effet pour l'instant",
+      );
+    });
   });
 });

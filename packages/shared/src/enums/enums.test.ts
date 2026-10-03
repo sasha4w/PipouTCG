@@ -48,7 +48,7 @@ describe("enum values match the backend database values", () => {
     [
       "EffectTrigger",
       EffectTrigger,
-      ["ON_SUMMON", "ON_DEATH", "ON_ATTACK", "ON_DEFEND", "ON_PLAY", "ON_TURN_START", "ON_TURN_END", "ON_ALLY_SUMMON", "PASSIVE", "ON_RECYCLE"],
+      ["ON_SUMMON", "ON_DEATH", "ON_ATTACK", "ON_DEFEND", "ON_PLAY", "ON_TURN_START", "ON_TURN_END", "ON_ALLY_SUMMON", "PASSIVE", "ON_RECYCLE", "ON_BATTLE_PHASE_START"],
     ],
     [
       "EffectConditionType",
@@ -58,7 +58,7 @@ describe("enum values match the backend database values", () => {
     [
       "EffectTarget",
       EffectTarget,
-      ["SELF", "ALLY_MONSTER", "ALL_ALLIES", "ALLIES_EXCEPT_SELF", "ENEMY_MONSTER", "ALL_ENEMIES", "PLAYER", "OPPONENT", "ARCHETYPE_ALLIES", "TARGET_ALLY"],
+      ["SELF", "ALLY_MONSTER", "ALL_ALLIES", "ALLIES_EXCEPT_SELF", "ENEMY_MONSTER", "ALL_ENEMIES", "PLAYER", "OPPONENT", "ARCHETYPE_ALLIES", "TARGET_ALLY", "ADJACENT_ALLIES"],
     ],
   ])("%s", (_name, enumObject, expected) => {
     expect(Object.values(enumObject)).toEqual(expected);

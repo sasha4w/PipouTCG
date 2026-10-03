@@ -258,7 +258,7 @@ describe('vraies cartes — combos', () => {
     });
   });
 
-  it('Champion Ouille-Ouille : +300 PV par allié adjacent', () => {
+  it('Champion Ouille-Ouille : +300 PV max à chaque allié adjacent', () => {
     const game = scenario({
       p1: {
         monsters: [
@@ -271,7 +271,32 @@ describe('vraies cartes — combos', () => {
 
     engine.settle(game);
 
-    expect(monsterNamed(game, 'p1', 'Champion Ouille-Ouille').hpBuff).toBe(600);
+    expect(monsterNamed(game, 'p1', 'Gauche').hpBuff).toBe(300);
+    expect(monsterNamed(game, 'p1', 'Droite').hpBuff).toBe(300);
+    expect(monsterNamed(game, 'p1', 'Champion Ouille-Ouille').hpBuff).toBe(0);
+  });
+
+  it('Général Chatouille : +200 ATK à ses coéquipiers dès la Battle Phase', () => {
+    const game = scenario({
+      p1: {
+        monsters: [realCard('Général Chatouille'), monsterCard('Soldat')],
+      },
+    });
+
+    engine.dispatch(game, 'p1', { type: 'end_phase' });
+
+    expect(monsterNamed(game, 'p1', 'Soldat').tempAtkBuff).toBe(200);
+    expect(monsterNamed(game, 'p1', 'Général Chatouille').tempAtkBuff).toBe(0);
+  });
+
+  it('Ouille au rapport ne se joue pas sans carte pipou commune à récupérer', () => {
+    const game = scenario({
+      p1: { hand: [realCard('Ouille au rapport')] },
+    });
+
+    expect(
+      engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 }).error,
+    ).toBe("Cette carte n'aurait aucun effet pour l'instant");
   });
 
   it('Pixel Ghost .tmp : sa destruction propose de chercher un Noyau', () => {

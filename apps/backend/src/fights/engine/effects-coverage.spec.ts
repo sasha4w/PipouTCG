@@ -64,6 +64,9 @@ describe('couverture des effets', () => {
       const game = scenario({
         p1: {
           hand: [card],
+          // Cimetière et deck garnis : les cartes de récupération ont de quoi faire
+          graveyard: allRealCards(),
+          deck: allRealCards(),
           recycleEnergy: 3,
           monsters: [monsterCard('Allié', { hp: 5000 })],
         },

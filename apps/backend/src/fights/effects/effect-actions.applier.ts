@@ -3,11 +3,11 @@ import {
   CardInstance,
   MonsterOnBoard,
   PlayerGameState,
-  ChoiceCandidate,
 } from '../interfaces/game-state.interface';
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
 import { drawCard, queueChoice } from '../helpers/game-state.helper';
+import { pickCandidates } from './pick-candidates';
 
 export function applyActions(
   effect: CardEffect,
@@ -211,151 +211,34 @@ export function applyActions(
         break;
 
       // ── Interactive picks ─────────────────────────────────────────────────
-      case ActionType.RETURN_FROM_GRAVEYARD: {
-        const filter = action.filter;
-        const count = action.value ?? 1;
-        for (const p of targets.players) {
-          const candidates: ChoiceCandidate[] = p.graveyard
-            .filter((c) => {
-              if (
-                filter?.archetype &&
-                c.baseCard.archetype !== filter.archetype
-              )
-                return false;
-              if (
-                filter?.rarities &&
-                !filter.rarities.includes(c.baseCard.rarity)
-              )
-                return false;
-              if (
-                filter?.name &&
-                !c.baseCard.name
-                  .toLowerCase()
-                  .includes(filter.name.toLowerCase())
-              )
-                return false;
-              if (filter?.type && c.baseCard.type !== filter.type) return false;
-              return true;
-            })
-            .map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'graveyard' as const,
-            }));
-
-          if (candidates.length === 0) {
-            ctx.log.push(
-              `📥 ${p.username} — cimetière vide, aucune carte récupérable`,
-            );
-          } else {
-            queueChoice(ctx.game, {
-              forUserId: p.userId,
-              candidates,
-              count: Math.min(count, candidates.length),
-              prompt: `Choisissez ${Math.min(count, candidates.length)} carte(s) à récupérer du cimetière`,
-              resolution: 'pick_to_hand',
-            });
-            ctx.log.push(
-              `📥 ${p.username} doit choisir une carte dans son cimetière…`,
-            );
-          }
-        }
-        break;
-      }
-
-      case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK: {
-        const filter = action.filter;
-        for (const p of targets.players) {
-          const matchFn = (c: CardInstance) => {
-            if (
-              filter?.name &&
-              !c.baseCard.name.toLowerCase().includes(filter.name.toLowerCase())
-            )
-              return false;
-            if (filter?.archetype && c.baseCard.archetype !== filter.archetype)
-              return false;
-            if (
-              filter?.rarities &&
-              !filter.rarities.includes(c.baseCard.rarity)
-            )
-              return false;
-            return true;
-          };
-          const candidates: ChoiceCandidate[] = [
-            ...p.graveyard.filter(matchFn).map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'graveyard' as const,
-            })),
-            ...p.deck.filter(matchFn).map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'deck' as const,
-            })),
-          ];
-          if (candidates.length === 0) {
-            ctx.log.push(`📥 ${p.username} — aucune carte récupérable`);
-          } else {
-            queueChoice(ctx.game, {
-              forUserId: p.userId,
-              candidates,
-              count: 1,
-              prompt: 'Choisissez une carte à récupérer (cimetière ou deck)',
-              resolution: 'pick_to_hand',
-            });
-            ctx.log.push(
-              `📥 ${p.username} doit choisir une carte à récupérer…`,
-            );
-          }
-        }
-        break;
-      }
-
+      case ActionType.RETURN_FROM_GRAVEYARD:
+      case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK:
       case ActionType.SEARCH_DECK: {
-        const filter = action.filter;
+        const fromGraveyardOnly =
+          action.type === ActionType.RETURN_FROM_GRAVEYARD;
+        const count = fromGraveyardOnly ? (action.value ?? 1) : 1;
         for (const p of targets.players) {
-          const candidates: ChoiceCandidate[] = p.deck
-            .filter((c) => {
-              if (filter?.type && c.baseCard.type !== filter.type) return false;
-              if (
-                filter?.archetype &&
-                c.baseCard.archetype !== filter.archetype
-              )
-                return false;
-              if (
-                filter?.rarities &&
-                !filter.rarities.includes(c.baseCard.rarity)
-              )
-                return false;
-              if (
-                filter?.name &&
-                !c.baseCard.name
-                  .toLowerCase()
-                  .includes(filter.name.toLowerCase())
-              )
-                return false;
-              return true;
-            })
-            .map((c) => ({
-              instanceId: c.instanceId,
-              baseCard: c.baseCard,
-              source: 'deck' as const,
-            }));
-
+          const candidates = pickCandidates(action, p);
           if (candidates.length === 0) {
             ctx.log.push(
-              `🔮 ${card.baseCard.name} — aucune carte trouvée dans le deck`,
+              `📥 ${card.baseCard.name} — aucune carte récupérable pour ${p.username}`,
             );
-          } else {
-            queueChoice(ctx.game, {
-              forUserId: p.userId,
-              candidates,
-              count: 1,
-              prompt: 'Cherchez une carte dans votre deck',
-              resolution: 'pick_to_hand',
-            });
-            ctx.log.push(`🔮 ${p.username} cherche dans son deck…`);
+            continue;
           }
+          const picked = Math.min(count, candidates.length);
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates,
+            count: picked,
+            prompt:
+              action.type === ActionType.SEARCH_DECK
+                ? 'Cherchez une carte dans votre deck'
+                : fromGraveyardOnly
+                  ? `Choisissez ${picked} carte(s) à récupérer du cimetière`
+                  : 'Choisissez une carte à récupérer (cimetière ou deck)',
+            resolution: 'pick_to_hand',
+          });
+          ctx.log.push(`📥 ${p.username} doit choisir une carte…`);
         }
         break;
       }

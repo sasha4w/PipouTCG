@@ -9,6 +9,7 @@ export const EffectTrigger = {
   ON_ALLY_SUMMON: "ON_ALLY_SUMMON",
   PASSIVE: "PASSIVE",
   ON_RECYCLE: "ON_RECYCLE",
+  ON_BATTLE_PHASE_START: "ON_BATTLE_PHASE_START",
 } as const;
 export type EffectTrigger = (typeof EffectTrigger)[keyof typeof EffectTrigger];
 
@@ -66,5 +67,6 @@ export const EffectTarget = {
   OPPONENT: "OPPONENT",
   ARCHETYPE_ALLIES: "ARCHETYPE_ALLIES",
   TARGET_ALLY: "TARGET_ALLY",
+  ADJACENT_ALLIES: "ADJACENT_ALLIES",
 } as const;
 export type EffectTarget = (typeof EffectTarget)[keyof typeof EffectTarget];

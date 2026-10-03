@@ -94,7 +94,7 @@ export class BuffsCalculatorService {
             source.hpBuff += (action.value ?? 0) * adjacent;
             continue;
           }
-          for (const m of monsterTargets(action, source, monsters))
+          for (const m of monsterTargets(action, source, player.monsterZones))
             applyPassive(m, action);
         }
       }
@@ -143,8 +143,9 @@ function terrainTargets(
 function monsterTargets(
   action: EffectAction,
   source: MonsterOnBoard,
-  monsters: MonsterOnBoard[],
+  zones: (MonsterOnBoard | null)[],
 ): MonsterOnBoard[] {
+  const monsters = zones.filter((m): m is MonsterOnBoard => m !== null);
   switch (action.target) {
     case EffectTarget.SELF:
       return [source];
@@ -152,6 +153,12 @@ function monsterTargets(
       return monsters;
     case EffectTarget.ALLIES_EXCEPT_SELF:
       return monsters.filter((m) => m !== source);
+    case EffectTarget.ADJACENT_ALLIES: {
+      const idx = zones.indexOf(source);
+      return [zones[idx - 1], zones[idx + 1]].filter(
+        (m): m is MonsterOnBoard => !!m,
+      );
+    }
     case EffectTarget.ARCHETYPE_ALLIES: {
       const arch = action.archetype ?? source.card.baseCard.archetype;
       return arch

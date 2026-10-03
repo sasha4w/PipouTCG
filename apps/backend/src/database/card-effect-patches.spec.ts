@@ -6,7 +6,7 @@ import {
 import { rawSnapshotCards } from '../fights/testing/real-cards';
 
 describe('card-effect-patches', () => {
-  const [quenouille] = CARD_EFFECT_PATCHES;
+  const quenouille = CARD_EFFECT_PATCHES.find((p) => p.cardId === 9)!;
 
   it('chaque « before » correspond exactement aux effets du dump', () => {
     const snapshot = rawSnapshotCards();

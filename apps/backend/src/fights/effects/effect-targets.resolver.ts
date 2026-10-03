@@ -89,6 +89,20 @@ export function resolveTargets(
       break;
     }
 
+    case EffectTarget.ADJACENT_ALLIES: {
+      const idx = ctx.sourceMonster
+        ? owner.monsterZones.indexOf(ctx.sourceMonster)
+        : -1;
+      if (idx !== -1) {
+        monsters = [
+          owner.monsterZones[idx - 1],
+          owner.monsterZones[idx + 1],
+        ].filter((m): m is MonsterOnBoard => !!m);
+        register(monsters, owner);
+      }
+      break;
+    }
+
     case EffectTarget.ALLIES_EXCEPT_SELF:
       monsters = allies.filter(
         (m) => m.instanceId !== ctx.sourceMonster?.instanceId,

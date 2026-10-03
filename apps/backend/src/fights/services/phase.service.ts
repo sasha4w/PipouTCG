@@ -24,10 +24,19 @@ export class PhaseService {
     const opponent = getOpponentState(game, userId);
 
     switch (game.phase) {
-      case 'main':
+      case 'main': {
         game.phase = 'battle';
         addLog(game, `${player.username} → phase de combat`);
+        const log: string[] = [];
+        this.resolveForBoard(
+          game,
+          player,
+          EffectTrigger.ON_BATTLE_PHASE_START,
+          log,
+        );
+        log.forEach((l) => addLog(game, l));
         return {};
+      }
 
       case 'battle':
         game.phase = 'end';

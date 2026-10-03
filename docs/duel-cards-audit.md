@@ -8,7 +8,7 @@ ainsi que les données suspectes. **Le moteur ne les corrige pas** : chaque
 correction se fait carte par carte dans l'admin. Les effets se modifient avec
 l'éditeur d'effets, qui fera l'objet d'un chantier séparé.
 
-Les cartes #9, #17, #97, #99, #122, #127 et #128 sont déjà corrigées
+Les cartes #7, #9, #17, #32, #97, #99, #122, #127 et #128 sont déjà corrigées
 automatiquement au déploiement, par la migration `GenericCardEffects`.
 
 ## Comportements à trancher

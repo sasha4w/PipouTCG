@@ -15,6 +15,26 @@ const equippedOn = (value: string) => ({ type: 'EQUIPPED_ON', value }) as const;
 /** Partagé par la migration GenericCardEffects et les tests de vraies cartes. */
 export const CARD_EFFECT_PATCHES: CardEffectPatch[] = [
   {
+    cardId: 7,
+    cardName: 'Général Chatouille',
+    before: [
+      {
+        actions: [{ type: 'BUFF_ATK_TEMP', value: 200, target: 'ALL_ALLIES' }],
+        trigger: 'ON_ATTACK',
+        condition: null,
+      },
+    ],
+    after: [
+      {
+        actions: [
+          { type: 'BUFF_ATK_TEMP', value: 200, target: 'ALLIES_EXCEPT_SELF' },
+        ],
+        trigger: 'ON_BATTLE_PHASE_START',
+        condition: null,
+      },
+    ],
+  },
+  {
     cardId: 9,
     cardName: 'Commandant Quenouille',
     before: [
@@ -54,6 +74,26 @@ export const CARD_EFFECT_PATCHES: CardEffectPatch[] = [
       {
         actions: [{ type: 'DRAW', value: 1, target: 'PLAYER' }],
         trigger: 'ON_RECYCLE',
+        condition: null,
+      },
+    ],
+  },
+  {
+    cardId: 32,
+    cardName: 'Champion Ouille-Ouille',
+    before: [
+      {
+        actions: [
+          { type: 'BUFF_HP_PER_ADJACENT_ALLY', value: 300, target: 'SELF' },
+        ],
+        trigger: 'PASSIVE',
+        condition: null,
+      },
+    ],
+    after: [
+      {
+        actions: [{ type: 'BUFF_HP', value: 300, target: 'ADJACENT_ALLIES' }],
+        trigger: 'PASSIVE',
         condition: null,
       },
     ],

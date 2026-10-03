@@ -52,6 +52,7 @@ Fiabiliser le moteur de duel avant de construire le sandbox admin. Concrètement
 | `SET_DELAY_DOUBLE_ATK` | Le monstre pourra attaquer 2 fois **au prochain tour de son propriétaire seulement**. |
 | `SET_ATTACKS_PER_TURN` | Fixe le nombre d'attaques par tour. En PASSIVE, la valeur ne s'applique que tant que l'effet est actif (par exemple tant que l'équipement est porté). |
 | Choix en attente | Les choix forment une file : un nouveau choix se range derrière ceux déjà en attente. Tant que la file n'est pas vide, seul le joueur qui doit faire le premier choix peut agir, et uniquement pour le résoudre. Le timeout vide la file. |
+| Éphémère sans effet possible | Un Éphémère n'est jouable que si au moins un de ses effets ON_PLAY actifs peut produire quelque chose (carte éligible à récupérer, deck à piocher, monstre visé…). Sinon il est refusé et reste en main. |
 | Supports Éphémères ciblés | Le client envoie `targetInstanceId`. Le serveur vérifie que la cible est légale (bon camp, monstre présent) et l'utilise. Sans cible légale, la carte n'est pas jouable. |
 
 ## Modèle d'effets
@@ -63,6 +64,8 @@ Fiabiliser le moteur de duel avant de construire le sandbox admin. Concrètement
 | `EffectTrigger` | `ON_RECYCLE` | La carte est recyclée depuis la main (remplace le cas codé en dur de Clairon #17). |
 | `EffectConditionType` | `EQUIPPED_ON` | L'équipement source est attaché au monstre nommé. |
 | `ActionType` | `CANNOT_ATTACK_ON_SUMMON_TURN` | Le monstre ne peut pas attaquer le tour de son invocation. |
+| `EffectTrigger` | `ON_BATTLE_PHASE_START` | Le propriétaire de la carte passe de la Main Phase à la Battle Phase. |
+| `EffectTarget` | `ADJACENT_ALLIES` | Les monstres à gauche et à droite de la source. |
 | `ActionType` | `SUMMONABLE_ON_ENEMY_SIDE` | En PASSIVE : la carte peut aussi être invoquée sur une zone adverse libre (remplace le cas codé en dur de Noyau Zeta #122). |
 
 `ON_TURN_END` est désormais implémenté : il se déclenche en End Phase, juste avant le passage au tour suivant, pour les monstres, équipements et terrains du joueur actif. `DISCARD` aussi : il défausse N cartes de la main de la cible (`PLAYER` ou `OPPONENT`), choisies par leur propriétaire via un choix en attente, ou toute la main si elle contient N cartes ou moins.
@@ -169,8 +172,10 @@ La migration est idempotente et prudente. Elle ne met à jour une carte que si s
 
 | Carte | Changement |
 |---|---|
+| #7 Général Chatouille | ON_ATTACK `BUFF_ATK_TEMP` 200 sur `ALL_ALLIES` devient ON_BATTLE_PHASE_START `BUFF_ATK_TEMP` 200 sur `ALLIES_EXCEPT_SELF`. |
 | #9 | Ajout de `CANNOT_ATTACK_ON_SUMMON_TURN` à l'effet ON_SUMMON. |
 | #17 | Ajout de l'effet ON_RECYCLE `DRAW 1` sur `PLAYER`. |
+| #32 Champion Ouille-Ouille | `BUFF_HP_PER_ADJACENT_ALLY` 300 sur `SELF` devient `BUFF_HP` 300 sur `ADJACENT_ALLIES` : ce sont ses voisins qui gagnent les PV max. |
 | #97 | ON_SUMMON devient ON_PLAY. |
 | #99 Rootkit de Transmission | La cible `ALL_ENEMIES` devient `ENEMY_MONSTER`. Sa description parle d'« un monstre adverse », et le moteur applique désormais l'action à toutes les cibles résolues. |
 | #122 | Ajout de l'effet PASSIVE `SUMMONABLE_ON_ENEMY_SIDE`. |

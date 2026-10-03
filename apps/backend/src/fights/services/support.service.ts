@@ -11,6 +11,7 @@ import {
   ephemeralTargetSide,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
+import { canResolveAction } from '../effects/effect-resolvability';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
@@ -45,8 +46,8 @@ export class SupportService {
 
     let targetMonster: MonsterOnBoard | undefined;
     if (card.baseCard.supportType === SupportType.EPHEMERAL) {
-      if (!this.isSupportPlayable(game, card, userId))
-        return { error: 'Condition non remplie pour jouer cette carte' };
+      const unplayable = this.unplayableReason(game, card, userId);
+      if (unplayable) return { error: unplayable };
 
       const side = ephemeralTargetSide(card.baseCard.effects);
       if (side) {
@@ -209,25 +210,27 @@ export class SupportService {
     return {};
   }
 
-  /** Jouable sans effet ON_PLAY, ou si au moins un effet ON_PLAY a sa condition remplie. */
-  private isSupportPlayable(
+  /**
+   * Raison pour laquelle un Éphémère ne peut pas être joué, ou null.
+   * Il faut qu'au moins un effet ON_PLAY ait sa condition remplie, et que
+   * l'un d'eux puisse produire quelque chose (sinon la carte serait gâchée).
+   */
+  private unplayableReason(
     game: GameState,
     card: CardInstance,
     userId: number,
-  ): boolean {
+  ): string | null {
     const onPlay = (card.baseCard.effects ?? []).filter(
       (e) => e.trigger === EffectTrigger.ON_PLAY,
     );
-    return (
-      onPlay.length === 0 ||
-      onPlay.some((e) =>
-        checkCondition(e, {
-          game,
-          ownerUserId: userId,
-          sourceCard: card,
-          log: [],
-        }),
-      )
-    );
+    if (onPlay.length === 0) return null;
+
+    const ctx = { game, ownerUserId: userId, sourceCard: card, log: [] };
+    const active = onPlay.filter((e) => checkCondition(e, ctx));
+    if (active.length === 0)
+      return 'Condition non remplie pour jouer cette carte';
+    if (!active.some((e) => e.actions.some((a) => canResolveAction(a, ctx))))
+      return "Cette carte n'aurait aucun effet pour l'instant";
+    return null;
   }
 }
