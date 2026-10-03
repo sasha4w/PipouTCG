@@ -9,14 +9,19 @@ export default function OpponentHand({
   name: string;
 }) {
   return (
-    <section className="sb-panel" aria-label={`Main de ${name}`}>
-      <h3>
-        🖐 Main de {name} ({cards.length})
-      </h3>
-      <ul className="sb-cardlist">
+    <section className="sb-card" aria-label={`Main de ${name}`}>
+      <div className="sb-card__title">
+        <span>
+          🖐 Main de {name} ({cards.length})
+        </span>
+      </div>
+      {cards.length === 0 && <p className="sb-muted">Main vide.</p>}
+      <ul className="sb-list">
         {cards.map((c) => (
-          <li key={c.instanceId} className="sb-cardrow">
-            <span className="sb-cardrow__name">{c.baseCard.name}</span>
+          <li key={c.instanceId} className="sb-row">
+            <div className="sb-row__info">
+              <span className="sb-row__name">{c.baseCard.name}</span>
+            </div>
           </li>
         ))}
       </ul>

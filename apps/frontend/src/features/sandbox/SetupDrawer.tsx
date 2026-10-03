@@ -16,6 +16,11 @@ type OnCommand = (command: SandboxSetupCommand) => void;
 
 const SEAT_LABEL: Record<Seat, string> = { p1: "J1", p2: "J2" };
 const PHASES: GamePhase[] = ["main", "battle", "end"];
+const PHASE_LABEL: Partial<Record<GamePhase, string>> = {
+  main: "Principale",
+  battle: "Combat",
+  end: "Fin",
+};
 
 function NumberField({
   label,
@@ -151,8 +156,12 @@ function PlaceCardForm({
         <option value="guard">Garde</option>
       </select>
 
-      <span />
-      <Button size="sm" disabled={!instanceId} onClick={place}>
+      <Button
+        size="sm"
+        className="sb-form__submit"
+        disabled={!instanceId}
+        onClick={place}
+      >
         Placer
       </Button>
     </div>
@@ -246,18 +255,18 @@ function MonsterForm({
           ["summonedThisTurn", "Invoqué ce tour"],
         ] as const
       ).map(([key, label]) => (
-        <label key={key} style={{ gridColumn: "1 / -1" }}>
+        <label key={key} className="sb-check sb-form__full">
           <input
             type="checkbox"
             checked={patch[key]}
             onChange={(e) => set(key, e.target.checked)}
-          />{" "}
+          />
           {label}
         </label>
       ))}
-      <span />
       <Button
         size="sm"
+        className="sb-form__submit"
         onClick={() =>
           onCommand({
             type: "edit_monster",
@@ -327,14 +336,14 @@ function GameForm({
       >
         {PHASES.map((p) => (
           <option key={p} value={p}>
-            {p}
+            {PHASE_LABEL[p]}
           </option>
         ))}
       </select>
       <NumberField label="Tour" value={turnNumber} onChange={setTurnNumber} />
-      <span />
       <Button
         size="sm"
+        className="sb-form__submit"
         onClick={() =>
           onCommand({
             type: "edit_game",
@@ -371,8 +380,12 @@ function PlayerFields({
         value={value.recycleEnergy}
         onChange={(recycleEnergy) => onChange({ ...value, recycleEnergy })}
       />
-      <span />
-      <Button size="sm" variant="ghost-gold" onClick={onApply}>
+      <Button
+        size="sm"
+        variant="ghost-bordeaux"
+        className="sb-form__submit"
+        onClick={onApply}
+      >
         Appliquer à {SEAT_LABEL[seat]}
       </Button>
     </>
@@ -399,48 +412,61 @@ export default function SetupDrawer({ state, seat, onCommand }: Props) {
   const selected = allMonsters.find((m) => m.key === monsterKey);
 
   return (
-    <section className="sb-panel" aria-label="Mise en place">
-      <h3>🛠 Placer une carte ({SEAT_LABEL[seat]})</h3>
-      <PlaceCardForm
-        seat={seat}
-        hand={me.hand}
-        deck={state.decks[seat]}
-        monsters={me.monsterZones}
-        supportCount={me.supportZones.length}
-        onCommand={onCommand}
-      />
-
-      <h3>🧬 Modifier un monstre</h3>
-      <div className="sb-form">
-        <label htmlFor="sb-monster">Monstre</label>
-        <select
-          id="sb-monster"
-          value={monsterKey}
-          onChange={(e) => setMonsterKey(e.target.value)}
-        >
-          <option value="">— choisir —</option>
-          {allMonsters.map((m) => (
-            <option key={m.key} value={m.key}>
-              {SEAT_LABEL[m.seat]} · {m.monster.card.baseCard.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      {selected && (
-        <MonsterForm
-          key={selected.key}
-          seat={selected.seat}
-          monster={selected.monster}
+    <div aria-label="Mise en place" role="group" className="sb-stack">
+      <section className="sb-card">
+        <div className="sb-card__title">
+          <span>🛠 Placer une carte de {SEAT_LABEL[seat]}</span>
+        </div>
+        <p className="sb-muted">Sans coût ni effet d'invocation.</p>
+        <PlaceCardForm
+          seat={seat}
+          hand={me.hand}
+          deck={state.decks[seat]}
+          monsters={me.monsterZones}
+          supportCount={me.supportZones.length}
           onCommand={onCommand}
         />
-      )}
+      </section>
 
-      <h3>🎲 Joueurs et partie</h3>
-      <GameForm
-        key={`${state.views.p1.turnNumber}-${state.views.p1.phase}-${state.views.p1.isMyTurn}`}
-        state={state}
-        onCommand={onCommand}
-      />
-    </section>
+      <section className="sb-card">
+        <div className="sb-card__title">
+          <span>🧬 Modifier un monstre</span>
+        </div>
+        <div className="sb-form">
+          <label htmlFor="sb-monster">Monstre</label>
+          <select
+            id="sb-monster"
+            value={monsterKey}
+            onChange={(e) => setMonsterKey(e.target.value)}
+          >
+            <option value="">— choisir —</option>
+            {allMonsters.map((m) => (
+              <option key={m.key} value={m.key}>
+                {SEAT_LABEL[m.seat]} · {m.monster.card.baseCard.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selected && (
+          <MonsterForm
+            key={selected.key}
+            seat={selected.seat}
+            monster={selected.monster}
+            onCommand={onCommand}
+          />
+        )}
+      </section>
+
+      <section className="sb-card">
+        <div className="sb-card__title">
+          <span>🎲 Joueurs et partie</span>
+        </div>
+        <GameForm
+          key={`${state.views.p1.turnNumber}-${state.views.p1.phase}-${state.views.p1.isMyTurn}`}
+          state={state}
+          onCommand={onCommand}
+        />
+      </section>
+    </div>
   );
 }

@@ -7,8 +7,8 @@ interface Props {
   /** null : la vue suit le tour. */
   forcedSeat: Seat | null;
   onForceSeat: (seat: Seat | null) => void;
-  showOpponentHand: boolean;
-  onToggleOpponentHand: () => void;
+  toolsOpen: boolean;
+  onToggleTools: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: () => void;
@@ -17,12 +17,15 @@ interface Props {
   onClose: () => void;
 }
 
+const SEAT_LABEL: Record<Seat, string> = { p1: "J1", p2: "J2" };
+
+/** Barre du sandbox : vue jouée, annuler/refaire, outils, sauvegarde. */
 export default function SandboxToolbar({
   seat,
   forcedSeat,
   onForceSeat,
-  showOpponentHand,
-  onToggleOpponentHand,
+  toolsOpen,
+  onToggleTools,
   canUndo,
   canRedo,
   onUndo,
@@ -33,80 +36,92 @@ export default function SandboxToolbar({
   return (
     <div className="sb-toolbar" role="toolbar" aria-label="Outils du sandbox">
       <div className="sb-toolbar__group">
-        <span>Vue :</span>
+        <span className="sb-toolbar__label">Vue</span>
         <Button
           size="sm"
-          variant="ghost-gold"
+          variant="ghost-bordeaux"
           active={forcedSeat === null}
+          title="La vue suit le joueur qui doit agir"
           onClick={() => onForceSeat(null)}
         >
-          Auto ({seat === "p1" ? "J1" : "J2"})
+          Auto ({SEAT_LABEL[seat]})
         </Button>
         {(["p1", "p2"] as const).map((s) => (
           <Button
             key={s}
             size="sm"
-            variant="ghost-gold"
+            variant="ghost-bordeaux"
             active={forcedSeat === s}
             onClick={() => onForceSeat(s)}
           >
-            {s === "p1" ? "J1" : "J2"}
+            {SEAT_LABEL[s]}
           </Button>
         ))}
       </div>
-      <Button
-        size="sm"
-        variant="ghost-gold"
-        active={showOpponentHand}
-        onClick={onToggleOpponentHand}
-      >
-        👁 Main adverse
-      </Button>
       <div className="sb-toolbar__group">
         <Button
-          size="sm"
-          variant="ghost-gold"
+          size="icon"
+          variant="ghost-bordeaux"
+          aria-label="Annuler"
+          title="Annuler"
           disabled={!canUndo}
           onClick={onUndo}
         >
-          ↶ Annuler
+          ↶
         </Button>
         <Button
-          size="sm"
-          variant="ghost-gold"
+          size="icon"
+          variant="ghost-bordeaux"
+          aria-label="Refaire"
+          title="Refaire"
           disabled={!canRedo}
           onClick={onRedo}
         >
-          ↷ Refaire
+          ↷
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost-bordeaux"
+          active={toolsOpen}
+          aria-label="Outils"
+          title="Deck, mise en place, main adverse"
+          onClick={onToggleTools}
+        >
+          🛠
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost-bordeaux"
+          aria-label="Sauver le scénario"
+          title="Sauver le scénario"
+          onClick={() => {
+            const name = window.prompt("Nom du scénario ?")?.trim();
+            if (!name) return;
+            const description = window
+              .prompt("Description (facultative) ?")
+              ?.trim();
+            onSave(name, description || undefined);
+          }}
+        >
+          💾
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost-bordeaux"
+          aria-label="Fermer le sandbox"
+          title="Fermer le sandbox"
+          onClick={() => {
+            if (
+              window.confirm(
+                "Fermer ce sandbox ? L'état non sauvegardé sera perdu.",
+              )
+            )
+              onClose();
+          }}
+        >
+          ✖
         </Button>
       </div>
-      <Button
-        size="sm"
-        onClick={() => {
-          const name = window.prompt("Nom du scénario ?")?.trim();
-          if (!name) return;
-          const description = window
-            .prompt("Description (facultative) ?")
-            ?.trim();
-          onSave(name, description || undefined);
-        }}
-      >
-        💾 Sauver
-      </Button>
-      <Button
-        size="sm"
-        variant="danger"
-        onClick={() => {
-          if (
-            window.confirm(
-              "Fermer ce sandbox ? L'état non sauvegardé sera perdu.",
-            )
-          )
-            onClose();
-        }}
-      >
-        ✖ Fermer
-      </Button>
     </div>
   );
 }

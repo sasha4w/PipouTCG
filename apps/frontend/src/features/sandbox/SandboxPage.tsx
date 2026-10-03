@@ -20,9 +20,7 @@ import { sandboxService } from "../../services/sandbox.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import SandboxSetup from "./SandboxSetup";
 import SandboxToolbar from "./SandboxToolbar";
-import OpponentHand from "./OpponentHand";
-import DeckPanel from "./DeckPanel";
-import SetupDrawer from "./SetupDrawer";
+import SandboxTools from "./SandboxTools";
 import { autoViewSeat } from "./viewSeat";
 import "../fight/FightPage.css";
 import "./Sandbox.css";
@@ -31,8 +29,6 @@ export type SandboxClientSocket = Socket<
   SandboxServerEvents,
   SandboxClientEvents
 >;
-
-const OTHER: Record<Seat, Seat> = { p1: "p2", p2: "p1" };
 
 function finishedLabel(state: SandboxState): string {
   const view = state.views.p1;
@@ -50,7 +46,7 @@ export default function SandboxPage() {
   const [state, setState] = useState<SandboxState | null>(null);
   const [loadingScenario, setLoadingScenario] = useState(scenarioId !== null);
   const [forcedSeat, setForcedSeat] = useState<Seat | null>(null);
-  const [showOpponentHand, setShowOpponentHand] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const [toast, setToast] = useState<{
     msg: string;
     type: "ok" | "err";
@@ -104,6 +100,7 @@ export default function SandboxPage() {
     socket.on("sandbox:closed", () => {
       setState(null);
       setForcedSeat(null);
+      setToolsOpen(false);
     });
     socket.on("sandbox:saved", () => {
       showToast("💾 Scénario sauvegardé");
@@ -131,8 +128,12 @@ export default function SandboxPage() {
     return (
       <div className="sb-page">
         {toastNode}
-        <Link to="/admin">← Retour à l'admin</Link>
         <SandboxSetup
+          back={
+            <Link to="/admin" className="sb-back">
+              ← Retour à l'admin
+            </Link>
+          }
           catalog={catalog.data ?? []}
           onStart={(payload) =>
             socketRef.current?.emit("sandbox:create", payload)
@@ -143,7 +144,6 @@ export default function SandboxPage() {
   }
 
   const view = state.views[seat];
-  const other = state.views[OTHER[seat]];
 
   return (
     <div className="sb-page">
@@ -152,8 +152,8 @@ export default function SandboxPage() {
         seat={seat}
         forcedSeat={forcedSeat}
         onForceSeat={setForcedSeat}
-        showOpponentHand={showOpponentHand}
-        onToggleOpponentHand={() => setShowOpponentHand((v) => !v)}
+        toolsOpen={toolsOpen}
+        onToggleTools={() => setToolsOpen((v) => !v)}
         canUndo={state.canUndo}
         canRedo={state.canRedo}
         onUndo={() => socketRef.current?.emit("sandbox:undo")}
@@ -167,39 +167,31 @@ export default function SandboxPage() {
         <div className="sb-banner">{finishedLabel(state)}</div>
       )}
 
-      <div className="sb-layout">
-        <div>
-          {view.phase === "mulligan" ? (
-            <MulliganPanel
-              hand={view.me.hand}
-              decided={view.me.mulliganDone}
-              opponentDecided={view.opponent.mulliganDone}
-              opponentName={view.opponent.username}
-              onDecide={controls.decideMulligan}
-            />
-          ) : (
-            <FightBoard gs={view} {...controls.board} timeLeft={null} />
-          )}
-          {view.pendingChoice && (
-            <CardPickModal
-              choice={view.pendingChoice}
-              onConfirm={controls.pickCards}
-            />
-          )}
-        </div>
-        <aside className="sb-side">
-          <DeckPanel
-            seat={seat}
-            deck={state.decks[seat]}
-            hand={view.me.hand}
-            onCommand={sendSetup}
-          />
-          {showOpponentHand && (
-            <OpponentHand cards={other.me.hand} name={other.me.username} />
-          )}
-          <SetupDrawer state={state} seat={seat} onCommand={sendSetup} />
-        </aside>
-      </div>
+      {view.phase === "mulligan" ? (
+        <MulliganPanel
+          hand={view.me.hand}
+          decided={view.me.mulliganDone}
+          opponentDecided={view.opponent.mulliganDone}
+          opponentName={view.opponent.username}
+          onDecide={controls.decideMulligan}
+        />
+      ) : (
+        <FightBoard gs={view} {...controls.board} timeLeft={null} />
+      )}
+      {view.pendingChoice && (
+        <CardPickModal
+          choice={view.pendingChoice}
+          onConfirm={controls.pickCards}
+        />
+      )}
+      {toolsOpen && (
+        <SandboxTools
+          state={state}
+          seat={seat}
+          onCommand={sendSetup}
+          onClose={() => setToolsOpen(false)}
+        />
+      )}
     </div>
   );
 }

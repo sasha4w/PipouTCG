@@ -24,6 +24,10 @@ describe("SandboxSetup", () => {
     expect(start).toBeDisabled();
 
     for (const deck of ["Deck J1", "Deck J2"]) {
+      // Onglet du deck à éditer, puis son panneau
+      await userEvent.click(
+        screen.getByRole("button", { name: new RegExp(`^${deck}`) }),
+      );
       const panel = screen.getByRole("region", { name: deck });
       await userEvent.click(
         within(panel).getByRole("button", { name: /Compléter/ }),

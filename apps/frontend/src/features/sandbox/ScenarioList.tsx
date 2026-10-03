@@ -23,15 +23,13 @@ export default function ScenarioList() {
 
   return (
     <div className="sb-scenarios">
-      <div className="sb-scenarios__head">
-        <p>
-          Joue les deux joueurs avec des decks libres, pour tester les combos.
-          Rien n'est enregistré (ni match, ni ELO), sauf les scénarios.
-        </p>
-        <Button onClick={() => navigate("/admin/sandbox")}>
-          🧪 Nouveau sandbox
-        </Button>
-      </div>
+      <p className="sb-scenarios__intro">
+        Joue les deux joueurs avec des decks libres, pour tester les combos.
+        Rien n'est enregistré (ni match, ni ELO), sauf les scénarios.
+      </p>
+      <Button fullWidth onClick={() => navigate("/admin/sandbox")}>
+        🧪 Nouveau sandbox
+      </Button>
 
       {scenarios.isLoading && <Loading message="Chargement des scénarios…" />}
       {scenarios.isError && (
@@ -40,18 +38,20 @@ export default function ScenarioList() {
       {remove.isError && (
         <p className="sb-error">{apiErrorMessage(remove.error)}</p>
       )}
-      {scenarios.data?.length === 0 && <p>Aucun scénario sauvegardé.</p>}
+      {scenarios.data?.length === 0 && (
+        <p className="sb-muted">Aucun scénario sauvegardé.</p>
+      )}
 
       <ul className="sb-scenarios__list">
         {scenarios.data?.map((s) => (
           <li key={s.id} className="sb-scenarios__item">
-            <div>
-              <strong>{s.name}</strong>
-              {s.description && <p>{s.description}</p>}
-              <small>
-                {s.createdBy} · {new Date(s.updatedAt).toLocaleString("fr-FR")}
-              </small>
-            </div>
+            <span className="sb-scenarios__name">{s.name}</span>
+            {s.description && (
+              <p className="sb-scenarios__desc">{s.description}</p>
+            )}
+            <span className="sb-muted">
+              {s.createdBy} · {new Date(s.updatedAt).toLocaleString("fr-FR")}
+            </span>
             <div className="sb-scenarios__actions">
               <Button
                 size="sm"
