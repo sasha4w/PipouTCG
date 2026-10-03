@@ -12,6 +12,8 @@ import {
   type Seat,
 } from "@pipou/shared";
 import Loading from "../../components/Loading";
+import Button from "../../components/Button";
+import { apiErrorMessage } from "../../utils/errors";
 import FightBoard from "../fight/FightBoard";
 import MulliganPanel from "../fight/MulliganPanel";
 import CardPickModal from "../fight/CardPickModal";
@@ -125,6 +127,29 @@ export default function SandboxPage() {
   if (!state) {
     if (loadingScenario || catalog.isLoading)
       return <Loading message="Préparation du sandbox…" />;
+    if (catalog.isError || !catalog.data?.length)
+      return (
+        <div className="sb-page">
+          <div className="sb-setup">
+            <Link to="/admin" className="sb-back">
+              ← Retour à l'admin
+            </Link>
+            <div className="sb-card" role="alert">
+              <p className="sb-error">
+                {catalog.isError
+                  ? `Impossible de charger le catalogue : ${apiErrorMessage(catalog.error) ?? "serveur injoignable"}.`
+                  : "Le catalogue de cartes est vide."}
+              </p>
+              <Button
+                disabled={catalog.isFetching}
+                onClick={() => catalog.refetch()}
+              >
+                {catalog.isFetching ? "Chargement…" : "Réessayer"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
     return (
       <div className="sb-page">
         {toastNode}
@@ -134,7 +159,7 @@ export default function SandboxPage() {
               ← Retour à l'admin
             </Link>
           }
-          catalog={catalog.data ?? []}
+          catalog={catalog.data}
           onStart={(payload) =>
             socketRef.current?.emit("sandbox:create", payload)
           }
