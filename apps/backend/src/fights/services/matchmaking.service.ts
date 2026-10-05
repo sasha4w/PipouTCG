@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Match } from '../entities/match.entity';
 import { MatchStatus } from '@pipou/shared';
 import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
+import { createGameState, createPlayerState } from '../helpers/game-factory';
 
 export interface QueueEntry {
   userId: number;
@@ -53,25 +54,7 @@ export class MatchmakingService {
   }
 
   createEmptyPlayerState(entry: QueueEntry): PlayerGameState {
-    return {
-      userId: entry.userId,
-      username: entry.username,
-      socketId: entry.socketId,
-      primes: 0,
-      primeDeck: [],
-      hand: [],
-      deck: [],
-      graveyard: [],
-      banished: [],
-      monsterZones: [null, null, null],
-      supportZones: [null, null, null],
-      recycleEnergy: 0,
-      hasDrawnThisTurn: false,
-      handLimitEnforced: false,
-      ready: false,
-      mulliganDone: false,
-      freeSummonInstanceIds: [],
-    };
+    return createPlayerState(entry);
   }
 
   buildInitialGameState(
@@ -79,15 +62,6 @@ export class MatchmakingService {
     p1: QueueEntry,
     p2: QueueEntry,
   ): GameState {
-    return {
-      matchId,
-      player1: this.createEmptyPlayerState(p1),
-      player2: this.createEmptyPlayerState(p2),
-      currentTurnUserId: p1.userId,
-      phase: 'waiting',
-      turnNumber: 0,
-      log: [],
-      pendingChoices: [],
-    };
+    return createGameState(matchId, p1, p2);
   }
 }

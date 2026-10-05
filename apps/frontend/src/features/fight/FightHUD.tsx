@@ -9,7 +9,8 @@ interface Props {
   phase: Phase;
   turnNumber: number;
   isMyTurn: boolean;
-  timeLeft: number;
+  /** null : pas de timer. */
+  timeLeft: number | null;
 }
 
 function PrimesRow({ primes }: { primes: number }) {
@@ -63,7 +64,7 @@ export default function FightHUD({
       <div className="hud-center">
         <span className="hud-phase-chip">{PHASE_LABEL[phase]}</span>
         <span className="hud-turn-num">Tour {turnNumber}</span>
-        {isMyTurn && (
+        {isMyTurn && timeLeft !== null && (
           <span
             className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
           >
