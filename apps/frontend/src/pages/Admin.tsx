@@ -13,8 +13,10 @@ import BundleManager from "../features/bundles/BundleManager";
 import QuestManager from "../features/quests/QuestManager";
 import BannerManager from "../features/shop/BannerManager";
 import ScenarioList from "../features/sandbox/ScenarioList";
+import PatchnoteManager from "../features/inbox/PatchnoteManager";
 import {
   IconUndo,
+  IconBell,
   IconBooster,
   IconBundle,
   IconCards,
@@ -32,6 +34,7 @@ type AdminTab =
   | "bundles"
   | "quests"
   | "banners"
+  | "patchnotes"
   | "sandbox";
 
 const TABS: { key: AdminTab; icon: ReactNode }[] = [
@@ -41,6 +44,7 @@ const TABS: { key: AdminTab; icon: ReactNode }[] = [
   { key: "bundles", icon: <IconBundle size={22} /> },
   { key: "quests", icon: <IconQuest size={22} /> },
   { key: "banners", icon: <IconTag size={22} /> },
+  { key: "patchnotes", icon: <IconBell size={22} /> },
   { key: "sandbox", icon: <IconFlask size={22} /> },
 ];
 
@@ -92,6 +96,7 @@ export default function Admin() {
       {tab === "bundles" && <BundleManager />}
       {tab === "quests" && <QuestManager />}
       {tab === "banners" && <BannerManager />}
+      {tab === "patchnotes" && <PatchnoteManager />}
       {tab === "sandbox" && <ScenarioList />}
     </div>
   );

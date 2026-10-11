@@ -293,8 +293,18 @@
       "bundles": "Bundles",
       "quests": "Quests",
       "banners": "Banners",
+      "patchnotes": "Patch notes",
       "sandbox": "Sandbox"
     },
-    "sandbox_back": "Back to admin"
+    "sandbox_back": "Back to admin",
+    "patchnote": {
+      "title": "New patch note",
+      "title_label": "Title",
+      "body_label": "Text",
+      "publish": "Publish",
+      "published": "Patch note published",
+      "error": "Couldn't publish the patch note",
+      "hint": "Sent to every player's inbox."
+    }
   }
 }

@@ -293,8 +293,18 @@
       "bundles": "Bundles",
       "quests": "Quêtes",
       "banners": "Bannières",
+      "patchnotes": "Patchnotes",
       "sandbox": "Sandbox"
     },
-    "sandbox_back": "Retour à l'admin"
+    "sandbox_back": "Retour à l'admin",
+    "patchnote": {
+      "title": "Nouveau patchnote",
+      "title_label": "Titre",
+      "body_label": "Texte",
+      "publish": "Publier",
+      "published": "Patchnote publié",
+      "error": "Impossible de publier le patchnote",
+      "hint": "Envoyé à tous les joueurs dans leur boîte de réception."
+    }
   }
 }

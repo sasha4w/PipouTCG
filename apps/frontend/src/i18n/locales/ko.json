@@ -293,8 +293,18 @@
       "bundles": "번들",
       "quests": "퀘스트",
       "banners": "배너",
+      "patchnotes": "패치노트",
       "sandbox": "샌드박스"
     },
-    "sandbox_back": "관리자로 돌아가기"
+    "sandbox_back": "관리자로 돌아가기",
+    "patchnote": {
+      "title": "새 패치노트",
+      "title_label": "제목",
+      "body_label": "내용",
+      "publish": "게시",
+      "published": "패치노트를 게시했어요",
+      "error": "패치노트를 게시할 수 없어요",
+      "hint": "모든 플레이어의 받은 편지함으로 전송돼요."
+    }
   }
 }
