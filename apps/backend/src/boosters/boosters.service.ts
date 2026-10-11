@@ -233,6 +233,12 @@ export class BoostersService {
       {} as Record<number, number>,
     );
 
+    // Avant la transaction, qui ajoute les cartes : sert à repérer les premières copies
+    const ownedBefore = await this.usersService.findOwnedCardIds(
+      userId,
+      Object.keys(cardGroups).map(Number),
+    );
+
     let historyId: number;
 
     await this.openCardRepository.manager.transaction(async (manager) => {
@@ -266,11 +272,22 @@ export class BoostersService {
     });
 
     await this.usersService.updatePostOpeningStats(userId, 50);
+    const seen = new Set<number>();
+    const dropped = drawnCards
+      .filter((card) => !seen.has(card.id) && seen.add(card.id))
+      .map((card) => ({
+        cardId: card.id,
+        name: card.name,
+        rarity: card.rarity,
+        isNew: !ownedBefore.has(card.id),
+      }));
     this.eventEmitter.emit('booster.opened', {
       userId,
       boosterId: booster.id,
+      boosterName: booster.name,
       setId: booster.cardSet.id,
       amount: 1,
+      cards: dropped,
     });
     return {
       historyId: historyId!,

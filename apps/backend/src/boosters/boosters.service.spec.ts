@@ -50,6 +50,7 @@ const mockUsersService = {
   removeBoosterFromUser: jest.fn(),
   addCardToUser: jest.fn(),
   updatePostOpeningStats: jest.fn(),
+  findOwnedCardIds: jest.fn(),
 };
 
 const fakeBooster = {
@@ -78,6 +79,7 @@ describe('BoostersService', () => {
     mockUsersService.removeBoosterFromUser.mockResolvedValue(null);
     mockUsersService.addCardToUser.mockResolvedValue(undefined);
     mockUsersService.updatePostOpeningStats.mockResolvedValue(undefined);
+    mockUsersService.findOwnedCardIds.mockResolvedValue(new Set<number>());
   };
 
   beforeEach(async () => {
@@ -299,6 +301,41 @@ describe('BoostersService', () => {
       expect(result.cards.length).toBeLessThanOrEqual(10);
       expect(result.cards.some((c) => c.rarity === Rarity.RARE)).toBe(true);
       expect(result.cards.some((c) => c.rarity === Rarity.EPIC)).toBe(true);
+    });
+  });
+
+  // ======= OPEN BOOSTER - événement pour la boîte de réception =======
+  describe('openBooster - booster.opened', () => {
+    it('émet les cartes tirées avec leur nom, rareté et nouveauté', async () => {
+      setupOpen(CardNumber.TEN);
+      // le joueur possède déjà la carte 1 (Dragon)
+      mockUsersService.findOwnedCardIds.mockResolvedValue(new Set([1]));
+
+      const result = await service.openBooster(1, 7);
+
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'booster.opened',
+        expect.objectContaining({ userId: 7, boosterName: 'Booster Fire' }),
+      );
+      const calls = mockEventEmitter.emit.mock.calls as [string, unknown][];
+      const payload = calls.find(([name]) => name === 'booster.opened')![1] as {
+        cards: {
+          cardId: number;
+          name: string;
+          rarity: Rarity;
+          isNew: boolean;
+        }[];
+      };
+
+      // une entrée par carte distincte, nouveauté calculée avant l'ajout
+      const distinctIds = new Set(result.cards.map((c) => c.id));
+      expect(payload.cards).toHaveLength(distinctIds.size);
+      for (const entry of payload.cards) {
+        const card = fakeCards.find((c) => c.id === entry.cardId)!;
+        expect(entry.name).toBe(card.name);
+        expect(entry.rarity).toBe(card.rarity);
+        expect(entry.isNew).toBe(entry.cardId !== 1);
+      }
     });
   });
 });

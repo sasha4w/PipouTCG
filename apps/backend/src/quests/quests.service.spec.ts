@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { QuestService } from './quests.service';
 import { Quest } from './quest.entity';
 import { UserQuest } from '../users/user-quest.entity';
@@ -28,6 +29,8 @@ const mockUserQuestRepo = {
   create: jest.fn(),
   save: jest.fn(),
 };
+
+const mockEmitter = { emit: jest.fn() };
 
 const mockUsersService = {
   addGold: jest.fn(),
@@ -83,6 +86,7 @@ describe('QuestService', () => {
         { provide: getRepositoryToken(Quest), useValue: mockQuestRepo },
         { provide: getRepositoryToken(UserQuest), useValue: mockUserQuestRepo },
         { provide: UsersService, useValue: mockUsersService },
+        { provide: EventEmitter2, useValue: mockEmitter },
       ],
     }).compile();
 
@@ -466,6 +470,84 @@ describe('QuestService', () => {
       const result = service['computeNextReset'](quest);
       expect(result).toBeInstanceOf(Date);
       expect(result?.getDate()).toBe(1);
+    });
+  });
+
+  // ======= ÉVÉNEMENTS DE BOÎTE DE RÉCEPTION =======
+  describe('événements de boîte de réception', () => {
+    it("émet quest.completed quand une quête vient d'être terminée", async () => {
+      const uq = {
+        ...fakeUserQuest,
+        id: 42,
+        quest: {
+          ...fakeQuest,
+          title: 'Ouvre 3 boosters',
+          rewardType: RewardType.GOLD,
+          rewardAmount: 100,
+        },
+        progress: {
+          operator: ConditionOperator.AND,
+          conditions: [
+            {
+              type: ConditionType.OPEN_BOOSTER,
+              current: 2,
+              target: 3,
+              completed: false,
+            },
+          ],
+          globalCompleted: false,
+        },
+      };
+      mockUserQuestRepo.find.mockResolvedValue([uq]);
+
+      await service.track(7, ConditionType.OPEN_BOOSTER, { amount: 1 });
+
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quest.completed', {
+        userId: 7,
+        userQuestId: 42,
+        title: 'Ouvre 3 boosters',
+        rewardType: RewardType.GOLD,
+        rewardAmount: 100,
+      });
+    });
+
+    it("n'émet rien tant que la quête n'est pas terminée", async () => {
+      mockUserQuestRepo.find.mockResolvedValue([
+        structuredClone(fakeUserQuest),
+      ]);
+      await service.track(7, ConditionType.OPEN_BOOSTER, { amount: 1 });
+      expect(mockEmitter.emit).not.toHaveBeenCalledWith(
+        'quest.completed',
+        expect.anything(),
+      );
+    });
+
+    it('émet quest.claimed à la réclamation', async () => {
+      mockUserQuestRepo.findOne.mockResolvedValue({
+        ...fakeUserQuest,
+        id: 42,
+        isCompleted: true,
+        rewardClaimed: false,
+      });
+      mockUserQuestRepo.save.mockResolvedValue({});
+      await service.claimReward(7, 42);
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quest.claimed', {
+        userId: 7,
+        userQuestIds: [42],
+      });
+    });
+
+    it('émet quest.claimed pour toutes les quêtes de claimAllRewards', async () => {
+      mockUserQuestRepo.find.mockResolvedValue([
+        { ...fakeUserQuest, id: 1, isCompleted: true, rewardClaimed: false },
+        { ...fakeUserQuest, id: 2, isCompleted: true, rewardClaimed: false },
+      ]);
+      mockUserQuestRepo.save.mockResolvedValue({});
+      await service.claimAllRewards(7);
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quest.claimed', {
+        userId: 7,
+        userQuestIds: [1, 2],
+      });
     });
   });
 });
