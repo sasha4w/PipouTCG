@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { Link, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { IconUndo } from "../../components/Icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   SANDBOX_NAMESPACE,
@@ -41,6 +43,7 @@ function finishedLabel(state: SandboxState): string {
 
 /** Sandbox de duel : l'admin joue les deux sièges sur un seul écran. */
 export default function SandboxPage() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const scenarioId = Number(params.get("scenario")) || null;
   const queryClient = useQueryClient();
@@ -132,7 +135,8 @@ export default function SandboxPage() {
         <div className="sb-page">
           <div className="sb-setup">
             <Link to="/admin" className="sb-back">
-              ← Retour à l'admin
+              <IconUndo size={16} />
+              {t("admin.sandbox_back")}
             </Link>
             <div className="sb-card" role="alert">
               <p className="sb-error">
@@ -156,7 +160,8 @@ export default function SandboxPage() {
         <SandboxSetup
           back={
             <Link to="/admin" className="sb-back">
-              ← Retour à l'admin
+              <IconUndo size={16} />
+              {t("admin.sandbox_back")}
             </Link>
           }
           catalog={catalog.data}

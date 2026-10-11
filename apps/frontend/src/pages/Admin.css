@@ -36,5 +36,11 @@
 }
 
 .admin-tab-btn__icon {
-  font-size: 1.2rem;
+  display: inline-flex;
+}
+
+.admin-page__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }

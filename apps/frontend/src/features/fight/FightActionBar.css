@@ -18,6 +18,12 @@
   font-weight: 700;
 }
 
+.fab-btn:disabled {
+  background: #eee;
+  color: #bbb;
+  cursor: not-allowed;
+}
+
 .fab-btn-phase {
   background: #f0ddd0;
   color: #7a1c3b;

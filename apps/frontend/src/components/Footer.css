@@ -29,18 +29,7 @@
   background: rgba(122, 28, 59, 0.07);
 }
 .cc-footer__item--active {
-  background: rgba(122, 28, 59, 0.11);
-}
-.cc-footer__item--active::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #7a1c3b;
+  background: rgba(122, 28, 59, 0.13);
 }
 .cc-footer__item:active {
   transform: scale(0.9);
@@ -57,8 +46,5 @@
   color: #7a1c3b;
 }
 .cc-footer__icon {
-  transition: transform 0.18s ease;
-}
-.cc-footer__item--active .cc-footer__icon {
-  transform: translateY(-2px);
+  display: flex;
 }

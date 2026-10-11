@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { QUERY_KEYS } from "../utils/querykeys";
@@ -12,6 +13,16 @@ import BundleManager from "../features/bundles/BundleManager";
 import QuestManager from "../features/quests/QuestManager";
 import BannerManager from "../features/shop/BannerManager";
 import ScenarioList from "../features/sandbox/ScenarioList";
+import {
+  IconUndo,
+  IconBooster,
+  IconBundle,
+  IconCards,
+  IconCollection,
+  IconFlask,
+  IconQuest,
+  IconTag,
+} from "../components/Icons";
 import "./Admin.css";
 
 type AdminTab =
@@ -23,17 +34,19 @@ type AdminTab =
   | "banners"
   | "sandbox";
 
-const TABS: { key: AdminTab; label: string; icon: string }[] = [
-  { key: "cardsets", label: "Card Sets", icon: "🗂" },
-  { key: "cards", label: "Cartes", icon: "🃏" },
-  { key: "boosters", label: "Boosters", icon: "📦" },
-  { key: "bundles", label: "Bundles", icon: "🎁" },
-  { key: "quests", label: "Quêtes", icon: "📋" },
-  { key: "banners", label: "Bannières", icon: "🏷" },
-  { key: "sandbox", label: "Sandbox", icon: "🧪" },
+const TABS: { key: AdminTab; icon: ReactNode }[] = [
+  { key: "cardsets", icon: <IconCollection size={22} /> },
+  { key: "cards", icon: <IconCards size={22} /> },
+  { key: "boosters", icon: <IconBooster size={22} /> },
+  { key: "bundles", icon: <IconBundle size={22} /> },
+  { key: "quests", icon: <IconQuest size={22} /> },
+  { key: "banners", icon: <IconTag size={22} /> },
+  { key: "sandbox", icon: <IconFlask size={22} /> },
 ];
 
 export default function Admin() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<AdminTab>("cardsets");
 
   const { data: user, isLoading } = useQuery({
@@ -41,25 +54,35 @@ export default function Admin() {
     queryFn: () => userService.getMe(),
   });
 
-  if (isLoading) return <Loading message="Vérification des droits..." />;
+  if (isLoading) return <Loading message={t("admin.checking")} />;
   if (!user || !user.is_admin) {
     return <Navigate to="/" replace />;
   }
 
   return (
     <div className="admin-page">
-      <h1 className="admin-page__title">Dashboard Admin</h1>
+      <div className="admin-page__head">
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          aria-label={t("admin.back")}
+          onClick={() => navigate("/")}
+        >
+          <IconUndo />
+        </Button>
+        <h1 className="admin-page__title">{t("admin.title")}</h1>
+      </div>
       <div className="admin-tabs">
-        {TABS.map((t) => (
+        {TABS.map((item) => (
           <Button
-            key={t.key}
+            key={item.key}
             variant="ghost-bordeaux"
-            active={tab === t.key}
+            active={tab === item.key}
             className="admin-tab-btn"
-            onClick={() => setTab(t.key)}
+            onClick={() => setTab(item.key)}
           >
-            <span className="admin-tab-btn__icon">{t.icon}</span>
-            {t.label}
+            <span className="admin-tab-btn__icon">{item.icon}</span>
+            {t(`admin.tabs.${item.key}`)}
           </Button>
         ))}
       </div>
