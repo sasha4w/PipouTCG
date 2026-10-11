@@ -26,7 +26,7 @@ Remplacer la modal « Quêtes à réclamer » (`QuestInboxWidget`) par une boît
 
 ### Entité `Notification` (migration TypeORM)
 
-`id`, `userId`, `type`, `category` (dérivée du type), `payload` (JSON), `readAt` nullable, `createdAt`.
+`id`, `userId`, `type`, `payload` (JSON), `refId` nullable (id de `user_quest`, pour marquer lu à la réclamation), `readAt` nullable, `createdAt`. La catégorie est dérivée du type dans `@pipou/shared`.
 
 ### Patchnotes
 
@@ -46,14 +46,13 @@ API unique `notify(userId, type, payload)`. Points d'émission :
 ### API
 
 - `GET /notifications?category=&limit=` : messages fusionnés, du plus récent au plus ancien, avec le nombre de non lus.
-- `POST /notifications/:id/read`, `POST /notifications/read-all`.
-- `POST /admin/patchnotes` (admin uniquement).
+- `POST /notifications/read-all` (appelé à la fermeture de la boîte), `GET /notifications/events` (SSE `notification.created`).
+- `POST /patchnotes` (admin uniquement).
 
 ### Cycle de vie
 
-- Les messages d'information passent en lu à l'ouverture de la boîte.
-- `QUEST_COMPLETED` reste non lu jusqu'à la réclamation.
-- Purge des messages lus de plus de 30 jours.
+- À la fermeture de la boîte, tous les messages vus passent en lu (drops, ventes, patchnotes), sauf `QUEST_COMPLETED`, qui reste non lu jusqu'à la réclamation.
+- Purge des messages lus de plus de 30 jours, faite pendant `read-all` (pas de cron).
 
 ## Frontend
 
@@ -61,16 +60,16 @@ API unique `notify(userId, type, payload)`. Points d'émission :
 
 `features/inbox/InboxWidget.tsx` remplace `QuestInboxWidget` dans [Header.tsx](../../../apps/frontend/src/components/Header.tsx). Style bordeaux actuel, 430 px, thème clair.
 
-Structure : en-tête (titre + « Tout réclamer (n) » s'il y a plus d'une quête à réclamer), onglets avec compteurs de non lus, 15 messages au plus (icône par type, titre, détail, date relative, point non lu), pied (« Tout marquer comme lu », lien vers les quêtes).
+Structure : en-tête (titre + « Tout réclamer (n) » s'il y a plus d'une quête à réclamer), onglets avec compteurs de non lus, 15 messages au plus (icône par type, titre, détail, date relative, point non lu), pied (lien vers les quêtes).
 
 Une ligne de rendu par type, dans un `switch` exhaustif sur l'union partagé.
 
 ### Données
 
 - `QUERY_KEYS.notifications`, `notification.service.ts`, hooks `useNotifications(category)` et `useUnreadCount()`.
-- Mutations `markRead` / `markAllRead` avec `setQueryData` pour le badge.
+- Mutation `markAllRead` à la fermeture, qui invalide `notifications`.
 - Réclamer une quête invalide `notifications`, `quests`, `profile`.
-- Rafraîchissement en direct : le SSE `listing.sold` existant invalide `notifications`. Un flux `notification.created` unique pour tous les types est préféré ; sinon polling de 60 s. À trancher dans le plan selon la facilité côté backend.
+- Rafraîchissement en direct : un flux SSE `GET /notifications/events` (événement `notification.created`) invalide `notifications`.
 
 ### Erreurs
 
