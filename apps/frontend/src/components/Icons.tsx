@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 interface IconProps {
   size?: number;
@@ -856,6 +856,87 @@ export function IconPlay({
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// ── Icônes du dashboard admin (trait, 24x24) ─────────────────────────────────
+function StrokeIcon({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+  children,
+}: IconProps & { children: ReactNode }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      {children}
+    </svg>
+  );
+}
+
+export function IconQuest(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="5" y="4" width="14" height="17" rx="2" />
+      <path d="M9 4V3h6v1M9 11h6M9 15h6" />
+    </StrokeIcon>
+  );
+}
+
+export function IconTag(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M3 12V4h8l10 10-8 8L3 12Z" />
+      <circle cx="7.5" cy="8.5" r="1" />
+    </StrokeIcon>
+  );
+}
+
+export function IconFlask(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3" />
+      <path d="M7.5 15h9" />
+    </StrokeIcon>
+  );
+}
+
+// ── Icône retour (flèche en U, comme dans la liste de cartes) ────────────────
+export function IconUndo({
+  size = 16,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 16 16"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M5 1H4L0 5L4 9H5V6H11C12.6569 6 14 7.34315 14 9C14 10.6569 12.6569 12 11 12H4V14H11C13.7614 14 16 11.7614 16 9C16 6.23858 13.7614 4 11 4H5V1Z"
+        fill={color}
       />
     </svg>
   );

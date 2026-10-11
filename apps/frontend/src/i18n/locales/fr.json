@@ -254,5 +254,20 @@
       "increase": "Augmenter la quantité",
       "max": "Max"
     }
+  },
+  "admin": {
+    "title": "Dashboard Admin",
+    "back": "Retour",
+    "checking": "Vérification des droits...",
+    "tabs": {
+      "cardsets": "Card Sets",
+      "cards": "Cartes",
+      "boosters": "Boosters",
+      "bundles": "Bundles",
+      "quests": "Quêtes",
+      "banners": "Bannières",
+      "sandbox": "Sandbox"
+    },
+    "sandbox_back": "Retour à l'admin"
   }
 }

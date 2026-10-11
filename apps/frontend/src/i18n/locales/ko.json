@@ -254,5 +254,20 @@
       "increase": "수량 증가",
       "max": "최대"
     }
+  },
+  "admin": {
+    "title": "관리자 대시보드",
+    "back": "뒤로",
+    "checking": "권한 확인 중...",
+    "tabs": {
+      "cardsets": "카드 세트",
+      "cards": "카드",
+      "boosters": "부스터",
+      "bundles": "번들",
+      "quests": "퀘스트",
+      "banners": "배너",
+      "sandbox": "샌드박스"
+    },
+    "sandbox_back": "관리자로 돌아가기"
   }
 }
