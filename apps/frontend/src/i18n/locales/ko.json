@@ -111,10 +111,37 @@
     "remaining_hours": "{{h}}시간 {{m}}분 남음",
     "remaining_mins": "{{m}}분 {{s}}초 남음",
     "remaining_secs": "{{s}}초 남음",
-    "inbox_label": "수령 가능한 퀘스트",
-    "inbox_title": "⚔️ 수령할 퀘스트",
-    "nothing_to_claim": "수령할 퀘스트가 없습니다 🎉",
     "see_all": "퀘스트 전체 보기"
+  },
+  "inbox": {
+    "label": "받은 편지함",
+    "title": "받은 편지함",
+    "tabs": {
+      "all": "전체",
+      "information": "정보",
+      "reward": "보상"
+    },
+    "empty": "새로운 소식이 없어요 🎉",
+    "error": "받은 편지함을 불러올 수 없어요",
+    "retry": "다시 시도",
+    "claim_error": "보상을 받을 수 없어요",
+    "quest_completed": "퀘스트 완료",
+    "drop_title": "부스터 개봉: {{booster}}",
+    "drop_new": "신규",
+    "drop_more": "외 {{count}}장",
+    "sold_title": "{{buyer}}님이 {{item}}을(를) 구매했어요",
+    "sold_amount": "+{{price}} 골드",
+    "patchnote": "패치노트",
+    "see_collection": "컬렉션 보기",
+    "see_market": "마켓 보기",
+    "rarity": {
+      "common": "커먼",
+      "uncommon": "언커먼",
+      "rare": "레어",
+      "epic": "에픽",
+      "legendary": "레전더리",
+      "secret": "시크릿"
+    }
   },
   "profile": {
     "gold": "골드",

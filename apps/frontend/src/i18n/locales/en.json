@@ -111,10 +111,37 @@
     "remaining_hours": "{{h}}h {{m}}min remaining",
     "remaining_mins": "{{m}}min {{s}}s remaining",
     "remaining_secs": "{{s}}s remaining",
-    "inbox_label": "Available quests",
-    "inbox_title": "⚔️ Quests to claim",
-    "nothing_to_claim": "No quests to claim 🎉",
     "see_all": "See all quests"
+  },
+  "inbox": {
+    "label": "Inbox",
+    "title": "Inbox",
+    "tabs": {
+      "all": "All",
+      "information": "Information",
+      "reward": "Rewards"
+    },
+    "empty": "Nothing new 🎉",
+    "error": "Couldn't load the inbox",
+    "retry": "Retry",
+    "claim_error": "Couldn't claim the reward",
+    "quest_completed": "Quest completed",
+    "drop_title": "Booster opened: {{booster}}",
+    "drop_new": "New",
+    "drop_more": "+{{count}} more",
+    "sold_title": "{{buyer}} bought {{item}}",
+    "sold_amount": "+{{price}} gold",
+    "patchnote": "Patch notes",
+    "see_collection": "View collection",
+    "see_market": "View marketplace",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "secret": "Secret"
+    }
   },
   "profile": {
     "gold": "Gold",
