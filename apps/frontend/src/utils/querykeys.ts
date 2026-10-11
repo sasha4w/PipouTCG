@@ -6,6 +6,10 @@ export const QUERY_KEYS = {
   collection: ["user", "collection"] as const,
   quests: ["user", "quests"] as const,
   dailyRewardStatus: ["daily-reward", "status"] as const,
+  notifications: {
+    all: ["notifications"] as const,
+    list: (tab: string) => ["notifications", tab] as const,
+  },
 
   // ── Marketplace ───────────────────────────────────────────────────────────
   offers: ["listings", "offers"] as const,

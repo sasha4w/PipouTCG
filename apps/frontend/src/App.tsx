@@ -28,6 +28,7 @@ import { useToast } from "./hooks/useToast";
 import { ToastContainer } from "./components/ToastContainer";
 import { DailyRewardContext } from "./contexts/DailyRewardContext";
 import { useSseNotifications } from "./hooks/useSseNotifications";
+import { useNotificationEvents } from "./hooks/useNotifications";
 import { QUERY_KEYS } from "./utils/querykeys";
 import FightHub from "./pages/FightHub";
 import DeckBuilder from "./features/deck/DeckBuilder";
@@ -49,6 +50,7 @@ function AppLayout() {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myListings });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
   });
+  useNotificationEvents();
 
   return (
     <DailyRewardContext.Provider value={{ openModal: open }}>
