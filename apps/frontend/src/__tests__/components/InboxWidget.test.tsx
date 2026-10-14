@@ -74,7 +74,7 @@ function renderWidget() {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter>
-        <InboxWidget onOpenQuests={vi.fn()} />
+        <InboxWidget />
         <Routes>
           <Route path="*" element={<Where />} />
         </Routes>

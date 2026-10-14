@@ -294,7 +294,7 @@ export default function Header() {
             <span>{t("header.admin")}</span>
           </Button>
         )}
-        <InboxWidget onOpenQuests={() => navigate("/profile")} />
+        <InboxWidget />
         <SoundButton />
       </div>
     </header>

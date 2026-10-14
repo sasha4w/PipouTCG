@@ -30,13 +30,6 @@
   color: #f5e6d0;
 }
 
-.tx-history__item:hover {
-  transform: translateY(-2px);
-
-  background: rgba(122, 28, 59, 0.08);
-  color: #7a1c3b;
-  box-shadow: 0 6px 18px rgba(122, 28, 59, 0.15);
-}
 .tx-history__item-left {
   display: flex;
   flex-direction: column;
@@ -127,9 +120,11 @@
   margin-bottom: 0.6rem;
 }
 
-/* Vente ouverte depuis la boîte de réception */
+/* Vente ouverte depuis la boîte de réception : même marque de sélection que
+   le reste de l'app (anneau bordeaux + halo), détachée de la carte par le crème */
 .tx-history__item--highlight {
-  outline: 2px solid #eebc77;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 6px rgba(238, 188, 119, 0.25);
+  box-shadow:
+    0 0 0 2px var(--color-cream),
+    0 0 0 4px var(--color-bordeaux),
+    0 0 0 7px rgba(122, 28, 59, 0.2);
 }

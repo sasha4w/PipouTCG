@@ -13,17 +13,13 @@ import { questService } from "../../services/quest.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import { apiErrorMessage } from "../../utils/errors";
 import Button from "../../components/Button";
-import { IconArrowRight, IconMail } from "../../components/Icons";
+import { IconMail } from "../../components/Icons";
 import InboxItem from "./InboxItem";
 import "./InboxWidget.css";
 
 const TABS: InboxTab[] = ["all", "information", "reward"];
 
-export default function InboxWidget({
-  onOpenQuests,
-}: {
-  onOpenQuests: () => void;
-}) {
+export default function InboxWidget() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -178,19 +174,6 @@ export default function InboxWidget({
                 />
               ))
             )}
-          </div>
-
-          <div className="inbox__footer-bar">
-            <Button
-              variant="ghost-gold"
-              size="sm"
-              onClick={() => {
-                close();
-                onOpenQuests();
-              }}
-            >
-              {t("quests.see_all")} <IconArrowRight size={16} />
-            </Button>
           </div>
         </div>
       )}
