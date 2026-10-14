@@ -120,11 +120,46 @@
   margin-bottom: 0.6rem;
 }
 
-/* Vente ouverte depuis la boîte de réception : même marque de sélection que
-   le reste de l'app (anneau bordeaux + halo), détachée de la carte par le crème */
+/* Vente ouverte depuis la boîte de réception : un reflet balaie la carte et
+   une lueur rose (accent de l'app) pulse quelques fois */
 .tx-history__item--highlight {
-  box-shadow:
-    0 0 0 2px var(--color-cream),
-    0 0 0 4px var(--color-bordeaux),
-    0 0 0 7px rgba(122, 28, 59, 0.2);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(242, 122, 170, 0.35);
+  animation: txHighlightGlow 1.6s ease-in-out 3;
+}
+.tx-history__item--highlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.28) 48%,
+    rgba(242, 122, 170, 0.22) 52%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: txHighlightShine 1.6s ease-in-out 3;
+  pointer-events: none;
+}
+@keyframes txHighlightShine {
+  to {
+    transform: translateX(120%);
+  }
+}
+@keyframes txHighlightGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(242, 122, 170, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(242, 122, 170, 0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tx-history__item--highlight,
+  .tx-history__item--highlight::after {
+    animation: none;
+  }
 }
