@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersService } from '../users/users.service';
@@ -22,6 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly questService: QuestService,
     private readonly mailService: MailService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private readonly DUMMY_HASH =
@@ -69,6 +71,7 @@ export class AuthService {
       email: dto.email,
       password: hash,
     });
+    this.eventEmitter.emit('user.registered', { userId: user.id });
     const { password, resetTokenHash, resetTokenExpiry, ...result } = user;
     return result;
   }

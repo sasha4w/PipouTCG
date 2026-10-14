@@ -95,17 +95,21 @@ export class NotificationsService {
       { readAt: new Date() },
     );
 
-    const unread = await this.unreadPatchnoteIds(userId);
-    if (unread.length > 0) {
-      await this.patchnoteReads.insert(
-        unread.map((patchnoteId) => ({ userId, patchnoteId })),
-      );
-    }
+    await this.markPatchnotesRead(userId);
 
     await this.notifications.delete({
       userId,
       readAt: LessThan(daysAgo(READ_RETENTION_DAYS)),
     });
+  }
+
+  /** Marque lus les patchnotes visibles que le joueur n'a pas encore lus. */
+  private async markPatchnotesRead(userId: number): Promise<void> {
+    const unread = await this.unreadPatchnoteIds(userId);
+    if (unread.length === 0) return;
+    await this.patchnoteReads.insert(
+      unread.map((patchnoteId) => ({ userId, patchnoteId })),
+    );
   }
 
   async markQuestsClaimed(
@@ -238,6 +242,12 @@ export class NotificationsService {
       data,
       data.userQuestId,
     );
+  }
+
+  /** Un nouveau compte ne reçoit pas d'un coup les patchnotes déjà publiés. */
+  @OnEvent('user.registered')
+  async onUserRegistered(payload: { userId: number }): Promise<void> {
+    await this.markPatchnotesRead(payload.userId);
   }
 
   @OnEvent('quest.claimed')

@@ -268,6 +268,26 @@ describe('NotificationsService', () => {
     });
   });
 
+  describe('user.registered', () => {
+    it('marque lus les patchnotes déjà publiés pour un nouveau compte', async () => {
+      patchnoteRepo.find.mockResolvedValue([{ id: 5 }, { id: 6 }]);
+
+      await service.onUserRegistered({ userId: 12 });
+
+      expect(patchnoteReadRepo.insert).toHaveBeenCalledWith([
+        { userId: 12, patchnoteId: 5 },
+        { userId: 12, patchnoteId: 6 },
+      ]);
+      // aucun autre message n'est touché
+      expect(notificationRepo.update).not.toHaveBeenCalled();
+    });
+
+    it("ne fait rien quand aucun patchnote n'est visible", async () => {
+      await service.onUserRegistered({ userId: 12 });
+      expect(patchnoteReadRepo.insert).not.toHaveBeenCalled();
+    });
+  });
+
   describe('createPatchnote', () => {
     it('sauvegarde et diffuse à tous les joueurs', async () => {
       patchnoteRepo.save.mockResolvedValue({ id: 8, title: 'v1.3', body: 'x' });

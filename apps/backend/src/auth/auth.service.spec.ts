@@ -10,6 +10,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
@@ -34,6 +35,8 @@ const mockQuestService = {
   syncUserQuests: jest.fn().mockResolvedValue([]),
 };
 
+const mockEventEmitter = { emit: jest.fn() };
+
 const mockMailService = {
   sendResetPassword: jest.fn().mockResolvedValue(undefined),
 };
@@ -49,6 +52,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: mockJwtService },
         { provide: QuestService, useValue: mockQuestService },
         { provide: MailService, useValue: mockMailService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
       ],
     }).compile();
 
@@ -169,6 +173,10 @@ describe('AuthService', () => {
       expect(result).not.toHaveProperty('resetTokenHash');
       expect(result).not.toHaveProperty('resetTokenExpiry');
       expect(result).toMatchObject({ id: 1, username: 'john' });
+      // la boîte de réception écoute l'inscription (patchnotes déjà publiés = lus)
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('user.registered', {
+        userId: 1,
+      });
     });
 
     it('should throw ConflictException if email already exists', async () => {
