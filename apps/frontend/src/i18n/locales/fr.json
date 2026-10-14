@@ -111,10 +111,37 @@
     "remaining_hours": "{{h}}h {{m}}min restantes",
     "remaining_mins": "{{m}}min {{s}}s restantes",
     "remaining_secs": "{{s}}s restantes",
-    "inbox_label": "Quêtes disponibles",
-    "inbox_title": "⚔️ Quêtes à réclamer",
-    "nothing_to_claim": "Aucune quête à réclamer 🎉",
     "see_all": "Voir toutes les quêtes"
+  },
+  "inbox": {
+    "label": "Boîte de réception",
+    "title": "Boîte de réception",
+    "tabs": {
+      "all": "Tout",
+      "information": "Information",
+      "reward": "Récompense"
+    },
+    "empty": "Rien de nouveau 🎉",
+    "error": "Impossible de charger la boîte",
+    "retry": "Réessayer",
+    "claim_error": "Impossible de réclamer la récompense",
+    "quest_completed": "Quête terminée",
+    "drop_title": "Booster ouvert : {{booster}}",
+    "drop_new": "Nouvelle",
+    "drop_more": "+{{count}} autres",
+    "sold_title": "{{buyer}} a acheté {{item}}",
+    "sold_amount": "+{{price}} or",
+    "patchnote": "Patchnote",
+    "see_collection": "Voir la collection",
+    "see_my_sales": "Voir mes ventes",
+    "rarity": {
+      "common": "Commune",
+      "uncommon": "Peu commune",
+      "rare": "Rare",
+      "epic": "Épique",
+      "legendary": "Légendaire",
+      "secret": "Secrète"
+    }
   },
   "profile": {
     "gold": "Gold",
@@ -227,7 +254,10 @@
     },
     "history": {
       "empty": "Aucun historique.",
-      "pagination": "{{page}} / {{total}}"
+      "pagination": "{{page}} / {{total}}",
+      "sort_label": "Trier les ventes",
+      "sort_date": "Plus récentes",
+      "sort_price": "Plus chères"
     },
     "toast": {
       "buy_success": "🎉 Achat réussi ! L'objet est dans votre inventaire.",
@@ -266,8 +296,18 @@
       "bundles": "Bundles",
       "quests": "Quêtes",
       "banners": "Bannières",
+      "patchnotes": "Patchnotes",
       "sandbox": "Sandbox"
     },
-    "sandbox_back": "Retour à l'admin"
+    "sandbox_back": "Retour à l'admin",
+    "patchnote": {
+      "title": "Nouveau patchnote",
+      "title_label": "Titre",
+      "body_label": "Texte",
+      "publish": "Publier",
+      "published": "Patchnote publié",
+      "error": "Impossible de publier le patchnote",
+      "hint": "Envoyé à tous les joueurs dans leur boîte de réception."
+    }
   }
 }

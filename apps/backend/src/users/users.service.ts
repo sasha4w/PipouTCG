@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan, EntityManager } from 'typeorm';
+import { Repository, MoreThan, EntityManager, In } from 'typeorm';
 import { createHash } from 'crypto';
 
 import { User } from './user.entity';
@@ -401,6 +401,19 @@ export class UsersService {
     };
   }
   /* ===================== CARD MANAGEMENT ===================== */
+  /** Parmi `cardIds`, ceux que le joueur possède déjà. */
+  async findOwnedCardIds(
+    userId: number,
+    cardIds: number[],
+  ): Promise<Set<number>> {
+    if (cardIds.length === 0) return new Set();
+    const owned = await this.userCardRepository.find({
+      where: { user: { id: userId }, card: { id: In(cardIds) } },
+      relations: { card: true },
+    });
+    return new Set(owned.map((uc) => uc.card.id));
+  }
+
   async addCardToUser(
     userId: number,
     cardId: number,

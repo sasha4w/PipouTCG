@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "dev": "nest start --watch",
+    "dev:local": "cross-env ENV_FILE=.env.e2e DB_NAME=cardcollect_local CORS_ORIGIN=http://127.0.0.1:5173 FRONTEND_URL=http://127.0.0.1:5173 nest start --watch",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.spec.json",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

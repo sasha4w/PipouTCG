@@ -9,6 +9,7 @@
     "build:shared": "pnpm --filter @pipou/shared build",
     "build": "pnpm -r build",
     "dev": "pnpm build:shared && pnpm -r --parallel dev",
+    "dev:local": "docker compose up -d db && pnpm build:shared && pnpm --parallel --filter @pipou/backend --filter @pipou/frontend dev:local",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm build:shared && pnpm -r typecheck",
     "test": "pnpm build:shared && pnpm -r test",

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan, In } from 'typeorm';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Quest } from './quest.entity';
 import {
   UserQuest,
@@ -47,6 +47,8 @@ export class QuestService {
     private userQuestRepository: Repository<UserQuest>,
 
     private usersService: UsersService,
+
+    private eventEmitter: EventEmitter2,
   ) {}
 
   /* ===================== ADMIN - CRUD ===================== */
@@ -136,6 +138,10 @@ export class QuestService {
           title: uq.quest.title,
           rewardType: uq.quest.rewardType,
           rewardAmount: Number(uq.quest.rewardAmount),
+        });
+        this.eventEmitter.emit('quest.claimed', {
+          userId,
+          userQuestIds: [uq.id],
         });
       }
 
@@ -230,7 +236,9 @@ export class QuestService {
 
     await this.distributeReward(userId, uq.quest);
     uq.rewardClaimed = true;
-    return this.userQuestRepository.save(uq);
+    const saved = await this.userQuestRepository.save(uq);
+    this.eventEmitter.emit('quest.claimed', { userId, userQuestIds: [uq.id] });
+    return saved;
   }
 
   async claimAllRewards(userId: number) {
@@ -251,6 +259,11 @@ export class QuestService {
       await this.userQuestRepository.save(userQuest);
     }
 
+    this.eventEmitter.emit('quest.claimed', {
+      userId,
+      userQuestIds: claimableQuests.map((uq) => uq.id),
+    });
+
     return { count: claimableQuests.length };
   }
 
@@ -270,6 +283,16 @@ export class QuestService {
       const updated = this.updateProgress(uq, eventType, meta);
       if (updated) {
         await this.userQuestRepository.save(uq);
+        // track() ne charge que des quêtes non terminées : terminée ici = vient de l'être
+        if (uq.isCompleted) {
+          this.eventEmitter.emit('quest.completed', {
+            userId,
+            userQuestId: uq.id,
+            title: uq.quest.title,
+            rewardType: uq.quest.rewardType,
+            rewardAmount: Number(uq.quest.rewardAmount),
+          });
+        }
       }
     }
   }

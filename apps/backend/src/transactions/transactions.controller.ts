@@ -24,6 +24,7 @@ import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { HistoryQueryDto } from './dto/history-query.dto';
+import { RecentSalesQueryDto } from './dto/recent-sales-query.dto';
 import type { AuthenticatedRequest } from '../auth/auth-user';
 import type { BuyRequest } from '@pipou/shared';
 class BuyListingDto implements BuyRequest {
@@ -140,6 +141,7 @@ export class TransactionController {
       req.user.userId,
       query,
       query.role,
+      query.sort,
     );
   }
   // ─────────────────────────────────────────────────────────────────
@@ -169,8 +171,8 @@ export class TransactionController {
   // GET /transactions/recent-sales — toutes les completed, pour tous les users connectés
   @UseGuards(JwtAuthGuard)
   @Get('recent-sales')
-  getRecentSales(@Query() pagination: PaginationDto) {
-    return this.transactionService.getRecentSales(pagination);
+  getRecentSales(@Query() query: RecentSalesQueryDto) {
+    return this.transactionService.getRecentSales(query, query.sort);
   }
 
   // ─────────────────────────────────────────────────────────────────

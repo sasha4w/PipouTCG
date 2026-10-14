@@ -6,7 +6,7 @@ import "./Header.css";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { QUERY_KEYS } from "../utils/querykeys";
-import QuestInboxWidget from "../features/quests/QuestInboxWidget";
+import InboxWidget from "../features/inbox/InboxWidget";
 
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
@@ -294,7 +294,7 @@ export default function Header() {
             <span>{t("header.admin")}</span>
           </Button>
         )}
-        <QuestInboxWidget onOpenPanel={() => navigate("/profile")} />
+        <InboxWidget />
         <SoundButton />
       </div>
     </header>

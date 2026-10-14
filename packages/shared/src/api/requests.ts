@@ -181,3 +181,11 @@ export type UpdateQuestRequest = Partial<CreateQuestRequest>;
 export interface RescueStreakRequest {
   daysToBuy: number;
 }
+
+// ─── Patchnotes ───────────────────────────────────────────────────────────────
+
+/** POST /patchnotes (admin) */
+export interface CreatePatchnoteRequest {
+  title: string;
+  body: string;
+}

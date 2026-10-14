@@ -3,6 +3,8 @@ import type {
   BuyRequest,
   CreateListingRequest,
   HistoryQuery,
+  RecentSalesQuery,
+  SaleSort,
   PaginatedResponse,
   UpdateListingRequest,
 } from "@pipou/shared";
@@ -67,8 +69,14 @@ export const transactionService = {
     page = 1,
     limit = 20,
     role?: HistoryQuery["role"],
+    sort: SaleSort = "date",
   ): Promise<PaginatedResponse<Transaction>> {
-    const params: HistoryQuery = { page, limit, ...(role ? { role } : {}) };
+    const params: HistoryQuery = {
+      page,
+      limit,
+      sort,
+      ...(role ? { role } : {}),
+    };
     const res = await api.get("/transactions/history", { params });
     return res.data;
   },
@@ -77,10 +85,10 @@ export const transactionService = {
   async getRecentSales(
     page = 1,
     limit = 20,
+    sort: SaleSort = "date",
   ): Promise<PaginatedResponse<Transaction>> {
-    const res = await api.get("/transactions/recent-sales", {
-      params: { page, limit },
-    });
+    const params: RecentSalesQuery = { page, limit, sort };
+    const res = await api.get("/transactions/recent-sales", { params });
     return res.data;
   },
 

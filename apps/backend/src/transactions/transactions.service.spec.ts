@@ -327,6 +327,49 @@ describe('TransactionService', () => {
       });
     });
 
+    it('should record a partial purchase as its own completed sale', async () => {
+      stubFindOne({ listing: listing(), users: { 1: seller(), 2: buyer() } });
+
+      await service.buyListing(1, 2, 1);
+
+      // la vente partielle laisse une trace visible dans les historiques
+      expect(mockManager.create).toHaveBeenCalledWith(Transaction, {
+        productType: ProductType.CARD,
+        productId: 10,
+        itemName: 'Dragon',
+        quantity: 1,
+        unitPrice: 100,
+        totalPrice: 100,
+        status: TransactionStatus.COMPLETED,
+        seller: { id: 1 },
+        buyer: { id: 2 },
+      });
+      // la notification du vendeur pointe vers cette vente (id 42), pas vers l'annonce
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'listing.sold',
+        expect.objectContaining({
+          sellerId: 1,
+          transactionId: 42,
+          totalPrice: 100,
+        }),
+      );
+    });
+
+    it('should point the sale notification at the listing on a full purchase', async () => {
+      stubFindOne({ listing: listing(), users: { 1: seller(), 2: buyer() } });
+
+      await service.buyListing(1, 2);
+
+      expect(mockManager.create).not.toHaveBeenCalledWith(
+        Transaction,
+        expect.anything(),
+      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith(
+        'listing.sold',
+        expect.objectContaining({ transactionId: 1, totalPrice: 200 }),
+      );
+    });
+
     it.each([
       [ProductType.BOOSTER, 'boostersBought', 'boostersSold'],
       [ProductType.BUNDLE, 'bundlesBought', 'bundlesSold'],
@@ -488,6 +531,43 @@ describe('TransactionService', () => {
       const result = await service.getUserHistory(1, {});
       expect(result.meta.page).toBe(1);
       expect(result.meta.limit).toBe(20);
+    });
+
+    it('should sort by date by default and by price on request', async () => {
+      mockTransactionRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.getUserHistory(1, {}, 'seller');
+      expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
+        expect.objectContaining({ order: { updatedAt: 'DESC' } }),
+      );
+
+      await service.getUserHistory(1, {}, 'seller', 'price');
+      expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          order: { totalPrice: 'DESC', updatedAt: 'DESC' },
+        }),
+      );
+    });
+  });
+
+  describe('getRecentSales', () => {
+    it('should sort by date by default and by price on request', async () => {
+      mockTransactionRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.getRecentSales({});
+      expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          where: { status: TransactionStatus.COMPLETED },
+          order: { updatedAt: 'DESC' },
+        }),
+      );
+
+      await service.getRecentSales({}, 'price');
+      expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          order: { totalPrice: 'DESC', updatedAt: 'DESC' },
+        }),
+      );
     });
   });
 });

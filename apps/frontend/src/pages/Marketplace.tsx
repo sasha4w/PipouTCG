@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
+import type { SaleSort } from "@pipou/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -49,7 +51,16 @@ function applyListingUpdate(
 const Marketplace = () => {
   const { t } = useTranslation();
 
-  const [selectedTab, setSelectedTab] = useState<"sell" | "buy">("buy");
+  // Onglet et vente mise en avant dans l'URL : la boîte de réception y mène
+  // directement (/marketplace?tab=sell&sale=123)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedTab: "sell" | "buy" =
+    searchParams.get("tab") === "sell" ? "sell" : "buy";
+  const highlightSaleId = Number(searchParams.get("sale")) || null;
+  const setSelectedTab = (tab: "sell" | "buy") =>
+    setSearchParams({ tab }, { replace: true });
+  const [recentSalesSort, setRecentSalesSort] = useState<SaleSort>("date");
+  const [mySalesSort, setMySalesSort] = useState<SaleSort>("date");
   const [showCreateListingForm, setShowCreateListingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingAction, setLoadingAction] = useState<number | null>(null);
@@ -100,13 +111,14 @@ const Marketplace = () => {
   });
 
   const { data: recentSalesData } = useQuery({
-    queryKey: ["transactions", "recent-sales"],
-    queryFn: () => transactionService.getRecentSales(),
+    queryKey: QUERY_KEYS.recentSales(recentSalesSort),
+    queryFn: () => transactionService.getRecentSales(1, 20, recentSalesSort),
   });
 
   const { data: mySalesData } = useQuery({
-    queryKey: ["transactions", "history", "seller"],
-    queryFn: () => transactionService.getHistory(1, 20, "seller"),
+    queryKey: QUERY_KEYS.mySales(mySalesSort),
+    queryFn: () =>
+      transactionService.getHistory(1, 20, "seller", mySalesSort),
   });
 
   const availableItems = useMemo(() => {
@@ -266,9 +278,7 @@ const Marketplace = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
-      queryClient.invalidateQueries({
-        queryKey: ["transactions", "recent-sales"],
-      });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recentSalesAll });
       addToast(t("marketplace.toast.buy_success"), "success");
     } catch (error) {
       const raw = apiErrorMessage(error) ?? "";
@@ -360,6 +370,9 @@ const Marketplace = () => {
         <SellTab
           userListings={userListings?.data}
           userSellHistory={mySalesData?.data}
+          historySort={mySalesSort}
+          onHistorySortChange={setMySalesSort}
+          highlightSaleId={highlightSaleId}
           loadingAction={loadingAction}
           loadingUpdate={loadingUpdate}
           getDisplayName={getDisplayName}
@@ -374,6 +387,8 @@ const Marketplace = () => {
         <BuyTab
           filteredListings={filteredListings}
           buyHistory={recentSalesData?.data}
+          historySort={recentSalesSort}
+          onHistorySortChange={setRecentSalesSort}
           loadingAction={loadingAction}
           searchTerm={searchTerm}
           filterConfig={filterConfig}

@@ -1,0 +1,224 @@
+.inbox {
+  position: relative;
+}
+
+.inbox__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e03060;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #f5efe0;
+}
+
+.inbox__dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(340px, calc(100vw - 24px));
+  background: #3d1020;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  z-index: 200;
+}
+
+.inbox__dheader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.inbox__dtitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #eebc77;
+}
+
+.inbox__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 8px 0;
+}
+.inbox__tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 7px 4px;
+  cursor: pointer;
+}
+.inbox__tab--active {
+  color: #eebc77;
+  border-bottom-color: #eebc77;
+}
+.inbox__tab-count {
+  background: #e03060;
+  color: #fff;
+  font-size: 9px;
+  border-radius: 8px;
+  padding: 0 5px;
+  min-width: 14px;
+  text-align: center;
+}
+
+.inbox__error {
+  margin: 8px 12px 0;
+  font-size: 0.72rem;
+  color: #ff9db3;
+}
+
+.inbox__list {
+  max-height: min(380px, 60vh);
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* scrollbar discrète, dorée sur le fond bordeaux */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(238, 188, 119, 0.4) transparent;
+}
+.inbox__list::-webkit-scrollbar {
+  width: 4px;
+}
+.inbox__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.inbox__list::-webkit-scrollbar-thumb {
+  background: rgba(238, 188, 119, 0.4);
+  border-radius: 4px;
+}
+.inbox__state {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  padding: 20px 0;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.inbox__item {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 9px 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.inbox__item--reward {
+  background: rgba(238, 188, 119, 0.07);
+  border-color: rgba(238, 188, 119, 0.22);
+}
+.inbox__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inbox__row--toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.inbox__title {
+  flex: 1;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #eebc77;
+  line-height: 1.3;
+}
+.inbox__chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(238, 188, 119, 0.15);
+  color: #eebc77;
+  border-radius: 20px;
+  padding: 2px 7px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.inbox__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e03060;
+  flex: none;
+}
+.inbox__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.inbox__meta {
+  font-size: 0.63rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.3px;
+}
+.inbox__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.inbox__card {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+.inbox__card--epic {
+  color: #c9a0ff;
+}
+.inbox__card--legendary {
+  color: #ffd166;
+}
+.inbox__card--secret {
+  color: #ff9db3;
+}
+.inbox__new {
+  margin-left: 6px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #3d1020;
+  background: #eebc77;
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+.inbox__body {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: pre-wrap;
+}

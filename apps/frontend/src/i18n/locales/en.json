@@ -111,10 +111,37 @@
     "remaining_hours": "{{h}}h {{m}}min remaining",
     "remaining_mins": "{{m}}min {{s}}s remaining",
     "remaining_secs": "{{s}}s remaining",
-    "inbox_label": "Available quests",
-    "inbox_title": "⚔️ Quests to claim",
-    "nothing_to_claim": "No quests to claim 🎉",
     "see_all": "See all quests"
+  },
+  "inbox": {
+    "label": "Inbox",
+    "title": "Inbox",
+    "tabs": {
+      "all": "All",
+      "information": "Information",
+      "reward": "Rewards"
+    },
+    "empty": "Nothing new 🎉",
+    "error": "Couldn't load the inbox",
+    "retry": "Retry",
+    "claim_error": "Couldn't claim the reward",
+    "quest_completed": "Quest completed",
+    "drop_title": "Booster opened: {{booster}}",
+    "drop_new": "New",
+    "drop_more": "+{{count}} more",
+    "sold_title": "{{buyer}} bought {{item}}",
+    "sold_amount": "+{{price}} gold",
+    "patchnote": "Patch notes",
+    "see_collection": "View collection",
+    "see_my_sales": "View my sales",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "secret": "Secret"
+    }
   },
   "profile": {
     "gold": "Gold",
@@ -227,7 +254,10 @@
     },
     "history": {
       "empty": "No history.",
-      "pagination": "{{page}} / {{total}}"
+      "pagination": "{{page}} / {{total}}",
+      "sort_label": "Sort sales",
+      "sort_date": "Most recent",
+      "sort_price": "Most expensive"
     },
     "toast": {
       "buy_success": "🎉 Purchase successful! The item is in your inventory.",
@@ -266,8 +296,18 @@
       "bundles": "Bundles",
       "quests": "Quests",
       "banners": "Banners",
+      "patchnotes": "Patch notes",
       "sandbox": "Sandbox"
     },
-    "sandbox_back": "Back to admin"
+    "sandbox_back": "Back to admin",
+    "patchnote": {
+      "title": "New patch note",
+      "title_label": "Title",
+      "body_label": "Text",
+      "publish": "Publish",
+      "published": "Patch note published",
+      "error": "Couldn't publish the patch note",
+      "hint": "Sent to every player's inbox."
+    }
   }
 }

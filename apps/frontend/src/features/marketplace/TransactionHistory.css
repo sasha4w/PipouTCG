@@ -30,13 +30,6 @@
   color: #f5e6d0;
 }
 
-.tx-history__item:hover {
-  transform: translateY(-2px);
-
-  background: rgba(122, 28, 59, 0.08);
-  color: #7a1c3b;
-  box-shadow: 0 6px 18px rgba(122, 28, 59, 0.15);
-}
 .tx-history__item-left {
   display: flex;
   flex-direction: column;
@@ -118,4 +111,55 @@
   text-align: center;
   padding: 1.2rem;
   color: #7a1c3b;
+}
+
+.tx-history__sort {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Vente ouverte depuis la boîte de réception : un reflet balaie la carte et
+   une lueur rose (accent de l'app) pulse quelques fois */
+.tx-history__item--highlight {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(242, 122, 170, 0.35);
+  animation: txHighlightGlow 1.6s ease-in-out 3;
+}
+.tx-history__item--highlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.28) 48%,
+    rgba(242, 122, 170, 0.22) 52%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  animation: txHighlightShine 1.6s ease-in-out 3;
+  pointer-events: none;
+}
+@keyframes txHighlightShine {
+  to {
+    transform: translateX(120%);
+  }
+}
+@keyframes txHighlightGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(242, 122, 170, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(242, 122, 170, 0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tx-history__item--highlight,
+  .tx-history__item--highlight::after {
+    animation: none;
+  }
 }

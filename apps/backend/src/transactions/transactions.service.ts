@@ -15,6 +15,7 @@ import { Card } from '../cards/card.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { TransactionStatus, ProductType } from '@pipou/shared';
+import type { SaleSort } from '@pipou/shared';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 export interface ListingSoldPayload {
@@ -24,6 +25,12 @@ export interface ListingSoldPayload {
   totalPrice: number;
   transactionId: number;
 }
+
+/** Ordre des listes de ventes : prix décroissant ou date décroissante. */
+const saleOrder = (sort: SaleSort) =>
+  sort === 'price'
+    ? { totalPrice: 'DESC' as const, updatedAt: 'DESC' as const }
+    : { updatedAt: 'DESC' as const };
 
 /** Annonce accompagnée de la carte vendue (null pour un booster / bundle). */
 export type ListingWithCard = Transaction & { card: Card | null };
@@ -91,6 +98,7 @@ export class TransactionService {
     userId: number,
     pagination: PaginationDto = {},
     role?: 'seller' | 'buyer',
+    sort: SaleSort = 'date',
   ) {
     const { page = 1, limit = 20 } = pagination;
 
@@ -107,7 +115,7 @@ export class TransactionService {
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
         where,
-        order: { updatedAt: 'DESC' },
+        order: saleOrder(sort),
         relations: ['buyer', 'seller'],
         skip: (page - 1) * limit,
         take: limit,
@@ -119,12 +127,12 @@ export class TransactionService {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
-  async getRecentSales(pagination: PaginationDto) {
+  async getRecentSales(pagination: PaginationDto, sort: SaleSort = 'date') {
     const { page = 1, limit = 20 } = pagination;
     const [data, total] = await this.transactionRepository.findAndCount({
       where: { status: TransactionStatus.COMPLETED },
       relations: ['seller', 'buyer'],
-      order: { updatedAt: 'DESC' },
+      order: saleOrder(sort),
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -427,6 +435,9 @@ export class TransactionService {
       }
 
       const isFullBuy = qty === listing.quantity;
+      // Vente affichée dans les historiques : l'annonce elle-même si tout est
+      // acheté, sinon une ligne COMPLETED dédiée (l'annonce garde le reste)
+      let saleId = transactionId;
 
       if (isFullBuy) {
         await manager.update(Transaction, transactionId, {
@@ -437,6 +448,20 @@ export class TransactionService {
         });
         listing.status = TransactionStatus.COMPLETED;
       } else {
+        const sale = await manager.save(
+          manager.create(Transaction, {
+            productType: listing.productType,
+            productId: listing.productId,
+            itemName: listing.itemName,
+            quantity: qty,
+            unitPrice: listing.unitPrice,
+            totalPrice,
+            status: TransactionStatus.COMPLETED,
+            seller: { id: listing.seller.id },
+            buyer: { id: buyerId },
+          }),
+        );
+        saleId = sale.id;
         await manager.update(Transaction, transactionId, {
           quantity: listing.quantity - qty,
           totalPrice: Number(listing.unitPrice) * (listing.quantity - qty),
@@ -447,7 +472,16 @@ export class TransactionService {
 
       listing.buyer = buyer;
 
-      return { listing, seller, buyer, setId, qty, totalPrice, isFullBuy };
+      return {
+        listing,
+        seller,
+        buyer,
+        setId,
+        qty,
+        totalPrice,
+        isFullBuy,
+        saleId,
+      };
     });
 
     this.eventEmitter.emit('listing.sold', {
@@ -455,7 +489,7 @@ export class TransactionService {
       buyerUsername: result.buyer.username,
       itemName: result.listing.itemName ?? `Objet #${result.listing.productId}`,
       totalPrice: result.totalPrice,
-      transactionId,
+      transactionId: result.saleId,
     });
 
     if (!result.isFullBuy) {

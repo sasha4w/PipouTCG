@@ -6,11 +6,21 @@ export const QUERY_KEYS = {
   collection: ["user", "collection"] as const,
   quests: ["user", "quests"] as const,
   dailyRewardStatus: ["daily-reward", "status"] as const,
+  notifications: {
+    all: ["notifications"] as const,
+    list: (tab: string) => ["notifications", tab] as const,
+  },
 
   // ── Marketplace ───────────────────────────────────────────────────────────
   offers: ["listings", "offers"] as const,
   myListings: ["listings", "me"] as const,
   history: ["listings", "history"] as const,
+  // Préfixes communs : invalider recentSalesAll / mySalesAll couvre tous les tris
+  recentSalesAll: ["transactions", "recent-sales"] as const,
+  recentSales: (sort: string) => ["transactions", "recent-sales", sort] as const,
+  mySalesAll: ["transactions", "history", "seller"] as const,
+  mySales: (sort: string) =>
+    ["transactions", "history", "seller", sort] as const,
 
   // ── Decks ─────────────────────────────────────────────────────────────────
   decks: ["decks"] as const,
