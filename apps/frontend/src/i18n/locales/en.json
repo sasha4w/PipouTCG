@@ -133,7 +133,7 @@
     "sold_amount": "+{{price}} gold",
     "patchnote": "Patch notes",
     "see_collection": "View collection",
-    "see_market": "View marketplace",
+    "see_my_sales": "View my sales",
     "rarity": {
       "common": "Common",
       "uncommon": "Uncommon",
@@ -254,7 +254,10 @@
     },
     "history": {
       "empty": "No history.",
-      "pagination": "{{page}} / {{total}}"
+      "pagination": "{{page}} / {{total}}",
+      "sort_label": "Sort sales",
+      "sort_date": "Most recent",
+      "sort_price": "Most expensive"
     },
     "toast": {
       "buy_success": "🎉 Purchase successful! The item is in your inventory.",

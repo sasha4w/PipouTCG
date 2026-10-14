@@ -133,7 +133,7 @@
     "sold_amount": "+{{price}} 골드",
     "patchnote": "패치노트",
     "see_collection": "컬렉션 보기",
-    "see_market": "마켓 보기",
+    "see_my_sales": "내 판매 보기",
     "rarity": {
       "common": "커먼",
       "uncommon": "언커먼",
@@ -254,7 +254,10 @@
     },
     "history": {
       "empty": "내역 없음.",
-      "pagination": "{{page}} / {{total}}"
+      "pagination": "{{page}} / {{total}}",
+      "sort_label": "판매 정렬",
+      "sort_date": "최신순",
+      "sort_price": "높은 가격순"
     },
     "toast": {
       "buy_success": "🎉 구매 성공! 아이템이 인벤토리에 추가되었습니다.",

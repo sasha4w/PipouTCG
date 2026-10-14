@@ -133,7 +133,7 @@
     "sold_amount": "+{{price}} or",
     "patchnote": "Patchnote",
     "see_collection": "Voir la collection",
-    "see_market": "Voir le marché",
+    "see_my_sales": "Voir mes ventes",
     "rarity": {
       "common": "Commune",
       "uncommon": "Peu commune",
@@ -254,7 +254,10 @@
     },
     "history": {
       "empty": "Aucun historique.",
-      "pagination": "{{page}} / {{total}}"
+      "pagination": "{{page}} / {{total}}",
+      "sort_label": "Trier les ventes",
+      "sort_date": "Plus récentes",
+      "sort_price": "Plus chères"
     },
     "toast": {
       "buy_success": "🎉 Achat réussi ! L'objet est dans votre inventaire.",

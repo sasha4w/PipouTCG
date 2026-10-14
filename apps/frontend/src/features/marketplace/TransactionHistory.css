@@ -119,3 +119,17 @@
   padding: 1.2rem;
   color: #7a1c3b;
 }
+
+.tx-history__sort {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+/* Vente ouverte depuis la boîte de réception */
+.tx-history__item--highlight {
+  outline: 2px solid #eebc77;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(238, 188, 119, 0.25);
+}

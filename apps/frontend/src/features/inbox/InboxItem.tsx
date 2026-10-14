@@ -120,7 +120,8 @@ export default function InboxItem({
     }
 
     case NotificationType.LISTING_SOLD: {
-      const { buyerUsername, itemName, totalPrice } = item.payload;
+      const { buyerUsername, itemName, totalPrice, transactionId } =
+        item.payload;
       return (
         <div className="inbox__item">
           <div className="inbox__row">
@@ -138,9 +139,11 @@ export default function InboxItem({
             <Button
               variant="ghost-gold"
               size="sm"
-              onClick={() => onNavigate("/marketplace")}
+              onClick={() =>
+                onNavigate(`/marketplace?tab=sell&sale=${transactionId}`)
+              }
             >
-              {t("inbox.see_market")}
+              {t("inbox.see_my_sales")}
             </Button>
           </div>
         </div>

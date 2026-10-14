@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { SaleSort } from "@pipou/shared";
 import {
   type Transaction,
   type UpdateListingData,
@@ -14,6 +15,10 @@ import "./ListingCard.css";
 interface SellTabProps {
   userListings: Transaction[] | undefined;
   userSellHistory: Transaction[] | undefined;
+  historySort: SaleSort;
+  onHistorySortChange: (sort: SaleSort) => void;
+  /** Vente ouverte depuis la boîte de réception. */
+  highlightSaleId: number | null;
   loadingAction: number | null;
   loadingUpdate: number | null;
   getDisplayName: (listing: Transaction) => string;
@@ -27,6 +32,9 @@ interface SellTabProps {
 const SellTab = ({
   userListings,
   userSellHistory,
+  historySort,
+  onHistorySortChange,
+  highlightSaleId,
   loadingAction,
   loadingUpdate,
   getDisplayName,
@@ -130,6 +138,9 @@ const SellTab = ({
       <TransactionHistory
         history={userSellHistory}
         emptyMessage={t("marketplace.sell.history_empty")}
+        sort={historySort}
+        onSortChange={onHistorySortChange}
+        highlightId={highlightSaleId}
       />
     </div>
   );

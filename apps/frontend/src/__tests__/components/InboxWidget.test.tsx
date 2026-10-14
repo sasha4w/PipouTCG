@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import type { NotificationsResponse } from "@pipou/shared";
 import i18n from "../../i18n";
 import InboxWidget from "../../features/inbox/InboxWidget";
@@ -62,6 +62,11 @@ const ALL: NotificationsResponse = {
   ],
 };
 
+function Where() {
+  const location = useLocation();
+  return <div data-testid="where">{location.pathname + location.search}</div>;
+}
+
 function renderWidget() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -70,6 +75,9 @@ function renderWidget() {
     <QueryClientProvider client={client}>
       <MemoryRouter>
         <InboxWidget onOpenQuests={vi.fn()} />
+        <Routes>
+          <Route path="*" element={<Where />} />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -134,6 +142,19 @@ describe("InboxWidget", () => {
     );
     await waitFor(() =>
       expect(questService.claimReward).toHaveBeenCalledWith(42),
+    );
+  });
+
+  it("ouvre la vente concernée dans Mes Ventes Récentes", async () => {
+    renderWidget();
+    await userEvent.click(
+      await screen.findByRole("button", { name: /boîte/i }),
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Voir mes ventes" }),
+    );
+    expect(screen.getByTestId("where")).toHaveTextContent(
+      "/marketplace?tab=sell&sale=3",
     );
   });
 

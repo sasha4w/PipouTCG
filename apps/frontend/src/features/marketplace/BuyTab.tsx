@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { SaleSort } from "@pipou/shared";
 import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
 import Button from "../../components/Button";
@@ -17,6 +18,8 @@ import "./ListingCard.css";
 interface BuyTabProps {
   filteredListings: Transaction[] | undefined;
   buyHistory: Transaction[] | undefined;
+  historySort: SaleSort;
+  onHistorySortChange: (sort: SaleSort) => void;
   loadingAction: number | null;
   searchTerm: string;
   filterConfig: FilterConfig[];
@@ -32,6 +35,8 @@ interface BuyTabProps {
 const BuyTab = ({
   filteredListings,
   buyHistory,
+  historySort,
+  onHistorySortChange,
   loadingAction,
   searchTerm,
   filterConfig,
@@ -176,6 +181,8 @@ const BuyTab = ({
       <TransactionHistory
         history={buyHistory}
         emptyMessage={t("marketplace.buy.history_empty")}
+        sort={historySort}
+        onSortChange={onHistorySortChange}
       />
     </div>
   );

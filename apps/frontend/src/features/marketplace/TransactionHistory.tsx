@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { SaleSort } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
 import { type Transaction } from "../../services/transaction.service";
 import Button from "../../components/Button";
@@ -8,16 +9,41 @@ import "./TransactionHistory.css";
 interface TransactionHistoryProps {
   history: Transaction[] | undefined;
   emptyMessage?: string;
+  sort: SaleSort;
+  onSortChange: (sort: SaleSort) => void;
+  /** Vente à mettre en avant (lien depuis la boîte de réception). */
+  highlightId?: number | null;
 }
 
 const ITEMS_PER_PAGE = 6;
+const SORTS: SaleSort[] = ["date", "price"];
 
 const TransactionHistory = ({
   history,
   emptyMessage,
+  sort,
+  onSortChange,
+  highlightId,
 }: TransactionHistoryProps) => {
   const { t } = useTranslation();
-  const [page, setPage] = useState(1);
+  // null = page automatique : celle de la vente mise en avant, sinon la 1re
+  const [chosenPage, setChosenPage] = useState<number | null>(null);
+  const highlightRef = useRef<HTMLLIElement>(null);
+
+  const highlightIndex = highlightId
+    ? (history?.findIndex((tx) => tx.id === highlightId) ?? -1)
+    : -1;
+  const page =
+    chosenPage ??
+    (highlightIndex >= 0 ? Math.floor(highlightIndex / ITEMS_PER_PAGE) + 1 : 1);
+  const setPage = (update: (p: number) => number) =>
+    setChosenPage(update(page));
+
+  const isHighlightVisible = highlightIndex >= 0 && chosenPage === null;
+  useEffect(() => {
+    if (isHighlightVisible)
+      highlightRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [isHighlightVisible]);
 
   const paginatedHistory = useMemo(() => {
     if (!history) return [];
@@ -37,9 +63,33 @@ const TransactionHistory = ({
 
   return (
     <div className="tx-history-wrapper">
+      <div
+        className="tx-history__sort"
+        role="group"
+        aria-label={t("marketplace.history.sort_label")}
+      >
+        {SORTS.map((key) => (
+          <Button
+            key={key}
+            variant="ghost-bordeaux"
+            size="sm"
+            active={sort === key}
+            onClick={() => {
+              setChosenPage(1);
+              onSortChange(key);
+            }}
+          >
+            {t(`marketplace.history.sort_${key}`)}
+          </Button>
+        ))}
+      </div>
       <ul className="tx-history">
         {paginatedHistory.map((tx) => (
-          <li key={tx.id} className="tx-history__item">
+          <li
+            key={tx.id}
+            ref={tx.id === highlightId ? highlightRef : undefined}
+            className={`tx-history__item${tx.id === highlightId ? " tx-history__item--highlight" : ""}`}
+          >
             <div className="tx-history__item-left">
               <span className="tx-history__name">
                 {tx.itemName || `Objet #${tx.productId}`}
