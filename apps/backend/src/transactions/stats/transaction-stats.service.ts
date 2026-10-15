@@ -63,6 +63,7 @@ export class TransactionStatsService {
         .addSelect('SUM(t.quantity)', 'units')
         .groupBy('t.itemName')
         .orderBy('units', 'DESC')
+        .addOrderBy('t.itemName', 'ASC')
         .limit(1)
         .getRawOne<{ itemName: string | null; units: Raw }>(),
       this.topPartner(filter),
@@ -122,6 +123,7 @@ export class TransactionStatsService {
       .groupBy('p.id')
       .addGroupBy('p.username')
       .orderBy('count', 'DESC')
+      .addOrderBy('p.username', 'ASC')
       .limit(1)
       .getRawOne<{ userId: Raw; username: string; count: Raw }>();
     return row

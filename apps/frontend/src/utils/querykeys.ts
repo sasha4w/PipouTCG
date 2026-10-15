@@ -1,4 +1,4 @@
-import type { SalesFilter } from "@pipou/shared";
+import type { SalesFilter, SaleSort } from "@pipou/shared";
 
 export const QUERY_KEYS = {
   // ── User ──────────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ export const QUERY_KEYS = {
       filter.userId ?? "market",
       filter.role ?? "both",
     ] as const,
-  salesList: (filter: SalesFilter, sort: string) =>
+  salesList: (filter: SalesFilter, sort: SaleSort) =>
     [
       "transactions",
       "sales",

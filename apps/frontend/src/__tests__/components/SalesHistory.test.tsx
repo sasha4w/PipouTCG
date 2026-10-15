@@ -110,6 +110,22 @@ describe("SalesHistory", () => {
     expect(item).toHaveClass("sales-list__item--highlight");
   });
 
+  it("trie par prix pour que la plus grosse vente soit en tête de liste", async () => {
+    renderHistory();
+    fireEvent.click(await screen.findByRole("button", { name: /Plus grosse vente/ }));
+    await screen.findByText("Brigade de Combat", { selector: ".sales-list__name" });
+    expect(transactionService.getSales).toHaveBeenCalledWith({}, "price");
+  });
+
+  it("affiche une erreur, pas le message vide, quand la liste échoue", async () => {
+    vi.mocked(transactionService.getSales).mockRejectedValue(new Error("boom"));
+    renderHistory();
+    fireEvent.click(await screen.findByRole("button", { name: "Détails" }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Statistiques indisponibles");
+    expect(screen.queryByText("Rien")).not.toBeInTheDocument();
+  });
+
   it("filtre sur un joueur au clic sur son pseudo", async () => {
     renderHistory({ highlightSaleId: 9 });
     fireEvent.click(

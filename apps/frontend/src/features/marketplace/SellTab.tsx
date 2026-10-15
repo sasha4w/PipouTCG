@@ -132,6 +132,7 @@ const SellTab = ({
         {t("marketplace.sell.history_title")}
       </h2>
       <SalesHistory
+        key={highlightSaleId ?? "none"}
         emptyMessage={t("marketplace.sell.history_empty")}
         me={me}
         initialScope="my-sales"

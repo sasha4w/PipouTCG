@@ -82,6 +82,8 @@ const SalesHistory = ({
   const showSale = (saleId: number) => {
     setPickedHighlight(saleId);
     setChosenOpen(true);
+    // Tri prix = ordre de la requête « plus grosse vente » : elle est en tête de liste
+    setSort("price");
   };
 
   if (!scope || stats.isPending) {
@@ -102,6 +104,8 @@ const SalesHistory = ({
   }
 
   const errorMessage = stats.isError ? apiErrorMessage(stats.error) : null;
+  const listErrorMessage = list.isError ? apiErrorMessage(list.error) : null;
+  const scopeKey = `${filter?.userId ?? "market"}-${filter?.role ?? "both"}`;
 
   return (
     <section className="sales-history">
@@ -116,7 +120,7 @@ const SalesHistory = ({
       ) : (
         <>
           <StatTiles tiles={compactTiles(stats.data, t, i18n.language, showSale)} />
-          <GoldChart daily={stats.data.daily} bestDay={stats.data.bestDay} />
+          <GoldChart key={scopeKey} daily={stats.data.daily} bestDay={stats.data.bestDay} />
         </>
       )}
 
@@ -147,16 +151,24 @@ const SalesHistory = ({
                 tiles={detailTiles(stats.data, scope, t, i18n.language, selectPlayer)}
               />
             )}
-            <SalesList
-              key={`${filter?.userId ?? "market"}-${filter?.role ?? "both"}-${highlight ?? "none"}`}
-              history={list.data?.data}
-              emptyMessage={list.isPending ? "…" : emptyMessage}
-              sort={sort}
-              onSortChange={setSort}
-              highlightId={highlight}
-              viewerId={me?.id}
-              onPlayerClick={selectPlayer}
-            />
+            {list.isError ? (
+              <p className="sales-history__error" role="alert">
+                {listErrorMessage
+                  ? t("marketplace.sales.error", { message: listErrorMessage })
+                  : t("marketplace.sales.error_default")}
+              </p>
+            ) : (
+              <SalesList
+                key={`${scopeKey}-${highlight ?? "none"}`}
+                history={list.data?.data}
+                emptyMessage={list.isPending ? "…" : emptyMessage}
+                sort={sort}
+                onSortChange={setSort}
+                highlightId={highlight}
+                viewerId={me?.id}
+                onPlayerClick={selectPlayer}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

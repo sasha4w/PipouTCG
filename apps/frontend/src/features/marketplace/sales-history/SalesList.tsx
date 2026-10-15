@@ -116,7 +116,7 @@ const SalesList = ({
           >
             <div className="sales-list__left">
               <span className="sales-list__name">
-                {tx.itemName || `Objet #${tx.productId}`}
+                {tx.itemName || t("marketplace.sales.unknown_item", { id: tx.productId })}
               </span>
               <span className="sales-list__users">
                 {renderPlayer(tx.seller, "sales-list__seller")}
