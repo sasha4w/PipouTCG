@@ -1,0 +1,202 @@
+.sales-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.sales-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.sales-list__item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 0.9rem 0.85rem 1.1rem;
+  border-radius: 14px;
+  background: #7a1c3b;
+  color: #f5e6d0;
+  overflow: hidden;
+}
+
+/* Bande de point de vue : ce que le joueur connecté a vendu ou acheté */
+.sales-list__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(245, 230, 208, 0.18);
+}
+.sales-list__item--sold::before {
+  background: #9fe0a4;
+}
+.sales-list__item--bought::before {
+  background: #91b7ff;
+}
+
+.sales-list__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.sales-list__name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sales-list__users {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.74rem;
+  min-width: 0;
+}
+
+.sales-list__player {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.sales-list__player:hover,
+.sales-list__player:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.sales-list__seller {
+  color: #91b7ff;
+}
+.sales-list__buyer {
+  color: #9fe0a4;
+}
+.sales-list__arrow {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.sales-list__right {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.sales-list__qty {
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.sales-list__prices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.sales-list__price {
+  color: #e0b44c;
+  font-weight: 700;
+  font-size: 0.9rem;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.sales-list__unit {
+  font-size: 0.64rem;
+  opacity: 0.7;
+}
+
+.sales-list__date {
+  font-size: 0.68rem;
+  min-width: 64px;
+  text-align: right;
+}
+
+.sales-list__sort {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.sales-list__pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sales-list__empty {
+  text-align: center;
+  padding: 1.2rem;
+  color: #7a1c3b;
+}
+
+/* Vente mise en avant : la ligne reste bordeaux, une bordure dorée fait un tour
+   puis reste allumée, avec un léger halo or */
+@property --sales-highlight-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.sales-list__item--highlight {
+  overflow: visible;
+  box-shadow: 0 0 18px rgba(224, 180, 76, 0.45);
+}
+.sales-list__item--highlight::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  padding: 2px;
+  border-radius: 16px;
+  background: conic-gradient(
+    from var(--sales-highlight-angle),
+    #e0b44c 0 70%,
+    #fff6d6 85%,
+    #e0b44c 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: salesHighlightSpin 1.8s ease-out 1;
+  pointer-events: none;
+}
+/* La bande de point de vue reste dans les coins arrondis malgré overflow: visible */
+.sales-list__item--highlight::before {
+  border-radius: 14px 0 0 14px;
+}
+
+@keyframes salesHighlightSpin {
+  to {
+    --sales-highlight-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sales-list__item--highlight::after {
+    animation: none;
+  }
+  .sales-list__player {
+    transition: none;
+  }
+}
