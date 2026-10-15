@@ -60,7 +60,7 @@ const SalesFilterBar = ({ scope, me, onChange }: SalesFilterBarProps) => {
           {ROLES.map((role) => (
             <Button
               key={role}
-              variant="ghost-gold"
+              variant="ghost-bordeaux"
               size="sm"
               active={player.role === role}
               onClick={() => onChange({ ...player, role })}
