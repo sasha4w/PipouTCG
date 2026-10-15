@@ -25,6 +25,8 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 import { IsInt, IsOptional, Min } from 'class-validator';
 import { HistoryQueryDto } from './dto/history-query.dto';
 import { RecentSalesQueryDto } from './dto/recent-sales-query.dto';
+import { SalesStatsQueryDto } from './dto/sales-stats-query.dto';
+import { TransactionStatsService } from './stats/transaction-stats.service';
 import type { AuthenticatedRequest } from '../auth/auth-user';
 import type { BuyRequest } from '@pipou/shared';
 class BuyListingDto implements BuyRequest {
@@ -42,7 +44,10 @@ export class TransactionController {
     [key: string]: any;
   }>();
 
-  constructor(private readonly transactionService: TransactionService) {}
+  constructor(
+    private readonly transactionService: TransactionService,
+    private readonly statsService: TransactionStatsService,
+  ) {}
 
   // ─────────────────────────────────────────────────────────────────
   // 📡 SSE privé — listing.sold → vendeur uniquement
@@ -173,6 +178,16 @@ export class TransactionController {
   @Get('recent-sales')
   getRecentSales(@Query() query: RecentSalesQueryDto) {
     return this.transactionService.getRecentSales(query, query.sort, {
+      userId: query.userId,
+      role: query.role,
+    });
+  }
+
+  // GET /transactions/stats — stats et série 30 jours des ventes conclues
+  @UseGuards(JwtAuthGuard)
+  @Get('stats')
+  getSalesStats(@Query() query: SalesStatsQueryDto) {
+    return this.statsService.getStats({
       userId: query.userId,
       role: query.role,
     });
