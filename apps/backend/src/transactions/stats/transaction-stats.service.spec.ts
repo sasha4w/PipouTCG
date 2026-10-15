@@ -89,7 +89,7 @@ describe('TransactionStatsService', () => {
   });
 
   it('assembles the stats of a player', async () => {
-    const [, recent] = stubQueries([
+    const [, recent, biggest] = stubQueries([
       {
         raw: {
           count: '2',
@@ -140,6 +140,7 @@ describe('TransactionStatsService', () => {
       bestDay: { date: '2026-10-14', gold: 750 },
       trend: { last7: 780, previous7: 0, percent: null },
     });
+    expect(biggest.limit).toHaveBeenCalledWith(1);
     expect(recent.andWhere).toHaveBeenCalledWith('t.updatedAt >= :since', {
       since: new Date('2026-09-16T00:00:00.000Z'),
     });

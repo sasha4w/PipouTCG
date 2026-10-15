@@ -56,6 +56,7 @@ export class TransactionStatsService {
       this.sales(filter)
         .orderBy('t.totalPrice', 'DESC')
         .addOrderBy('t.updatedAt', 'DESC')
+        .limit(1)
         .getOne(),
       this.sales(filter)
         .select('t.itemName', 'itemName')

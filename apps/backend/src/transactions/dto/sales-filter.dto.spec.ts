@@ -26,6 +26,7 @@ describe('RecentSalesQueryDto', () => {
     expect(await errorsFor({ role: 'admin' })).toEqual(['role']);
   });
 });
+
 describe('SalesStatsQueryDto', () => {
   const statsErrors = async (query: object) =>
     (
