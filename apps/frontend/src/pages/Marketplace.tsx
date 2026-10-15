@@ -279,6 +279,7 @@ const Marketplace = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recentSalesAll });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.salesAll });
       addToast(t("marketplace.toast.buy_success"), "success");
     } catch (error) {
       const raw = apiErrorMessage(error) ?? "";

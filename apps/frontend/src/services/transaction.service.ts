@@ -5,6 +5,8 @@ import type {
   HistoryQuery,
   RecentSalesQuery,
   SaleSort,
+  SalesFilter,
+  SalesStats,
   PaginatedResponse,
   UpdateListingRequest,
 } from "@pipou/shared";
@@ -33,6 +35,9 @@ export interface Transaction {
 export type { PaginatedResponse };
 export type CreateListingData = CreateListingRequest;
 export type UpdateListingData = UpdateListingRequest;
+
+/** Ventes chargées dans « Détails », paginées ensuite côté client. */
+export const SALES_LIST_LIMIT = 100;
 
 export const transactionService = {
   // ============================================================
@@ -89,6 +94,27 @@ export const transactionService = {
   ): Promise<PaginatedResponse<Transaction>> {
     const params: RecentSalesQuery = { page, limit, sort };
     const res = await api.get("/transactions/recent-sales", { params });
+    return res.data;
+  },
+
+  // Ventes conclues : tout le marché ou un joueur (vendeur, acheteur, les deux)
+  async getSales(
+    filter: SalesFilter,
+    sort: SaleSort = "date",
+  ): Promise<PaginatedResponse<Transaction>> {
+    const params: RecentSalesQuery = {
+      page: 1,
+      limit: SALES_LIST_LIMIT,
+      sort,
+      ...filter,
+    };
+    const res = await api.get("/transactions/recent-sales", { params });
+    return res.data;
+  },
+
+  // Stats et série 30 jours pour le même filtre
+  async getSalesStats(filter: SalesFilter): Promise<SalesStats> {
+    const res = await api.get("/transactions/stats", { params: filter });
     return res.data;
   },
 
