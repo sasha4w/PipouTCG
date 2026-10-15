@@ -1,0 +1,101 @@
+.gold-chart {
+  margin: 0;
+  padding: 0.9rem 0.85rem 0.6rem;
+  border-radius: 14px;
+  background: #7a1c3b;
+  color: #f5e6d0;
+}
+
+.gold-chart__bars {
+  height: 110px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding-top: 1.1rem; /* place pour la couronne */
+}
+
+.gold-chart__col {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.gold-chart__bar {
+  display: block;
+  width: 100%;
+  min-height: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, #e0b44c, #b8862f);
+  cursor: pointer;
+  transform-origin: bottom;
+  animation: goldBarGrow 0.5s ease-out both;
+  animation-delay: calc(var(--bar-index) * 18ms);
+}
+
+.gold-chart__bar--empty {
+  height: 2px;
+  min-height: 2px;
+  background: rgba(245, 230, 208, 0.18);
+  cursor: default;
+  animation: none;
+}
+
+.gold-chart__bar--best {
+  background: linear-gradient(180deg, #ffe08a, #e0b44c);
+  box-shadow: 0 0 10px rgba(224, 180, 76, 0.6);
+}
+
+.gold-chart__bar--selected {
+  outline: 2px solid #f5e6d0;
+  outline-offset: 1px;
+}
+
+.gold-chart__crown {
+  position: absolute;
+  top: -0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.gold-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  opacity: 0.75;
+}
+
+.gold-chart__tooltip {
+  margin: 0.4rem 0 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-family: "JetBrains Mono", monospace;
+  color: #e0b44c;
+}
+
+.gold-chart__empty {
+  margin: 0;
+  padding: 1.2rem;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(122, 28, 59, 0.08);
+  color: #7a1c3b;
+}
+
+@keyframes goldBarGrow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gold-chart__bar {
+    animation: none;
+  }
+}
