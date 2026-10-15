@@ -28,7 +28,11 @@ describe("GoldChart", () => {
     render(<GoldChart daily={DAILY} bestDay={{ date: "2026-10-14", gold: 200 }} />);
     const best = screen.getByRole("button", { name: "14/10 : 200 G" });
     expect(best).toHaveClass("gold-chart__bar--best");
-    expect(best.closest(".gold-chart__col")).toHaveTextContent("👑");
+    const col = best.closest(".gold-chart__col") as HTMLElement;
+    // Icône SVG (pas d'emoji), posée au-dessus de la barre et non par-dessus
+    expect(col.querySelector(".gold-chart__crown svg")).not.toBeNull();
+    expect(col).not.toHaveTextContent("👑");
+    expect(col.style.getPropertyValue("--bar-height")).toBe("100%");
   });
 
   it("affiche la bulle de la barre touchée", () => {

@@ -19,28 +19,36 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.85rem 0.9rem 0.85rem 1.1rem;
+  padding: 0.85rem 0.9rem;
   border-radius: 14px;
   background: #7a1c3b;
   color: #f5e6d0;
   overflow: hidden;
 }
 
-/* Bande de point de vue : ce que le joueur connecté a vendu ou acheté */
-.sales-list__item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: rgba(245, 230, 208, 0.18);
+/* Mes ventes et achats : ligne rose pastel, textes foncés pour rester lisibles
+   sur #f8d7e5 (bordeaux ≈ 9:1, rose foncé ≈ 5:1, bleu et vert ≈ 5:1) */
+.sales-list__item--mine {
+  background: #f8d7e5;
+  color: var(--color-bordeaux, #7a1c3b);
 }
-.sales-list__item--sold::before {
-  background: #9fe0a4;
+.sales-list__item--mine .sales-list__price {
+  color: var(--color-pink-text, #b03060);
 }
-.sales-list__item--bought::before {
-  background: #91b7ff;
+.sales-list__item--mine .sales-list__seller {
+  color: #2a55a3;
+}
+.sales-list__item--mine .sales-list__buyer {
+  color: #1f6b3a;
+}
+.sales-list__item--mine .sales-list__arrow {
+  color: rgba(122, 28, 59, 0.45);
+}
+.sales-list__item--mine .sales-list__qty {
+  background: rgba(122, 28, 59, 0.1);
+}
+.sales-list__item--mine .sales-list__unit {
+  opacity: 0.8;
 }
 
 .sales-list__left {
@@ -181,11 +189,6 @@
   animation: salesHighlightSpin 1.8s ease-out 1;
   pointer-events: none;
 }
-/* La bande de point de vue reste dans les coins arrondis malgré overflow: visible */
-.sales-list__item--highlight::before {
-  border-radius: 14px 0 0 14px;
-}
-
 @keyframes salesHighlightSpin {
   to {
     --sales-highlight-angle: 360deg;

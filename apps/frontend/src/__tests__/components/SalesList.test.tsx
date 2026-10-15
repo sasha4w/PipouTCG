@@ -64,10 +64,15 @@ describe("SalesList", () => {
     expect(screen.queryByText("Carte 8")).not.toBeInTheDocument();
   });
 
-  it("colore les lignes selon que j'ai vendu ou acheté", () => {
+  it("passe en rose les lignes où j'ai vendu ou acheté", () => {
     render(<SalesList {...baseProps} viewerId={1} />);
-    expect(screen.getByText("Carte 1").closest("li")).toHaveClass("sales-list__item--sold");
-    expect(screen.getByText("Carte 2").closest("li")).toHaveClass("sales-list__item--bought");
+    expect(screen.getByText("Carte 1").closest("li")).toHaveClass("sales-list__item--mine");
+    expect(screen.getByText("Carte 2").closest("li")).toHaveClass("sales-list__item--mine");
+  });
+
+  it("laisse les ventes des autres en bordeaux", () => {
+    render(<SalesList {...baseProps} viewerId={99} />);
+    expect(screen.getByText("Carte 1").closest("li")).not.toHaveClass("sales-list__item--mine");
   });
 
   it("affiche le prix unitaire et filtre au clic sur un pseudo", () => {

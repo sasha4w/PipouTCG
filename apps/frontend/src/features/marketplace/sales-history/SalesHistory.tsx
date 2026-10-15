@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import ContentLoader from "react-content-loader";
 import { useTranslation } from "react-i18next";
 import Button from "../../../components/Button";
+import { IconChevronDown } from "../../../components/Icons";
 import { transactionService } from "../../../services/transaction.service";
 import { QUERY_KEYS } from "../../../utils/querykeys";
 import { apiErrorMessage } from "../../../utils/errors";
@@ -132,7 +133,7 @@ const SalesHistory = ({
       >
         {open ? t("marketplace.sales.details_close") : t("marketplace.sales.details_open")}
         <span className={`sales-history__chevron${open ? " sales-history__chevron--open" : ""}`} aria-hidden="true">
-          ▾
+          <IconChevronDown size={14} />
         </span>
       </Button>
 

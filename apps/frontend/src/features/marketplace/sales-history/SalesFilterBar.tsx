@@ -1,6 +1,7 @@
 import type { SaleRole } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
 import Button from "../../../components/Button";
+import { IconClose } from "../../../components/Icons";
 import { MARKET_SCOPE, type SalesPlayer, type SalesScope } from "./salesScope";
 import "./SalesFilterBar.css";
 
@@ -47,7 +48,8 @@ const SalesFilterBar = ({ scope, me, onChange }: SalesFilterBarProps) => {
             })}
             onClick={() => onChange(MARKET_SCOPE)}
           >
-            ✕ {player.player.username}
+            <IconClose size={12} className="sales-filter__clear-icon" />
+            {player.player.username}
           </Button>
         )}
       </div>

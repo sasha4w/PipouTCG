@@ -22,11 +22,12 @@ interface SalesListProps {
 const ITEMS_PER_PAGE = 6;
 const SORTS: SaleSort[] = ["date", "price"];
 
+/** Ventes où le joueur connecté est vendeur ou acheteur : ligne rose pastel. */
 function perspectiveClass(tx: Transaction, viewerId?: number) {
   if (viewerId === undefined) return "";
-  if (tx.seller?.id === viewerId) return " sales-list__item--sold";
-  if (tx.buyer?.id === viewerId) return " sales-list__item--bought";
-  return "";
+  return tx.seller?.id === viewerId || tx.buyer?.id === viewerId
+    ? " sales-list__item--mine"
+    : "";
 }
 
 const SalesList = ({

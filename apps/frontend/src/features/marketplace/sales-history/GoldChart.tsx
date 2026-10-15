@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { CSSProperties } from "react";
 import type { SalesStats } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
+import { IconCrown } from "../../../components/Icons";
 import "./GoldChart.css";
 
 interface GoldChartProps {
@@ -38,15 +39,21 @@ const GoldChart = ({ daily, bestDay }: GoldChartProps) => {
       <div className="gold-chart__bars">
         {daily.map((day, index) => {
           const isBest = bestDay?.date === day.date;
+          const height = `${(day.gold / max) * 100}%`;
           const style = {
-            height: day.gold ? `${(day.gold / max) * 100}%` : undefined,
+            height: day.gold ? height : undefined,
             "--bar-index": index,
           } as CSSProperties;
           return (
-            <div key={day.date} className="gold-chart__col">
+            <div
+              key={day.date}
+              className="gold-chart__col"
+              // La couronne se pose au-dessus de la barre, quelle que soit sa hauteur
+              style={{ "--bar-height": height } as CSSProperties}
+            >
               {isBest && (
                 <span className="gold-chart__crown" aria-hidden="true">
-                  👑
+                  <IconCrown size={12} />
                 </span>
               )}
               {day.gold > 0 ? (
