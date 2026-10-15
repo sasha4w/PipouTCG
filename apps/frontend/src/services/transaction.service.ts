@@ -2,7 +2,6 @@ import { api } from "../api/api";
 import type {
   BuyRequest,
   CreateListingRequest,
-  HistoryQuery,
   RecentSalesQuery,
   SaleSort,
   SalesFilter,
@@ -67,33 +66,6 @@ export const transactionService = {
     limit = 20,
   ): Promise<PaginatedResponse<Transaction>> {
     const res = await api.get("/transactions/me", { params: { page, limit } });
-    return res.data;
-  },
-
-  async getHistory(
-    page = 1,
-    limit = 20,
-    role?: HistoryQuery["role"],
-    sort: SaleSort = "date",
-  ): Promise<PaginatedResponse<Transaction>> {
-    const params: HistoryQuery = {
-      page,
-      limit,
-      sort,
-      ...(role ? { role } : {}),
-    };
-    const res = await api.get("/transactions/history", { params });
-    return res.data;
-  },
-
-  // Ajouter
-  async getRecentSales(
-    page = 1,
-    limit = 20,
-    sort: SaleSort = "date",
-  ): Promise<PaginatedResponse<Transaction>> {
-    const params: RecentSalesQuery = { page, limit, sort };
-    const res = await api.get("/transactions/recent-sales", { params });
     return res.data;
   },
 

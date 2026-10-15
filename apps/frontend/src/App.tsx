@@ -48,8 +48,6 @@ function AppLayout() {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myListings });
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.mySalesAll });
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recentSalesAll });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.salesAll });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
   });

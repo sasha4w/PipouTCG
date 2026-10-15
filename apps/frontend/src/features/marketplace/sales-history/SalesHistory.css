@@ -1,0 +1,41 @@
+.sales-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.sales-history__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow: hidden;
+}
+
+.sales-history__chevron {
+  display: inline-block;
+  margin-left: 0.4rem;
+  transition: transform 0.2s ease;
+}
+.sales-history__chevron--open {
+  transform: rotate(180deg);
+}
+
+.sales-history__error {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 14px;
+  text-align: center;
+  background: rgba(122, 28, 59, 0.08);
+  color: #7a1c3b;
+}
+
+.sales-history__skeleton {
+  width: 100%;
+  height: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sales-history__chevron {
+    transition: none;
+  }
+}

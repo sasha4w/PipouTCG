@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { SaleSort } from "@pipou/shared";
 import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
 import Button from "../../components/Button";
@@ -10,16 +9,15 @@ import {
   type FilterConfig,
   type FilterValues,
 } from "../../components/FilterPanel";
-import TransactionHistory from "./TransactionHistory";
+import SalesHistory from "./sales-history/SalesHistory";
+import type { SalesPlayer } from "./sales-history/salesScope";
 import ListingPreview from "./ListingPreview";
 import "./BuyTab.css";
 import "./ListingCard.css";
 
 interface BuyTabProps {
   filteredListings: Transaction[] | undefined;
-  buyHistory: Transaction[] | undefined;
-  historySort: SaleSort;
-  onHistorySortChange: (sort: SaleSort) => void;
+  me: SalesPlayer | undefined;
   loadingAction: number | null;
   searchTerm: string;
   filterConfig: FilterConfig[];
@@ -34,9 +32,7 @@ interface BuyTabProps {
 
 const BuyTab = ({
   filteredListings,
-  buyHistory,
-  historySort,
-  onHistorySortChange,
+  me,
   loadingAction,
   searchTerm,
   filterConfig,
@@ -178,11 +174,10 @@ const BuyTab = ({
       <h2 className="marketplace-section__title marketplace-section__title--history">
         {t("marketplace.buy.history_title")}
       </h2>
-      <TransactionHistory
-        history={buyHistory}
+      <SalesHistory
         emptyMessage={t("marketplace.buy.history_empty")}
-        sort={historySort}
-        onSortChange={onHistorySortChange}
+        me={me}
+        initialScope="market"
       />
     </div>
   );
