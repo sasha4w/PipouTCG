@@ -24,7 +24,18 @@ export interface HistoryQuery extends PaginationQuery {
   sort?: SaleSort;
 }
 
+/** Point de vue d'un joueur sur une vente. */
+export type SaleRole = "seller" | "buyer" | "both";
+
+/** Filtre commun aux listes et aux stats de ventes. */
+export interface SalesFilter {
+  /** Absent = tout le marché. */
+  userId?: number;
+  /** Ignoré sans userId. Défaut "both". */
+  role?: SaleRole;
+}
+
 /** GET /transactions/recent-sales */
-export interface RecentSalesQuery extends PaginationQuery {
+export interface RecentSalesQuery extends PaginationQuery, SalesFilter {
   sort?: SaleSort;
 }
