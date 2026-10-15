@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen } from "@testing-library/react";
 import i18n from "../../i18n";
 import GoldChart from "../../features/marketplace/sales-history/GoldChart";
 
@@ -32,9 +31,9 @@ describe("GoldChart", () => {
     expect(best.closest(".gold-chart__col")).toHaveTextContent("👑");
   });
 
-  it("affiche la bulle de la barre touchée", async () => {
+  it("affiche la bulle de la barre touchée", () => {
     render(<GoldChart daily={DAILY} bestDay={{ date: "2026-10-14", gold: 200 }} />);
-    await userEvent.click(screen.getByRole("button", { name: "15/10 : 100 G" }));
+    fireEvent.click(screen.getByRole("button", { name: "15/10 : 100 G" }));
     expect(screen.getByRole("status")).toHaveTextContent("15/10 : 100 G");
   });
 
