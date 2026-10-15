@@ -168,11 +168,14 @@ export class TransactionController {
     return this.transactionService.findCompletedById(id);
   }
 
-  // GET /transactions/recent-sales — toutes les completed, pour tous les users connectés
+  // GET /transactions/recent-sales — ventes conclues, tout le marché ou un joueur
   @UseGuards(JwtAuthGuard)
   @Get('recent-sales')
   getRecentSales(@Query() query: RecentSalesQueryDto) {
-    return this.transactionService.getRecentSales(query, query.sort);
+    return this.transactionService.getRecentSales(query, query.sort, {
+      userId: query.userId,
+      role: query.role,
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────

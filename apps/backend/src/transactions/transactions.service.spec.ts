@@ -557,7 +557,7 @@ describe('TransactionService', () => {
       await service.getRecentSales({});
       expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
         expect.objectContaining({
-          where: { status: TransactionStatus.COMPLETED },
+          where: [{ status: TransactionStatus.COMPLETED }],
           order: { updatedAt: 'DESC' },
         }),
       );
@@ -566,6 +566,17 @@ describe('TransactionService', () => {
       expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
         expect.objectContaining({
           order: { totalPrice: 'DESC', updatedAt: 'DESC' },
+        }),
+      );
+    });
+
+    it("should keep only a player's sales when filtered", async () => {
+      mockTransactionRepo.findAndCount.mockResolvedValue([[], 0]);
+
+      await service.getRecentSales({}, 'date', { userId: 7, role: 'buyer' });
+      expect(mockTransactionRepo.findAndCount).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          where: [{ status: TransactionStatus.COMPLETED, buyer: { id: 7 } }],
         }),
       );
     });
