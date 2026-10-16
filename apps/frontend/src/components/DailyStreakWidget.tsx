@@ -47,10 +47,15 @@ export default function DailyStreakWidget() {
     milestones,
   } = status;
   const today = todayUtc();
-  const weekDays = buildWeekDays(today, status.claimedDates);
-  const nextMilestone = milestones.find((m) => m.dayThreshold > streak.current);
+  const weekDays = buildWeekDays(today, [
+    ...status.claimedDates,
+    ...status.rescuedDates,
+  ]);
+  // Claiming resets the streak to 1 when it is at risk: progress restarts from 0.
+  const progressStreak = streakAtRisk ? 0 : streak.current;
+  const nextMilestone = milestones.find((m) => m.dayThreshold > progressStreak);
   const daysToMilestone = nextMilestone
-    ? nextMilestone.dayThreshold - streak.current
+    ? nextMilestone.dayThreshold - progressStreak
     : null;
   const inDanger = rescueAvailable || streakAtRisk;
 

@@ -300,7 +300,8 @@ export class DailyRewardService {
     const streak = await this.getOrCreateStreak(userId);
     const today = todayUtc();
     const gap = classifyGap(streak.lastClaimDate, today);
-    const nextDay = gap === 'lost' ? 1 : streak.currentStreak + 1;
+    const nextDay =
+      gap === 'lost' || gap === 'first' ? 1 : streak.currentStreak + 1;
 
     const [nextReward, milestones, dates] = await Promise.all([
       this.getRewardDefinition(cycleDayFor(nextDay), weekNumberFor(nextDay)),

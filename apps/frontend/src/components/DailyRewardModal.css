@@ -336,6 +336,9 @@
   font-size: 0.72rem;
   color: #f27aaa;
 }
+.drm-content > .drm-warning:first-child {
+  margin-right: 2.2rem; /* room for the close button */
+}
 .drm-loading-text {
   font-family: "Comfortaa", sans-serif;
   font-size: 0.8rem;

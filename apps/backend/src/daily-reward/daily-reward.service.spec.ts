@@ -320,6 +320,12 @@ describe('DailyRewardService — status', () => {
     });
   });
 
+  it('ligne legacy sans date de claim : prochain jour = J1', async () => {
+    const { service } = setup({ currentStreak: 1, lastClaimDate: null });
+    const s = await service.getStatus(1);
+    expect(s).toMatchObject({ nextDay: { cycleDay: 1, weekNumber: 1 } });
+  });
+
   it('paliers actifs depuis la BDD, labels nettoyés', async () => {
     const { service, repos } = setup({
       currentStreak: 3,

@@ -217,7 +217,7 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
                   </span>
                   <div className="drm-today__body">
                     <span className="drm-today__meta">
-                      Aujourd'hui · Semaine {status.nextDay.weekNumber} · Jour {status.nextDay.cycleDay}
+                      {status.alreadyClaimed ? "Demain" : "Aujourd'hui"} · Semaine {status.nextDay.weekNumber} · Jour {status.nextDay.cycleDay}
                     </span>
                     <strong className="drm-today__value">{rewardText(status.nextReward)}</strong>
                     {stripEmoji(status.nextReward.label) && (
@@ -227,7 +227,7 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
                 </div>
               )}
 
-              {status && <MilestoneCard milestones={status.milestones} streak={status.streak.current} />}
+              {status && <MilestoneCard milestones={status.milestones} streak={status.streakAtRisk ? 0 : status.streak.current} />}
 
               {status?.streakAtRisk && (
                 <p className="drm-warning">
