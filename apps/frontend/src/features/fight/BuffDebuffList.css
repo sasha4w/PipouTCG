@@ -16,6 +16,8 @@
   pointer-events: auto;
   max-height: 260px;
   overflow-y: auto;
+}
+
 @keyframes bdl-appear {
   0% {
     opacity: 0;
@@ -25,6 +27,8 @@
     opacity: 1;
     transform: translate(-50%, -100%) scale(1);
   }
+}
+
 .bdl-header {
   display: flex;
   align-items: center;
@@ -36,12 +40,16 @@
   background: #fff8f2;
   z-index: 1;
   padding-bottom: 4px;
+}
+
 .bdl-card-name {
   font-size: 11px;
   font-weight: 800;
   color: #7a1c3b;
   letter-spacing: 0.3px;
   line-height: 1.2;
+}
+
 .bdl-type-chip {
   font-size: 9px;
   font-weight: 700;
@@ -51,6 +59,8 @@
   background: #f0e8e4;
   border-radius: 99px;
   padding: 1px 6px;
+}
+
 /* ── Badge déclencheur (positionné dans ZoneRow) ─────────────────────────── */
 
 .bdl-trigger {
@@ -75,9 +85,14 @@
     transform 0.15s;
   line-height: 1;
   padding: 0;
+}
+
 .bdl-trigger:hover {
   background: #5a1228;
   transform: scale(1.15);
+}
+
 .bdl-trigger--active {
   background: #5a1228;
   box-shadow: 0 0 0 2px rgba(122, 28, 59, 0.25);
+}

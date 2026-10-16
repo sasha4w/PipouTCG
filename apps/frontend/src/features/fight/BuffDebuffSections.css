@@ -11,17 +11,8 @@
   padding: 0;
 }
 
-}
-
-}
-
-}
-
-}
-
-}
-
 /* List */
+
 .bdl-list {
   list-style: none;
   margin: 0;
@@ -67,19 +58,13 @@
 }
 
 /* Empty state */
+
 .bdl-empty {
   font-size: 11px;
   color: #bbb;
   text-align: center;
   padding: 4px 0;
   font-style: italic;
-}
-
-
-}
-
-}
-
 }
 
 .bdl-entry--recap {
@@ -97,6 +82,7 @@
 }
 
 /* ── Séparateur de section (ex: "Effets de la carte", "🔧 Épée de feu") ── */
+
 .bdl-separator {
   list-style: none;
   padding: 5px 6px 2px;
@@ -111,7 +97,9 @@
   letter-spacing: 0.06em;
   color: #aaa;
 }
+
 /* ── Accordion sections ───────────────────────────────────────────────────── */
+
 .bdl-sections {
   display: flex;
   flex-direction: column;
@@ -169,6 +157,7 @@
 }
 
 /* La liste s'encadre avec le header quand ouverte */
+
 .bdl-section--open .bdl-list,
 .bdl-section-header--open + .bdl-list {
   border: 1px solid #c4a8a0;
