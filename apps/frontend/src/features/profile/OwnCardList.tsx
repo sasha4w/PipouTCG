@@ -5,11 +5,16 @@ import type { Card } from "../../services/card.service";
 import CardDisplay from "../cards/CardDisplay";
 import { soundService } from "../../services/sound.service";
 import SearchBar from "../../components/Searchbar";
-import { IconUnknown, IconArrowLeft, IconArrowRight } from "../../components/Icons";
+import {
+  IconUnknown,
+  IconArrowLeft,
+  IconArrowRight,
+} from "../../components/Icons";
 import Button from "../../components/Button";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
 import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
+import { paginateBySet } from "./paginateBySet";
 import "./OwnCardList.css";
 
 function toCard(item: UserCollection["sets"][0]["cards"][0]): Card {
@@ -71,18 +76,13 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
     setPage(1);
   };
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const slice = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const sliceBySet = useMemo(() => {
-    const groups = new Map<number, { setName: string; items: typeof slice }>();
-    slice.forEach((item) => {
-      const g = groups.get(item.setId);
-      if (g) g.items.push(item);
-      else groups.set(item.setId, { setName: item.setName, items: [item] });
-    });
-    return Array.from(groups.entries());
-  }, [slice]);
+  const pages = useMemo(() => paginateBySet(filtered, PAGE_SIZE), [filtered]);
+  const totalPages = pages.length;
+  const slice = pages[page - 1] ?? [];
+  const setData = slice.length
+    ? collection.sets.find((s) => s.id === slice[0].setId)
+    : undefined;
+  const isComplete = setData ? setData.owned === setData.total : false;
 
   const totalOwned = allCards.filter((c) => c.owned).length;
   const totalCards = allCards.length;
@@ -142,65 +142,55 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
 
       {/* Compteur */}
       <span className="own-cardlist__result-count">
-        {totalOwned} / {totalCards} {t("collection.cards").toLowerCase()}
-        {totalCards > 1 ? "s" : ""}
+        {t("collection.card_count", { owned: totalOwned, count: totalCards })}
       </span>
 
       {/* Grille */}
       {slice.length === 0 ? (
         <p className="own-cardlist__empty">{t("collection.no_cards")}</p>
       ) : (
-        sliceBySet.map(([setId, { setName, items }]) => {
-          const setData = collection.sets.find((s) => s.id === setId);
-          const isComplete = setData ? setData.owned === setData.total : false;
-          return (
-            <div key={setId}>
-              <div className="own-cardlist__set-header">
-                <span className="own-cardlist__set-name">{setName}</span>
-                {setData && (
-                  <span
-                    className={`own-cardlist__set-count${isComplete ? " own-cardlist__set-count--complete" : ""}`}
-                  >
-                    {setData.owned} / {setData.total}
-                    {isComplete ? " ✓" : ""}
+        <div>
+          <div className="own-cardlist__set-header">
+            <span className="own-cardlist__set-name">{slice[0].setName}</span>
+            {setData && (
+              <span
+                className={`own-cardlist__set-count${isComplete ? " own-cardlist__set-count--complete" : ""}`}
+              >
+                {setData.owned} / {setData.total}
+                {isComplete ? " ✓" : ""}
+              </span>
+            )}
+          </div>
+          <div className="own-cardlist__grid" style={{ marginTop: 8 }}>
+            {slice.map((item) => (
+              <div key={item.id} style={{ position: "relative" }}>
+                {item.owned ? (
+                  <CardDisplay
+                    card={toCard(item)}
+                    size="lg"
+                    interactive={true}
+                    flippable={true}
+                  />
+                ) : (
+                  <div className="own-cardlist__card-unknown">
+                    <IconUnknown size={48} color="rgba(160, 128, 112, 0.4)" />
+                    <span className="own-cardlist__card-missing-label">
+                      {t("collection.not_owned")}
+                    </span>
+                    <span className="own-cardlist__card-missing-rarity">
+                      {t(`rarity.${item.rarity.toLowerCase()}`)}
+                    </span>
+                  </div>
+                )}
+                {item.owned && item.quantity > 0 && (
+                  <span className="own-cardlist__qty-badge">
+                    ×{item.quantity}
                   </span>
                 )}
               </div>
-              <div className="own-cardlist__grid" style={{ marginTop: 8 }}>
-                {items.map((item) => (
-                  <div key={item.id} style={{ position: "relative" }}>
-                    {item.owned ? (
-                      <CardDisplay
-                        card={toCard(item)}
-                        size="lg"
-                        interactive={true}
-                        flippable={true}
-                      />
-                    ) : (
-                      <div className="own-cardlist__card-unknown">
-                        <IconUnknown
-                          size={48}
-                          color="rgba(160, 128, 112, 0.4)"
-                        />
-                        <span className="own-cardlist__card-missing-label">
-                          {t("collection.not_owned")}
-                        </span>
-                        <span className="own-cardlist__card-missing-rarity">
-                          {t(`rarity.${item.rarity.toLowerCase()}`)}
-                        </span>
-                      </div>
-                    )}
-                    {item.owned && item.quantity > 0 && (
-                      <span className="own-cardlist__qty-badge">
-                        ×{item.quantity}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Pagination */}
