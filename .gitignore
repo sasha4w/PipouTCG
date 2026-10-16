@@ -34,3 +34,6 @@ logs
 reports
 # copies locales de bases distantes (données de joueurs)
 .e2e
+
+# maquettes du compagnon visuel (brainstorming)
+.superpowers
