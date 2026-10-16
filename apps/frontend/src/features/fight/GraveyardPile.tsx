@@ -1,7 +1,6 @@
 import { useState } from "react";
 import InspectableCard from "./InspectableCard";
 import CardInspect from "./CardInspect";
-import { getCardEffectEntries } from "./fight.effects";
 import "./GraveyardPile.css";
 import type { CardInstance } from "./fight.types";
 
@@ -52,11 +51,6 @@ export default function GraveyardPile({ graveyard, label }: Props) {
             {inspected && (
               <CardInspect
                 card={inspected.baseCard}
-                entries={getCardEffectEntries(
-                  inspected.baseCard.effects,
-                  inspected.baseCard.description,
-                  inspected.baseCard.supportType,
-                )}
                 onClose={() => setInspected(null)}
               />
             )}

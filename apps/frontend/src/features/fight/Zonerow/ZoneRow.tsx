@@ -1,10 +1,8 @@
 import { useState } from "react";
 import "./ZoneRow.css";
 import { getRarityBorderColor, monsterFaceStats } from "./zoneRow.helpers";
-import {
-  getSupportBuffEntries,
-  getMonsterBuffEntries,
-} from "./zoneRow.effects";
+import { useTranslation } from "react-i18next";
+import { getMonsterStatusEntries } from "./zoneRow.effects";
 import { useZoneAnimations } from "./useZoneAnimations";
 import MonsterZoneContent from "./MonsterZoneContent";
 import SupportZoneContent from "./SupportZoneContent";
@@ -49,6 +47,7 @@ export default function ZoneRow({
   attackingZone,
   damagedZones,
 }: Props) {
+  const { t } = useTranslation();
   const { summoningZones, flippingZones, dyingZones } = useZoneAnimations(
     zones,
     isSupport,
@@ -167,10 +166,15 @@ export default function ZoneRow({
             isMonsterZone(inspected) ? monsterFaceStats(inspected) : undefined
           }
           guard={isMonsterZone(inspected) && inspected.mode === "guard"}
-          entries={
+          status={
             isMonsterZone(inspected)
-              ? getMonsterBuffEntries(inspected)
-              : getSupportBuffEntries(inspected)
+              ? getMonsterStatusEntries(inspected, t)
+              : undefined
+          }
+          equipments={
+            isMonsterZone(inspected)
+              ? inspected.equipments.map((eq) => eq.baseCard)
+              : undefined
           }
           onClose={() => setInspectId(null)}
         />

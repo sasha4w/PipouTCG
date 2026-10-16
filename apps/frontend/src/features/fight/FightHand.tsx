@@ -5,7 +5,6 @@ import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
 import InspectableCard from "./InspectableCard";
 import CardInspect from "./CardInspect";
-import { getCardEffectEntries } from "./fight.effects";
 import { fanLayout } from "./fanLayout";
 
 /** Largeur d'une carte de la main (px) — doit suivre .fhand-card. */
@@ -109,15 +108,7 @@ export default function FightHand({
       })}
 
       {inspected && (
-        <CardInspect
-          card={inspected}
-          entries={getCardEffectEntries(
-            inspected.effects,
-            inspected.description,
-            inspected.supportType,
-          )}
-          onClose={() => setInspectedId(null)}
-        />
+        <CardInspect card={inspected} onClose={() => setInspectedId(null)} />
       )}
     </div>
   );

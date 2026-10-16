@@ -1,4 +1,5 @@
-import { getEquipmentEntries } from "./zoneRow.effects";
+import { useTranslation } from "react-i18next";
+import { equipmentSummary } from "./zoneRow.effects";
 import {
   hasSpentAttacks,
   isBlockedFromAttacking,
@@ -24,6 +25,7 @@ export default function MonsterZoneContent({
   onInspect,
   onInspectEnd,
 }: Props) {
+  const { t } = useTranslation();
   const blocked = isBlockedFromAttacking(zone);
 
   const badges = (
@@ -113,9 +115,7 @@ export default function MonsterZoneContent({
       {Array.isArray(zone.equipments) && zone.equipments.length > 0 && (
         <div className="zr-equipment-list">
           {zone.equipments.map((eq, eIdx) => {
-            const effectSummary = getEquipmentEntries(eq)
-              .map((e) => e.label)
-              .join(" | ");
+            const effectSummary = equipmentSummary(eq, t);
             const shortName =
               (eq.baseCard?.name ?? "?").length > 10
                 ? (eq.baseCard?.name ?? "?").slice(0, 9) + "…"

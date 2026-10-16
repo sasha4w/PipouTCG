@@ -1,127 +1,33 @@
+import type { TFunction } from "i18next";
 import type { BuffEntry } from "../BuffDebuffSections";
 import {
-  TRIGGER_LABEL,
-  TARGET_SUFFIX,
-  ACTION_META,
-  type RawEffect,
-} from "../fight.effects";
+  KEYWORD_ICON,
+  describeCardEffects,
+  effectPlainText,
+} from "../effectText";
 import { buildStatRecap } from "./zoneRow.helpers";
 import type { CardInstance, MonsterOnBoard } from "../fight.types";
 
-export function getEquipmentEntries(eq: CardInstance): BuffEntry[] {
-  const entries: BuffEntry[] = [];
-  const rawEffects: RawEffect[] = Array.isArray(eq.baseCard?.effects)
-    ? eq.baseCard.effects
-    : [];
-
-  for (const eff of rawEffects) {
-    const condition = eff.condition;
-    const conditionLabel =
-      condition?.type === "SPECIFIC_CARD_ON_BOARD"
-        ? `Si ${condition.value} présent`
-        : null;
-    const trigger = eff.trigger
-      ? (TRIGGER_LABEL[eff.trigger] ?? eff.trigger)
-      : null;
-
-    for (const action of eff.actions ?? []) {
-      const meta = action.type ? ACTION_META[action.type] : undefined;
-      if (!meta) continue;
-      const targetSuffix = action.target
-        ? (TARGET_SUFFIX[action.target] ?? action.target)
-        : null;
-      entries.push({
-        icon: meta.icon,
-        label: [
-          conditionLabel ?? trigger,
-          meta.label(action.value),
-          targetSuffix,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-        type: meta.type,
-      });
-    }
-  }
-
-  const desc = eq.baseCard?.description;
-  if (desc) entries.push({ icon: "📖", label: desc, type: "neutral" });
-  return entries;
+/** Résumé texte des effets d'un équipement (infobulle du chip). */
+export function equipmentSummary(eq: CardInstance, t: TFunction): string {
+  return describeCardEffects(eq.baseCard, t)
+    .rules.flatMap((rule) =>
+      rule.lines.map((line) => effectPlainText(line.text)),
+    )
+    .join(" | ");
 }
 
-export function getSupportBuffEntries(zone: CardInstance | null): BuffEntry[] {
-  if (!zone) return [];
-  const entries: BuffEntry[] = [];
-  const supportType = zone.baseCard.supportType ?? undefined;
-
-  if (supportType === "TERRAIN")
-    entries.push({
-      icon: "🗺️",
-      label: "Terrain — affecte les deux camps",
-      type: "neutral",
-    });
-  if (supportType === "EPHEMERAL")
-    entries.push({
-      icon: "⏳",
-      label: "Éphémère — s'épuise après usage",
-      type: "neutral",
-    });
-  if (supportType === "EQUIPMENT")
-    entries.push({ icon: "🔧", label: "Équipement", type: "neutral" });
-
-  const rawEffects: RawEffect[] = Array.isArray(zone.baseCard?.effects)
-    ? zone.baseCard.effects
-    : [];
-
-  for (const eff of rawEffects) {
-    const condition = eff.condition;
-    const conditionLabel =
-      condition?.type === "SPECIFIC_CARD_ON_BOARD"
-        ? `Si ${condition.value} est sur le terrain`
-        : null;
-    const trigger = eff.trigger
-      ? (TRIGGER_LABEL[eff.trigger] ?? eff.trigger)
-      : null;
-
-    for (const action of eff.actions ?? []) {
-      const meta = action.type ? ACTION_META[action.type] : undefined;
-      if (!meta) continue;
-      const targetSuffix = action.target
-        ? (TARGET_SUFFIX[action.target] ?? action.target)
-        : null;
-      entries.push({
-        icon: meta.icon,
-        label: [
-          conditionLabel ?? trigger,
-          meta.label(action.value),
-          targetSuffix,
-        ]
-          .filter(Boolean)
-          .join(" · "),
-        type: meta.type,
-      });
-    }
-  }
-
-  const desc = zone.baseCard?.description;
-  if (desc && typeof desc === "string")
-    entries.push({ icon: "📖", label: desc, type: "neutral" });
-  return entries;
-}
-
-export function getMonsterBuffEntries(
+/**
+ * État en direct d'un monstre en jeu : récap des stats puis statuts actifs.
+ * Les effets écrits de la carte sont rédigés à part (CardEffectSheet).
+ */
+export function getMonsterStatusEntries(
   zone: MonsterOnBoard | null,
+  t: TFunction,
 ): BuffEntry[] {
   if (!zone) return [];
   const entries: BuffEntry[] = [];
-  const rawEffects: RawEffect[] = Array.isArray(zone.card?.baseCard?.effects)
-    ? zone.card.baseCard.effects
-    : [];
-  const effectActionTypes = new Set(
-    rawEffects.flatMap((e) => e.actions ?? []).map((a) => a.type),
-  );
 
-  // Récap stats
   const recap = buildStatRecap(zone);
   if (recap) {
     entries.push({
@@ -138,118 +44,50 @@ export function getMonsterBuffEntries(
     });
   }
 
-  // Séparateur
-  const hasEquipments =
-    Array.isArray(zone.equipments) && zone.equipments.length > 0;
-  if (rawEffects.length > 0 || hasEquipments) {
+  const keyword = (id: keyof typeof KEYWORD_ICON, type: BuffEntry["type"]) =>
     entries.push({
-      icon: "─",
-      label: "Effets de la carte",
+      icon: KEYWORD_ICON[id],
+      label: t(`keywords.${id}.name`),
+      type,
+    });
+
+  if (zone.hasTaunt) keyword("taunt", "buff");
+  if (zone.hasPiercing) keyword("piercing", "buff");
+  if (zone.isImmuneToDebuffs) keyword("debuffImmunity", "buff");
+  if (zone.damageReduction && zone.damageReduction > 1)
+    entries.push({
+      icon: KEYWORD_ICON.damageReduction,
+      label: t("effects.status.damageReduction", {
+        value: zone.damageReduction,
+      }),
+      type: "buff",
+    });
+  if (zone.attacksPerTurn > 1)
+    entries.push({
+      icon: KEYWORD_ICON.multiAttack,
+      label: t("effects.status.multiAttack", { count: zone.attacksPerTurn }),
+      type: "buff",
+    });
+  if (zone.doubleAtkNextTurn)
+    entries.push({
+      icon: KEYWORD_ICON.doubleAttack,
+      label: t("effects.status.doubleAttack"),
+      type: "buff",
+    });
+  if (zone.forcedAttackMode) keyword("forcedAttack", "debuff");
+  if (zone.guardLocked) keyword("guardLock", "debuff");
+  if (zone.blockAttackTurns && zone.blockAttackTurns > 0)
+    entries.push({
+      icon: KEYWORD_ICON.freeze,
+      label: t("effects.status.freeze", { count: zone.blockAttackTurns }),
+      type: "debuff",
+    });
+  if (zone.turnCounter !== undefined && zone.turnCounter > 0)
+    entries.push({
+      icon: KEYWORD_ICON.countdown,
+      label: t("effects.status.countdown", { count: zone.turnCounter }),
       type: "neutral",
-      variant: "separator",
     });
-  }
-
-  // Effets de base
-  for (const eff of rawEffects) {
-    const trigger = eff.trigger
-      ? (TRIGGER_LABEL[eff.trigger] ?? eff.trigger)
-      : null;
-    for (const action of eff.actions ?? []) {
-      const meta = action.type ? ACTION_META[action.type] : undefined;
-      if (!meta) continue;
-      const targetSuffix = action.target
-        ? (TARGET_SUFFIX[action.target] ?? action.target)
-        : null;
-      entries.push({
-        icon: meta.icon,
-        label: [trigger, meta.label(action.value), targetSuffix]
-          .filter(Boolean)
-          .join(" · "),
-        type: meta.type,
-      });
-    }
-  }
-
-  // Buffs actifs non couverts
-  if (zone.atkBuff && zone.atkBuff !== 0 && !effectActionTypes.has("BUFF_ATK"))
-    entries.push({
-      icon: "⚔️",
-      label: `${zone.atkBuff > 0 ? "+" : ""}${zone.atkBuff} ATK (buff actif)`,
-      type: zone.atkBuff > 0 ? "buff" : "debuff",
-    });
-  if (zone.hpBuff && zone.hpBuff !== 0 && !effectActionTypes.has("BUFF_HP"))
-    entries.push({
-      icon: "❤️",
-      label: `${zone.hpBuff > 0 ? "+" : ""}${zone.hpBuff} HP max (buff actif)`,
-      type: zone.hpBuff > 0 ? "buff" : "debuff",
-    });
-  if (zone.tempAtkBuff && zone.tempAtkBuff !== 0)
-    entries.push({
-      icon: "⚡",
-      label: `+${zone.tempAtkBuff} ATK (ce tour)`,
-      type: "buff",
-    });
-  if (
-    zone.damageReduction &&
-    zone.damageReduction > 1 &&
-    !effectActionTypes.has("SET_DAMAGE_REDUCTION")
-  )
-    entries.push({
-      icon: "🛡",
-      label: `Réduction dégâts ×${zone.damageReduction}`,
-      type: "buff",
-    });
-
-  // Traits
-  if (!effectActionTypes.has("SET_TAUNT") && zone.hasTaunt)
-    entries.push({ icon: "🛡", label: "Provocation", type: "buff" });
-  if (!effectActionTypes.has("SET_PIERCING") && zone.hasPiercing)
-    entries.push({ icon: "🗡", label: "Perçant", type: "buff" });
-  if (!effectActionTypes.has("SET_DEBUFF_IMMUNITY") && zone.isImmuneToDebuffs)
-    entries.push({ icon: "✨", label: "Immunité débuffs", type: "buff" });
-  if (!effectActionTypes.has("SET_DELAY_DOUBLE_ATK") && zone.doubleAtkNextTurn)
-    entries.push({
-      icon: "⚡",
-      label: "Double attaque (prochain tour)",
-      type: "buff",
-    });
-  if (!effectActionTypes.has("SET_ATTACKS_PER_TURN") && zone.attacksPerTurn > 1)
-    entries.push({
-      icon: "✖️",
-      label: `Attaques ×${zone.attacksPerTurn}`,
-      type: "buff",
-    });
-  if (!effectActionTypes.has("FORCE_ATTACK_MODE") && zone.forcedAttackMode)
-    entries.push({ icon: "😈", label: "Mode Attaque forcé", type: "debuff" });
-
-  // Équipements
-  if (hasEquipments) {
-    for (const eq of zone.equipments) {
-      entries.push({
-        icon: "🔧",
-        label: eq.baseCard?.name ?? "Équipement",
-        type: "neutral",
-        variant: "separator",
-      });
-      const eqEntries = getEquipmentEntries(eq);
-      entries.push(
-        ...(eqEntries.length
-          ? eqEntries
-          : [
-              {
-                icon: "  ",
-                label: "Aucun effet listé",
-                type: "neutral" as const,
-              },
-            ]),
-      );
-    }
-  }
-
-  const desc = zone.card?.baseCard?.description;
-  if (desc && typeof desc === "string")
-    entries.push({ icon: "📖", label: desc, type: "neutral" });
 
   return entries;
 }

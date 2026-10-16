@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import CardInspect from "../../features/fight/CardInspect";
-import type { CardFaceCard } from "../../features/cards/CardFace";
+import i18n from "../../i18n";
+import CardInspect, {
+  type InspectCard,
+} from "../../features/fight/CardInspect";
 
-const card: CardFaceCard = {
+const card: InspectCard = {
   id: 3,
   name: "Ogre",
   rarity: "rare",
@@ -13,31 +15,72 @@ const card: CardFaceCard = {
   cost: 4,
   description: "Écrase tout",
   image: null,
+  archetype: null,
+  effects: [
+    {
+      trigger: "ON_SUMMON",
+      condition: null,
+      actions: [{ type: "SET_TAUNT", target: "SELF" }],
+    },
+  ],
 };
 
 describe("CardInspect", () => {
-  it("montre la grande carte, sa description et ses effets ouverts", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("montre la grande carte, sa description et son effet rédigé", () => {
     render(
       <CardInspect
         card={card}
         stats={{ atk: 250, hp: 600, atkState: "up", hpState: "down" }}
-        entries={[
-          { icon: "⚔", label: "Effets", type: "neutral", variant: "separator" },
-          { icon: "🔥", label: "+50 ATK", type: "buff" },
-        ]}
         onClose={vi.fn()}
       />,
     );
 
     expect(screen.getByRole("dialog", { name: "Ogre" })).toBeInTheDocument();
-    expect(screen.getByText("Écrase tout")).toBeInTheDocument();
+    expect(screen.getAllByText("Écrase tout")).toHaveLength(1);
     expect(screen.getByText("250")).toBeInTheDocument();
-    expect(screen.getByText("+50 ATK")).toBeInTheDocument();
+    expect(
+      screen.getByText("Provocation", { selector: "strong" }),
+    ).toBeInTheDocument();
+  });
+
+  it("ajoute l'état en direct et les équipements d'un monstre en jeu", () => {
+    render(
+      <CardInspect
+        card={card}
+        status={[{ icon: "🗡", label: "Perçant", type: "buff" }]}
+        equipments={[
+          {
+            ...card,
+            id: 9,
+            name: "Épée",
+            type: "support",
+            supportType: "EQUIPMENT",
+            effects: [
+              {
+                trigger: "PASSIVE",
+                actions: [{ type: "BUFF_ATK", value: 100, target: "SELF" }],
+              },
+            ],
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Perçant")).toBeInTheDocument();
+    expect(screen.getByText(/Épée/)).toBeInTheDocument();
+    expect(
+      screen.getByText("Le monstre équipé gagne +100 ATK."),
+    ).toBeInTheDocument();
   });
 
   it("se ferme sur Échap et sur un tap hors de la carte", () => {
     const onClose = vi.fn();
-    render(<CardInspect card={card} entries={[]} onClose={onClose} />);
+    render(<CardInspect card={card} onClose={onClose} />);
 
     fireEvent.keyDown(document, { key: "Escape" });
     fireEvent.click(screen.getByRole("dialog"));
@@ -47,38 +90,10 @@ describe("CardInspect", () => {
 
   it("ne se ferme pas sur un tap dans le panneau", () => {
     const onClose = vi.fn();
-    render(<CardInspect card={card} entries={[]} onClose={onClose} />);
+    render(<CardInspect card={card} onClose={onClose} />);
 
     fireEvent.click(screen.getByText("Écrase tout"));
 
     expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it("n'affiche la description qu'une fois même si les effets la répètent", () => {
-    render(
-      <CardInspect
-        card={card}
-        entries={[{ icon: "📖", label: "Écrase tout", type: "neutral" }]}
-        onClose={vi.fn()}
-      />,
-    );
-
-    expect(screen.getAllByText("Écrase tout")).toHaveLength(1);
-  });
-
-  it("garde les autres effets quand seule la description est retirée", () => {
-    render(
-      <CardInspect
-        card={card}
-        entries={[
-          { icon: "🔥", label: "+50 ATK", type: "buff" },
-          { icon: "📖", label: "Écrase tout", type: "neutral" },
-        ]}
-        onClose={vi.fn()}
-      />,
-    );
-
-    expect(screen.getAllByText("Écrase tout")).toHaveLength(1);
-    expect(screen.getByText("+50 ATK")).toBeInTheDocument();
   });
 });

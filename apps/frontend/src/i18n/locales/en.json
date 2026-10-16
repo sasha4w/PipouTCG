@@ -344,5 +344,189 @@
       "error": "Couldn't publish the patch note",
       "hint": "Sent to every player's inbox."
     }
+  },
+  "effects": {
+    "ui": {
+      "title": "Effects",
+      "keywords": "Keywords",
+      "status": "Current state"
+    },
+    "trigger": {
+      "ON_SUMMON": "On summon",
+      "ON_DEATH": "When this monster is destroyed",
+      "ON_ATTACK": "When this monster attacks",
+      "ON_DEFEND": "When this monster is attacked",
+      "ON_PLAY": "When you play this card",
+      "ON_PLAY_equipment": "When you equip this card",
+      "ON_PLAY_terrain": "When you place this Terrain",
+      "ON_TURN_START": "At the start of your turn",
+      "ON_TURN_END": "At the end of your turn",
+      "ON_ALLY_SUMMON": "When you summon a monster while this card is in your hand",
+      "PASSIVE": "Always",
+      "PASSIVE_equipment": "While this card is equipped",
+      "PASSIVE_terrain": "While this Terrain is in play",
+      "ON_RECYCLE": "When you recycle this card",
+      "ON_BATTLE_PHASE_START": "At the start of your battle phase",
+      "unknown": "Special trigger ({{type}})"
+    },
+    "condition": {
+      "ARCHETYPE_ON_BOARD": "If you control a {{archetype}} monster",
+      "HP_BELOW": "If this monster has less than {{value}} HP",
+      "HAND_SIZE_MIN_one": "If you have at least {{count}} card in hand",
+      "HAND_SIZE_MIN_other": "If you have at least {{count}} cards in hand",
+      "OPPONENT_HAS_NO_MONSTERS": "If your opponent has no monsters",
+      "SPECIFIC_CARD_ON_BOARD": "If “{{name}}” is on your field",
+      "SPECIFIC_CARD_ON_BOARD_contains": "If a card whose name contains “{{name}}” is on your field",
+      "EQUIPPED_ON": "If equipped to “{{name}}”",
+      "EQUIPPED_ON_contains": "If equipped to a monster whose name contains “{{name}}”",
+      "unknown": "Conditional ({{type}})"
+    },
+    "target": {
+      "SELF": "this monster",
+      "SELF_equipment": "the equipped monster",
+      "ALLY_MONSTER": "the targeted ally monster",
+      "TARGET_ALLY": "the targeted ally monster",
+      "ENEMY_MONSTER": "the targeted enemy monster",
+      "ENEMY_MONSTER_defend": "the attacker",
+      "ALL_ALLIES": "your monsters",
+      "ALLIES_EXCEPT_SELF": "your other monsters",
+      "ALL_ENEMIES": "all enemy monsters",
+      "ARCHETYPE_ALLIES": "your {{archetype}} monsters",
+      "ARCHETYPE_ALLIES_others": "your other {{archetype}} monsters",
+      "ADJACENT_ALLIES": "adjacent monsters",
+      "PLAYER": "you",
+      "OPPONENT": "your opponent",
+      "unknown": "the target ({{type}})"
+    },
+    "action": {
+      "DEAL_DAMAGE": "{{target}} takes {{value}} damage.",
+      "DEAL_DAMAGE_many": "{{target}} take {{value}} damage.",
+      "HEAL": "{{target}} recovers {{value}} HP (up to its maximum).",
+      "HEAL_many": "{{target}} recover {{value}} HP (up to their maximum).",
+      "BUFF_ATK": "{{target}} gains {{signed}} ATK.",
+      "BUFF_ATK_many": "{{target}} gain {{signed}} ATK.",
+      "BUFF_HP": "{{target}} gains {{signed}} max HP.",
+      "BUFF_HP_many": "{{target}} gain {{signed}} max HP.",
+      "BUFF_ATK_TEMP": "{{target}} gains {{signed}} ATK until end of turn.",
+      "BUFF_ATK_TEMP_many": "{{target}} gain {{signed}} ATK until end of turn.",
+      "BUFF_HP_PER_ADJACENT_ALLY": "{{target}} gains {{signed}} max HP per adjacent monster.",
+      "BUFF_HP_PER_ADJACENT_ALLY_many": "{{target}} gain {{signed}} max HP per adjacent monster.",
+      "DRAW_one": "{{target}} draws {{count}} card.",
+      "DRAW_other": "{{target}} draws {{count}} cards.",
+      "DRAW_you_one": "You draw {{count}} card.",
+      "DRAW_you_other": "You draw {{count}} cards.",
+      "DISCARD_one": "{{target}} discards {{count}} card of their choice.",
+      "DISCARD_other": "{{target}} discards {{count}} cards of their choice.",
+      "DISCARD_you_one": "You discard {{count}} card of your choice.",
+      "DISCARD_you_other": "You discard {{count}} cards of your choice.",
+      "DESTROY_MONSTER": "{{target}} is destroyed.",
+      "DESTROY_MONSTER_many": "{{target}} are destroyed.",
+      "RETURN_TO_HAND": "{{target}} returns to its owner's hand, along with its equipment.",
+      "RETURN_TO_HAND_many": "{{target}} return to their owner's hand, along with their equipment.",
+      "SET_TAUNT": "{{target}} gains **{{kw}}**.",
+      "SET_TAUNT_many": "{{target}} gain **{{kw}}**.",
+      "SET_PIERCING": "{{target}} gains **{{kw}}**.",
+      "SET_PIERCING_many": "{{target}} gain **{{kw}}**.",
+      "SET_DEBUFF_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_DEBUFF_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_ATTACKS_PER_TURN_one": "{{target}} can attack {{count}} time per turn (**{{kw}}**).",
+      "SET_ATTACKS_PER_TURN_other": "{{target}} can attack {{count}} times per turn (**{{kw}}**).",
+      "SET_DELAY_DOUBLE_ATK": "{{target}} gains **{{kw}}** on its next turn.",
+      "SET_DELAY_DOUBLE_ATK_many": "{{target}} gain **{{kw}}** on their next turn.",
+      "SET_DAMAGE_REDUCTION": "{{target}} gains **{{kw}}** (÷{{value}}).",
+      "SET_DAMAGE_REDUCTION_many": "{{target}} gain **{{kw}}** (÷{{value}}).",
+      "FORCE_ATTACK_MODE": "{{target}} is put in **{{kw}}**.",
+      "FORCE_ATTACK_MODE_many": "{{target}} are put in **{{kw}}**.",
+      "FORCE_ATTACK_MODE_ENEMY": "{{target}} is put in **{{kw}}**.",
+      "FORCE_ATTACK_MODE_ENEMY_many": "{{target}} are put in **{{kw}}**.",
+      "FORCE_GUARD_LOCK_ENEMY": "{{target}} is put in **{{kw}}**.",
+      "FORCE_GUARD_LOCK_ENEMY_many": "{{target}} are put in **{{kw}}**.",
+      "BLOCK_ATTACK_one": "{{target}} suffers **{{kw}}** for {{count}} turn.",
+      "BLOCK_ATTACK_other": "{{target}} suffers **{{kw}}** for {{count}} turns.",
+      "BLOCK_ATTACK_many_one": "{{target}} suffer **{{kw}}** for {{count}} turn.",
+      "BLOCK_ATTACK_many_other": "{{target}} suffer **{{kw}}** for {{count}} turns.",
+      "SET_TURN_COUNTER_one": "**{{kw}}**: {{target}} is destroyed in {{count}} turn.",
+      "SET_TURN_COUNTER_other": "**{{kw}}**: {{target}} is destroyed in {{count}} turns.",
+      "SET_TURN_COUNTER_many_one": "**{{kw}}**: {{target}} are destroyed in {{count}} turn.",
+      "SET_TURN_COUNTER_many_other": "**{{kw}}**: {{target}} are destroyed in {{count}} turns.",
+      "CANNOT_ATTACK_ON_SUMMON_TURN": "{{target}} cannot attack on the turn it is summoned.",
+      "CANNOT_ATTACK_ON_SUMMON_TURN_many": "{{target}} cannot attack on the turn they are summoned.",
+      "RETURN_FROM_GRAVEYARD_one": "{{target}} recovers {{count}} card from their graveyard{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_other": "{{target}} recovers up to {{count}} cards from their graveyard{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_you_one": "You recover {{count}} card from your graveyard{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_you_other": "You recover up to {{count}} cards from your graveyard{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_OR_DECK": "{{target}} adds 1 card{{filter}} from their graveyard or deck to their hand.",
+      "RETURN_FROM_GRAVEYARD_OR_DECK_you": "You add 1 card{{filter}} from your graveyard or deck to your hand.",
+      "SEARCH_DECK": "{{target}} adds 1 card{{filter}} from their deck to their hand.",
+      "SEARCH_DECK_you": "You add 1 card{{filter}} from your deck to your hand.",
+      "GAIN_RECYCLE_ENERGY": "{{target}} gains {{count}} Recycle Energy.",
+      "GAIN_RECYCLE_ENERGY_you": "You gain {{count}} Recycle Energy.",
+      "SET_FREE_SUMMON": "This card can be summoned for free.",
+      "SUMMONABLE_ON_ENEMY_SIDE": "This card can be summoned on your opponent's field.",
+      "unknown": "Special effect ({{type}})."
+    },
+    "filter": {
+      "name": "name containing “{{name}}”"
+    },
+    "archetype": {
+      "pipou": "Pipou",
+      "dragon": "Dragon",
+      "pixelman": "Pixelman"
+    },
+    "status": {
+      "doubleAttack": "Double attack next turn",
+      "multiAttack": "Attacks {{count}} times per turn",
+      "damageReduction": "Damage taken ÷{{value}}",
+      "freeze_one": "Frozen for {{count}} more turn",
+      "freeze_other": "Frozen for {{count}} more turns",
+      "countdown_one": "Destroyed in {{count}} turn",
+      "countdown_other": "Destroyed in {{count}} turns"
+    }
+  },
+  "keywords": {
+    "taunt": {
+      "name": "Taunt",
+      "desc": "Enemies must attack this monster first."
+    },
+    "piercing": {
+      "name": "Piercing",
+      "desc": "Ignores damage reduction, and earns a Prize when destroying a monster in Guard."
+    },
+    "debuffImmunity": {
+      "name": "Debuff immunity",
+      "desc": "This monster cannot receive temporary ATK penalties."
+    },
+    "doubleAttack": {
+      "name": "Double attack",
+      "desc": "Two attacks next turn, then one."
+    },
+    "multiAttack": {
+      "name": "Multi-attack",
+      "desc": "Can attack several times per turn."
+    },
+    "forcedAttack": {
+      "name": "Forced attack",
+      "desc": "The monster is locked in Attack mode."
+    },
+    "guardLock": {
+      "name": "Guard lock",
+      "desc": "Locked in Guard until it is attacked."
+    },
+    "freeze": {
+      "name": "Freeze",
+      "desc": "Cannot attack for N of its turns."
+    },
+    "damageReduction": {
+      "name": "Damage reduction",
+      "desc": "Damage taken is divided by a coefficient."
+    },
+    "tempAtk": {
+      "name": "Temporary ATK",
+      "desc": "ATK bonus active until the end of the turn."
+    },
+    "countdown": {
+      "name": "Countdown",
+      "desc": "The counter goes down at the start of each turn of the player who played the monster; at 0, the monster is destroyed and that player earns a Prize."
+    }
   }
 }

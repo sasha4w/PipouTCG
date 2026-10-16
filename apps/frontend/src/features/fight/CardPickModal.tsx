@@ -156,7 +156,6 @@ export default function CardPickModal({
         {inspected && (
           <CardInspect
             card={inspected.baseCard}
-            entries={[]}
             onClose={() => setInspected(null)}
           />
         )}
