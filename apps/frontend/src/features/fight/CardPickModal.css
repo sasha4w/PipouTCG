@@ -46,6 +46,7 @@
 .cpm-grid {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
   padding: 12px 16px;
   overflow-y: auto;
@@ -53,74 +54,15 @@
 }
 
 .cpm-card {
-  position: relative;
-  width: 90px;
-  min-height: 80px;
-  border-radius: 10px;
-  border: 1.5px solid #f0ddd0;
-  background: #fff;
-  padding: 8px;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s,
-    transform 0.15s,
-    box-shadow 0.15s;
+  width: 96px;
 }
 
-.cpm-card:hover {
-  border-color: #7a1c3b;
-  background: #fdf6f9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(122, 28, 59, 0.12);
+.cpm-card .card-face {
+  transition: box-shadow 0.15s;
 }
 
-.cpm-card--selected {
-  background: #f8edf2;
-  border: 2px solid #7a1c3b;
-  box-shadow: 0 0 0 2px rgba(122, 28, 59, 0.2);
-  transform: translateY(-2px);
-}
-
-/* ── Board picks — styles spécifiques par résolution ─────────────────────── */
-
-/* destroy_ally — teinte rouge */
-.cpm-card--board-destroy_ally:hover {
-  border-color: #c0392b;
-  background: #fff5f5;
-}
-.cpm-card--board-destroy_ally.cpm-card--selected {
-  background: #fff0f0;
-  border-color: #c0392b;
-  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.2);
-}
-
-/* return_to_hand — teinte bleue */
-.cpm-card--board-return_to_hand:hover {
-  border-color: #2471a3;
-  background: #f0f5ff;
-}
-.cpm-card--board-return_to_hand.cpm-card--selected {
-  background: #eaf2ff;
-  border-color: #2471a3;
-  box-shadow: 0 0 0 2px rgba(36, 113, 163, 0.2);
-}
-
-/* force_attack_enemy — teinte orange */
-.cpm-card--board-force_attack_enemy:hover {
-  border-color: #d35400;
-  background: #fff8f0;
-}
-.cpm-card--board-force_attack_enemy.cpm-card--selected {
-  background: #fff3e6;
-  border-color: #d35400;
-  box-shadow: 0 0 0 2px rgba(211, 84, 0, 0.2);
-}
-
-/* ── Carte plus large pour les monstres board (plus d'infos à afficher) ───── */
-.cpm-card--board {
-  width: 100px;
-  min-height: 90px;
+.cpm-card--selected .card-face {
+  box-shadow: 0 0 0 3px var(--cpm-accent, #7a1c3b);
 }
 
 .cpm-check {
@@ -129,38 +71,21 @@
   right: -6px;
   width: 20px;
   height: 20px;
-  background: #7a1c3b;
-  color: #fff;
   border-radius: 50%;
-  font-size: 11px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 11px;
+  color: #fff;
   border: 1.5px solid #fff;
+  z-index: 3;
 }
 
 .cpm-source {
+  margin-top: 4px;
+  text-align: center;
   font-size: 9px;
-  color: #aaa;
-  margin-bottom: 4px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
-.cpm-name {
-  font-size: 11px;
-  font-weight: 700;
-  color: #2c1a22;
-  word-break: break-word;
-  line-height: 1.3;
-  margin-bottom: 4px;
-}
-
-.cpm-sub {
-  font-size: 10px;
-  color: #aaa;
+  color: #888;
 }
 
 /* ── Hint d'action (destroy, retour, forcer) ─────────────────────────────── */

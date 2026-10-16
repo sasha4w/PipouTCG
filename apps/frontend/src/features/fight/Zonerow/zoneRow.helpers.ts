@@ -1,3 +1,4 @@
+import type { CardFaceStats } from "../../cards/CardFace";
 import {
   RARITY_COLOR,
   isMonsterZone,
@@ -52,4 +53,29 @@ export function buildStatRecap(
       : `${zone.currentHp}/${totalHp} ❤`;
 
   return { atkLine, hpLine };
+}
+
+/** Stats affichées sur la carte d'un monstre en jeu, avec leur tendance. */
+export function monsterFaceStats(zone: MonsterOnBoard): CardFaceStats {
+  const base = zone.card.baseCard;
+  const atk = base.atk + zone.atkBuff + (zone.tempAtkBuff ?? 0);
+  const maxHp = base.hp + zone.hpBuff;
+  return {
+    atk,
+    hp: zone.currentHp,
+    atkState: atk > base.atk ? "up" : atk < base.atk ? "down" : undefined,
+    hpState:
+      zone.currentHp < maxHp || zone.currentHp < base.hp
+        ? "down"
+        : zone.currentHp > base.hp
+          ? "up"
+          : undefined,
+  };
+}
+
+/** Toutes les attaques du tour ont été utilisées. */
+export function hasSpentAttacks(zone: MonsterOnBoard): boolean {
+  return (
+    zone.hasAttackedThisTurn && zone.attacksUsedThisTurn >= zone.attacksPerTurn
+  );
 }

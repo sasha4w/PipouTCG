@@ -1,15 +1,27 @@
+import InspectableCard from "../InspectableCard";
 import type { CardInstance } from "../fight.types";
 import "./SupportZoneContent.css";
 
 interface Props {
   zone: CardInstance;
+  onInspect: () => void;
+  onInspectEnd: () => void;
 }
 
-export default function SupportZoneContent({ zone }: Props) {
+export default function SupportZoneContent({
+  zone,
+  onInspect,
+  onInspectEnd,
+}: Props) {
   return (
     <div className="zr-support">
-      <div className="zr-support-name">{zone.baseCard.name}</div>
-      <div className="zr-support-type">{zone.baseCard.supportType ?? ""}</div>
+      <InspectableCard
+        className="zr-card"
+        card={zone.baseCard}
+        size="xs"
+        onInspect={onInspect}
+        onInspectEnd={onInspectEnd}
+      />
     </div>
   );
 }

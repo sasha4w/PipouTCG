@@ -1,4 +1,4 @@
-import type { BuffEntry } from "./BuffDebuffList";
+import type { BuffEntry } from "./BuffDebuffSections";
 
 // ── Tables de traduction (miroir des enums backend) ───────────────────────
 

@@ -182,6 +182,9 @@ export default function FightBoard({
           hp: z.card.baseCard.hp,
           rarity: z.card.baseCard.rarity,
           supportType: z.card.baseCard.supportType,
+          cost: z.card.baseCard.cost,
+          image: z.card.baseCard.image,
+          description: z.card.baseCard.description,
         },
         source: "board" as const,
       }));

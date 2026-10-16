@@ -19,21 +19,7 @@
 }
 
 .mull-card {
-  width: 120px;
-  padding: 10px;
-  border: 2px solid var(--color-bordeaux);
-  border-radius: 10px;
-  background: var(--color-cream);
-  text-align: center;
-}
-
-.mull-card-name {
-  font-weight: 700;
-}
-
-.mull-card-sub {
-  font-size: 0.8rem;
-  opacity: 0.8;
+  width: 96px;
 }
 
 .mull-actions {

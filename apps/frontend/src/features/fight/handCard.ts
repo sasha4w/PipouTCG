@@ -1,3 +1,4 @@
+import type { CardType, Rarity, SupportType } from "@pipou/shared";
 import type { CardInstance } from "./fight.types";
 import type { RawEffect } from "./fight.effects";
 
@@ -6,13 +7,14 @@ export interface HandCard {
   instanceId: string;
   id: number;
   name: string;
-  type: string;
+  type: CardType;
   atk: number;
   hp: number;
   cost: number;
-  rarity: string;
-  supportType?: string;
-  // ── Enrichis pour le tooltip d'info ──────────────────────────────────────
+  rarity: Rarity;
+  supportType?: SupportType;
+  image: { url: string } | null;
+  // ── Enrichis pour l'inspection ───────────────────────────────────────────
   effects?: RawEffect[] | null;
   description?: string | null;
 }
@@ -29,6 +31,7 @@ export function toHandCard(c: CardInstance): HandCard {
     cost: c.baseCard.cost,
     rarity: c.baseCard.rarity,
     supportType: c.baseCard.supportType ?? undefined,
+    image: c.baseCard.image,
     effects: c.baseCard.effects ?? null,
     description: c.baseCard.description ?? null,
   };

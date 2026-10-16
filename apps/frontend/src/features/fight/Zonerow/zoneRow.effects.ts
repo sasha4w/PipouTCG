@@ -1,4 +1,4 @@
-import type { BuffEntry } from "../BuffDebuffList";
+import type { BuffEntry } from "../BuffDebuffSections";
 import {
   TRIGGER_LABEL,
   TARGET_SUFFIX,

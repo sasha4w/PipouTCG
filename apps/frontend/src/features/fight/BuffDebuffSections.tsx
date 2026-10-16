@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import "./BuffDebuffList.css";
+import { useState } from "react";
+import "./BuffDebuffSections.css";
 
 export interface BuffEntry {
   icon: string;
@@ -7,14 +7,6 @@ export interface BuffEntry {
   type: "buff" | "debuff" | "neutral";
   /** "recap" = ligne stats calculée, "separator" = début de section accordion */
   variant?: "recap" | "separator";
-}
-
-interface Props {
-  entries: BuffEntry[];
-  cardName: string;
-  supportType?: string;
-  anchorRect: DOMRect;
-  onClose: () => void;
 }
 
 /** Découpe le tableau d'entrées en sections selon les separators */
@@ -51,19 +43,20 @@ function buildSections(entries: BuffEntry[]): {
   return { recap, sections };
 }
 
-export default function BuffDebuffList({
-  entries,
-  cardName,
-  supportType,
-  anchorRect,
-  onClose,
-}: Props) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { recap, sections } = buildSections(entries);
+interface Props {
+  entries: BuffEntry[];
+  /** Toutes les sections ouvertes au montage. */
+  defaultOpen?: boolean;
+}
 
-  // Toutes les sections ouvertes par défaut sauf si plus de 2 sections
-  const [openSections, setOpenSections] = useState<Set<number>>(
-    () => new Set(),
+/** Récap des stats + sections d'effets repliables. */
+export default function BuffDebuffSections({
+  entries,
+  defaultOpen = false,
+}: Props) {
+  const { recap, sections } = buildSections(entries);
+  const [openSections, setOpenSections] = useState<Set<number>>(() =>
+    defaultOpen ? new Set(sections.map((_, i) => i)) : new Set(),
   );
 
   const toggleSection = (idx: number) => {
@@ -75,33 +68,8 @@ export default function BuffDebuffList({
     });
   };
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [onClose]);
-
-  const spaceBelow = window.innerHeight - anchorRect.bottom;
-  const above = spaceBelow < 220;
-
   return (
-    <div
-      ref={ref}
-      className="bdl-popup"
-      style={{
-        left: anchorRect.left + anchorRect.width / 2,
-        top: above ? anchorRect.top - 8 : anchorRect.bottom + 8,
-        transform: above ? "translate(-50%, -100%)" : "translate(-50%, 0)",
-      }}
-    >
-      {/* ── Header ── */}
-      <div className="bdl-header">
-        <span className="bdl-card-name">{cardName}</span>
-        {supportType && <span className="bdl-type-chip">{supportType}</span>}
-      </div>
-
+    <div className="bdl-root">
       {/* ── Récap stats (toujours visible, pas dans un accordion) ── */}
       {recap.length > 0 && (
         <div className="bdl-recap-block">

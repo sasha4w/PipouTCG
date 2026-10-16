@@ -1,12 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import type { Card } from "../../services/card.service";
+import CardFace from "./CardFace";
 import "./CardDisplay.css";
-
-const SUPPORT_TYPE_LABELS: Record<string, string> = {
-  EPHEMERAL: "Éphémère",
-  EQUIPMENT: "Équipement",
-  TERRAIN: "Terrain",
-};
 
 // ── Verso ─────────────────────────────────────────────────────────────────────
 function CardBack() {
@@ -80,11 +75,6 @@ export default function CardDisplay({
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInspectingRef = useRef(false);
   const lastTouchEndRef = useRef<number>(0); // timestamp du dernier touchend
-
-  const isSupport = card.type?.toLowerCase() === "support";
-  const supportLabel = card.supportType
-    ? (SUPPORT_TYPE_LABELS[card.supportType] ?? card.supportType)
-    : null;
 
   // ── Helpers 3D ────────────────────────────────────────────────────────────
   const apply3D = useCallback((clientX: number, clientY: number) => {
@@ -264,59 +254,7 @@ export default function CardDisplay({
         >
           {/* ══ RECTO ══ */}
           <div className="pipou-card__front">
-            <div className="pipou-card__header">
-              <div className="pipou-card__name">{card.name}</div>
-              <div className="pipou-card__cost">{card.cost}</div>
-            </div>
-
-            <div className="pipou-card__image-wrap">
-              {card.image?.url ? (
-                <img
-                  className="pipou-card__image"
-                  src={card.image.url}
-                  alt={card.name}
-                  loading="lazy"
-                />
-              ) : (
-                <div className="pipou-card__image-placeholder">✦</div>
-              )}
-
-              {!isSupport && (
-                <div className="pipou-card__stats-overlay">
-                  <div className="pipou-card__stat-badge">
-                    <span className="pipou-card__stat-label">ATK</span>
-                    <span className="pipou-card__stat-value">{card.atk}</span>
-                  </div>
-                  <div className="pipou-card__stat-badge">
-                    <span className="pipou-card__stat-label">HP</span>
-                    <span className="pipou-card__stat-value">{card.hp}</span>
-                  </div>
-                </div>
-              )}
-
-              {isSupport && supportLabel && (
-                <div className="pipou-card__support-badge">{supportLabel}</div>
-              )}
-            </div>
-
-            <div className="pipou-card__footer">
-              {card.description ? (
-                <div className="pipou-card__description">
-                  {card.description}
-                </div>
-              ) : (
-                <div
-                  className="pipou-card__description"
-                  style={{ opacity: 0.3 }}
-                >
-                  —
-                </div>
-              )}
-              <div className="pipou-card__id-row">
-                <span className="pipou-card__id">#{card.id}</span>
-              </div>
-            </div>
-
+            <CardFace card={card} size={size} showDescription />
             <div className="pipou-card__shine" />
             <div className="pipou-card__glare" />
           </div>

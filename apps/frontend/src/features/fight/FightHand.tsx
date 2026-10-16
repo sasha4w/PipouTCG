@@ -1,11 +1,17 @@
-import { useState, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import "./FightHand.css";
-import "./BuffDebuffList.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
-import { RARITY_COLOR } from "./fight.types";
-import BuffDebuffList from "./BuffDebuffList";
+import InspectableCard from "./InspectableCard";
+import CardInspect from "./CardInspect";
 import { getCardEffectEntries } from "./fight.effects";
+import { fanLayout } from "./fanLayout";
+
+/** Largeur d'une carte de la main (px) — doit suivre .fhand-card. */
+const HAND_CARD_WIDTH = 84;
+/** Largeur utilisée avant la première mesure (coque mobile 430px). */
+const DEFAULT_HAND_WIDTH = 400;
 
 interface Props {
   hand: HandCard[];
@@ -29,41 +35,44 @@ export default function FightHand({
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
   const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
-  // ── Info tooltip ──────────────────────────────────────────────────────────
-  const [openInfoIdx, setOpenInfoIdx] = useState<number | null>(null);
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [inspectedId, setInspectedId] = useState<string | null>(null);
+  const inspected =
+    inspectedId !== null
+      ? hand.find((c) => c.instanceId === inspectedId)
+      : undefined;
 
-  const handleInfoClick = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    idx: number,
-  ) => {
-    e.stopPropagation();
-    if (openInfoIdx === idx) {
-      setOpenInfoIdx(null);
-      setAnchorRect(null);
-    } else {
-      setOpenInfoIdx(idx);
-      setAnchorRect(e.currentTarget.getBoundingClientRect());
-    }
-  };
+  // ── Largeur disponible pour l'éventail ────────────────────────────────────
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(DEFAULT_HAND_WIDTH);
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) =>
+      setWidth(entry.contentRect.width),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const slots = fanLayout(hand.length, width, HAND_CARD_WIDTH);
 
   return (
-    <div className="fhand">
+    <div className="fhand" ref={containerRef}>
       {hand.map((card, idx) => {
         const isSelected = selectedCard === idx;
         const isPaying = payIndices.includes(idx);
         const isPayable =
           !isSelected && selectedCard !== null && phase === "main";
         const isFree = freeSummonInstanceIds.includes(card.instanceId);
-        const isInfoOpen = openInfoIdx === idx;
+        const slot = slots[idx];
 
         return (
-          <div
-            key={`${card.id}-${idx}`}
+          <InspectableCard
+            key={card.instanceId}
+            card={card}
+            size="xs"
             className={[
               "fhand-card",
-              `fhand-card--${card.type}`,
               isSelected ? "fhand-card--selected" : "",
               isPaying ? "fhand-card--paying" : "",
               isInteractive ? "fhand-card--interactive" : "",
@@ -73,65 +82,41 @@ export default function FightHand({
             ]
               .filter(Boolean)
               .join(" ")}
-            style={{ borderColor: RARITY_COLOR[card.rarity] ?? "#666" }}
-            onClick={() => isInteractive && onCardClick(idx, card)}
+            style={
+              {
+                marginLeft: slot.marginLeft,
+                zIndex: idx,
+                "--fan-rotate": `${slot.rotateDeg}deg`,
+                "--fan-y": `${slot.offsetY}px`,
+              } as CSSProperties
+            }
+            onClick={isInteractive ? () => onCardClick(idx, card) : undefined}
+            onInspect={() => setInspectedId(card.instanceId)}
+            onInspectEnd={() => setInspectedId(null)}
           >
-            {/* ── Badge info ─────────────────────────────────────────────── */}
-            <button
-              ref={(el) => {
-                btnRefs.current[idx] = el;
-              }}
-              className={`bdl-trigger fhand-info-btn${isInfoOpen ? " bdl-trigger--active" : ""}`}
-              onClick={(e) => handleInfoClick(e, idx)}
-              title="Voir les effets"
-            >
-              i
-            </button>
-
-            <div className="fhand-card-cost">
-              {isFree ? (
-                <span className="fhand-free-label">GRATUIT ⚡</span>
-              ) : (
-                `${card.cost ?? 0}⚡`
-              )}
-            </div>
-
+            {isFree && <span className="fhand-free-label">GRATUIT ⚡</span>}
             {isPaying && (
               <div className="fhand-pay-badge" title="Carte de paiement">
                 💰
               </div>
             )}
             {isSelected && <div className="fhand-selected-badge">✓</div>}
-
-            <div className="fhand-card-name">{card.name}</div>
-            <div className="fhand-card-sub">
-              {card.type === "monster"
-                ? `${card.atk}⚔ ${card.hp}❤`
-                : (card.supportType ?? card.type)}
-            </div>
-
             {mustDiscard && (
               <div className="fhand-discard-label">défausser</div>
             )}
-          </div>
+          </InspectableCard>
         );
       })}
 
-      {/* Tooltip rendu hors du flux des cartes ─────────────────────────── */}
-      {openInfoIdx !== null && anchorRect && hand[openInfoIdx] && (
-        <BuffDebuffList
+      {inspected && (
+        <CardInspect
+          card={inspected}
           entries={getCardEffectEntries(
-            hand[openInfoIdx].effects,
-            hand[openInfoIdx].description,
-            hand[openInfoIdx].supportType,
+            inspected.effects,
+            inspected.description,
+            inspected.supportType,
           )}
-          cardName={hand[openInfoIdx].name}
-          supportType={hand[openInfoIdx].supportType}
-          anchorRect={anchorRect}
-          onClose={() => {
-            setOpenInfoIdx(null);
-            setAnchorRect(null);
-          }}
+          onClose={() => setInspectedId(null)}
         />
       )}
     </div>

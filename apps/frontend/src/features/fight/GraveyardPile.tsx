@@ -1,4 +1,7 @@
 import { useState } from "react";
+import InspectableCard from "./InspectableCard";
+import CardInspect from "./CardInspect";
+import { getCardEffectEntries } from "./fight.effects";
 import "./GraveyardPile.css";
 import type { CardInstance } from "./fight.types";
 
@@ -9,6 +12,7 @@ interface Props {
 
 export default function GraveyardPile({ graveyard, label }: Props) {
   const [open, setOpen] = useState(false);
+  const [inspected, setInspected] = useState<CardInstance | null>(null);
 
   if (graveyard.length === 0) return null;
 
@@ -35,18 +39,27 @@ export default function GraveyardPile({ graveyard, label }: Props) {
               </button>
             </div>
             <div className="gp-list">
-              {[...graveyard].reverse().map((c, i) => (
-                <div key={i} className="gp-card">
-                  <span className="gp-card-name">{c.baseCard.name}</span>
-                  <span className="gp-card-type">{c.baseCard.type}</span>
-                  {c.baseCard.type === "monster" && (
-                    <span className="gp-card-stats">
-                      {c.baseCard.atk}⚔ {c.baseCard.hp}❤
-                    </span>
-                  )}
-                </div>
+              {[...graveyard].reverse().map((c) => (
+                <InspectableCard
+                  key={c.instanceId}
+                  card={c.baseCard}
+                  size="sm"
+                  onInspect={() => setInspected(c)}
+                  onInspectEnd={() => setInspected(null)}
+                />
               ))}
             </div>
+            {inspected && (
+              <CardInspect
+                card={inspected.baseCard}
+                entries={getCardEffectEntries(
+                  inspected.baseCard.effects,
+                  inspected.baseCard.description,
+                  inspected.baseCard.supportType,
+                )}
+                onClose={() => setInspected(null)}
+              />
+            )}
           </div>
         </div>
       )}
