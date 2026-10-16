@@ -85,10 +85,10 @@ export type FightEvent =
   | Appelant | Cause |
   |---|---|
   | `services/battle.service.ts` (combat) | `COMBAT` |
-  | `engine/game-engine.ts` `reapDeadMonsters` | `HP_DEPLETED` |
+  | `engine/game-engine.ts` `reapDeadMonsters` (0 PV constaté après coup, ex. perte de bonus) | `HP_DEPLETED` |
   | `services/phase.service.ts` (compteur Zeta) | `SELF_DESTRUCT` |
-  | action `DESTROY_MONSTER`, cible ≠ source | `EFFECT` |
-  | action `DESTROY_MONSTER`, cible = source (sacrifice, `draw: false`) | `SACRIFICE` |
+  | rappel `destroy` des effets (`DESTROY_MONSTER`, dégâts mortels `DEAL_DAMAGE`), hôte ≠ propriétaire de l'effet | `EFFECT` |
+  | même rappel, hôte = propriétaire de l'effet (son propre monstre ; déjà sans pioche) | `SACRIFICE` |
 
 - Envoi : `helpers/client-state.builder.ts`
   - `buildClientState` recopie `game.pendingEvents` dans `events`.
@@ -96,18 +96,20 @@ export type FightEvent =
     exactement les mêmes événements.
   - Tout autre envoi d'état (reconnexion, resynchronisation) part avec le tampon déjà vidé → `events: []`, aucune
     animation rejouée.
+  - Sandbox admin : `publish` vide aussi le tampon après `sandbox:state` ; `deserializeGame` initialise
+    `pendingEvents = []` et `terrainSeq` pour les scénarios sauvegardés avant cette évolution.
 
 ### Frontend — `apps/frontend/src/features/fight/`
 
 - `FightPage.tsx` reçoit l'état (`fight:state`) et le passe tel quel au plateau.
-- Nouveau hook `useFightEvents(state)` : transforme `state.events` en animations à jouer, indexées par
-  `side ("me" | "opponent")` + `zoneIndex`, avec la variante (`tier` pour l'invocation, `cause` pour la destruction).
-  Chaque nouvel état remplace la liste ; la clé d'animation inclut l'`instanceId` pour éviter de rejouer.
+- Fonction pure `boardFxFromEvents(events, myUserId)` (`fight/fightEvents.ts`), appelée dans `FightBoard` via
+  `useMemo` (état dérivé) : effets par côté (`me` / `opponent`), par rangée et par `zoneIndex` (`summonTier`,
+  `destroyCause`, `terrainPlayed`), plus l'invocation la plus forte de l'action (flash/secousse).
 - `Zonerow/useZoneAnimations.ts` consomme ces animations :
   - invocation : classe `zr-zone--summon-t{1..4}` selon le palier ;
   - destruction : l'instantané du monstre est conservé (comme aujourd'hui) et reçoit
     `zr-zone--destroy-{cause}` ; durée de conservation alignée sur la durée de la variante.
-  - **Secours** : la comparaison d'états actuelle reste active. Un monstre apparu sans événement → palier 1 ; un
+  - **Secours** : la comparaison d'états actuelle reste active. Un monstre apparu sans événement → palier de sa rareté ; un
     monstre disparu sans événement → éclatement par défaut (variante COMBAT).
 - Nouvelle couche `FightFxLayer.tsx` : position absolue au-dessus du plateau, `pointer-events: none`, pour les effets
   qui débordent d'une zone (flash, secousse du plateau).
@@ -131,7 +133,7 @@ dans `Zonerow/ZoneRow.css` (zones) et `FightFxLayer.css` (plein écran).
 | Cause | Effet | Durée |
 |---|---|---|
 | COMBAT | Éclatement actuel (`zr-shards` / `zr-shatter`) + impact rouge | ~900 ms |
-| EFFECT | Dissolution en particules violettes (masque + fondu vers le haut) | ~900 ms |
+| EFFECT | Dissolution violette : particules, flou et fondu vers le haut | ~900 ms |
 | SACRIFICE | Lueur dorée puis repli de la carte vers le cimetière du propriétaire | ~800 ms |
 | SELF_DESTRUCT | Clignotement rouge accéléré puis explosion (onde de choc circulaire) | ~1 s |
 | HP_DEPLETED | Désaturation en gris puis effondrement (la carte s'affaisse et disparaît) | ~800 ms |
@@ -163,7 +165,7 @@ l'information.
 
 - `apps/frontend/src/contexts/AnimationContext.tsx` (provider) + `animation-context.ts` (type et `createContext`),
   calqué sur le découpage `SoundContext.tsx` / `sound-context.ts` :
-  - préférence `"auto" | "full" | "reduced"`, défaut `"auto"`, stockée en `localStorage` (clé `pipou.animations`),
+  - préférence `"auto" | "full" | "reduced"`, défaut `"auto"`, stockée en `localStorage` (clé `pipou_animations`, comme les clés `pipou_*` du son),
     lecture et écriture dans un `try/catch` (valeur par défaut si l'accès échoue) ;
   - expose `preference`, `setPreference` et `reduced: boolean` (`auto` → suit `prefers-reduced-motion`, écouté via
     `matchMedia` pour réagir à un changement système).
@@ -176,7 +178,7 @@ l'information.
 ### Backend (Jest, à côté des specs existantes de `fights/`)
 
 - `destroyMonster` pousse `monster_destroyed` avec la bonne cause pour chaque appelant : combat, reap,
-  compteur Zeta, DESTROY_MONSTER sur une autre cible (EFFECT), DESTROY_MONSTER sur soi (SACRIFICE).
+  compteur Zeta, effet sur un monstre adverse (EFFECT), effet sur son propre monstre (SACRIFICE).
 - Plusieurs morts dans une même action (dont une mort déclenchée par ON_DEATH) → événements dans l'ordre de résolution.
 - Invocation → `monster_summoned` avec la rareté de la carte.
 - Pose de deux terrains → `terrain_played` ×2 et `placedSeq` strictement croissant.
@@ -185,8 +187,8 @@ l'information.
 
 ### Frontend (Vitest)
 
-- `useFightEvents` : mappe correctement les événements vers side + zone + variante (palier par rareté, cause).
-- Secours de `useZoneAnimations` : disparition sans événement → variante COMBAT ; apparition sans événement → palier 1.
+- `boardFxFromEvents` : mappe correctement les événements vers côté + zone + variante (palier par rareté, cause).
+- Secours de `useZoneAnimations` : disparition sans événement → variante COMBAT ; apparition sans événement → palier de la rareté.
 - `pickActiveTerrain` : plus grand `placedSeq`, retour au précédent quand le dernier part, `null` si aucun terrain.
 - `AnimationContext` : `auto` suit `matchMedia`, `full` / `reduced` forcent, `localStorage` qui lève une exception →
   défaut `auto` sans planter.
@@ -200,7 +202,7 @@ de chaque palier, au moins deux causes de destruction, fond de terrain des deux 
 
 1. Partagé + backend : `FightEvent`, `DestroyCause`, `placedSeq`, tampon d'événements, causes dans `destroyMonster`,
    tests Jest. `pnpm build:shared`.
-2. Front — socle : `AnimationContext` + réglage, `useFightEvents`, `FightFxLayer`, branchement dans
+2. Front — socle : `AnimationContext` + réglage, `boardFxFromEvents`, `FightFxLayer`, branchement dans
    `useZoneAnimations` avec le secours.
 3. Front — paliers d'invocation.
 4. Front — variantes de destruction.
