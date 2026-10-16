@@ -21,11 +21,7 @@ export function daysBetween(from: string, to: string): number {
 }
 
 export type ReturnGap =
-  | 'first'
-  | 'claimed_today'
-  | 'consecutive'
-  | 'rescuable'
-  | 'lost';
+  'first' | 'claimed_today' | 'consecutive' | 'rescuable' | 'lost';
 
 /**
  * Situation du joueur aujourd'hui par rapport à son dernier claim :

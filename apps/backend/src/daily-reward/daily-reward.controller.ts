@@ -19,7 +19,6 @@ import {
   UpdateDailyRewardDefinitionDto,
   CreateMilestoneRewardDto,
   UpdateMilestoneRewardDto,
-  RescueStreakDto,
 } from './dto/daily-reward.dto';
 import type { AuthenticatedRequest } from '../auth/auth-user';
 
@@ -43,11 +42,11 @@ export class DailyRewardController {
     return this.dailyRewardService.claimDaily(req.user.userId);
   }
 
-  /** Rachète les jours manqués en gold pour maintenir la streak */
+  /** Rachète l'unique jour manqué en gold pour maintenir la série */
   @UseGuards(JwtAuthGuard)
   @Post('rescue')
-  rescueStreak(@Req() req: AuthenticatedRequest, @Body() dto: RescueStreakDto) {
-    return this.dailyRewardService.rescueStreak(req.user.userId, dto);
+  rescueStreak(@Req() req: AuthenticatedRequest) {
+    return this.dailyRewardService.rescueStreak(req.user.userId);
   }
 
   /** Reset volontaire de la streak (si l'user ne veut pas payer) */

@@ -12,52 +12,28 @@ import { MilestoneReward } from './milestone-reward.entity';
 import { LoginRewardHistory } from './login-reward-histority.entity';
 import { StreakRescue } from './streak-rescue.entity';
 import { UsersService } from '../users/users.service';
-import { DailyRewardType as RewardType } from '@pipou/shared';
+import {
+  DailyRewardType as RewardType,
+  stripEmoji,
+  type ClaimDailyResult,
+  type DailyRewardGain,
+  type RescueStreakResult,
+  type StreakView,
+} from '@pipou/shared';
+import {
+  classifyGap,
+  cycleDayFor,
+  rescueCost,
+  shiftDay,
+  todayUtc,
+  weekNumberFor,
+} from './streak-rules';
 import {
   CreateDailyRewardDefinitionDto,
   UpdateDailyRewardDefinitionDto,
   CreateMilestoneRewardDto,
   UpdateMilestoneRewardDto,
-  RescueStreakDto,
 } from './dto/daily-reward.dto';
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-/** Renvoie la date d'aujourd'hui au format YYYY-MM-DD (UTC) */
-function todayStr(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-/** Différence en jours entre deux dates YYYY-MM-DD */
-function daysBetween(a: string, b: string): number {
-  const msA = new Date(a).getTime();
-  const msB = new Date(b).getTime();
-  return Math.round(Math.abs(msB - msA) / 86_400_000);
-}
-
-/**
- * Coût de rachat en gold.
- * - Base : 50g par jour manqué
- * - Discount streak : -2g par jour de streak (max -80g) → fidélité récompensée
- * - Malus temps : x1.3 par jour manqué (max x3) → plus t'attends, plus c'est cher
- */
-function calculateRescueCost(
-  currentStreak: number,
-  daysMissed: number,
-): number {
-  const base = 50 * daysMissed;
-  const discount = Math.min(currentStreak * 2, 80);
-  const multiplier = Math.min(1 + daysMissed * 0.3, 3);
-  return Math.max(Math.round((base - discount) * multiplier), 10);
-}
-
-/** Nombre max de jours rachetables selon la longueur de streak */
-function maxRescuableDays(currentStreak: number): number {
-  if (currentStreak >= 100) return 5;
-  if (currentStreak >= 30) return 3;
-  if (currentStreak >= 7) return 2;
-  return 1;
-}
 
 @Injectable()
 export class DailyRewardService {
@@ -92,9 +68,13 @@ export class DailyRewardService {
     return streak;
   }
 
-  /** Avance le cycleDay de 1 (boucle 1-7) */
-  private nextCycleDay(current: number): number {
-    return (current % 7) + 1;
+  private streakView(streak: LoginStreak): StreakView {
+    return {
+      current: streak.currentStreak,
+      longest: streak.longestStreak,
+      totalDays: streak.totalDays,
+      lastClaimDate: streak.lastClaimDate,
+    };
   }
 
   // ── Récompense courante ────────────────────────────────────────────────────
@@ -146,100 +126,70 @@ export class DailyRewardService {
 
   /**
    * Réclame la récompense journalière.
-   * Retourne l'état du streak + les récompenses obtenues + info de rachat si applicable.
+   * 1 jour manqué → rescue_required (rien n'est distribué).
+   * 2+ jours manqués → la série repart à J1 dans la même requête (streakLost).
    */
-  async claimDaily(userId: number) {
+  async claimDaily(userId: number): Promise<ClaimDailyResult> {
     const streak = await this.getOrCreateStreak(userId);
-    const today = todayStr();
+    const today = todayUtc();
+    const gap = classifyGap(streak.lastClaimDate, today);
 
-    // Déjà réclamé aujourd'hui
-    if (streak.lastClaimDate === today) {
+    if (gap === 'claimed_today') {
       throw new ConflictException(
         "Récompense journalière déjà réclamée aujourd'hui.",
       );
     }
-
-    const rewards: Array<{
-      type: RewardType;
-      value: number;
-      quantity: number;
-      label?: string | null;
-      isMilestone: boolean;
-    }> = [];
-    if (!streak.lastClaimDate) {
-      // Premier claim ever
-      streak.currentStreak = 1;
-    } else {
-      const diff = daysBetween(streak.lastClaimDate, today);
-
-      if (diff === 1) {
-        // Connexion consécutive
-        streak.currentStreak += 1;
-      } else if (diff > 1) {
-        // Jours manqués — on informe mais on ne reset pas encore
-        // L'utilisateur doit choisir via /rescue ou accepter le reset via /reset
-        const missed = diff - 1;
-        const maxR = maxRescuableDays(streak.currentStreak);
-        const costs = Array.from({ length: Math.min(missed, maxR) }, (_, i) =>
-          calculateRescueCost(streak.currentStreak, i + 1),
-        );
-
-        return {
-          status: 'rescue_required',
-          message: `Tu as manqué ${missed} jour(s). Tu peux racheter ta streak en gold ou la réinitialiser.`,
-          streak: {
-            current: streak.currentStreak,
-            longest: streak.longestStreak,
-            totalDays: streak.totalDays,
-            cycleDay: streak.cycleDay,
-            lastClaimDate: streak.lastClaimDate,
-          },
-          rescue: {
-            daysMissed: missed,
-            maxRescuable: maxR,
-            costPerScenario: costs,
-          },
-        };
-      }
+    if (gap === 'rescuable') {
+      return {
+        status: 'rescue_required',
+        message:
+          'Tu as manqué un jour. Sauve ta série en gold ou repars de J1.',
+        streak: this.streakView(streak),
+        rescue: { cost: rescueCost(streak.currentStreak) },
+      };
     }
 
-    // Calcule la semaine courante (ex: streak 8 → semaine 2)
-    const weekNumber = Math.floor(streak.totalDays / 7) + 1;
+    let streakLost: number | undefined;
+    if (gap === 'lost' && streak.currentStreak > 0) {
+      streakLost = streak.currentStreak;
+    }
+    if (gap === 'lost' || gap === 'first') streak.currentStreak = 0;
 
-    // Récupère la récompense du jour
+    const day = streak.currentStreak + 1;
+    const cycleDay = cycleDayFor(day);
     const rewardDef = await this.getRewardDefinition(
-      streak.cycleDay,
-      weekNumber,
+      cycleDay,
+      weekNumberFor(day),
     );
     if (!rewardDef) {
       throw new NotFoundException(
-        `Aucune récompense définie pour le jour ${streak.cycleDay}`,
+        `Aucune récompense définie pour le jour ${cycleDay}`,
       );
     }
 
-    // Distribue la récompense principale
     await this.distributeReward(userId, rewardDef);
-    rewards.push({
-      type: rewardDef.rewardType,
-      value: rewardDef.rewardValue,
-      quantity: rewardDef.quantity,
-      label: rewardDef.label,
-      isMilestone: false,
-    });
+    const rewards: DailyRewardGain[] = [
+      {
+        type: rewardDef.rewardType,
+        value: rewardDef.rewardValue,
+        quantity: rewardDef.quantity,
+        label: stripEmoji(rewardDef.label),
+        isMilestone: false,
+      },
+    ];
 
-    // Met à jour la streak
+    streak.currentStreak = day;
     streak.totalDays += 1;
-    streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+    streak.longestStreak = Math.max(streak.longestStreak, day);
     streak.lastClaimDate = today;
-    streak.cycleDay = this.nextCycleDay(streak.cycleDay);
+    streak.cycleDay = cycleDayFor(day + 1);
     await this.streakRepo.save(streak);
 
-    // Sauvegarde l'historique
     await this.historyRepo.save(
       this.historyRepo.create({
         userId,
         dayNumber: streak.totalDays,
-        cycleDay: rewardDef.cycleDay,
+        cycleDay,
         rewardType: rewardDef.rewardType,
         rewardValue: rewardDef.rewardValue,
         quantity: rewardDef.quantity,
@@ -248,27 +198,24 @@ export class DailyRewardService {
       }),
     );
 
-    // Vérifie les milestones
+    // Palier : atteint à chaque fois que la série passe le seuil
     const milestone = await this.milestoneRepo.findOne({
-      where: { dayThreshold: streak.totalDays, isActive: true },
+      where: { dayThreshold: day, isActive: true },
     });
-
     if (milestone) {
       await this.distributeReward(userId, milestone);
       rewards.push({
         type: milestone.rewardType,
         value: milestone.rewardValue,
         quantity: milestone.quantity,
-        label: milestone.label ?? null,
+        label: stripEmoji(milestone.label),
         isMilestone: true,
       });
-
-      // Historique du milestone
       await this.historyRepo.save(
         this.historyRepo.create({
           userId,
           dayNumber: streak.totalDays,
-          cycleDay: streak.cycleDay,
+          cycleDay,
           rewardType: milestone.rewardType,
           rewardValue: milestone.rewardValue,
           quantity: milestone.quantity,
@@ -279,46 +226,27 @@ export class DailyRewardService {
 
     return {
       status: 'claimed',
-      message: `Jour ${streak.totalDays} réclamé !`,
-      streak: {
-        current: streak.currentStreak,
-        longest: streak.longestStreak,
-        totalDays: streak.totalDays,
-        cycleDay: streak.cycleDay,
-        lastClaimDate: streak.lastClaimDate,
-      },
+      message: `Jour ${day} réclamé !`,
+      streak: this.streakView(streak),
       rewards,
+      ...(streakLost ? { streakLost } : {}),
     };
   }
 
   // ── Rachat de streak ───────────────────────────────────────────────────────
 
-  async rescueStreak(userId: number, dto: RescueStreakDto) {
+  /** Rachète l'unique jour manqué, uniquement le jour du retour. */
+  async rescueStreak(userId: number): Promise<RescueStreakResult> {
     const streak = await this.getOrCreateStreak(userId);
-    const today = todayStr();
+    const today = todayUtc();
 
-    if (!streak.lastClaimDate) {
-      throw new BadRequestException('Aucune streak à sauvegarder.');
-    }
-
-    const diff = daysBetween(streak.lastClaimDate, today);
-    if (diff <= 1) {
-      throw new BadRequestException("Ta streak n'est pas en danger.");
-    }
-
-    const missed = diff - 1;
-    const maxR = maxRescuableDays(streak.currentStreak);
-
-    if (dto.daysToBuy > maxR) {
+    if (classifyGap(streak.lastClaimDate, today) !== 'rescuable') {
       throw new BadRequestException(
-        `Tu ne peux racheter que ${maxR} jour(s) maximum avec ta streak actuelle de ${streak.currentStreak}.`,
+        "Seul un jour manqué peut être racheté, et uniquement aujourd'hui.",
       );
     }
-    if (dto.daysToBuy > missed) {
-      throw new BadRequestException(`Tu n'as manqué que ${missed} jour(s).`);
-    }
 
-    const cost = calculateRescueCost(streak.currentStreak, dto.daysToBuy);
+    const cost = rescueCost(streak.currentStreak);
     const user = await this.usersService.findOne(userId);
     if (Number(user.gold) < cost) {
       throw new BadRequestException(
@@ -326,28 +254,23 @@ export class DailyRewardService {
       );
     }
 
-    // Débite le gold
     await this.usersService.addGold(userId, -cost);
-
-    // Sauvegarde le rescue
     await this.rescueRepo.save(
       this.rescueRepo.create({
         userId,
-        daysMissed: dto.daysToBuy,
+        daysMissed: 1,
         goldSpent: cost,
         streakBefore: streak.currentStreak,
-        streakAfter: streak.currentStreak, // streak maintenue
+        streakAfter: streak.currentStreak,
       }),
     );
 
-    // Recule lastClaimDate pour que le claim du jour soit possible
-    const newLastClaim = new Date();
-    newLastClaim.setDate(newLastClaim.getDate() - 1);
-    streak.lastClaimDate = newLastClaim.toISOString().slice(0, 10);
+    // Le jour manqué devient « hier » : le claim du jour redevient consécutif
+    streak.lastClaimDate = shiftDay(today, -1);
     await this.streakRepo.save(streak);
 
     return {
-      message: `Streak sauvegardée pour ${cost}g ! Tu peux maintenant réclamer ta récompense du jour.`,
+      message: `Série sauvée pour ${cost}g ! Tu peux réclamer ta récompense du jour.`,
       goldSpent: cost,
       goldRemaining: Number(user.gold) - cost,
       streak: streak.currentStreak,
@@ -358,81 +281,18 @@ export class DailyRewardService {
 
   async resetStreak(userId: number) {
     const streak = await this.getOrCreateStreak(userId);
-    streak.currentStreak = 1;
+    streak.currentStreak = 0;
     streak.cycleDay = 1;
     streak.lastClaimDate = null;
     await this.streakRepo.save(streak);
-    return { message: 'Streak réinitialisée. Tu repars de J1 !' };
+    return { message: 'Série réinitialisée. Tu repars de J1 !' };
   }
 
   // ── Statut ─────────────────────────────────────────────────────────────────
 
   async getStatus(userId: number) {
     const streak = await this.getOrCreateStreak(userId);
-    const today = todayStr();
-    const alreadyClaimed = streak.lastClaimDate === today;
-
-    let daysMissed = 0;
-    let rescueAvailable = false;
-    if (streak.lastClaimDate && !alreadyClaimed) {
-      const diff = daysBetween(streak.lastClaimDate, today);
-      if (diff > 1) {
-        daysMissed = diff - 1;
-        rescueAvailable = daysMissed <= maxRescuableDays(streak.currentStreak);
-      }
-    }
-
-    const weekNumber = Math.floor(streak.totalDays / 7) + 1;
-    const nextReward = await this.getRewardDefinition(
-      streak.cycleDay,
-      weekNumber,
-    );
-
-    // Prochain milestone
-    const nextMilestone = await this.milestoneRepo
-      .createQueryBuilder('m')
-      .where('m.dayThreshold > :total AND m.isActive = true', {
-        total: streak.totalDays,
-      })
-      .orderBy('m.dayThreshold', 'ASC')
-      .getOne();
-
-    return {
-      streak: {
-        current: streak.currentStreak,
-        longest: streak.longestStreak,
-        totalDays: streak.totalDays,
-        cycleDay: streak.cycleDay,
-        weekNumber,
-        lastClaimDate: streak.lastClaimDate,
-      },
-      alreadyClaimed,
-      daysMissed,
-      rescueAvailable,
-      rescueCost:
-        daysMissed > 0
-          ? calculateRescueCost(
-              streak.currentStreak,
-              Math.min(daysMissed, maxRescuableDays(streak.currentStreak)),
-            )
-          : null,
-      maxRescuable: maxRescuableDays(streak.currentStreak),
-      nextReward: nextReward
-        ? {
-            type: nextReward.rewardType,
-            value: nextReward.rewardValue,
-            quantity: nextReward.quantity,
-            label: nextReward.label,
-          }
-        : null,
-      nextMilestone: nextMilestone
-        ? {
-            dayThreshold: nextMilestone.dayThreshold,
-            daysRemaining: nextMilestone.dayThreshold - streak.totalDays,
-            label: nextMilestone.label,
-          }
-        : null,
-    };
+    return { streak: this.streakView(streak) };
   }
 
   // ── Historique ─────────────────────────────────────────────────────────────
