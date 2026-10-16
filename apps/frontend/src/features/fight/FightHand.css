@@ -4,7 +4,8 @@
   justify-content: center;
   align-items: flex-end;
   min-height: 170px;
-  padding: 28px 8px 12px;
+  /* Marge latérale : les cartes du bord pivotent de 15° et débordent d'~31px */
+  padding: 28px 34px 12px;
 }
 
 /* Pas de défilement dans la main : tout le geste sert à l'appui long */
@@ -36,18 +37,6 @@
 }
 
 /* ── États (contour autour de la carte) ───────────────────────────────────── */
-.fhand-card--selected .card-face {
-  box-shadow:
-    0 0 0 3px #7a1c3b,
-    0 8px 14px rgba(0, 0, 0, 0.3);
-}
-
-.fhand-card--paying .card-face {
-  box-shadow:
-    0 0 0 3px #e67e22,
-    0 6px 12px rgba(0, 0, 0, 0.25);
-}
-
 .fhand-card--payable:not(.fhand-card--paying) .card-face {
   box-shadow:
     0 0 0 2px rgba(122, 28, 59, 0.35),
@@ -65,6 +54,19 @@
   box-shadow:
     0 0 0 3px #27ae60,
     0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Sélection et paiement priment sur les contours gratuit / défausse */
+.fhand-card--selected .card-face {
+  box-shadow:
+    0 0 0 3px #7a1c3b,
+    0 8px 14px rgba(0, 0, 0, 0.3);
+}
+
+.fhand-card--paying .card-face {
+  box-shadow:
+    0 0 0 3px #e67e22,
+    0 6px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* ── Pastilles ────────────────────────────────────────────────────────────── */
