@@ -281,6 +281,11 @@ export class DailyRewardService {
 
   async resetStreak(userId: number) {
     const streak = await this.getOrCreateStreak(userId);
+    if (classifyGap(streak.lastClaimDate, todayUtc()) !== 'rescuable') {
+      throw new BadRequestException(
+        "Rien à réinitialiser : ta série n'est pas en danger.",
+      );
+    }
     streak.currentStreak = 0;
     streak.cycleDay = 1;
     streak.lastClaimDate = null;

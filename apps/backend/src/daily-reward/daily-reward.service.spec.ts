@@ -242,6 +242,20 @@ describe('DailyRewardService — rescue & reset', () => {
     expect(users.addGold).not.toHaveBeenCalled();
   });
 
+  it.each([TODAY, '2026-10-15'])(
+    'reset refusé si lastClaimDate = %s',
+    async (last) => {
+      const { service, repos } = setup({
+        currentStreak: 5,
+        lastClaimDate: last,
+      });
+      await expect(service.resetStreak(1)).rejects.toThrow(
+        'Rien à réinitialiser',
+      );
+      expect(repos.streak.save).not.toHaveBeenCalled();
+    },
+  );
+
   it('reset : streak 0, record et total conservés, prochain claim = J1', async () => {
     const { service, streak } = setup({
       currentStreak: 12,
