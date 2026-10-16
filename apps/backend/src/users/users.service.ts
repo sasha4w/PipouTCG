@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, EntityManager, In } from 'typeorm';
 import { createHash } from 'crypto';
+import { CardType, Rarity } from '@pipou/shared';
 
 import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
@@ -28,6 +29,21 @@ export interface PortfolioCard {
   image: { id: number; url: string } | null;
   owned: boolean;
   quantity: number;
+}
+
+const RARITY_ORDER: readonly string[] = Object.values(Rarity);
+
+/** Ordre d'affichage dans un set : monstres puis supports, coût, rareté, nom. */
+function comparePortfolioCards(a: PortfolioCard, b: PortfolioCard): number {
+  const aSupport = a.type === CardType.SUPPORT ? 1 : 0;
+  const bSupport = b.type === CardType.SUPPORT ? 1 : 0;
+  return (
+    aSupport - bSupport ||
+    a.cost - b.cost ||
+    RARITY_ORDER.indexOf(a.rarity) - RARITY_ORDER.indexOf(b.rarity) ||
+    a.name.localeCompare(b.name) ||
+    a.id - b.id
+  );
 }
 
 @Injectable()
@@ -345,7 +361,6 @@ export class UsersService {
       )
       .addSelect('COALESCE(uc.quantity, 0)', 'quantity')
       .orderBy('cardSet.id', 'ASC')
-      .addOrderBy('card.id', 'ASC')
       .getRawAndEntities();
 
     // 2. Groupe par set
@@ -396,9 +411,9 @@ export class UsersService {
       });
     });
 
-    return {
-      sets: Array.from(setsMap.values()),
-    };
+    const sets = Array.from(setsMap.values());
+    sets.forEach((set) => set.cards.sort(comparePortfolioCards));
+    return { sets };
   }
   /* ===================== CARD MANAGEMENT ===================== */
   /** Parmi `cardIds`, ceux que le joueur possède déjà. */

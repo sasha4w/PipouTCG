@@ -23,11 +23,23 @@ const mockUserRepo = {
   createQueryBuilder: jest.fn(),
 };
 
+const mockCardQb = {
+  leftJoinAndSelect: jest.fn().mockReturnThis(),
+  leftJoin: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  orderBy: jest.fn().mockReturnThis(),
+  addOrderBy: jest.fn().mockReturnThis(),
+  getRawAndEntities: jest.fn(),
+};
+
 const mockUserCardRepo = {
   findAndCount: jest.fn(),
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  manager: {
+    getRepository: () => ({ createQueryBuilder: () => mockCardQb }),
+  },
 };
 
 const mockUserBoosterRepo = {
@@ -82,6 +94,61 @@ describe('UsersService', () => {
       expect(result.data).toEqual(fakeUsers);
       expect(result.meta.total).toBe(1);
       expect(result.meta.totalPages).toBe(1);
+    });
+  });
+
+  // ======= COLLECTION =======
+  describe('getCollection', () => {
+    const card = (
+      id: number,
+      setId: number,
+      type: string,
+      cost: number,
+      rarity: string,
+      name: string,
+    ) => ({
+      id,
+      name,
+      type,
+      cost,
+      rarity,
+      atk: 0,
+      hp: 0,
+      cardSet: { id: setId, name: `Set ${setId}` },
+      image: null,
+    });
+
+    it('trie chaque set par type, coût, rareté puis nom', async () => {
+      const entities = [
+        card(1, 1, 'support', 1, 'common', 'Potion'),
+        card(2, 1, 'monster', 3, 'common', 'Golem'),
+        card(3, 1, 'monster', 1, 'rare', 'Lutin'),
+        card(4, 1, 'monster', 1, 'common', 'Rat'),
+        card(5, 1, 'monster', 1, 'common', 'Chat'),
+        card(6, 2, 'monster', 2, 'epic', 'Dragon'),
+        card(7, 2, 'monster', 0, 'secret', 'Pipou'),
+      ];
+      mockCardQb.getRawAndEntities.mockResolvedValue({
+        entities,
+        raw: entities.map((c) => ({ quantity: c.id === 4 ? 2 : 0 })),
+      });
+
+      const { sets } = await service.getCollection(1);
+
+      expect(sets.map((s) => s.id)).toEqual([1, 2]);
+      expect(sets[0].cards.map((c) => c.name)).toEqual([
+        'Chat',
+        'Rat',
+        'Lutin',
+        'Golem',
+        'Potion',
+      ]);
+      expect(sets[1].cards.map((c) => c.name)).toEqual(['Pipou', 'Dragon']);
+      expect(sets[0]).toMatchObject({ owned: 1, total: 5 });
+      expect(sets[0].cards.find((c) => c.name === 'Rat')).toMatchObject({
+        owned: true,
+        quantity: 2,
+      });
     });
   });
 
