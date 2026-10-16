@@ -21,8 +21,8 @@ export function useDailyRewardModal(isAuthenticated: boolean) {
 
   useEffect(() => {
     if (!status) return;
-    // Auto-ouvre si pas encore réclamé ou si streak en danger
-    if (!status.alreadyClaimed || status.daysMissed > 0) {
+    // Auto-ouvre tant que la récompense du jour n'est pas réclamée
+    if (!status.alreadyClaimed) {
       const timer = setTimeout(() => setIsOpen(true), 1200); // délai 1.2s après le login
       return () => clearTimeout(timer);
     }
