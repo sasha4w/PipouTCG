@@ -24,7 +24,16 @@ export interface ClientChoiceCandidate {
   instanceId: string;
   baseCard: Pick<
     ClientCard,
-    "id" | "name" | "type" | "atk" | "hp" | "rarity" | "supportType"
+    | "id"
+    | "name"
+    | "type"
+    | "atk"
+    | "hp"
+    | "rarity"
+    | "supportType"
+    | "cost"
+    | "image"
+    | "description"
   >;
   source: ChoiceSource;
 }
