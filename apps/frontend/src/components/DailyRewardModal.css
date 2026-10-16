@@ -7,18 +7,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
 }
 
 /* ── Modal ── */
 .drm-modal {
   width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
+  max-width: 360px;
+  max-height: calc(100dvh - 32px);
   overflow-y: auto;
   background: linear-gradient(160deg, #1a0a12 0%, #120818 100%);
   border: 1.5px solid rgba(238, 188, 119, 0.25);
-  border-radius: 20px;
-  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: 18px;
+  padding: 1rem 1rem 1.1rem;
   position: relative;
   box-shadow: 0 0 60px rgba(238, 188, 119, 0.08);
   scrollbar-width: none;
@@ -26,76 +27,71 @@
 .drm-modal::-webkit-scrollbar {
   display: none;
 }
-
 .btn.drm-close {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 0.6rem;
+  right: 0.6rem;
   z-index: 2;
 }
 
-/* ── Content ── */
 .drm-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1.1rem;
+  gap: 0.7rem;
 }
 .drm-content--center {
-  min-height: 180px;
+  min-height: 160px;
+  align-items: center;
   justify-content: center;
 }
 
 /* ── Header ── */
 .drm-header {
-  text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  width: 100%;
+  gap: 0.25rem;
+  padding-right: 2rem;
 }
-.drm-header__icon {
-  font-size: 2.2rem;
+.drm-header__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .drm-header__title {
   font-family: "Lilita One", cursive;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #eebc77;
   margin: 0;
 }
 .drm-header__title--danger {
   color: #f27aaa;
 }
-.drm-header__streak {
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
 .drm-header__subtitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
   font-family: "Comfortaa", sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: rgba(255, 255, 255, 0.55);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.45;
 }
-
-/* Statistiques sous le titre */
+.drm-header__subtitle strong {
+  color: #eebc77;
+}
 .drm-header__stats {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 2px;
 }
 .drm-stat {
   display: flex;
   align-items: center;
   gap: 3px;
   font-family: "Comfortaa", sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: rgba(255, 255, 255, 0.5);
 }
 .drm-stat strong {
@@ -103,261 +99,184 @@
 }
 .drm-stat-sep {
   color: rgba(255, 255, 255, 0.2);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
 }
 
-/* ── Calendrier mensuel ── */
-.drm-calendar {
-  width: 100%;
+/* ── Bloc commun ── */
+.drm-cal,
+.drm-today,
+.drm-ms {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(238, 188, 119, 0.12);
-  border-radius: 14px;
-  padding: 0.9rem;
+  border-radius: 12px;
+  padding: 0.6rem;
 }
 
-.drm-calendar__header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 6px;
-}
-.drm-calendar__dow {
-  text-align: center;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.58rem;
-  color: rgba(255, 255, 255, 0.25);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.drm-calendar__grid {
+/* ── Calendrier compact ── */
+.drm-cal__grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 3px;
 }
-
-.drm-calendar__day {
-  aspect-ratio: 1;
+.drm-cal__grid + .drm-cal__grid {
+  margin-top: 3px;
+}
+.drm-cal__dow {
+  text-align: center;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+.drm-cal__day {
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
   font-family: "Lilita One", cursive;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.3);
-  background: transparent;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-  cursor: default;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+.drm-cal__day--claimed {
+  background: rgba(112, 184, 112, 0.18);
+  color: #70b870;
+}
+.drm-cal__day--rescued {
+  border: 1.5px dashed rgba(238, 188, 119, 0.5);
+  color: #eebc77;
+}
+.drm-cal__day--missed {
+  background: rgba(242, 122, 170, 0.12);
+  color: #f27aaa;
+}
+.drm-cal__day--future,
+.drm-cal__day--past {
+  color: rgba(255, 255, 255, 0.22);
+}
+.drm-cal__day[data-today="true"] {
+  border-color: #eebc77;
+  color: #eebc77;
+}
+.drm-cal__day--claimed[data-today="true"] {
+  border-color: #70b870;
+  color: #70b870;
 }
 
-/* Jour réclamé */
-.drm-calendar__day.claimed {
-  background: rgba(112, 184, 112, 0.2);
+/* ── Récompense du jour ── */
+.drm-today {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.drm-today__icon,
+.drm-ms__icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(238, 188, 119, 0.12);
+  border: 1.5px solid rgba(238, 188, 119, 0.4);
+}
+.drm-today__body,
+.drm-ms__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.drm-today__meta {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: rgba(255, 255, 255, 0.4);
+}
+.drm-today__value {
+  font-family: "Lilita One", cursive;
+  font-size: 1rem;
+  font-weight: normal;
+  color: #eebc77;
+}
+.drm-today__label {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Prochain palier ── */
+.drm-ms__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.drm-ms__title {
+  font-family: "Lilita One", cursive;
+  font-size: 0.88rem;
+  color: #eebc77;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.drm-ms__count {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+.drm-ms__bar {
+  height: 6px;
+  margin-top: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.drm-ms__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #70b870, #eebc77);
+}
+.drm-ms__done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: "Lilita One", cursive;
+  font-size: 0.85rem;
+  color: #eebc77;
+}
+.drm-ms__chips {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.drm-ms__chip {
+  font-family: "Lilita One", cursive;
+  font-size: 0.56rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.3);
+}
+.drm-ms__chip.is-done {
   border-color: rgba(112, 184, 112, 0.5);
   color: #70b870;
 }
-
-/* Aujourd'hui */
-.drm-calendar__day.today {
-  background: rgba(238, 188, 119, 0.2);
+.drm-ms__chip.is-next {
   border-color: #eebc77;
   color: #eebc77;
-  box-shadow: 0 0 10px rgba(238, 188, 119, 0.3);
-  font-size: 0.72rem;
 }
 
-/* Aujourd'hui ET réclamé */
-.drm-calendar__day.today.claimed {
-  background: rgba(112, 184, 112, 0.25);
-  border-color: #70b870;
-  color: #70b870;
-  box-shadow: 0 0 10px rgba(112, 184, 112, 0.2);
-}
-
-/* Jour passé manqué */
-.drm-calendar__day.missed {
-  color: rgba(242, 122, 170, 0.35);
-}
-
-/* Dernier claim */
-.drm-calendar__day.last:not(.today) {
-  border-color: rgba(238, 188, 119, 0.3);
-}
-
-/* Légende */
-.drm-calendar__legend {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 8px;
-}
-.drm-calendar__legend span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.56rem;
-  color: rgba(255, 255, 255, 0.3);
-}
-.drm-legend-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.drm-legend-dot.claimed {
-  background: #70b870;
-}
-.drm-legend-dot.today {
-  background: #eebc77;
-}
-.drm-legend-dot.missed {
-  background: rgba(242, 122, 170, 0.4);
-}
-
-/* ── Milestone Tracker ── */
-.drm-milestones {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(238, 188, 119, 0.12);
-  border-radius: 14px;
-  padding: 0.9rem;
-}
-
-.drm-milestones__title {
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.62rem;
-  color: rgba(255, 255, 255, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-.drm-milestones__track {
-  position: relative;
-}
-
-/* Barre de progression */
-.drm-milestones__bar {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.drm-milestones__fill {
-  height: 100%;
-  background: linear-gradient(90deg, #70b870, #eebc77);
-  border-radius: 2px;
-}
-
-/* Noeuds */
-.drm-milestones__nodes {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-}
-
-.drm-ms-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  flex: 1;
-}
-
-.drm-ms-node__dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.55rem;
-  color: rgba(255, 255, 255, 0.3);
-  transition: all 0.3s;
-  position: relative;
-  z-index: 1;
-}
-
-.drm-ms-node.done .drm-ms-node__dot {
-  background: rgba(112, 184, 112, 0.25);
-  border-color: #70b870;
-  color: #70b870;
-}
-
-.drm-ms-node.next .drm-ms-node__dot {
-  background: rgba(238, 188, 119, 0.2);
-  border-color: #eebc77;
-  color: #eebc77;
-  box-shadow: 0 0 8px rgba(238, 188, 119, 0.4);
-  font-size: 0.6rem;
-}
-
-.drm-ms-node__label {
-  font-family: "Lilita One", cursive;
-  font-size: 0.52rem;
-  color: rgba(255, 255, 255, 0.2);
-  white-space: nowrap;
-}
-.drm-ms-node.done .drm-ms-node__label {
-  color: #70b870;
-}
-.drm-ms-node.next .drm-ms-node__label {
-  color: #eebc77;
-}
-
-/* ── Prochaine récompense ── */
-.drm-next-reward {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(238, 188, 119, 0.15);
-  border-radius: 12px;
-  padding: 0.75rem 1.5rem;
-  width: 100%;
-}
-.drm-next-reward__label {
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.drm-next-reward__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Lilita One", cursive;
-  font-size: 1rem;
-  color: #eebc77;
-}
-
-/* ── Loading ── */
-.drm-loading-icon {
-  font-size: 2.5rem;
-}
-.drm-loading-text {
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.45);
-}
-
-/* ── Rewards résultat ── */
+/* ── Résultat ── */
 .drm-rewards {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-  width: 100%;
 }
 .drm-reward {
   display: flex;
@@ -367,15 +286,12 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.9rem;
   min-width: 80px;
 }
 .drm-reward--milestone {
   border-color: rgba(238, 188, 119, 0.4);
   background: rgba(238, 188, 119, 0.08);
-}
-.drm-reward__icon {
-  font-size: 1.8rem;
 }
 .drm-reward__qty {
   font-family: "Lilita One", cursive;
@@ -387,7 +303,10 @@
   font-size: 0.62rem;
   color: rgba(255, 255, 255, 0.45);
 }
-.drm-reward__milestone-badge {
+.drm-reward__badge {
+  display: flex;
+  align-items: center;
+  gap: 3px;
   font-family: "Comfortaa", sans-serif;
   font-size: 0.55rem;
   color: #eebc77;
@@ -396,59 +315,36 @@
   border-radius: 20px;
 }
 
-/* ── Rescue ── */
-.drm-rescue-options {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-  width: 100%;
-}
-.drm-rescue-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 0.6rem 0.9rem;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.drm-rescue-option.selected {
-  border-color: #eebc77;
-  background: rgba(238, 188, 119, 0.12);
-  color: #eebc77;
-}
-.drm-rescue-option__cost {
-  font-family: "Lilita One", cursive;
-  font-size: 0.82rem;
-  color: #eebc77;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
+/* ── Rachat ── */
 .drm-rescue-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
 }
 
-/* ── Close btn résultat ── */
-.drm-close-btn {
-  width: 100%;
-}
-
-/* ── Error ── */
-.drm-error {
+/* ── Messages ── */
+.drm-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(242, 122, 170, 0.1);
+  border: 1px solid rgba(242, 122, 170, 0.3);
   font-family: "Comfortaa", sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  color: #f27aaa;
+}
+.drm-loading-text {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+.drm-error {
+  margin: 0;
+  font-family: "Comfortaa", sans-serif;
+  font-size: 0.75rem;
   color: #f27aaa;
   text-align: center;
 }
