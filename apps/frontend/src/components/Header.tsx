@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import InboxWidget from "../features/inbox/InboxWidget";
+import { IconCrown } from "./Icons";
 
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
@@ -246,20 +247,6 @@ function TitleStars() {
   );
 }
 
-function IconCrown() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M2 19h20M3 9l4 4 5-7 5 7 4-4v10H3V9z"
-        stroke="#7A1C3B"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function Header() {
   const navigate = useNavigate(); // Tu as déjà ceci
   const { t } = useTranslation();
@@ -290,7 +277,7 @@ export default function Header() {
             size="sm"
             onClick={() => navigate("/admin")}
           >
-            <IconCrown />
+            <IconCrown size={13} color="#7A1C3B" />
             <span>{t("header.admin")}</span>
           </Button>
         )}

@@ -15,7 +15,8 @@ import { Card } from '../cards/card.entity';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { TransactionStatus, ProductType } from '@pipou/shared';
-import type { SaleSort } from '@pipou/shared';
+import type { SaleSort, SalesFilter } from '@pipou/shared';
+import { salesFilterWhere } from './stats/sales-filter';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
 export interface ListingSoldPayload {
@@ -102,15 +103,7 @@ export class TransactionService {
   ) {
     const { page = 1, limit = 20 } = pagination;
 
-    const where =
-      role === 'seller'
-        ? { seller: { id: userId }, status: TransactionStatus.COMPLETED }
-        : role === 'buyer'
-          ? { buyer: { id: userId }, status: TransactionStatus.COMPLETED }
-          : [
-              { seller: { id: userId }, status: TransactionStatus.COMPLETED },
-              { buyer: { id: userId }, status: TransactionStatus.COMPLETED },
-            ];
+    const where = salesFilterWhere({ userId, role: role ?? 'both' });
 
     const [transactions, total] = await this.transactionRepository.findAndCount(
       {
@@ -127,10 +120,14 @@ export class TransactionService {
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
-  async getRecentSales(pagination: PaginationDto, sort: SaleSort = 'date') {
+  async getRecentSales(
+    pagination: PaginationDto,
+    sort: SaleSort = 'date',
+    filter: SalesFilter = {},
+  ) {
     const { page = 1, limit = 20 } = pagination;
     const [data, total] = await this.transactionRepository.findAndCount({
-      where: { status: TransactionStatus.COMPLETED },
+      where: salesFilterWhere(filter),
       relations: ['seller', 'buyer'],
       order: saleOrder(sort),
       skip: (page - 1) * limit,

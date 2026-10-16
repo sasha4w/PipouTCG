@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { SaleSort } from "@pipou/shared";
 import {
   type Transaction,
   type UpdateListingData,
 } from "../../services/transaction.service";
 import Button from "../../components/Button";
-import TransactionHistory from "./TransactionHistory";
+import SalesHistory from "./sales-history/SalesHistory";
+import type { SalesPlayer } from "./sales-history/salesScope";
 import ListingEditForm from "./ListingEditForm";
 import ListingPreview from "./ListingPreview";
 import "./SellTab.css";
@@ -14,9 +14,7 @@ import "./ListingCard.css";
 
 interface SellTabProps {
   userListings: Transaction[] | undefined;
-  userSellHistory: Transaction[] | undefined;
-  historySort: SaleSort;
-  onHistorySortChange: (sort: SaleSort) => void;
+  me: SalesPlayer | undefined;
   /** Vente ouverte depuis la boîte de réception. */
   highlightSaleId: number | null;
   loadingAction: number | null;
@@ -31,9 +29,7 @@ interface SellTabProps {
 
 const SellTab = ({
   userListings,
-  userSellHistory,
-  historySort,
-  onHistorySortChange,
+  me,
   highlightSaleId,
   loadingAction,
   loadingUpdate,
@@ -135,12 +131,12 @@ const SellTab = ({
       <h2 className="marketplace-section__title marketplace-section__title--history">
         {t("marketplace.sell.history_title")}
       </h2>
-      <TransactionHistory
-        history={userSellHistory}
+      <SalesHistory
+        key={highlightSaleId ?? "none"}
         emptyMessage={t("marketplace.sell.history_empty")}
-        sort={historySort}
-        onSortChange={onHistorySortChange}
-        highlightId={highlightSaleId}
+        me={me}
+        initialScope="my-sales"
+        highlightSaleId={highlightSaleId}
       />
     </div>
   );

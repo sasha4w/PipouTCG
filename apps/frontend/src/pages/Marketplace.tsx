@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import type { SaleSort } from "@pipou/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -59,8 +58,6 @@ const Marketplace = () => {
   const highlightSaleId = Number(searchParams.get("sale")) || null;
   const setSelectedTab = (tab: "sell" | "buy") =>
     setSearchParams({ tab }, { replace: true });
-  const [recentSalesSort, setRecentSalesSort] = useState<SaleSort>("date");
-  const [mySalesSort, setMySalesSort] = useState<SaleSort>("date");
   const [showCreateListingForm, setShowCreateListingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingAction, setLoadingAction] = useState<number | null>(null);
@@ -110,16 +107,11 @@ const Marketplace = () => {
     queryFn: () => userService.getMyInventory(),
   });
 
-  const { data: recentSalesData } = useQuery({
-    queryKey: QUERY_KEYS.recentSales(recentSalesSort),
-    queryFn: () => transactionService.getRecentSales(1, 20, recentSalesSort),
+  const { data: profile } = useQuery({
+    queryKey: QUERY_KEYS.profile,
+    queryFn: () => userService.getMe(),
   });
-
-  const { data: mySalesData } = useQuery({
-    queryKey: QUERY_KEYS.mySales(mySalesSort),
-    queryFn: () =>
-      transactionService.getHistory(1, 20, "seller", mySalesSort),
-  });
+  const me = profile ? { id: profile.id, username: profile.username } : undefined;
 
   const availableItems = useMemo(() => {
     if (!inventory) return [];
@@ -278,7 +270,7 @@ const Marketplace = () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recentSalesAll });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.salesAll });
       addToast(t("marketplace.toast.buy_success"), "success");
     } catch (error) {
       const raw = apiErrorMessage(error) ?? "";
@@ -369,9 +361,7 @@ const Marketplace = () => {
       {selectedTab === "sell" && (
         <SellTab
           userListings={userListings?.data}
-          userSellHistory={mySalesData?.data}
-          historySort={mySalesSort}
-          onHistorySortChange={setMySalesSort}
+          me={me}
           highlightSaleId={highlightSaleId}
           loadingAction={loadingAction}
           loadingUpdate={loadingUpdate}
@@ -386,9 +376,7 @@ const Marketplace = () => {
       {selectedTab === "buy" && (
         <BuyTab
           filteredListings={filteredListings}
-          buyHistory={recentSalesData?.data}
-          historySort={recentSalesSort}
-          onHistorySortChange={setRecentSalesSort}
+          me={me}
           loadingAction={loadingAction}
           searchTerm={searchTerm}
           filterConfig={filterConfig}

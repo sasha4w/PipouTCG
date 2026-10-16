@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionController } from './transactions.controller';
 import { TransactionService } from './transactions.service';
+import { TransactionStatsService } from './stats/transaction-stats.service';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { ProductType, TransactionStatus } from '@pipou/shared';
 
@@ -9,7 +10,10 @@ const mockTransactionService = {
   createListing: jest.fn(),
   buyListing: jest.fn(),
   getUserHistory: jest.fn(),
+  getRecentSales: jest.fn(),
 };
+
+const mockStatsService = { getStats: jest.fn() };
 
 const pagination = { page: 1, limit: 20 };
 
@@ -31,6 +35,7 @@ describe('TransactionController', () => {
       controllers: [TransactionController],
       providers: [
         { provide: TransactionService, useValue: mockTransactionService },
+        { provide: TransactionStatsService, useValue: mockStatsService },
       ],
     })
       .overrideGuard(JwtAuthGuard)
@@ -108,6 +113,43 @@ describe('TransactionController', () => {
         'price',
       );
       expect(result).toEqual(fake);
+    });
+  });
+
+  // ======= SALES =======
+  describe('getRecentSales', () => {
+    it('should pass the player filter to the service', async () => {
+      mockTransactionService.getRecentSales.mockResolvedValue({ data: [] });
+      const query = {
+        ...pagination,
+        sort: 'price' as const,
+        userId: 3,
+        role: 'buyer' as const,
+      };
+
+      await controller.getRecentSales(query);
+      expect(mockTransactionService.getRecentSales).toHaveBeenCalledWith(
+        query,
+        'price',
+        { userId: 3, role: 'buyer' },
+      );
+    });
+  });
+
+  describe('getSalesStats', () => {
+    it('should return the stats for the filter', async () => {
+      const fake = { count: 1 };
+      mockStatsService.getStats.mockResolvedValue(fake);
+
+      const result = await controller.getSalesStats({
+        userId: 3,
+        role: 'seller',
+      });
+      expect(mockStatsService.getStats).toHaveBeenCalledWith({
+        userId: 3,
+        role: 'seller',
+      });
+      expect(result).toBe(fake);
     });
   });
 });

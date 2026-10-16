@@ -936,6 +936,22 @@ export function IconQuest(props: IconProps) {
   );
 }
 
+export function IconCrown(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M2 19h20M3 9l4 4 5-7 5 7 4-4v10H3V9z" />
+    </StrokeIcon>
+  );
+}
+
+export function IconChevronDown(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </StrokeIcon>
+  );
+}
+
 export function IconTag(props: IconProps) {
   return (
     <StrokeIcon {...props}>

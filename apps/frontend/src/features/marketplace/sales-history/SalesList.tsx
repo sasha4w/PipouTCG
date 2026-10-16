@@ -1,30 +1,44 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { SaleSort } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
-import { type Transaction } from "../../services/transaction.service";
-import Button from "../../components/Button";
-import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
-import "./TransactionHistory.css";
+import type { Transaction } from "../../../services/transaction.service";
+import Button from "../../../components/Button";
+import { IconArrowLeft, IconArrowRight } from "../../../components/Icons";
+import { formatGold, type SalesPlayer } from "./salesScope";
+import "./SalesList.css";
 
-interface TransactionHistoryProps {
+interface SalesListProps {
   history: Transaction[] | undefined;
-  emptyMessage?: string;
+  emptyMessage: string;
   sort: SaleSort;
   onSortChange: (sort: SaleSort) => void;
-  /** Vente à mettre en avant (lien depuis la boîte de réception). */
+  /** Vente à mettre en avant (lien depuis la boîte de réception, plus grosse vente). */
   highlightId?: number | null;
+  /** Joueur connecté : colore les lignes selon qu'il a vendu ou acheté. */
+  viewerId?: number;
+  onPlayerClick: (player: SalesPlayer) => void;
 }
 
 const ITEMS_PER_PAGE = 6;
 const SORTS: SaleSort[] = ["date", "price"];
 
-const TransactionHistory = ({
+/** Ventes où le joueur connecté est vendeur ou acheteur : ligne rose pastel. */
+function perspectiveClass(tx: Transaction, viewerId?: number) {
+  if (viewerId === undefined) return "";
+  return tx.seller?.id === viewerId || tx.buyer?.id === viewerId
+    ? " sales-list__item--mine"
+    : "";
+}
+
+const SalesList = ({
   history,
   emptyMessage,
   sort,
   onSortChange,
   highlightId,
-}: TransactionHistoryProps) => {
+  viewerId,
+  onPlayerClick,
+}: SalesListProps) => {
   const { t } = useTranslation();
   // null = page automatique : celle de la vente mise en avant, sinon la 1re
   const [chosenPage, setChosenPage] = useState<number | null>(null);
@@ -36,8 +50,7 @@ const TransactionHistory = ({
   const page =
     chosenPage ??
     (highlightIndex >= 0 ? Math.floor(highlightIndex / ITEMS_PER_PAGE) + 1 : 1);
-  const setPage = (update: (p: number) => number) =>
-    setChosenPage(update(page));
+  const setPage = (update: (p: number) => number) => setChosenPage(update(page));
 
   const isHighlightVisible = highlightIndex >= 0 && chosenPage === null;
   useEffect(() => {
@@ -54,17 +67,27 @@ const TransactionHistory = ({
   const totalPages = history ? Math.ceil(history.length / ITEMS_PER_PAGE) : 1;
 
   if (!history || history.length === 0) {
-    return (
-      <p className="tx-history__empty">
-        {emptyMessage ?? t("marketplace.history.empty")}
-      </p>
-    );
+    return <p className="sales-list__empty">{emptyMessage}</p>;
   }
 
+  const renderPlayer = (player: SalesPlayer | null | undefined, className: string) =>
+    player ? (
+      <button
+        type="button"
+        className={`sales-list__player ${className}`}
+        aria-label={t("marketplace.sales.show_player", { name: player.username })}
+        onClick={() => onPlayerClick({ id: player.id, username: player.username })}
+      >
+        {player.username}
+      </button>
+    ) : (
+      <span className={className}>—</span>
+    );
+
   return (
-    <div className="tx-history-wrapper">
+    <div className="sales-list-wrapper">
       <div
-        className="tx-history__sort"
+        className="sales-list__sort"
         role="group"
         aria-label={t("marketplace.history.sort_label")}
       >
@@ -83,31 +106,34 @@ const TransactionHistory = ({
           </Button>
         ))}
       </div>
-      <ul className="tx-history">
+      <ul className="sales-list">
         {paginatedHistory.map((tx) => (
           <li
             key={tx.id}
             ref={tx.id === highlightId ? highlightRef : undefined}
-            className={`tx-history__item${tx.id === highlightId ? " tx-history__item--highlight" : ""}`}
+            className={`sales-list__item${perspectiveClass(tx, viewerId)}${
+              tx.id === highlightId ? " sales-list__item--highlight" : ""
+            }`}
           >
-            <div className="tx-history__item-left">
-              <span className="tx-history__name">
-                {tx.itemName || `Objet #${tx.productId}`}
+            <div className="sales-list__left">
+              <span className="sales-list__name">
+                {tx.itemName || t("marketplace.sales.unknown_item", { id: tx.productId })}
               </span>
-              <span className="tx-history__users">
-                <span className="tx-history__seller">
-                  {tx.seller?.username || "—"}
-                </span>
-                <span className="tx-history__arrow">→</span>
-                <span className="tx-history__buyer">
-                  {tx.buyer?.username || "—"}
-                </span>
+              <span className="sales-list__users">
+                {renderPlayer(tx.seller, "sales-list__seller")}
+                <span className="sales-list__arrow">→</span>
+                {renderPlayer(tx.buyer, "sales-list__buyer")}
               </span>
             </div>
-            <div className="tx-history__item-right">
-              <span className="tx-history__qty">×{tx.quantity}</span>
-              <span className="tx-history__price">{tx.totalPrice} G</span>
-              <span className="tx-history__date">
+            <div className="sales-list__right">
+              <span className="sales-list__qty">×{tx.quantity}</span>
+              <span className="sales-list__prices">
+                <span className="sales-list__price">{formatGold(tx.totalPrice)}</span>
+                <span className="sales-list__unit">
+                  {t("marketplace.sales.per_unit", { price: tx.unitPrice })}
+                </span>
+              </span>
+              <span className="sales-list__date">
                 {new Date(tx.updatedAt || tx.createdAt).toLocaleDateString()}
               </span>
             </div>
@@ -115,7 +141,7 @@ const TransactionHistory = ({
         ))}
       </ul>
       {totalPages > 1 && (
-        <div className="tx-history__pagination">
+        <div className="sales-list__pagination">
           <Button
             variant="ghost-bordeaux"
             size="icon"
@@ -125,9 +151,7 @@ const TransactionHistory = ({
           >
             <IconArrowLeft size={16} color="currentColor" />
           </Button>
-          <span>
-            {t("marketplace.history.pagination", { page, total: totalPages })}
-          </span>
+          <span>{t("marketplace.history.pagination", { page, total: totalPages })}</span>
           <Button
             variant="ghost-bordeaux"
             size="icon"
@@ -143,4 +167,4 @@ const TransactionHistory = ({
   );
 };
 
-export default TransactionHistory;
+export default SalesList;

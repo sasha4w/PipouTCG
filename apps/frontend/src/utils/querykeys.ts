@@ -1,3 +1,5 @@
+import type { SalesFilter, SaleSort } from "@pipou/shared";
+
 export const QUERY_KEYS = {
   // ── User ──────────────────────────────────────────────────────────────────
   profile: ["user", "profile"] as const,
@@ -15,12 +17,25 @@ export const QUERY_KEYS = {
   offers: ["listings", "offers"] as const,
   myListings: ["listings", "me"] as const,
   history: ["listings", "history"] as const,
-  // Préfixes communs : invalider recentSalesAll / mySalesAll couvre tous les tris
-  recentSalesAll: ["transactions", "recent-sales"] as const,
-  recentSales: (sort: string) => ["transactions", "recent-sales", sort] as const,
-  mySalesAll: ["transactions", "history", "seller"] as const,
-  mySales: (sort: string) =>
-    ["transactions", "history", "seller", sort] as const,
+  // Préfixe commun : invalider salesAll couvre les stats et les listes de tous les filtres
+  salesAll: ["transactions", "sales"] as const,
+  salesStats: (filter: SalesFilter) =>
+    [
+      "transactions",
+      "sales",
+      "stats",
+      filter.userId ?? "market",
+      filter.role ?? "both",
+    ] as const,
+  salesList: (filter: SalesFilter, sort: SaleSort) =>
+    [
+      "transactions",
+      "sales",
+      "list",
+      filter.userId ?? "market",
+      filter.role ?? "both",
+      sort,
+    ] as const,
 
   // ── Decks ─────────────────────────────────────────────────────────────────
   decks: ["decks"] as const,
