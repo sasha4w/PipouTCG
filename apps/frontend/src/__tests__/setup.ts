@@ -60,3 +60,22 @@ const localStorageMock = (() => {
 Object.defineProperty(window, "localStorage", {
   value: localStorageMock,
 });
+
+/**
+ * jsdom 23 n'a pas PointerEvent : sans lui, fireEvent.pointerDown perd clientX/clientY.
+ */
+if (typeof window.PointerEvent === "undefined") {
+  class PointerEventPolyfill extends MouseEvent {
+    pointerId: number;
+    pointerType: string;
+    constructor(type: string, init: PointerEventInit = {}) {
+      super(type, init);
+      this.pointerId = init.pointerId ?? 1;
+      this.pointerType = init.pointerType ?? "mouse";
+    }
+  }
+  Object.defineProperty(window, "PointerEvent", {
+    writable: true,
+    value: PointerEventPolyfill,
+  });
+}
