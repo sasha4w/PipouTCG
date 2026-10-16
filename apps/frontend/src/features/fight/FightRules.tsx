@@ -5,9 +5,29 @@ import {
   STARTING_HAND,
   STARTING_PRIMES,
 } from "@pipou/shared";
+import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
+import { KEYWORD_ICON, KEYWORD_IDS } from "./effectText";
 import "./FightRules.css";
+
+/** Statuts des monstres : le même glossaire que la fiche d'effet des cartes. */
+function StatusGrid() {
+  const { t } = useTranslation();
+  return (
+    <div className="fr-status-grid">
+      {KEYWORD_IDS.map((id) => (
+        <div key={id} className="fr-status-card">
+          <div className="fr-status-icon">{KEYWORD_ICON[id]}</div>
+          <div>
+            <div className="fr-status-name">{t(`keywords.${id}.name`)}</div>
+            <div className="fr-status-desc">{t(`keywords.${id}.desc`)}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 type Step = { icon: string; label: string; content: React.ReactNode };
 
@@ -156,50 +176,7 @@ const STEPS: Step[] = [
   {
     icon: "✨",
     label: "Status monstres",
-    content: (
-      <div className="fr-status-grid">
-        {[
-          [
-            "🛡",
-            "Provocation",
-            "Les ennemis doivent attaquer ce monstre en priorité.",
-          ],
-          [
-            "🗡",
-            "Perçant",
-            "Ignore la réduction de dégâts, et rapporte une Prime en détruisant un monstre en Garde.",
-          ],
-          [
-            "✨",
-            "Immunité débuffs",
-            "Le monstre ne peut pas recevoir de malus d'ATK temporaire.",
-          ],
-          ["⚡", "Double attaque", "Deux attaques au prochain tour, puis une."],
-          ["✖️", "Attaques ×N", "Peut attaquer plusieurs fois par tour."],
-          ["😈", "Attaque forcée", "Le monstre est bloqué en mode Attaque."],
-          [
-            "🔒",
-            "Garde verrouillée",
-            "Bloqué en Garde jusqu'à ce qu'il soit attaqué.",
-          ],
-          ["🧊", "Gel", "Ne peut pas attaquer pendant N de ses tours."],
-          [
-            "🛡",
-            "Réduction dégâts",
-            "Les dégâts reçus sont divisés par un coefficient.",
-          ],
-          ["⚡", "ATK temporaire", "Bonus d'ATK actif jusqu'à la fin du tour."],
-        ].map(([ic, name, desc], i) => (
-          <div key={i} className="fr-status-card">
-            <div className="fr-status-icon">{ic}</div>
-            <div>
-              <div className="fr-status-name">{name}</div>
-              <div className="fr-status-desc">{desc}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    ),
+    content: <StatusGrid />,
   },
   {
     icon: "⚡",

@@ -344,5 +344,191 @@
       "error": "Impossible de publier le patchnote",
       "hint": "Envoyé à tous les joueurs dans leur boîte de réception."
     }
+  },
+  "effects": {
+    "ui": {
+      "title": "Effets",
+      "keywords": "Mots-clés",
+      "status": "État actuel"
+    },
+    "trigger": {
+      "ON_SUMMON": "À l'invocation",
+      "ON_DEATH": "Quand ce monstre est détruit",
+      "ON_ATTACK": "Quand ce monstre attaque",
+      "ON_DEFEND": "Quand ce monstre est attaqué",
+      "ON_PLAY": "Quand tu joues cette carte",
+      "ON_PLAY_equipment": "Quand tu équipes cette carte",
+      "ON_PLAY_terrain": "Quand tu poses ce terrain",
+      "ON_TURN_START": "Au début de ton tour",
+      "ON_TURN_END": "À la fin de ton tour",
+      "ON_ALLY_SUMMON": "Quand tu invoques un monstre, si cette carte est dans ta main",
+      "PASSIVE": "En permanence",
+      "PASSIVE_equipment": "Tant que cette carte est équipée",
+      "PASSIVE_terrain": "Tant que ce terrain est en jeu",
+      "ON_RECYCLE": "Quand tu recycles cette carte",
+      "ON_BATTLE_PHASE_START": "Au début de ta phase de combat",
+      "unknown": "Déclencheur spécial ({{type}})"
+    },
+    "condition": {
+      "ARCHETYPE_ON_BOARD": "Si tu contrôles un monstre {{archetype}}",
+      "HP_BELOW": "Si ce monstre a moins de {{value}} PV",
+      "HAND_SIZE_MIN_one": "Si tu as au moins {{count}} carte en main",
+      "HAND_SIZE_MIN_other": "Si tu as au moins {{count}} cartes en main",
+      "OPPONENT_HAS_NO_MONSTERS": "Si l'adversaire n'a aucun monstre",
+      "SPECIFIC_CARD_ON_BOARD": "Si « {{name}} » est sur ton terrain",
+      "SPECIFIC_CARD_ON_BOARD_contains": "Si une carte dont le nom contient « {{name}} » est sur ton terrain",
+      "EQUIPPED_ON": "Si elle est équipée sur « {{name}} »",
+      "EQUIPPED_ON_contains": "Si elle est équipée sur un monstre dont le nom contient « {{name}} »",
+      "unknown": "Sous condition ({{type}})"
+    },
+    "target": {
+      "SELF": "ce monstre",
+      "SELF_equipment": "le monstre équipé",
+      "ALLY_MONSTER": "le monstre allié ciblé",
+      "TARGET_ALLY": "le monstre allié ciblé",
+      "ENEMY_MONSTER": "le monstre adverse ciblé",
+      "ENEMY_MONSTER_defend": "l'attaquant",
+      "ALL_ALLIES": "tes monstres",
+      "ALLIES_EXCEPT_SELF": "tes autres monstres",
+      "ALL_ENEMIES": "tous les monstres adverses",
+      "ARCHETYPE_ALLIES": "tes monstres {{archetype}}",
+      "ARCHETYPE_ALLIES_others": "tes autres monstres {{archetype}}",
+      "ADJACENT_ALLIES": "les monstres adjacents",
+      "PLAYER": "toi",
+      "OPPONENT": "l'adversaire",
+      "unknown": "la cible ({{type}})"
+    },
+    "action": {
+      "DEAL_DAMAGE": "{{target}} subit {{value}} dégâts.",
+      "DEAL_DAMAGE_many": "{{target}} subissent {{value}} dégâts.",
+      "HEAL": "{{target}} récupère {{value}} PV (sans dépasser son maximum).",
+      "HEAL_many": "{{target}} récupèrent {{value}} PV (sans dépasser leur maximum).",
+      "BUFF_ATK": "{{target}} gagne {{signed}} ATK.",
+      "BUFF_ATK_many": "{{target}} gagnent {{signed}} ATK.",
+      "BUFF_HP": "{{target}} gagne {{signed}} PV max.",
+      "BUFF_HP_many": "{{target}} gagnent {{signed}} PV max.",
+      "BUFF_ATK_TEMP": "{{target}} gagne {{signed}} ATK jusqu'à la fin du tour.",
+      "BUFF_ATK_TEMP_many": "{{target}} gagnent {{signed}} ATK jusqu'à la fin du tour.",
+      "BUFF_HP_PER_ADJACENT_ALLY": "{{target}} gagne {{signed}} PV max par monstre adjacent.",
+      "BUFF_HP_PER_ADJACENT_ALLY_many": "{{target}} gagnent {{signed}} PV max par monstre adjacent.",
+      "DRAW_one": "{{target}} pioche {{count}} carte.",
+      "DRAW_other": "{{target}} pioche {{count}} cartes.",
+      "DRAW_you_one": "Tu pioches {{count}} carte.",
+      "DRAW_you_other": "Tu pioches {{count}} cartes.",
+      "DISCARD_one": "{{target}} défausse {{count}} carte de son choix.",
+      "DISCARD_other": "{{target}} défausse {{count}} cartes de son choix.",
+      "DISCARD_you_one": "Tu défausses {{count}} carte de ton choix.",
+      "DISCARD_you_other": "Tu défausses {{count}} cartes de ton choix.",
+      "DESTROY_MONSTER": "{{target}} est détruit.",
+      "DESTROY_MONSTER_many": "{{target}} sont détruits.",
+      "RETURN_TO_HAND": "{{target}} retourne dans la main de son propriétaire, avec ses équipements.",
+      "RETURN_TO_HAND_many": "{{target}} retournent dans la main de leur propriétaire, avec leurs équipements.",
+      "SET_TAUNT": "{{target}} gagne **{{kw}}**.",
+      "SET_TAUNT_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_PIERCING": "{{target}} gagne **{{kw}}**.",
+      "SET_PIERCING_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_DEBUFF_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_ATTACKS_PER_TURN": "{{target}} peut attaquer {{count}} fois par tour (**{{kw}}**).",
+      "SET_ATTACKS_PER_TURN_many": "{{target}} peuvent attaquer {{count}} fois par tour (**{{kw}}**).",
+      "SET_DELAY_DOUBLE_ATK": "{{target}} gagne **{{kw}}** à son prochain tour.",
+      "SET_DELAY_DOUBLE_ATK_many": "{{target}} gagnent **{{kw}}** à leur prochain tour.",
+      "SET_DAMAGE_REDUCTION": "{{target}} gagne **{{kw}}** (÷{{value}}).",
+      "SET_DAMAGE_REDUCTION_many": "{{target}} gagnent **{{kw}}** (÷{{value}}).",
+      "FORCE_ATTACK_MODE": "{{target}} passe en **{{kw}}**.",
+      "FORCE_ATTACK_MODE_many": "{{target}} passent en **{{kw}}**.",
+      "FORCE_ATTACK_MODE_ENEMY": "{{target}} passe en **{{kw}}**.",
+      "FORCE_ATTACK_MODE_ENEMY_many": "{{target}} passent en **{{kw}}**.",
+      "FORCE_GUARD_LOCK_ENEMY": "{{target}} passe en **{{kw}}**.",
+      "FORCE_GUARD_LOCK_ENEMY_many": "{{target}} passent en **{{kw}}**.",
+      "BLOCK_ATTACK_one": "{{target}} subit **{{kw}}** pendant {{count}} tour.",
+      "BLOCK_ATTACK_other": "{{target}} subit **{{kw}}** pendant {{count}} tours.",
+      "BLOCK_ATTACK_many_one": "{{target}} subissent **{{kw}}** pendant {{count}} tour.",
+      "BLOCK_ATTACK_many_other": "{{target}} subissent **{{kw}}** pendant {{count}} tours.",
+      "SET_TURN_COUNTER_one": "**{{kw}}** : {{target}} est détruit dans {{count}} tour.",
+      "SET_TURN_COUNTER_other": "**{{kw}}** : {{target}} est détruit dans {{count}} tours.",
+      "SET_TURN_COUNTER_many_one": "**{{kw}}** : {{target}} sont détruits dans {{count}} tour.",
+      "SET_TURN_COUNTER_many_other": "**{{kw}}** : {{target}} sont détruits dans {{count}} tours.",
+      "CANNOT_ATTACK_ON_SUMMON_TURN": "{{target}} ne peut pas attaquer le tour de son invocation.",
+      "CANNOT_ATTACK_ON_SUMMON_TURN_many": "{{target}} ne peuvent pas attaquer le tour de leur invocation.",
+      "RETURN_FROM_GRAVEYARD_one": "{{target}} récupère {{count}} carte de son cimetière{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_other": "{{target}} récupère jusqu'à {{count}} cartes de son cimetière{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_you_one": "Tu récupères {{count}} carte de ton cimetière{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_you_other": "Tu récupères jusqu'à {{count}} cartes de ton cimetière{{filter}}.",
+      "RETURN_FROM_GRAVEYARD_OR_DECK": "{{target}} ajoute à sa main 1 carte{{filter}} de son cimetière ou de son deck.",
+      "RETURN_FROM_GRAVEYARD_OR_DECK_you": "Tu ajoutes à ta main 1 carte{{filter}} de ton cimetière ou de ton deck.",
+      "SEARCH_DECK": "{{target}} ajoute à sa main 1 carte{{filter}} de son deck.",
+      "SEARCH_DECK_you": "Tu ajoutes à ta main 1 carte{{filter}} de ton deck.",
+      "GAIN_RECYCLE_ENERGY_one": "{{target}} gagne {{count}} Énergie de recyclage.",
+      "GAIN_RECYCLE_ENERGY_other": "{{target}} gagne {{count}} Énergies de recyclage.",
+      "GAIN_RECYCLE_ENERGY_you_one": "Tu gagnes {{count}} Énergie de recyclage.",
+      "GAIN_RECYCLE_ENERGY_you_other": "Tu gagnes {{count}} Énergies de recyclage.",
+      "SET_FREE_SUMMON": "Cette carte peut être invoquée gratuitement.",
+      "SUMMONABLE_ON_ENEMY_SIDE": "Cette carte peut être invoquée sur le terrain adverse.",
+      "unknown": "Effet spécial ({{type}})."
+    },
+    "filter": {
+      "name": "nom contenant « {{name}} »"
+    },
+    "archetype": {
+      "pipou": "Pipou",
+      "dragon": "Dragon",
+      "pixelman": "Pixelman"
+    },
+    "status": {
+      "doubleAttack": "Double attaque au prochain tour",
+      "multiAttack": "Attaque {{count}} fois par tour",
+      "damageReduction": "Dégâts reçus ÷{{value}}",
+      "freeze_one": "Gelé encore {{count}} tour",
+      "freeze_other": "Gelé encore {{count}} tours",
+      "countdown_one": "Détruit dans {{count}} tour",
+      "countdown_other": "Détruit dans {{count}} tours"
+    }
+  },
+  "keywords": {
+    "taunt": {
+      "name": "Provocation",
+      "desc": "Les ennemis doivent attaquer ce monstre en priorité."
+    },
+    "piercing": {
+      "name": "Perçant",
+      "desc": "Ignore la réduction de dégâts, et rapporte une Prime en détruisant un monstre en Garde."
+    },
+    "debuffImmunity": {
+      "name": "Immunité aux débuffs",
+      "desc": "Le monstre ne peut pas recevoir de malus d'ATK temporaire."
+    },
+    "doubleAttack": {
+      "name": "Double attaque",
+      "desc": "Deux attaques au prochain tour, puis une."
+    },
+    "multiAttack": {
+      "name": "Attaques multiples",
+      "desc": "Peut attaquer plusieurs fois par tour."
+    },
+    "forcedAttack": {
+      "name": "Attaque forcée",
+      "desc": "Le monstre est bloqué en mode Attaque."
+    },
+    "guardLock": {
+      "name": "Garde verrouillée",
+      "desc": "Bloqué en Garde jusqu'à ce qu'il soit attaqué."
+    },
+    "freeze": {
+      "name": "Gel",
+      "desc": "Ne peut pas attaquer pendant N de ses tours."
+    },
+    "damageReduction": {
+      "name": "Réduction de dégâts",
+      "desc": "Les dégâts reçus sont divisés par un coefficient."
+    },
+    "tempAtk": {
+      "name": "ATK temporaire",
+      "desc": "Bonus d'ATK actif jusqu'à la fin du tour."
+    },
+    "countdown": {
+      "name": "Compte à rebours",
+      "desc": "Le compteur baisse au début de chaque tour du joueur qui a posé le monstre ; à 0, le monstre est détruit et ce joueur gagne une Prime."
+    }
   }
 }

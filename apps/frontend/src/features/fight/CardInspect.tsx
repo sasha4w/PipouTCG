@@ -1,32 +1,58 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import type { CardEffect } from "@pipou/shared";
 import CardFace, {
   type CardFaceCard,
   type CardFaceStats,
 } from "../cards/CardFace";
 import BuffDebuffSections, { type BuffEntry } from "./BuffDebuffSections";
+import CardEffectSheet from "./CardEffectSheet";
 import "./CardInspect.css";
 
+/** Carte inspectée : sa face, et de quoi rédiger ses effets. */
+export type InspectCard = CardFaceCard & {
+  archetype?: string | null;
+  effects?: readonly CardEffect[] | null;
+};
+
 interface Props {
-  card: CardFaceCard;
+  card: InspectCard;
   stats?: CardFaceStats;
   guard?: boolean;
-  entries: BuffEntry[];
+  /** État en direct d'un monstre en jeu (stats, statuts actifs). */
+  status?: BuffEntry[];
+  /** Équipements posés sur le monstre inspecté. */
+  equipments?: InspectCard[];
   onClose: () => void;
 }
 
-/** Carte en grand + effets actifs, par-dessus tout l'écran. */
+/** Carte en grand + texte de ses effets, par-dessus tout l'écran. */
 export default function CardInspect({
   card,
   stats,
   guard,
-  entries,
+  status = [],
+  equipments = [],
   onClose,
 }: Props) {
-  // La description figure déjà sur la grande carte : on retire sa ligne d'effet.
-  const effectEntries = entries.filter(
-    (e) => !(e.icon === "📖" && e.label === card.description),
-  );
+  const { t } = useTranslation();
+  // Récap des stats toujours visible ; les statuts sous un titre repliable.
+  const statuses = status.filter((e) => e.variant !== "recap");
+  const statusEntries: BuffEntry[] = [
+    ...status.filter((e) => e.variant === "recap"),
+    ...(statuses.length > 0
+      ? [
+          {
+            icon: "─",
+            label: t("effects.ui.status"),
+            type: "neutral" as const,
+            variant: "separator" as const,
+          },
+          ...statuses,
+        ]
+      : []),
+  ];
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -49,6 +75,7 @@ export default function CardInspect({
       }}
     >
       <div className="ci-panel" onClick={(e) => e.stopPropagation()}>
+        {/* La description (texte d'ambiance) figure sur la grande carte. */}
         <CardFace
           card={card}
           size="lg"
@@ -56,8 +83,14 @@ export default function CardInspect({
           stats={stats}
           guard={guard}
         />
-        {effectEntries.length > 0 && (
-          <BuffDebuffSections entries={effectEntries} defaultOpen />
+        <CardEffectSheet
+          sources={[
+            { card },
+            ...equipments.map((eq) => ({ card: eq, title: eq.name })),
+          ]}
+        />
+        {status.length > 0 && (
+          <BuffDebuffSections entries={statusEntries} defaultOpen />
         )}
       </div>
     </div>,

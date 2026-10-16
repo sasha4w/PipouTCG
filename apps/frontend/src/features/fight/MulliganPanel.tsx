@@ -3,7 +3,6 @@ import type { CardInstance } from "@pipou/shared";
 import Button from "../../components/Button";
 import InspectableCard from "./InspectableCard";
 import CardInspect from "./CardInspect";
-import { getCardEffectEntries } from "./fight.effects";
 import "./MulliganPanel.css";
 
 interface Props {
@@ -56,11 +55,6 @@ export default function MulliganPanel({
       {inspected && (
         <CardInspect
           card={inspected.baseCard}
-          entries={getCardEffectEntries(
-            inspected.baseCard.effects,
-            inspected.baseCard.description,
-            inspected.baseCard.supportType,
-          )}
           onClose={() => setInspected(null)}
         />
       )}

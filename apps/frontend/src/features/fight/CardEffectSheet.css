@@ -1,0 +1,114 @@
+.ces {
+  background: #fff8f2;
+  border: 1.5px solid #e0cfc8;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #3d1020;
+}
+
+.ces-source {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ces-source + .ces-source {
+  padding-top: 10px;
+  border-top: 1px dashed #e0cfc8;
+}
+
+.ces-source-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7a1c3b;
+}
+
+/* ── Un effet : déclencheur, condition, phrases ─────────────────────────── */
+
+.ces-rule {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ces-trigger {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #7a1c3b;
+}
+
+.ces-trigger-icon {
+  font-size: 11px;
+}
+
+.ces-condition {
+  font-size: 11px;
+  font-style: italic;
+  color: #8a6070;
+}
+
+.ces-line {
+  margin: 0;
+  padding: 3px 0 3px 8px;
+  border-left: 3px solid #d8c8c0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ces-line strong {
+  color: #7a1c3b;
+}
+
+.ces-line--buff {
+  border-left-color: #27ae60;
+}
+
+.ces-line--debuff {
+  border-left-color: #c0392b;
+}
+
+/* ── Glossaire ──────────────────────────────────────────────────────────── */
+
+.ces-glossary {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(122, 28, 59, 0.05);
+}
+
+.ces-glossary-title {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #8a6070;
+}
+
+.ces-glossary dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ces-keyword dt {
+  font-size: 12px;
+  font-weight: 700;
+  color: #7a1c3b;
+}
+
+.ces-keyword dd {
+  margin: 1px 0 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: #5a3a46;
+}

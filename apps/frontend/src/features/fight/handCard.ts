@@ -1,6 +1,11 @@
-import type { CardType, Rarity, SupportType } from "@pipou/shared";
+import type {
+  Archetype,
+  CardEffect,
+  CardType,
+  Rarity,
+  SupportType,
+} from "@pipou/shared";
 import type { CardInstance } from "./fight.types";
-import type { RawEffect } from "./fight.effects";
 
 /** Carte de la main, aplatie pour l'affichage et les actions. */
 export interface HandCard {
@@ -15,7 +20,8 @@ export interface HandCard {
   supportType?: SupportType;
   image: { url: string } | null;
   // ── Enrichis pour l'inspection ───────────────────────────────────────────
-  effects?: RawEffect[] | null;
+  effects?: CardEffect[] | null;
+  archetype?: Archetype | null;
   description?: string | null;
 }
 
@@ -33,6 +39,7 @@ export function toHandCard(c: CardInstance): HandCard {
     supportType: c.baseCard.supportType ?? undefined,
     image: c.baseCard.image,
     effects: c.baseCard.effects ?? null,
+    archetype: c.baseCard.archetype ?? null,
     description: c.baseCard.description ?? null,
   };
 }
