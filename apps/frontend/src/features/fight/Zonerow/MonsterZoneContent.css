@@ -1,40 +1,13 @@
 .zr-monster {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   width: 100%;
 }
 
-/* Mode chip */
-.zr-mode-chip {
-  border-radius: 99px;
-  font-size: 14px;
-  padding: 2px 8px;
-  display: inline-block;
-  margin-bottom: 4px;
-  transition: background 0.2s;
-}
-.zr-mode-chip--attack {
-  background: #fce4d4;
-}
-.zr-mode-chip--guard {
-  background: #e4f0fc;
-}
-
-/* Name & stats */
-.zr-monster-name {
-  font-size: 11px;
-  font-weight: 700;
-  margin-bottom: 2px;
-  word-break: break-word;
-}
-
-.zr-monster-stats {
-  font-size: 10px;
-  color: #888;
-}
-
-.zr-attacked {
-  font-size: 9px;
-  color: #aaa;
+.zr-card {
+  width: min(100%, 100px);
 }
 
 /* Mode buttons */
@@ -73,10 +46,10 @@
 }
 
 .zr-badge {
-  font-size: 10px;
+  font-size: 9px;
   padding: 1px 4px;
   border-radius: 99px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
   cursor: default;
 }
 

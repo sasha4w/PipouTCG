@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "./ZoneRow.css";
-import "../BuffDebuffList.css";
-import { getRarityBorderColor } from "./zoneRow.helpers";
+import { getRarityBorderColor, monsterFaceStats } from "./zoneRow.helpers";
 import {
   getSupportBuffEntries,
   getMonsterBuffEntries,
@@ -9,7 +8,8 @@ import {
 import { useZoneAnimations } from "./useZoneAnimations";
 import MonsterZoneContent from "./MonsterZoneContent";
 import SupportZoneContent from "./SupportZoneContent";
-import BuffDebuffList from "../BuffDebuffList";
+import CardFace from "../../cards/CardFace";
+import CardInspect from "../CardInspect";
 import { isMonsterZone, type BoardZone } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
 
@@ -54,23 +54,8 @@ export default function ZoneRow({
     isSupport,
   );
 
-  const [openBuffIdx, setOpenBuffIdx] = useState<number | null>(null);
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const openZone = openBuffIdx !== null ? zones[openBuffIdx] : null;
-
-  const handleBadgeClick = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    idx: number,
-  ) => {
-    e.stopPropagation();
-    if (openBuffIdx === idx) {
-      setOpenBuffIdx(null);
-      setAnchorRect(null);
-    } else {
-      setOpenBuffIdx(idx);
-      setAnchorRect(e.currentTarget.getBoundingClientRect());
-    }
-  };
+  const [inspectIdx, setInspectIdx] = useState<number | null>(null);
+  const inspected = inspectIdx !== null ? zones[inspectIdx] : null;
 
   return (
     <div className="zr-wrap">
@@ -123,45 +108,41 @@ export default function ZoneRow({
                 else if (onZoneClick) onZoneClick(idx);
               }}
             >
-              {!!zone && (
-                <button
-                  className={`bdl-trigger${openBuffIdx === idx ? " bdl-trigger--active" : ""}`}
-                  onClick={(e) => handleBadgeClick(e, idx)}
-                  title="Voir les effets"
-                >
-                  i
-                </button>
-              )}
-
               {zone ? (
                 isMonsterZone(zone) ? (
                   <MonsterZoneContent
                     zone={zone}
                     isOpponent={isOpponent}
                     onModeChange={onModeChange}
+                    onInspect={() => setInspectIdx(idx)}
+                    onInspectEnd={() => setInspectIdx(null)}
                   />
                 ) : (
-                  <SupportZoneContent zone={zone} />
+                  <SupportZoneContent
+                    zone={zone}
+                    onInspect={() => setInspectIdx(idx)}
+                    onInspectEnd={() => setInspectIdx(null)}
+                  />
                 )
               ) : isShattering && dyingData ? (
-                isMonsterZone(dyingData) ? (
-                  <div className="zr-monster zr-dying-content">
-                    <div
-                      className={`zr-mode-chip zr-mode-chip--${dyingData.mode}`}
-                    >
-                      {dyingData.mode === "attack" ? "⚔️" : "🛡️"}
-                    </div>
-                    <div className="zr-monster-name">
-                      {dyingData.card.baseCard.name}
-                    </div>
-                    <div className="zr-monster-stats">
-                      {dyingData.card.baseCard.atk}⚔ 0/
-                      {dyingData.card.baseCard.hp}❤
-                    </div>
+                <div className="zr-monster zr-dying-content">
+                  <div className="zr-card">
+                    {isMonsterZone(dyingData) ? (
+                      <CardFace
+                        card={dyingData.card.baseCard}
+                        size="xs"
+                        stats={{
+                          atk: dyingData.card.baseCard.atk,
+                          hp: 0,
+                          hpState: "down",
+                        }}
+                        guard={dyingData.mode === "guard"}
+                      />
+                    ) : (
+                      <CardFace card={dyingData.baseCard} size="xs" />
+                    )}
                   </div>
-                ) : (
-                  <SupportZoneContent zone={dyingData} />
-                )
+                </div>
               ) : isZetaTarget ? (
                 <span className="zr-zeta-hint">🦠 Poser Zeta</span>
               ) : (
@@ -172,28 +153,23 @@ export default function ZoneRow({
         })}
       </div>
 
-      {openZone && anchorRect && (
-        <BuffDebuffList
+      {inspected && (
+        <CardInspect
+          card={
+            isMonsterZone(inspected)
+              ? inspected.card.baseCard
+              : inspected.baseCard
+          }
+          stats={
+            isMonsterZone(inspected) ? monsterFaceStats(inspected) : undefined
+          }
+          guard={isMonsterZone(inspected) && inspected.mode === "guard"}
           entries={
-            isMonsterZone(openZone)
-              ? getMonsterBuffEntries(openZone)
-              : getSupportBuffEntries(openZone)
+            isMonsterZone(inspected)
+              ? getMonsterBuffEntries(inspected)
+              : getSupportBuffEntries(inspected)
           }
-          cardName={
-            isMonsterZone(openZone)
-              ? openZone.card.baseCard.name
-              : openZone.baseCard.name
-          }
-          supportType={
-            isMonsterZone(openZone)
-              ? undefined
-              : (openZone.baseCard.supportType ?? undefined)
-          }
-          anchorRect={anchorRect}
-          onClose={() => {
-            setOpenBuffIdx(null);
-            setAnchorRect(null);
-          }}
+          onClose={() => setInspectIdx(null)}
         />
       )}
     </div>

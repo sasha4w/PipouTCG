@@ -1,0 +1,52 @@
+import type { MonsterOnBoard } from "@pipou/shared";
+
+/** Gobelin 100 ATK / 500 PV en jeu, sans buff ni état ; `patch` écrase les champs. */
+export function monster(patch: Partial<MonsterOnBoard> = {}): MonsterOnBoard {
+  return {
+    instanceId: "m1",
+    card: {
+      instanceId: "m1",
+      ownerId: 1,
+      baseCard: {
+        id: 1,
+        name: "Gobelin",
+        rarity: "common",
+        type: "monster",
+        atk: 100,
+        hp: 500,
+        cost: 1,
+        supportType: null,
+        archetype: null,
+        effects: null,
+        description: null,
+        image: null,
+      },
+    },
+    currentHp: 500,
+    mode: "attack",
+    equipments: [],
+    atkBuff: 0,
+    hpBuff: 0,
+    tempAtkBuff: 0,
+    perm: {
+      atk: 0,
+      hp: 0,
+      taunt: false,
+      piercing: false,
+      debuffImmune: false,
+      attacksPerTurn: 1,
+    },
+    hasAttackedThisTurn: false,
+    attacksPerTurn: 1,
+    attacksUsedThisTurn: 0,
+    hasTaunt: false,
+    hasPiercing: false,
+    isImmuneToDebuffs: false,
+    forcedAttackMode: false,
+    summonedThisTurn: false,
+    doubleAtkNextTurn: false,
+    extraAttacksThisTurn: 0,
+    cannotAttackOnSummonTurn: false,
+    ...patch,
+  };
+}

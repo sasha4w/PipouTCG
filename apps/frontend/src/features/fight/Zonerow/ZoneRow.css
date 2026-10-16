@@ -23,7 +23,7 @@
 /* ── Zone base ───────────────────────────────────────────────────────────── */
 .zr-zone {
   flex: 1;
-  min-height: 100px;
+  min-height: 150px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -31,7 +31,7 @@
   transition:
     border 0.15s,
     box-shadow 0.15s;
-  padding: 6px;
+  padding: 4px;
   position: relative;
   overflow: visible;
 }
