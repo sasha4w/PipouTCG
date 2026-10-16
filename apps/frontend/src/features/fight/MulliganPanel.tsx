@@ -1,5 +1,9 @@
+import { useState } from "react";
 import type { CardInstance } from "@pipou/shared";
 import Button from "../../components/Button";
+import InspectableCard from "./InspectableCard";
+import CardInspect from "./CardInspect";
+import { getCardEffectEntries } from "./fight.effects";
 import "./MulliganPanel.css";
 
 interface Props {
@@ -18,19 +22,21 @@ export default function MulliganPanel({
   opponentName,
   onDecide,
 }: Props) {
+  const [inspected, setInspected] = useState<CardInstance | null>(null);
+
   return (
     <div className="mull-root">
       <h2 className="mull-title">Ta main de départ</h2>
       <div className="mull-hand">
         {hand.map((c) => (
-          <div key={c.instanceId} className="mull-card">
-            <div className="mull-card-name">{c.baseCard.name}</div>
-            <div className="mull-card-sub">
-              {c.baseCard.type === "monster"
-                ? `${c.baseCard.atk}⚔ ${c.baseCard.hp}❤ · ${c.baseCard.cost}⚡`
-                : c.baseCard.supportType}
-            </div>
-          </div>
+          <InspectableCard
+            key={c.instanceId}
+            className="mull-card"
+            card={c.baseCard}
+            size="sm"
+            onInspect={() => setInspected(c)}
+            onInspectEnd={() => setInspected(null)}
+          />
         ))}
       </div>
       {decided ? (
@@ -46,6 +52,17 @@ export default function MulliganPanel({
             Mulligan (1 fois)
           </Button>
         </div>
+      )}
+      {inspected && (
+        <CardInspect
+          card={inspected.baseCard}
+          entries={getCardEffectEntries(
+            inspected.baseCard.effects,
+            inspected.baseCard.description,
+            inspected.baseCard.supportType,
+          )}
+          onClose={() => setInspected(null)}
+        />
       )}
     </div>
   );

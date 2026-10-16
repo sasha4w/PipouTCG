@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { CardInstance } from "@pipou/shared";
 import MulliganPanel from "../../features/fight/MulliganPanel";
@@ -58,5 +58,21 @@ describe("MulliganPanel", () => {
 
     expect(screen.getByText("En attente de Bob…")).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  });
+
+  it("inspecte une carte de la main de départ", () => {
+    render(
+      <MulliganPanel
+        hand={[card("Gobelin")]}
+        decided={false}
+        opponentDecided={false}
+        opponentName="Bob"
+        onDecide={vi.fn()}
+      />,
+    );
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: /Gobelin/ }));
+
+    expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
   });
 });

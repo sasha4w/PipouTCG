@@ -1,11 +1,13 @@
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import type {
   PendingChoice,
   ClientChoiceCandidate,
   PendingChoiceResolution,
 } from "./fight.types";
 import Button from "../../components/Button";
-import { RARITY_COLOR } from "./fight.types";
+import InspectableCard from "./InspectableCard";
+import CardInspect from "./CardInspect";
 import "./CardPickModal.css";
 
 interface Props {
@@ -61,6 +63,9 @@ export default function CardPickModal({
   confirmLabel,
 }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
+  const [inspected, setInspected] = useState<ClientChoiceCandidate | null>(
+    null,
+  );
 
   const resolution = choice.resolution ?? "pick_to_hand";
   const isBoardPick = choice.candidates.every((c) => c.source === "board");
@@ -103,22 +108,18 @@ export default function CardPickModal({
         <div className="cpm-grid">
           {choice.candidates.map((c: ClientChoiceCandidate) => {
             const isSelected = selected.includes(c.instanceId);
-            const borderColor = RARITY_COLOR[c.baseCard.rarity] ?? "#666";
-
             return (
-              <div
+              <InspectableCard
                 key={c.instanceId}
-                className={[
-                  "cpm-card",
-                  isSelected ? "cpm-card--selected" : "",
-                  isBoardPick ? "cpm-card--board" : "",
-                ]
+                card={c.baseCard}
+                size="sm"
+                className={["cpm-card", isSelected ? "cpm-card--selected" : ""]
                   .filter(Boolean)
                   .join(" ")}
-                style={{
-                  borderColor: isSelected ? headerColor : borderColor,
-                }}
+                style={{ "--cpm-accent": headerColor } as CSSProperties}
                 onClick={() => toggle(c.instanceId)}
+                onInspect={() => setInspected(c)}
+                onInspectEnd={() => setInspected(null)}
               >
                 {isSelected && (
                   <span
@@ -128,18 +129,8 @@ export default function CardPickModal({
                     {icon}
                   </span>
                 )}
-
-                {/* Source badge */}
                 <div className="cpm-source">{sourceLabel(c.source)}</div>
-
-                <div className="cpm-name">{c.baseCard.name}</div>
-
-                <div className="cpm-sub">
-                  {c.baseCard.type === "monster"
-                    ? `${c.baseCard.atk}⚔ ${c.baseCard.hp}❤`
-                    : (c.baseCard.supportType ?? c.baseCard.type)}
-                </div>
-              </div>
+              </InspectableCard>
             );
           })}
         </div>
@@ -161,6 +152,14 @@ export default function CardPickModal({
             {Math.min(choice.count, choice.candidates.length)})
           </button>
         </div>
+
+        {inspected && (
+          <CardInspect
+            card={inspected.baseCard}
+            entries={[]}
+            onClose={() => setInspected(null)}
+          />
+        )}
       </div>
     </div>
   );
