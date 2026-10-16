@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- helpers purs exportés pour les tests/le widget */
 import { motion } from "framer-motion";
 import { stripEmoji, type DailyRewardMilestone } from "@pipou/shared";
 import { IconTrophy } from "../Icons";

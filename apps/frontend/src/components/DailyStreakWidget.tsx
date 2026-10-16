@@ -2,49 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import { dailyRewardService } from "../services/dailyReward.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import { useDailyReward } from "../contexts/DailyRewardContext";
+import { IconCheck, IconFire, IconSkull, IconTrophy } from "./Icons";
+import { RewardIcon, rewardText, todayUtc } from "./daily-reward/rewardDisplay";
 import "./DailyStreakWidget.css";
 
-const REWARD_ICON: Record<string, string> = {
-  gold: "🪙",
-  card: "🃏",
-  booster: "📦",
-  bundle: "🎁",
-};
-
-/**
- * Retourne les 7 jours de la semaine courante (lundi → dimanche)
- * avec leur statut : claimed, today, missed, future
- */
-function buildWeekDays(lastClaimDate: string | null, totalDays: number) {
-  const now = new Date();
-  const dow = (now.getDay() + 6) % 7; // 0=lundi
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - dow);
-
+/** 7 jours de la semaine courante (lundi → dimanche), en UTC comme le serveur. */
+function buildWeekDays(today: string, claimedDates: string[]) {
+  const claimed = new Set(claimedDates);
+  const base = new Date(`${today}T00:00:00Z`);
+  const dow = (base.getUTCDay() + 6) % 7;
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+    const d = new Date(base);
+    d.setUTCDate(base.getUTCDate() - dow + i);
     const ds = d.toISOString().slice(0, 10);
-    const todayStr = now.toISOString().slice(0, 10);
-
-    // On reconstitue les dates claimées à partir du lastClaimDate
-    const claimedDates: string[] = [];
-    if (lastClaimDate) {
-      const last = new Date(lastClaimDate);
-      for (let j = 0; j < Math.min(totalDays, 31); j++) {
-        const cd = new Date(last);
-        cd.setDate(cd.getDate() - j);
-        claimedDates.push(cd.toISOString().slice(0, 10));
-      }
-    }
-
     return {
-      date: d,
       dateStr: ds,
-      dayNum: d.getDate(),
-      isToday: ds === todayStr,
-      isClaimed: claimedDates.includes(ds),
-      isFuture: ds > todayStr,
+      dayNum: d.getUTCDate(),
+      isToday: ds === today,
+      isClaimed: claimed.has(ds),
+      isFuture: ds > today,
     };
   });
 }
@@ -62,13 +38,21 @@ export default function DailyStreakWidget() {
 
   if (isLoading || !status) return null;
 
-  const { streak, alreadyClaimed, daysMissed, nextReward, nextMilestone } =
-    status;
-
-  const weekDays = buildWeekDays(
-    streak.lastClaimDate ?? null,
-    streak.totalDays,
-  );
+  const {
+    streak,
+    alreadyClaimed,
+    rescueAvailable,
+    streakAtRisk,
+    nextReward,
+    milestones,
+  } = status;
+  const today = todayUtc();
+  const weekDays = buildWeekDays(today, status.claimedDates);
+  const nextMilestone = milestones.find((m) => m.dayThreshold > streak.current);
+  const daysToMilestone = nextMilestone
+    ? nextMilestone.dayThreshold - streak.current
+    : null;
+  const inDanger = rescueAvailable || streakAtRisk;
 
   return (
     <div
@@ -80,7 +64,13 @@ export default function DailyStreakWidget() {
       {/* Streak info */}
       <div className="dsw__streak">
         <span className="dsw__streak-icon">
-          {alreadyClaimed ? "✅" : daysMissed > 0 ? "⚠️" : "🔥"}
+          {alreadyClaimed ? (
+            <IconCheck size={18} color="#70b870" />
+          ) : inDanger ? (
+            <IconSkull size={18} color="#f27aaa" />
+          ) : (
+            <IconFire size={18} color="#e05a00" />
+          )}
         </span>
         <div className="dsw__streak-info">
           <span className="dsw__streak-count">
@@ -89,9 +79,11 @@ export default function DailyStreakWidget() {
           <span className="dsw__streak-label">
             {alreadyClaimed
               ? "Réclamé aujourd'hui"
-              : daysMissed > 0
-                ? `${daysMissed} jour(s) manqué(s)`
-                : "À réclamer !"}
+              : rescueAvailable
+                ? "Série en danger"
+                : streakAtRisk
+                  ? "Série perdue"
+                  : "À réclamer !"}
           </span>
         </div>
       </div>
@@ -110,7 +102,7 @@ export default function DailyStreakWidget() {
                 day.isFuture ? "future" : "",
               ].join(" ")}
             >
-              {day.isClaimed ? "✓" : day.dayNum}
+              {day.isClaimed ? <IconCheck size={10} /> : day.dayNum}
             </span>
           </div>
         ))}
@@ -119,20 +111,16 @@ export default function DailyStreakWidget() {
       {/* Prochaine récompense */}
       {!alreadyClaimed && nextReward && (
         <div className="dsw__next">
-          <span>{REWARD_ICON[nextReward.type]}</span>
-          <span className="dsw__next-label">
-            {nextReward.label ??
-              (nextReward.type === "gold"
-                ? `${nextReward.value * nextReward.quantity}g`
-                : nextReward.type)}
-          </span>
+          <RewardIcon type={nextReward.type} size={16} />
+          <span className="dsw__next-label">{rewardText(nextReward)}</span>
         </div>
       )}
 
       {/* Milestone proche (≤ 3 jours) */}
-      {nextMilestone && nextMilestone.daysRemaining <= 3 && (
+      {nextMilestone && daysToMilestone !== null && daysToMilestone <= 3 && (
         <div className="dsw__milestone">
-          🏆 J{nextMilestone.dayThreshold} dans {nextMilestone.daysRemaining}j
+          <IconTrophy size={12} color="#eebc77" /> J{nextMilestone.dayThreshold}{" "}
+          dans {daysToMilestone}j
         </div>
       )}
 

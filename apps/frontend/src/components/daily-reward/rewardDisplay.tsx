@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- helpers purs exportés pour les tests/le widget */
 import type { DailyRewardItem, DailyRewardType } from "@pipou/shared";
 import { IconBooster, IconBundle, IconCards, IconGold } from "../Icons";
 

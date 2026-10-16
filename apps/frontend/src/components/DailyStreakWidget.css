@@ -36,6 +36,9 @@
 }
 .dsw__streak-icon {
   font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .dsw__streak-info {
   display: flex;
@@ -135,6 +138,9 @@
 
 /* ── Milestone proche ── */
 .dsw__milestone {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: "Comfortaa", sans-serif;
   font-size: 0.58rem;
   color: rgba(238, 188, 119, 0.6);
