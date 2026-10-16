@@ -72,7 +72,8 @@ interface CardFaceProps {
 - `guard` → voile `rgba(60,120,220,.35)` sur l'illustration, 🛡️ centré, bordure `#3c78dc`.
 - `spent` → `filter: grayscale(.7) brightness(.85)` + pastille « a attaqué ».
 - Sans image : placeholder ✦ actuel. Image en `loading="lazy"` `decoding="async"`.
-- `aria-label` : nom + ATK/PV courants.
+- Le nom accessible (nom + ATK/PV courants) est porté par l'élément interactif qui l'entoure en duel
+  (`InspectableCard`, `role="button"`), pas par `CardFace` elle-même.
 
 ### `CardDisplay`
 
