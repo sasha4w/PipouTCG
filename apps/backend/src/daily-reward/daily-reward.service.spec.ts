@@ -274,3 +274,112 @@ describe('DailyRewardService — rescue & reset', () => {
     expect(res.streak.current).toBe(1);
   });
 });
+
+describe('DailyRewardService — status', () => {
+  beforeEach(() =>
+    jest
+      .useFakeTimers({ doNotFake: ['nextTick', 'setImmediate'] })
+      .setSystemTime(new Date(`${TODAY}T10:00:00Z`)),
+  );
+  afterEach(() => jest.useRealTimers());
+
+  it('jour consécutif : prochain jour = streak + 1, pas de risque', async () => {
+    const { service } = setup({
+      currentStreak: 7,
+      lastClaimDate: '2026-10-15',
+    });
+    const s = await service.getStatus(1);
+    expect(s).toMatchObject({
+      alreadyClaimed: false,
+      rescueAvailable: false,
+      rescueCost: null,
+      streakAtRisk: false,
+      nextDay: { cycleDay: 1, weekNumber: 2 },
+      nextReward: { type: 'gold', value: 50, label: 'Bonus' },
+    });
+  });
+
+  it('un jour manqué : rachat disponible et chiffré', async () => {
+    const { service } = setup({
+      currentStreak: 7,
+      lastClaimDate: '2026-10-14',
+    });
+    const s = await service.getStatus(1);
+    expect(s).toMatchObject({ rescueAvailable: true, rescueCost: 170 });
+  });
+
+  it('série perdue : streakAtRisk et prochain jour = J1', async () => {
+    const { service } = setup({
+      currentStreak: 30,
+      lastClaimDate: '2026-10-10',
+    });
+    const s = await service.getStatus(1);
+    expect(s).toMatchObject({
+      streakAtRisk: true,
+      nextDay: { cycleDay: 1, weekNumber: 1 },
+    });
+  });
+
+  it('paliers actifs depuis la BDD, labels nettoyés', async () => {
+    const { service, repos } = setup({
+      currentStreak: 3,
+      lastClaimDate: TODAY,
+    });
+    repos.milestone.find.mockResolvedValue([
+      {
+        dayThreshold: 7,
+        rewardType: 'gold',
+        rewardValue: 500,
+        quantity: 1,
+        label: '🏆 Coffre',
+      },
+    ]);
+    const s = await service.getStatus(1);
+    expect(repos.milestone.find).toHaveBeenCalledWith({
+      where: { isActive: true },
+      order: { dayThreshold: 'ASC' },
+    });
+    expect(s.milestones).toEqual([
+      {
+        dayThreshold: 7,
+        type: 'gold',
+        value: 500,
+        quantity: 1,
+        label: 'Coffre',
+      },
+    ]);
+  });
+
+  it('claimedDates dédoublonnés, rescuedDates = veille du rachat', async () => {
+    const { service, repos } = setup({
+      currentStreak: 3,
+      lastClaimDate: TODAY,
+    });
+    repos.history.find.mockResolvedValue([
+      { claimedAt: new Date('2026-10-14T08:00:00Z') },
+      { claimedAt: new Date('2026-10-16T09:00:00Z') },
+      { claimedAt: new Date('2026-10-16T09:00:01Z') },
+    ]);
+    repos.rescue.find.mockResolvedValue([
+      { rescuedAt: new Date('2026-10-16T08:59:00Z') },
+    ]);
+    const s = await service.getStatus(1);
+    expect(s.claimedDates).toEqual(['2026-10-14', '2026-10-16']);
+    expect(s.rescuedDates).toEqual(['2026-10-15']);
+  });
+});
+
+describe('DailyRewardService — labels admin', () => {
+  it("retire les emojis à la création d'un palier", async () => {
+    const { service, repos } = setup({});
+    await service.createMilestone({
+      dayThreshold: 7,
+      rewardType: 'gold',
+      rewardValue: 500,
+      label: '🏆 Coffre',
+    } as never);
+    expect(repos.milestone.create).toHaveBeenCalledWith(
+      expect.objectContaining({ label: 'Coffre' }),
+    );
+  });
+});
