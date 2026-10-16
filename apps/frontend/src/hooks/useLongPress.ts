@@ -52,8 +52,8 @@ export function useLongPress({
 
   return {
     onPointerDown: (e) => {
-      if (e.button !== 0) return;
       firedRef.current = false;
+      if (e.button !== 0) return;
       startRef.current = { x: e.clientX, y: e.clientY };
       // Le relâchement revient à cet élément même si un overlay s'ouvre dessus
       e.currentTarget.setPointerCapture?.(e.pointerId);

@@ -51,7 +51,7 @@ describe("CardPickModal", () => {
     });
 
     expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
-    expect(screen.getAllByText("Texte de Gobelin").length).toBeGreaterThan(0);
+    expect(screen.getByText("Texte de Gobelin")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /\(0\/1\)/ })).toBeDisabled();
   });
 });

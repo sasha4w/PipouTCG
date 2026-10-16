@@ -37,14 +37,6 @@
 }
 
 /* Badges */
-.zr-monster-badges {
-  display: flex;
-  gap: 2px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 2px;
-}
-
 .zr-badge {
   font-size: 9px;
   padding: 1px 4px;

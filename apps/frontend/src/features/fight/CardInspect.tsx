@@ -23,6 +23,11 @@ export default function CardInspect({
   entries,
   onClose,
 }: Props) {
+  // La description figure déjà sur la grande carte : on retire sa ligne d'effet.
+  const effectEntries = entries.filter(
+    (e) => !(e.icon === "📖" && e.label === card.description),
+  );
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -51,8 +56,8 @@ export default function CardInspect({
           stats={stats}
           guard={guard}
         />
-        {entries.length > 0 && (
-          <BuffDebuffSections entries={entries} defaultOpen />
+        {effectEntries.length > 0 && (
+          <BuffDebuffSections entries={effectEntries} defaultOpen />
         )}
       </div>
     </div>,

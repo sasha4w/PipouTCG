@@ -65,7 +65,7 @@ export function monsterFaceStats(zone: MonsterOnBoard): CardFaceStats {
     hp: zone.currentHp,
     atkState: atk > base.atk ? "up" : atk < base.atk ? "down" : undefined,
     hpState:
-      zone.currentHp < maxHp
+      zone.currentHp < maxHp || zone.currentHp < base.hp
         ? "down"
         : zone.currentHp > base.hp
           ? "up"

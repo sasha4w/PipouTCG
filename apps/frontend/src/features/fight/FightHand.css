@@ -29,11 +29,18 @@
 }
 
 /* Redressée et au premier plan */
-.fhand-card--interactive:hover,
 .fhand-card--selected,
 .fhand-card--paying {
   transform: translateY(-22px) rotate(0deg);
   z-index: 50 !important;
+}
+
+/* Survol réel seulement : sur tactile il resterait collé après un tap */
+@media (hover: hover) {
+  .fhand-card--interactive:hover {
+    transform: translateY(-22px) rotate(0deg);
+    z-index: 50 !important;
+  }
 }
 
 /* ── États (contour autour de la carte) ───────────────────────────────────── */

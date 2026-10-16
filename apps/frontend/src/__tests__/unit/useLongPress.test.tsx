@@ -91,4 +91,16 @@ describe("useLongPress", () => {
 
     expect(onLongPress).toHaveBeenCalledTimes(1);
   });
+
+  it("un appui long annulé sans clic ne fait pas avaler le clic droit suivant", () => {
+    const { el, onLongPress } = setup();
+
+    fireEvent.pointerDown(el, { clientX: 10, clientY: 10, button: 0 });
+    act(() => vi.advanceTimersByTime(400));
+    fireEvent.pointerCancel(el);
+    fireEvent.pointerDown(el, { clientX: 10, clientY: 10, button: 2 });
+    fireEvent.contextMenu(el);
+
+    expect(onLongPress).toHaveBeenCalledTimes(2);
+  });
 });

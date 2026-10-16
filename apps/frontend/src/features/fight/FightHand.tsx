@@ -35,8 +35,11 @@ export default function FightHand({
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
   const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
-  const [inspectedIdx, setInspectedIdx] = useState<number | null>(null);
-  const inspected = inspectedIdx !== null ? hand[inspectedIdx] : undefined;
+  const [inspectedId, setInspectedId] = useState<string | null>(null);
+  const inspected =
+    inspectedId !== null
+      ? hand.find((c) => c.instanceId === inspectedId)
+      : undefined;
 
   // ── Largeur disponible pour l'éventail ────────────────────────────────────
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,8 +91,8 @@ export default function FightHand({
               } as CSSProperties
             }
             onClick={isInteractive ? () => onCardClick(idx, card) : undefined}
-            onInspect={() => setInspectedIdx(idx)}
-            onInspectEnd={() => setInspectedIdx(null)}
+            onInspect={() => setInspectedId(card.instanceId)}
+            onInspectEnd={() => setInspectedId(null)}
           >
             {isFree && <span className="fhand-free-label">GRATUIT ⚡</span>}
             {isPaying && (
@@ -113,7 +116,7 @@ export default function FightHand({
             inspected.description,
             inspected.supportType,
           )}
-          onClose={() => setInspectedIdx(null)}
+          onClose={() => setInspectedId(null)}
         />
       )}
     </div>

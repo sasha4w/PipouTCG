@@ -31,6 +31,12 @@ describe("monsterFaceStats", () => {
     expect(stats.hpState).toBe("down");
   });
 
+  it("marque des PV sous la base en baisse, même à PV pleins (hpBuff négatif)", () => {
+    expect(
+      monsterFaceStats(monster({ hpBuff: -100, currentHp: 400 })).hpState,
+    ).toBe("down");
+  });
+
   it("marque des PV buffés intacts en hausse", () => {
     expect(
       monsterFaceStats(monster({ hpBuff: 200, currentHp: 700 })).hpState,

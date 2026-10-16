@@ -54,8 +54,11 @@ export default function ZoneRow({
     isSupport,
   );
 
-  const [inspectIdx, setInspectIdx] = useState<number | null>(null);
-  const inspected = inspectIdx !== null ? zones[inspectIdx] : null;
+  const [inspectId, setInspectId] = useState<string | null>(null);
+  const inspected =
+    inspectId !== null
+      ? zones.find((z) => z?.instanceId === inspectId)
+      : undefined;
 
   return (
     <div className="zr-wrap">
@@ -114,14 +117,14 @@ export default function ZoneRow({
                     zone={zone}
                     isOpponent={isOpponent}
                     onModeChange={onModeChange}
-                    onInspect={() => setInspectIdx(idx)}
-                    onInspectEnd={() => setInspectIdx(null)}
+                    onInspect={() => setInspectId(zone.instanceId)}
+                    onInspectEnd={() => setInspectId(null)}
                   />
                 ) : (
                   <SupportZoneContent
                     zone={zone}
-                    onInspect={() => setInspectIdx(idx)}
-                    onInspectEnd={() => setInspectIdx(null)}
+                    onInspect={() => setInspectId(zone.instanceId)}
+                    onInspectEnd={() => setInspectId(null)}
                   />
                 )
               ) : isShattering && dyingData ? (
@@ -169,7 +172,7 @@ export default function ZoneRow({
               ? getMonsterBuffEntries(inspected)
               : getSupportBuffEntries(inspected)
           }
-          onClose={() => setInspectIdx(null)}
+          onClose={() => setInspectId(null)}
         />
       )}
     </div>

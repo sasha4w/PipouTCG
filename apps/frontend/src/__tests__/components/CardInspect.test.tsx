@@ -53,4 +53,32 @@ describe("CardInspect", () => {
 
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it("n'affiche la description qu'une fois même si les effets la répètent", () => {
+    render(
+      <CardInspect
+        card={card}
+        entries={[{ icon: "📖", label: "Écrase tout", type: "neutral" }]}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Écrase tout")).toHaveLength(1);
+  });
+
+  it("garde les autres effets quand seule la description est retirée", () => {
+    render(
+      <CardInspect
+        card={card}
+        entries={[
+          { icon: "🔥", label: "+50 ATK", type: "buff" },
+          { icon: "📖", label: "Écrase tout", type: "neutral" },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Écrase tout")).toHaveLength(1);
+    expect(screen.getByText("+50 ATK")).toBeInTheDocument();
+  });
 });

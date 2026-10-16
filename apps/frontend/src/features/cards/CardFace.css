@@ -220,7 +220,6 @@
 
 /* ══ ÉTATS DE COMBAT ══ */
 .card-face--guard {
-  --card-border: #3c78dc;
   box-shadow:
     inset 0 0 0 2px rgba(255, 255, 255, 0.25),
     0 0 0 2px rgba(60, 120, 220, 0.4);
@@ -402,4 +401,9 @@
   background: rgba(10, 10, 15, 0.85);
   border-color: #6a0a6a;
   color: #f0e8ff;
+}
+
+/* Garde : après les palettes, pour que la bordure bleue l'emporte sur la rareté */
+.card-face.card-face--guard[data-rarity] {
+  --card-border: #3c78dc;
 }

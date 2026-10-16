@@ -20,7 +20,7 @@ const handCard = (name: string): HandCard => ({
 function renderHand(overrides: Partial<Parameters<typeof FightHand>[0]> = {}) {
   const onCardClick = vi.fn();
   const hand = [handCard("Gobelin"), handCard("Ogre")];
-  render(
+  const { rerender } = render(
     <FightHand
       hand={hand}
       phase="main"
@@ -32,7 +32,7 @@ function renderHand(overrides: Partial<Parameters<typeof FightHand>[0]> = {}) {
       {...overrides}
     />,
   );
-  return { hand, onCardClick };
+  return { hand, onCardClick, rerender };
 }
 
 describe("FightHand", () => {
@@ -73,12 +73,9 @@ describe("FightHand", () => {
 
     const dialog = screen.getByRole("dialog", { name: "Gobelin" });
     expect(dialog).toBeInTheDocument();
-    // La description figure aussi sur la face de la grande carte : on cible la ligne d'effet.
     expect(
-      within(dialog).getByText("Description de Gobelin", {
-        selector: ".bdl-label",
-      }),
-    ).toBeInTheDocument();
+      within(dialog).getAllByText("Description de Gobelin"),
+    ).toHaveLength(1);
 
     fireEvent.pointerUp(card);
     fireEvent.click(card);
@@ -93,5 +90,26 @@ describe("FightHand", () => {
     expect(screen.getByRole("button", { name: /Gobelin/ })).toHaveClass(
       "fhand-card--selected",
     );
+  });
+
+  it("ne bascule pas sur une autre carte si la carte inspectée quitte la main", () => {
+    const { hand, rerender, onCardClick } = renderHand();
+
+    fireEvent.contextMenu(screen.getByRole("button", { name: /Gobelin/ }));
+    expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
+
+    rerender(
+      <FightHand
+        hand={[hand[1]]}
+        phase="main"
+        isMyTurn
+        selectedCard={null}
+        payIndices={[]}
+        freeSummonInstanceIds={[]}
+        onCardClick={onCardClick}
+      />,
+    );
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
