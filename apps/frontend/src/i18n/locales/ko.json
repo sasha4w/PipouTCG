@@ -83,6 +83,7 @@
   "collection": {
     "title": "내 인벤토리",
     "cards": "카드",
+    "card_count_other": "{{owned}} / {{count}} 카드",
     "boosters": "부스터",
     "bundles": "번들",
     "loading": "로딩 중...",

@@ -83,6 +83,8 @@
   "collection": {
     "title": "Mon inventaire",
     "cards": "Cartes",
+    "card_count_one": "{{owned}} / {{count}} carte",
+    "card_count_other": "{{owned}} / {{count}} cartes",
     "boosters": "Boosters",
     "bundles": "Bundles",
     "loading": "Chargement...",
