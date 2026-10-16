@@ -176,12 +176,6 @@ export interface CreateQuestRequest {
 
 export type UpdateQuestRequest = Partial<CreateQuestRequest>;
 
-// ─── Récompense quotidienne ───────────────────────────────────────────────────
-
-export interface RescueStreakRequest {
-  daysToBuy: number;
-}
-
 // ─── Patchnotes ───────────────────────────────────────────────────────────────
 
 /** POST /patchnotes (admin) */

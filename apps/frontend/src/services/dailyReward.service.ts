@@ -1,78 +1,23 @@
 import { api } from "../api/api";
-import type { RescueStreakRequest } from "@pipou/shared";
-
-import type { DailyRewardType } from "@pipou/shared";
-
-export type RewardType = DailyRewardType;
-
-export interface DailyReward {
-  type: RewardType;
-  value: number;
-  quantity: number;
-  label: string | null;
-  isMilestone: boolean;
-}
-
-export interface StreakStatus {
-  streak: {
-    current: number;
-    longest: number;
-    totalDays: number;
-    cycleDay: number;
-    weekNumber: number;
-    lastClaimDate: string | null; // ← AJOUTER
-  };
-  alreadyClaimed: boolean;
-  daysMissed: number;
-  rescueAvailable: boolean;
-  rescueCost: number | null;
-  maxRescuable: number;
-  nextReward: {
-    type: RewardType;
-    value: number;
-    quantity: number;
-    label: string | null;
-  } | null;
-  nextMilestone: {
-    dayThreshold: number;
-    daysRemaining: number;
-    label: string | null;
-  } | null;
-}
-
-export interface ClaimResult {
-  status: "claimed" | "rescue_required";
-  message: string;
-  streak: {
-    current: number;
-    longest: number;
-    totalDays: number;
-    cycleDay: number;
-  };
-  rewards?: DailyReward[];
-  rescue?: {
-    daysMissed: number;
-    maxRescuable: number;
-    costPerScenario: number[];
-  };
-}
+import type {
+  ClaimDailyResult,
+  DailyRewardStatus,
+  RescueStreakResult,
+} from "@pipou/shared";
 
 export const dailyRewardService = {
-  async getStatus(): Promise<StreakStatus> {
+  async getStatus(): Promise<DailyRewardStatus> {
     const res = await api.get("/daily-reward/status");
     return res.data;
   },
 
-  async claimDaily(): Promise<ClaimResult> {
+  async claimDaily(): Promise<ClaimDailyResult> {
     const res = await api.post("/daily-reward/claim");
     return res.data;
   },
 
-  async rescueStreak(
-    daysToBuy: number,
-  ): Promise<{ message: string; goldSpent: number; goldRemaining: number }> {
-    const body: RescueStreakRequest = { daysToBuy };
-    const res = await api.post("/daily-reward/rescue", body);
+  async rescueStreak(): Promise<RescueStreakResult> {
+    const res = await api.post("/daily-reward/rescue");
     return res.data;
   },
 
