@@ -100,19 +100,31 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
       return;
     }
     setClaimResult(streakLost ? { ...result, streakLost } : result);
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dailyRewardStatus });
+    refreshQueries();
     setPhase("result");
   };
 
-  const run = async (action: () => Promise<void>, fallback: string, onError: Phase) => {
+  const refreshQueries = () => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dailyRewardStatus });
+  };
+
+  // `settle` lets the action move the fallback phase once the streak state has changed server-side.
+  const run = async (
+    action: (settle: (phase: Phase) => void) => Promise<void>,
+    fallback: string,
+    initialErrorPhase: Phase,
+  ) => {
+    let errorPhase = initialErrorPhase;
     setPhase("claiming");
     setError("");
     try {
-      await action();
+      await action((phase) => {
+        errorPhase = phase;
+      });
     } catch (e) {
       setError(apiErrorMessage(e) ?? fallback);
-      setPhase(onError);
+      setPhase(errorPhase);
     }
   };
 
@@ -121,8 +133,10 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
 
   const handleRescue = () =>
     run(
-      async () => {
+      async (settle) => {
         const res = await dailyRewardService.rescueStreak();
+        refreshQueries();
+        settle("idle");
         addToast(`Série sauvée ! ${res.goldSpent} gold dépensés.`, "success");
         showResult(await dailyRewardService.claimDaily());
       },
@@ -132,8 +146,10 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
 
   const handleRestart = () =>
     run(
-      async () => {
+      async (settle) => {
         await dailyRewardService.resetStreak();
+        refreshQueries();
+        settle("idle");
         showResult(await dailyRewardService.claimDaily(), rescue?.streak);
       },
       "Erreur lors de la réinitialisation.",
@@ -280,12 +296,12 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
 
           {phase === "result" && claimResult && (
             <motion.div key="result" className="drm-content" {...fade}>
-              {claimResult.streakLost && (
+              {claimResult.streakLost ? (
                 <p className="drm-warning">
                   <IconSkull size={14} color="#f27aaa" />
                   Série de {claimResult.streakLost} jours perdue
                 </p>
-              )}
+              ) : null}
               <div className="drm-header">
                 <div className="drm-header__row">
                   <IconPartyHorn size={22} color="#c8960c" />
