@@ -1,25 +1,21 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
-import CardSetList from "../features/cards/CardSetList";
-import CardList from "../features/cards/CardList";
+import CardGlossary from "../features/glossary/CardGlossary";
 import ShopSection from "../features/shop/ShopSection";
 import DailyStreakWidget from "../components/DailyStreakWidget";
 import OpeningModal, {
   type OpeningTarget,
 } from "../features/opening/OpeningModal";
 import OpeningQuickAccess from "../features/opening/OpeningQuickAccess";
+import { IconArrowRight, IconCards } from "../components/Icons";
+import { soundService } from "../services/sound.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import "./Home.css";
 
-interface SelectedSet {
-  id: number;
-  name: string;
-}
-
 // ── Home ──────────────────────────────────────────────────────────────────────
 const Home = () => {
-  const [selectedSet, setSelectedSet] = useState<SelectedSet | null>(null);
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [openingTarget, setOpeningTarget] = useState<OpeningTarget | null>(
     null,
   );
@@ -37,15 +33,11 @@ const Home = () => {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.collection });
   };
-  // ── Vue CardList (quand un set est sélectionné) ───────────────────────────
-  if (selectedSet) {
+  // ── Vue glossaire ─────────────────────────────────────────────────────────
+  if (glossaryOpen) {
     return (
       <div className="home-page">
-        <CardList
-          setId={selectedSet.id}
-          setName={selectedSet.name}
-          onBack={() => setSelectedSet(null)}
-        />
+        <CardGlossary onBack={() => setGlossaryOpen(false)} />
       </div>
     );
   }
@@ -69,16 +61,26 @@ const Home = () => {
       )}
       <div className="home-divider" />
 
-      {/* ── Sets de cartes ── */}
-      <div>
-        <div className="home-page__header">
-          <h2 className="home-page__title">Sets de cartes</h2>
-          <p className="home-page__subtitle">
-            Explore tous les sets disponibles
-          </p>
-        </div>
-        <CardSetList onSelectSet={(id, name) => setSelectedSet({ id, name })} />
-      </div>
+      {/* ── Glossaire ── */}
+      <button
+        type="button"
+        className="home-glossary"
+        onClick={() => {
+          soundService.play("select");
+          setGlossaryOpen(true);
+        }}
+      >
+        <span className="home-glossary__icon">
+          <IconCards size={22} />
+        </span>
+        <span className="home-glossary__text">
+          <span className="home-page__title">Glossaire</span>
+          <span className="home-page__subtitle">
+            Toutes les cartes et leurs effets
+          </span>
+        </span>
+        <IconArrowRight size={16} />
+      </button>
       {/* ── OpeningModal ── */}
       {openingTarget && (
         <OpeningModal

@@ -1,11 +1,13 @@
 // src/components/Loading.tsx
+import "./Loading.css";
+
 interface LoadingProps {
   message?: string;
 }
 
 export default function Loading({ message = "Chargement..." }: LoadingProps) {
   return (
-    <div className="csl-state">
+    <div className="loading">
       <img
         src="/logo-animated.gif"
         alt="Chargement..."

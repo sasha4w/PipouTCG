@@ -56,8 +56,7 @@ export const QUERY_KEYS = {
   cardOptions: ["cards", "options"] as const,
   imageOptions: ["images", "options"] as const,
   shopCatalog: ["shop", "catalog"] as const,
-  cardsBySet: (setId: number, page: number) =>
-    ["cards", "set", setId, page] as const,
+  cardGlossary: ["cards", "glossary"] as const,
   bundleOptions: ["bundles", "options"] as const,
 
   // ── Admin (écrans de gestion, paginés) ────────────────────────────────────
