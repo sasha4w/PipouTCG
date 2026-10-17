@@ -33,4 +33,24 @@ describe("getMonsterStatusEntries — nouvelles protections", () => {
       ]),
     );
   });
+
+  it("statuts Drakon", () => {
+    const labels = getMonsterStatusEntries(
+      monster({
+        hatchCounter: 2,
+        canEvolveThisTurn: true,
+        evolutionJoker: true,
+        instantEvolution: true,
+      }),
+      t,
+    ).map((e) => e.label);
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        fr.keywords.evolutionJoker.name,
+        fr.keywords.instantEvolution.name,
+        "Éclot dans 2 tours",
+        "Peut évoluer ce tour",
+      ]),
+    );
+  });
 });
