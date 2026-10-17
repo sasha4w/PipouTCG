@@ -122,10 +122,10 @@ describe('CreateCardDto â€” effets', () => {
   });
 });
 
-describe('CreateCardDto — Drakon', () => {
-  it('accepte élément, lignée et stade de Drakon', async () => {
+describe('CreateCardDto â€” Drakon', () => {
+  it('accepte Ã©lÃ©ment, lignÃ©e et stade de Drakon', async () => {
     const dto = plainToInstance(CreateCardDto, {
-      name: 'Bébé Test',
+      name: 'BÃ©bÃ© Test',
       rarity: 'common',
       type: 'monster',
       atk: 100,
@@ -140,9 +140,9 @@ describe('CreateCardDto — Drakon', () => {
     ).toEqual([]);
   });
 
-  it('refuse un élément inconnu', async () => {
+  it('refuse un Ã©lÃ©ment inconnu', async () => {
     const dto = plainToInstance(CreateCardDto, {
-      name: 'Bébé Test',
+      name: 'BÃ©bÃ© Test',
       rarity: 'common',
       type: 'monster',
       atk: 0,
