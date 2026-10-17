@@ -1,4 +1,4 @@
-import { ActionType } from '@pipou/shared';
+import { ActionType, CardType } from '@pipou/shared';
 import type { EffectAction, EffectFilter } from '@pipou/shared';
 import {
   CardInstance,
@@ -48,8 +48,11 @@ export function pickCandidates(
         ...from(player.deck, 'deck'),
       ];
     case ActionType.SEARCH_DECK:
-    case ActionType.SUMMON_FROM_DECK:
       return from(player.deck, 'deck');
+    case ActionType.SUMMON_FROM_DECK:
+      return from(player.deck, 'deck').filter(
+        (c) => c.baseCard.type === CardType.MONSTER,
+      );
     default:
       return [];
   }

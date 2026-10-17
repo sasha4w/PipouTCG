@@ -19,8 +19,11 @@ import {
   handNames,
   monsterNamed,
   passTurn,
+  P1_ID,
+  P2_ID,
   scenario,
 } from '../testing/scenario';
+import { buildClientState } from '../helpers/client-state.builder';
 
 const dragon = (name: string, extra: Parameters<typeof monsterCard>[1] = {}) =>
   monsterCard(name, { archetype: 'dragon', ...extra });
@@ -509,6 +512,217 @@ describe('mécaniques Drakon', () => {
         type: 'pick_cards',
         instanceIds: [choice.candidates[0].instanceId],
       });
+      expect(game.player1.monsterZones[1]?.card.baseCard.name).toBe(
+        'Jeune Deck',
+      );
+      // Invoqué pendant son propre tour : doit attendre avant d'évoluer
+      expect(game.player1.monsterZones[1]?.summonedThisTurn).toBe(true);
+    });
+
+    it('SUMMON_FROM_DECK et éclosion ne proposent que des monstres', () => {
+      const appel = ephemeralCard('Appel', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.SUMMON_FROM_DECK, EffectTarget.PLAYER, {
+            filter: { archetype: 'dragon' },
+          }),
+        ]),
+      ]);
+      const game = scenario({
+        p1: {
+          hand: [appel],
+          deck: [
+            equipmentCard('Écaille Deck', [], { archetype: 'dragon' }),
+            dragon('Jeune Deck', { stage: 'young' }),
+          ],
+        },
+      });
+      engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 });
+      expect(
+        game.pendingChoices[0].candidates.map((c) => c.baseCard.name),
+      ).toEqual(['Jeune Deck']);
+
+      const couvee = scenario({
+        turn: 'p2',
+        p1: {
+          monsters: [
+            {
+              card: dragon('Œuf', { stage: 'egg', atk: 0 }),
+              patch: { hatchCounter: 1, hatchStage: 'baby' },
+            },
+          ],
+          deck: [
+            monsterCard('F1'),
+            equipmentCard('Coquille', [], { stage: 'baby' }),
+            dragon('Bébé Deck', { stage: 'baby' }),
+          ],
+        },
+      });
+      passTurn(engine, couvee);
+      expect(
+        couvee.pendingChoices[0].candidates.map((c) => c.baseCard.name),
+      ).toEqual(['Bébé Deck']);
+    });
+
+    it('DRAKON_ON_BOARD sans élément ni stade ne compte que les Drakons', () => {
+      const frappe = () =>
+        ephemeralCard('Frappe', [
+          effect(EffectTrigger.ON_PLAY, [
+            act(ActionType.DEAL_DAMAGE, EffectTarget.ALL_ENEMIES, {
+              value: 300,
+              valueIf: {
+                condition: { type: EffectConditionType.DRAKON_ON_BOARD },
+                value: 600,
+              },
+            }),
+          ]),
+        ]);
+      const sans = scenario({
+        p1: { hand: [frappe()], monsters: [monsterCard('Pipou')] },
+        p2: { monsters: [monsterCard('Cible', { hp: 2000 })] },
+      });
+      engine.dispatch(sans, 'p1', { type: 'play_support', handIndex: 0 });
+      expect(monsterNamed(sans, 'p2', 'Cible').currentHp).toBe(1700);
+
+      const avec = scenario({
+        p1: {
+          hand: [frappe()],
+          monsters: [dragon('Bébé', { stage: 'baby' })],
+        },
+        p2: { monsters: [monsterCard('Cible', { hp: 2000 })] },
+      });
+      engine.dispatch(avec, 'p1', { type: 'play_support', handIndex: 0 });
+      expect(monsterNamed(avec, 'p2', 'Cible').currentHp).toBe(1400);
+    });
+  });
+
+  describe('robustesse des choix', () => {
+    const couvees = (deck: ReturnType<typeof monsterCard>[]) =>
+      scenario({
+        turn: 'p2',
+        p1: {
+          monsters: [0, 1].map((i) => ({
+            card: dragon(`Œuf ${i}`, { stage: 'egg', atk: 0 }),
+            patch: { hatchCounter: 1, hatchStage: 'baby' as const },
+          })),
+          deck,
+        },
+      });
+    const pick = (game: ReturnType<typeof scenario>, instanceId: string) =>
+      engine.dispatch(game, 'p1', {
+        type: 'pick_cards',
+        instanceIds: [instanceId],
+      });
+
+    it('deux œufs, un seul Drakon au deck : le second choix est abandonné', () => {
+      const game = couvees([
+        monsterCard('F1'),
+        dragon('Bébé Deck', { stage: 'baby' }),
+      ]);
+      passTurn(engine, game);
+      expect(game.pendingChoices).toHaveLength(2);
+      expect(
+        pick(game, game.pendingChoices[0].candidates[0].instanceId),
+      ).toEqual({});
+      expect(game.player1.monsterZones[0]?.card.baseCard.name).toBe(
+        'Bébé Deck',
+      );
+      expect(buildClientState(game, P1_ID).pendingChoice).toBeUndefined();
+      expect(buildClientState(game, P2_ID).opponentChoosing).toBe(false);
+      expect(engine.dispatch(game, 'p1', { type: 'end_phase' })).toEqual({});
+    });
+
+    it('deux œufs, deux Drakons : chaque œuf éclot, candidats périmés exclus', () => {
+      const game = couvees([
+        monsterCard('F1'),
+        dragon('Bébé A', { stage: 'baby' }),
+        dragon('Bébé B', { stage: 'baby' }),
+      ]);
+      passTurn(engine, game);
+      const idOf = (name: string) =>
+        game.pendingChoices[0].candidates.find((c) => c.baseCard.name === name)!
+          .instanceId;
+      const idA = idOf('Bébé A');
+      expect(pick(game, idA)).toEqual({});
+      expect(
+        buildClientState(game, P1_ID).pendingChoice?.candidates.map(
+          (c) => c.baseCard.name,
+        ),
+      ).toEqual(['Bébé B']);
+      expect(pick(game, idA).error).toBe(
+        'Carte introuvable dans les choix disponibles',
+      );
+      expect(pick(game, idOf('Bébé B'))).toEqual({});
+      expect(
+        game.player1.monsterZones.map((m) => m?.card.baseCard.name),
+      ).toEqual(['Bébé A', 'Bébé B', undefined]);
+    });
+
+    const dualite = () =>
+      dragon('Dualité', {
+        stage: 'egg',
+        atk: 0,
+        hp: 300,
+        effects: [
+          effect(EffectTrigger.ON_DEATH, [
+            act(ActionType.SUMMON_FROM_DECK, EffectTarget.PLAYER, {
+              filter: { stage: 'young' },
+            }),
+          ]),
+        ],
+      });
+    const combat = (deck: ReturnType<typeof monsterCard>[]) => {
+      const game = scenario({
+        turn: 'p2',
+        phase: 'battle',
+        p1: { monsters: [dualite()], deck },
+        p2: { monsters: [monsterCard('Ogre', { atk: 900, hp: 900 })] },
+      });
+      attackWith(engine, game, 'p2', 'Ogre', 'Dualité');
+      return game;
+    };
+
+    it('Dualité détruite au combat : le seul Jeune, pioché, n’est plus proposé', () => {
+      const game = combat([dragon('Jeune Deck', { stage: 'young' })]);
+      expect(handNames(game, 'p1')).toContain('Jeune Deck');
+      expect(buildClientState(game, P1_ID).pendingChoice).toBeUndefined();
+      expect(engine.dispatch(game, 'p2', { type: 'end_phase' })).toEqual({});
+    });
+
+    it('Dualité détruite au combat : seuls les candidats encore au deck, Drakon prêt à évoluer', () => {
+      const game = combat([
+        dragon('Jeune A', { stage: 'young' }),
+        dragon('Jeune B', { stage: 'young' }),
+      ]);
+      const offered = buildClientState(game, P1_ID).pendingChoice?.candidates;
+      expect(offered?.map((c) => c.baseCard.name)).toEqual(['Jeune B']);
+      expect(pick(game, offered![0].instanceId)).toEqual({});
+      const jeune = monsterNamed(game, 'p1', 'Jeune B');
+      expect(game.player1.monsterZones[0]).toBe(jeune);
+      // Apparu pendant le tour adverse : pourra évoluer au prochain tour
+      expect(jeune.summonedThisTurn).toBe(false);
+    });
+
+    it('timeout : un choix summon_to_zone en attente est résolu automatiquement', () => {
+      const formatage = ephemeralCard('Formatage', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.DESTROY_MONSTER, EffectTarget.TARGET_ALLY),
+        ]),
+      ]);
+      const game = scenario({
+        p1: {
+          hand: [formatage],
+          monsters: [null, dualite()],
+          deck: [monsterCard('F1'), dragon('Jeune Deck', { stage: 'young' })],
+        },
+      });
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Dualité').instanceId,
+      });
+      expect(game.pendingChoices).toHaveLength(1);
+      engine.timeout(game);
+      expect(game.pendingChoices).toEqual([]);
       expect(game.player1.monsterZones[1]?.card.baseCard.name).toBe(
         'Jeune Deck',
       );

@@ -151,6 +151,7 @@ describe('GameEngine — choix en attente', () => {
     engine.timeout(game);
 
     expect(game.pendingChoices).toEqual([]);
+    expect(handNames(game, 'p2')).toContain('Noyau Test');
     expect(game.phase).toBe('end');
   });
 });

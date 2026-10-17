@@ -18,6 +18,7 @@ import {
   addLog,
   checkWinCondition,
   currentChoice,
+  freshCandidates,
   getPlayerState,
   seatPlayer,
 } from '../helpers/game-state.helper';
@@ -93,7 +94,7 @@ export class GameEngine {
     return {};
   }
 
-  /** Temps écoulé : mains gardées au mulligan, sinon défausse auto, choix annulé, phase suivante. */
+  /** Temps écoulé : mains gardées au mulligan, sinon défausse auto, choix résolus d'office, phase suivante. */
   timeout(game: GameState): void {
     if (game.phase === 'finished' || game.phase === 'waiting') return;
     if (game.phase === 'mulligan') {
@@ -111,9 +112,25 @@ export class GameEngine {
         player.graveyard.push(player.hand.pop()!);
       }
     }
-    game.pendingChoices = [];
+    this.autoResolveChoices(game);
     this.phase.endPhase(game, player.userId);
     this.settle(game);
+  }
+
+  /**
+   * Résout chaque choix en attente avec ses premiers candidats encore
+   * disponibles (une invocation peut en ajouter d'autres, d'où la limite).
+   */
+  private autoResolveChoices(game: GameState): void {
+    for (let i = 0; i < 20; i++) {
+      const choice = currentChoice(game);
+      if (!choice) return;
+      const ids = freshCandidates(game, choice)
+        .slice(0, choice.count)
+        .map((c) => c.instanceId);
+      if (this.pick.pickCards(game, choice.forUserId, ids).error) break;
+    }
+    game.pendingChoices = [];
   }
 
   /** Stabilise l'état après un changement : buffs, monstres à 0 PV, victoire. */

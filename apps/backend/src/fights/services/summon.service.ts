@@ -58,6 +58,8 @@ export class SummonService {
         : owner.monsterZones.findIndex((z) => z === null);
     if (zone === -1) return false;
     const monster = createMonsterOnBoard(card);
+    // Apparu pendant le tour adverse : pourra évoluer dès le tour suivant
+    monster.summonedThisTurn = game.currentTurnUserId === owner.userId;
     owner.monsterZones[zone] = monster;
     game.pendingEvents.push({
       kind: 'monster_summoned',

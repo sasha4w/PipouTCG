@@ -1,3 +1,4 @@
+import { CardType } from '@pipou/shared';
 import type { DrakonStage } from '@pipou/shared';
 import type {
   GameState,
@@ -23,7 +24,9 @@ export function hatchEgg(
 
   const stage: DrakonStage | undefined = egg.hatchStage;
   const candidates = owner.deck
-    .filter((c) => c.baseCard.stage === stage)
+    .filter(
+      (c) => c.baseCard.type === CardType.MONSTER && c.baseCard.stage === stage,
+    )
     .map((c) => ({
       instanceId: c.instanceId,
       baseCard: c.baseCard,

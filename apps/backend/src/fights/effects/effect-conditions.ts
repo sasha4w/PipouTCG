@@ -65,6 +65,10 @@ export function conditionMet(
       return owner.monsterZones.some(
         (m) =>
           !!m &&
+          // Sans élément ni stade : n'importe quel Drakon (carte à stade)
+          (condition.element ||
+            condition.stage ||
+            m.card.baseCard.stage != null) &&
           (!condition.element ||
             m.card.baseCard.element === condition.element) &&
           (!condition.stage || m.card.baseCard.stage === condition.stage),

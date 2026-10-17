@@ -22,6 +22,8 @@ const choice: PendingChoice = {
       cost: 2,
       image: null,
       description: `Texte de ${name}`,
+      element: null,
+      stage: null,
     },
   })),
 };

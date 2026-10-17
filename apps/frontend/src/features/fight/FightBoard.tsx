@@ -115,6 +115,15 @@ export default function FightBoard({
   const [showSummonModal, setShowSummonModal] = useState(false);
   // Monstre visé par une évolution en attente de paiement
   const [evolveTargetId, setEvolveTargetId] = useState<string | null>(null);
+  // Une évolution en attente ne survit pas à un changement de carte sélectionnée
+  const [evolveCard, setEvolveCard] = useState(selectedCard);
+  if (evolveCard !== selectedCard) {
+    setEvolveCard(selectedCard);
+    if (evolveTargetId !== null) {
+      setEvolveTargetId(null);
+      setShowSummonModal(false);
+    }
+  }
 
   // ── Support ciblé sur monstre (CardPickModal interne) ────────────────────
   const [targetSupportHandIdx, setTargetSupportHandIdx] = useState<
@@ -259,6 +268,8 @@ export default function FightBoard({
           cost: z.card.baseCard.cost,
           image: z.card.baseCard.image,
           description: z.card.baseCard.description,
+          element: z.card.baseCard.element,
+          stage: z.card.baseCard.stage,
         },
         source: "board" as const,
       }));

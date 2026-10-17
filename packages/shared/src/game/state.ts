@@ -35,6 +35,8 @@ export interface ClientChoiceCandidate {
     | "cost"
     | "image"
     | "description"
+    | "element"
+    | "stage"
   >;
   source: ChoiceSource;
 }

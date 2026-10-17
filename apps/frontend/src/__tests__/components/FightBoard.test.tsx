@@ -89,9 +89,11 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     onDiscardCard: vi.fn(),
     onEndPhase: vi.fn(),
   };
-  render(<FightBoard {...props} />);
+  const { rerender } = render(<FightBoard {...props} />);
   const row = screen.getByText("Mes Monstres").closest(".zr-wrap")!;
-  return { zones: row.querySelectorAll(".zr-zone"), onEvolve };
+  const select = (selectedCard: number | null) =>
+    rerender(<FightBoard {...props} selectedCard={selectedCard} />);
+  return { zones: row.querySelectorAll(".zr-zone"), onEvolve, select };
 }
 
 describe("FightBoard — évolution", () => {
@@ -122,6 +124,16 @@ describe("FightBoard — évolution", () => {
     expect(screen.getByText(/Évolution — Jeune Feros/)).toBeInTheDocument();
     // coût d'évolution 3 − 1 = 2
     expect(screen.getByText("0/2")).toBeInTheDocument();
+  });
+
+  it("changer de carte sélectionnée abandonne l'évolution en attente", () => {
+    const { zones, onEvolve, select } = renderBoard(state(0, 3));
+    fireEvent.click(zones[0]);
+    expect(screen.getByText(/Évolution — Jeune Feros/)).toBeInTheDocument();
+    select(null);
+    select(0);
+    expect(screen.queryByText(/Évolution —/)).not.toBeInTheDocument();
+    expect(onEvolve).not.toHaveBeenCalled();
   });
 
   it("clic sur un monstre non éligible : pas d'évolution", () => {

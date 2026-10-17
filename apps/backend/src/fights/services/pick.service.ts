@@ -3,6 +3,7 @@ import { GameState } from '../interfaces/game-state.interface';
 import {
   addLog,
   currentChoice,
+  freshCandidates,
   getPlayerState,
   shuffle,
 } from '../helpers/game-state.helper';
@@ -23,13 +24,12 @@ export class PickService {
     if (!choice || choice.forUserId !== userId)
       return { error: 'Aucun choix de carte en attente' };
 
-    const expected = Math.min(choice.count, choice.candidates.length);
+    const candidates = freshCandidates(game, choice);
+    const expected = Math.min(choice.count, candidates.length);
     const picked = [...new Set(instanceIds)];
     if (picked.length !== expected)
       return { error: `Sélectionnez exactement ${expected} carte(s)` };
-    if (
-      picked.some((id) => !choice.candidates.some((c) => c.instanceId === id))
-    )
+    if (picked.some((id) => !candidates.some((c) => c.instanceId === id)))
       return { error: 'Carte introuvable dans les choix disponibles' };
 
     const player = getPlayerState(game, userId);
@@ -59,7 +59,7 @@ export class PickService {
     } else {
       let pickedFromDeck = false;
       for (const id of picked) {
-        const candidate = choice.candidates.find((c) => c.instanceId === id)!;
+        const candidate = candidates.find((c) => c.instanceId === id)!;
         const pile =
           candidate.source === 'graveyard' ? player.graveyard : player.deck;
         const idx = pile.findIndex((c) => c.instanceId === id);
