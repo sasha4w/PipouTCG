@@ -55,7 +55,12 @@
     "logout": "Log out",
     "notif_trades": "Trades Status",
     "notif_boosters": "Booster stock Status",
-    "notif_news": "News"
+    "notif_news": "News",
+    "animations": "Animations",
+    "animations_label": "Duel animations",
+    "animations_auto": "Auto (system)",
+    "animations_full": "Full",
+    "animations_reduced": "Reduced"
   },
   "privacy": {
     "private": "Private profile",

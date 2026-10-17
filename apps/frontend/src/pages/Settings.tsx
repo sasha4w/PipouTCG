@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { authService } from "../services/auth.service";
 import { useQueryClient } from "@tanstack/react-query";
 import SoundSettings from "../components/SoundSettings";
+import AnimationSettings from "../components/AnimationSettings";
 import Button from "../components/Button";
 import i18n from "../i18n";
 import "./Settings.css";
@@ -78,6 +79,10 @@ const Settings = () => {
 
       <Section label={t("settings.audio")} defaultOpen>
         <SoundSettings />
+      </Section>
+
+      <Section label={t("settings.animations")}>
+        <AnimationSettings />
       </Section>
 
       <Section label={t("settings.notifications")}>

@@ -55,7 +55,12 @@
     "logout": "로그아웃",
     "notif_trades": "거래 상태",
     "notif_boosters": "부스터 재고 상태",
-    "notif_news": "뉴스"
+    "notif_news": "뉴스",
+    "animations": "애니메이션",
+    "animations_label": "대결 애니메이션",
+    "animations_auto": "자동 (시스템)",
+    "animations_full": "전체",
+    "animations_reduced": "줄이기"
   },
   "privacy": {
     "private": "비공개 프로필",
