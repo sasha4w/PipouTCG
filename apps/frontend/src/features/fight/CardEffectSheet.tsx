@@ -5,6 +5,7 @@ import {
   type KeywordId,
 } from "./effectText";
 import KeywordIcon from "./KeywordIcon";
+import { renderEffectText } from "./renderEffectText";
 import type { BuffEntry } from "./BuffDebuffSections";
 import "./CardEffectSheet.css";
 
@@ -18,13 +19,6 @@ interface Props {
   sources: EffectSheetSource[];
   /** Statuts actifs d'un monstre en jeu (gel, éclosion…), affichés sous ses effets. */
   statuses?: BuffEntry[];
-}
-
-/** `**mot-clé**` → <strong>. */
-function renderText(text: string) {
-  return text
-    .split(/\*\*(.+?)\*\*/g)
-    .map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part));
 }
 
 /** Texte de règle des effets d'une carte (et de ses équipements) + glossaire. */
@@ -55,7 +49,7 @@ export default function CardEffectSheet({ sources, statuses = [] }: Props) {
               )}
               {rule.lines.map((line, k) => (
                 <p key={k} className={`ces-line ces-line--${line.tone}`}>
-                  {renderText(line.text)}
+                  {renderEffectText(line.text)}
                 </p>
               ))}
             </div>

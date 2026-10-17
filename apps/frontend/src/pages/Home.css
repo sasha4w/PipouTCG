@@ -26,9 +26,42 @@
   background: rgba(61, 16, 32, 0.08);
 }
 
-/* Header sets (repris de l'ancienne version) */
-.home-page__header {
+/* ── Entrée du glossaire ── */
+.home-glossary {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1.5px solid rgba(61, 16, 32, 0.12);
+  border-radius: 14px;
+  background: #fffaf4;
+  color: #7a1c3b;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+.home-glossary:hover {
+  box-shadow: 0 3px 10px rgba(61, 16, 32, 0.08);
+}
+.home-glossary:active {
+  transform: scale(0.98);
+}
+.home-glossary__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(238, 188, 119, 0.35);
+}
+.home-glossary__text {
+  display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
 }
