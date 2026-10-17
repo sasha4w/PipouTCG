@@ -40,6 +40,13 @@
   width: 12px;
   height: 12px;
 }
+/* Réserve la place de la pastille : le nom ne passe jamais dessous */
+.card-face__header:has(.card-face__element) {
+  padding-left: 18%;
+}
+.card-face--xs .card-face__header:has(.card-face__element) {
+  padding-left: 16px;
+}
 .card-face__element--earth {
   background: #8d6e4a;
 }
