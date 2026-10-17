@@ -25,7 +25,7 @@ d'Œufs à protéger, et chaque élément a sa spécialité. On peut jouer mono-
 | Conservé à l'évolution | Équipements et mode ; PV remis au maximum du nouveau stade ; bonus temporaires et malus effacés |
 | Monstre de base | Part au cimetière |
 | Œufs | Genèse (joker + éclosion Bébé en 2 tours), Dualité (Jeune si détruit, Bébé si éclot en 2 tours), Céleste (Adulte en 4 tours) |
-| Éléments | 🌍 Terre = PV et immunité · 🔥 Feu = dégâts · 🌪️ Vent = vitesse d'évolution · 💧 Eau = soin et cimetière |
+| Éléments | Terre = PV et immunité · Feu = dégâts · Vent = vitesse d'évolution · Eau = soin et cimetière |
 | Lignées | Teros = Terre · Feros = Feu · Tempestu = Vent · Ackos = Eau |
 | Modèle de données | Nouvelles colonnes de carte `element`, `lineage`, `stage` (nullables) |
 
@@ -186,8 +186,15 @@ des cartes existantes ne changent pas, sauf l'Œuf de la Genèse.
 - **Évolution** : sélection d'un Drakon Jeune/Adulte en main → les monstres alliés éligibles s'allument (règle
   partagée `canEvolveOnto(card, monster)` dans `@pipou/shared`, utilisée aussi par le moteur) → clic → fenêtre de
   paiement si le coût restant > 0 → `fight:evolve`. Bouton « Évoluer » dans la barre d'action.
-- **Statuts** : « Éclot dans N tours » (⏳), « Peut évoluer », « Joker d'évolution », « Évolution immédiate ».
-- **Carte** : pastille d'élément (🌍 🔥 🌪️ 💧) sur `CardFace` quand `element` est renseigné.
+- **Icônes : aucun emoji, uniquement des icônes SVG**, ajoutées à `apps/frontend/src/components/Icons.tsx` dans le
+  même format que les icônes existantes (`IconProps` : `size`, `color`, `className`, `style` ; `viewBox 0 0 24 24`,
+  trait `currentColor`). Nouvelles icônes : `IconEarth`, `IconWind`, `IconWater` (`IconFire` existe déjà),
+  `IconEgg` (éclosion), `IconEvolve` (évolution / peut évoluer), `IconJoker` (joker d'évolution).
+- **Statuts** : « Éclot dans N tours », « Peut évoluer », « Joker d'évolution », « Évolution immédiate », chacun avec
+  son icône SVG. Le type `BuffEntry.icon` (aujourd'hui une chaîne emoji) accepte aussi un `ReactNode` pour ces
+  statuts.
+- **Carte** : pastille d'élément (icône SVG de l'élément, couleur par élément) sur `CardFace` quand `element` est
+  renseigné.
 - **Textes d'effets** fr/en/ko : nouvelles actions, cible, condition et filtres.
 - **Admin** (`CardManager`) : champs élément, lignée, stade.
 - **Choix** : la fenêtre de choix existante (`CardPickModal`) sert aux éclosions et invocations depuis le deck.
