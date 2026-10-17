@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Index,
+} from 'typeorm';
 import {
   QuestResetType,
   QuestRewardType as RewardType,
@@ -30,7 +36,13 @@ export class Quest {
 
   /** Identifiant stable des quêtes seedées depuis quest-pool.ts ; null pour les quêtes admin. */
   @Index('UQ_quest_pool_key', { unique: true })
-  @Column({ name: 'pool_key', type: 'varchar', length: 64, nullable: true, default: null })
+  @Column({
+    name: 'pool_key',
+    type: 'varchar',
+    length: 64,
+    nullable: true,
+    default: null,
+  })
   poolKey!: string | null;
 
   @Column()

@@ -33,10 +33,16 @@ export class QuestsAchievements1791000000007 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('ALTER TABLE `quest` DROP INDEX `UQ_quest_pool_key`');
+    await queryRunner.query(
+      'ALTER TABLE `quest` DROP INDEX `UQ_quest_pool_key`',
+    );
     await queryRunner.query('ALTER TABLE `quest` DROP COLUMN `pool_key`');
-    await queryRunner.query('ALTER TABLE `user` DROP COLUMN `last_quest_reroll_at`');
-    await queryRunner.query('ALTER TABLE `user` DROP COLUMN `quests_completed`');
+    await queryRunner.query(
+      'ALTER TABLE `user` DROP COLUMN `last_quest_reroll_at`',
+    );
+    await queryRunner.query(
+      'ALTER TABLE `user` DROP COLUMN `quests_completed`',
+    );
     await queryRunner.query('ALTER TABLE `user` DROP COLUMN `equipped_title`');
     await queryRunner.query(
       'ALTER TABLE `user_achievement` DROP FOREIGN KEY `FK_user_achievement_user`',

@@ -84,13 +84,24 @@ export class User {
   @Column({ name: 'sets_completed', default: 0 }) // Ajout du name
   setsCompleted!: number;
 
-  @Column({ name: 'equipped_title', type: 'varchar', length: 32, nullable: true, default: null })
+  @Column({
+    name: 'equipped_title',
+    type: 'varchar',
+    length: 32,
+    nullable: true,
+    default: null,
+  })
   equippedTitle!: AchievementFamily | null;
 
   @Column({ name: 'quests_completed', default: 0 })
   questsCompleted!: number;
 
-  @Column({ name: 'last_quest_reroll_at', type: 'datetime', nullable: true, default: null })
+  @Column({
+    name: 'last_quest_reroll_at',
+    type: 'datetime',
+    nullable: true,
+    default: null,
+  })
   lastQuestRerollAt!: Date | null;
 
   // =========================
