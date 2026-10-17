@@ -35,14 +35,18 @@ export class AchievementStatsService {
       }),
       this.dataSource.getRepository(PlayerStats).findOne({ where: { userId } }),
       this.dataSource.getRepository(LoginStreak).findOne({ where: { userId } }),
-      this.dataSource.query(
+      this.dataSource.query<
+        { uniqueCards: string | number; highRarity: string | number }[]
+      >(
         `SELECT COUNT(DISTINCT uc.card_id) AS uniqueCards,
                 COALESCE(SUM(CASE WHEN c.rarity IN (${HIGH_RARITY_SQL}) THEN uc.quantity ELSE 0 END), 0) AS highRarity
            FROM user_card uc JOIN card c ON c.id = uc.card_id
           WHERE uc.user_id = ?`,
         [userId],
       ),
-      this.dataSource.query(
+      this.dataSource.query<
+        { total: string | number; owned: string | number }[]
+      >(
         `SELECT COUNT(c.id) AS total, COUNT(owned.card_id) AS owned
            FROM card_set s
            JOIN card c ON c.card_set_id = s.id
