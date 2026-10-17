@@ -17,6 +17,12 @@ export type GameAction =
       zoneIndex?: number;
       targetInstanceId?: string;
     }
+  | {
+      type: "evolve";
+      handIndex: number;
+      targetInstanceId: string;
+      paymentHandIndices: number[];
+    }
   | { type: "recycle"; handIndex: number }
   | { type: "change_mode"; instanceId: string; mode: CombatMode }
   | {

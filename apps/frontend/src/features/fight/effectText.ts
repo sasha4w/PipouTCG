@@ -25,6 +25,10 @@ export const KEYWORD_ICON = {
   damageReduction: "🛡",
   tempAtk: "⚡",
   countdown: "⏳",
+  // Icône SVG fournie par KeywordIcon (pas d'emoji pour les nouveaux mots-clés)
+  hatch: "",
+  evolutionJoker: "",
+  instantEvolution: "",
 } as const;
 export type KeywordId = keyof typeof KEYWORD_ICON;
 export const KEYWORD_IDS = Object.keys(KEYWORD_ICON) as KeywordId[];
@@ -163,6 +167,31 @@ const ACTIONS: Record<string, ActionSpec> = {
     defaultValue: 1,
     plural: true,
   },
+  SET_HATCH_COUNTER: {
+    tone: "neutral",
+    subject: "monster",
+    keyword: "hatch",
+    defaultValue: 2,
+    plural: true,
+  },
+  ADVANCE_HATCH: {
+    tone: "buff",
+    subject: "monster",
+    defaultValue: 1,
+    plural: true,
+  },
+  SUMMON_FROM_DECK: { tone: "buff", subject: "player", fixedValue: 1 },
+  EVOLUTION_JOKER: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "evolutionJoker",
+  },
+  INSTANT_EVOLUTION: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "instantEvolution",
+  },
+  ALLOW_EVOLUTION_THIS_TURN: { tone: "buff", subject: "monster" },
   SET_TURN_COUNTER: {
     tone: "neutral",
     subject: "monster",
@@ -240,8 +269,19 @@ function describeFilter(t: TFunction, filter?: EffectFilter): string {
   if (filter.type) parts.push(t(`filter.${filter.type}`));
   if (filter.rarities?.length)
     parts.push(filter.rarities.map((r) => t(`rarity.${r}`)).join(" / "));
+  if (filter.stage) parts.push(t(`effects.stage.${filter.stage}`));
+  if (filter.element) parts.push(t(`effects.element.${filter.element}`));
   if (filter.name) parts.push(t("effects.filter.name", { name: filter.name }));
   return parts.length ? ` (${parts.join(" · ")})` : "";
+}
+
+function drakonDetail(t: TFunction, c: EffectCondition): string {
+  return [
+    c.stage ? t(`effects.stage.${c.stage}`) : "",
+    c.element ? t(`effects.element.${c.element}`) : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function describeCondition(
@@ -249,6 +289,10 @@ function describeCondition(
   condition: EffectCondition | null | undefined,
 ): string | null {
   if (!condition) return null;
+  if (condition.type === "EQUIPPED_ON" && condition.value === undefined)
+    return t("effects.condition.EQUIPPED_ON_drakon", {
+      detail: drakonDetail(t, condition),
+    });
   const name = String(condition.value ?? "");
   const context = condition.match === "contains" ? "contains" : undefined;
   switch (condition.type) {
@@ -266,6 +310,10 @@ function describeCondition(
       });
     case "OPPONENT_HAS_NO_MONSTERS":
       return t("effects.condition.OPPONENT_HAS_NO_MONSTERS");
+    case "DRAKON_ON_BOARD":
+      return t("effects.condition.DRAKON_ON_BOARD", {
+        detail: drakonDetail(t, condition),
+      });
     case "SPECIFIC_CARD_ON_BOARD":
     case "EQUIPPED_ON":
       return t(`effects.condition.${condition.type}`, { name, context });

@@ -1,4 +1,5 @@
 import { ActionType, EffectTarget, EffectTrigger } from "../enums/effect";
+import type { DrakonStage } from "../enums/card";
 import type { CardEffect } from "./effect";
 
 /** Règles de construction d'un deck (création et lancement de match). */
@@ -83,4 +84,46 @@ export function isTargetableByEphemeral(
   if (ephemeralDestroysChosenTarget(effects) && monster.supportDestroyImmune)
     return false;
   return true;
+}
+
+const NEXT_STAGE: Partial<Record<DrakonStage, DrakonStage>> = {
+  baby: "young",
+  young: "adult",
+};
+
+interface EvolvingCard {
+  stage: DrakonStage | null;
+  lineage: string | null;
+  cost: number;
+}
+interface EvolutionBase {
+  card: { baseCard: EvolvingCard };
+  evolutionJoker?: boolean;
+}
+
+/** `card` (en main) peut-il évoluer sur `base` (en jeu) ? */
+export function canEvolveOnto(card: EvolvingCard, base: EvolutionBase): boolean {
+  if (card.stage !== "young" && card.stage !== "adult") return false;
+  if (base.evolutionJoker && card.stage === "young") return true;
+  const b = base.card.baseCard;
+  return (
+    !!b.stage &&
+    NEXT_STAGE[b.stage] === card.stage &&
+    !!b.lineage &&
+    b.lineage === card.lineage
+  );
+}
+
+/** Coût restant à payer pour évoluer. */
+export function evolutionCost(card: EvolvingCard, base: EvolutionBase): number {
+  return Math.max(0, card.cost - base.card.baseCard.cost);
+}
+
+/** Délai : une base posée ce tour n'évolue pas, sauf accélérateur. */
+export function canEvolveNow(base: {
+  summonedThisTurn: boolean;
+  instantEvolution?: boolean;
+  canEvolveThisTurn?: boolean;
+}): boolean {
+  return !base.summonedThisTurn || !!base.instantEvolution || !!base.canEvolveThisTurn;
 }

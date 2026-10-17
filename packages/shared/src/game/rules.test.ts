@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  canEvolveNow,
+  canEvolveOnto,
+  evolutionCost,
   canSummonOnEnemySide,
   ephemeralTargetSide,
   isTargetableByEphemeral,
@@ -91,5 +94,46 @@ describe("isTargetableByEphemeral", () => {
     const magouille = { isImmuneToDebuffs: true };
     expect(isTargetableByEphemeral(magouille, "enemy", damage)).toBe(false);
     expect(isTargetableByEphemeral(magouille, "ally", damage)).toBe(true);
+  });
+});
+
+const drakon = (stage: "egg" | "baby" | "young" | "adult", lineage: string | null, cost: number) => ({
+  stage,
+  lineage,
+  cost,
+});
+const onBoard = (
+  card: ReturnType<typeof drakon>,
+  flags: { evolutionJoker?: boolean; summonedThisTurn?: boolean; instantEvolution?: boolean; canEvolveThisTurn?: boolean } = {},
+) => ({ card: { baseCard: card }, summonedThisTurn: false, ...flags });
+
+describe("évolution des Drakons", () => {
+  it("même lignée, stade suivant", () => {
+    expect(canEvolveOnto(drakon("young", "feros", 2), onBoard(drakon("baby", "feros", 1)))).toBe(true);
+    expect(canEvolveOnto(drakon("adult", "feros", 3), onBoard(drakon("young", "feros", 2)))).toBe(true);
+  });
+
+  it("refuse une autre lignée ou un saut de stade", () => {
+    expect(canEvolveOnto(drakon("young", "teros", 2), onBoard(drakon("baby", "feros", 1)))).toBe(false);
+    expect(canEvolveOnto(drakon("adult", "feros", 3), onBoard(drakon("baby", "feros", 1)))).toBe(false);
+    expect(canEvolveOnto(drakon("baby", "feros", 1), onBoard(drakon("baby", "feros", 1)))).toBe(false);
+  });
+
+  it("le joker accepte un Jeune de toute lignée, pas un Adulte", () => {
+    const egg = onBoard(drakon("egg", null, 1), { evolutionJoker: true });
+    expect(canEvolveOnto(drakon("young", "ackos", 2), egg)).toBe(true);
+    expect(canEvolveOnto(drakon("adult", "ackos", 3), egg)).toBe(false);
+  });
+
+  it("coût = différence, jamais négatif", () => {
+    expect(evolutionCost(drakon("young", "feros", 2), onBoard(drakon("baby", "feros", 1)))).toBe(1);
+    expect(evolutionCost(drakon("young", "feros", 1), onBoard(drakon("egg", null, 2)))).toBe(0);
+  });
+
+  it("délai : pas le tour de pose, sauf accélérateur", () => {
+    expect(canEvolveNow({ summonedThisTurn: true })).toBe(false);
+    expect(canEvolveNow({ summonedThisTurn: false })).toBe(true);
+    expect(canEvolveNow({ summonedThisTurn: true, instantEvolution: true })).toBe(true);
+    expect(canEvolveNow({ summonedThisTurn: true, canEvolveThisTurn: true })).toBe(true);
   });
 });

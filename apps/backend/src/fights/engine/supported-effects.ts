@@ -29,6 +29,7 @@ export const SUPPORTED_CONDITIONS: ReadonlySet<EffectConditionType> = new Set([
   EffectConditionType.OPPONENT_HAS_NO_MONSTERS,
   EffectConditionType.SPECIFIC_CARD_ON_BOARD,
   EffectConditionType.EQUIPPED_ON,
+  EffectConditionType.DRAKON_ON_BOARD,
 ]);
 
 export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
@@ -63,6 +64,12 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.SET_COMBAT_IMMUNITY,
   ActionType.SET_SUPPORT_DESTROY_IMMUNITY,
   ActionType.IGNORE_TAUNT,
+  ActionType.SET_HATCH_COUNTER,
+  ActionType.ADVANCE_HATCH,
+  ActionType.SUMMON_FROM_DECK,
+  ActionType.EVOLUTION_JOKER,
+  ActionType.INSTANT_EVOLUTION,
+  ActionType.ALLOW_EVOLUTION_THIS_TURN,
 ]);
 
 export const SUPPORTED_TARGETS: ReadonlySet<EffectTarget> = new Set(

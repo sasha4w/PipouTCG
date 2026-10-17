@@ -384,6 +384,8 @@
       "SPECIFIC_CARD_ON_BOARD_contains": "If a card whose name contains “{{name}}” is on your field",
       "EQUIPPED_ON": "If equipped to “{{name}}”",
       "EQUIPPED_ON_contains": "If equipped to a monster whose name contains “{{name}}”",
+      "DRAKON_ON_BOARD": "If you control a Drakon ({{detail}})",
+      "EQUIPPED_ON_drakon": "If equipped to a monster ({{detail}})",
       "unknown": "Conditional ({{type}})"
     },
     "target": {
@@ -399,6 +401,7 @@
       "ARCHETYPE_ALLIES": "your {{archetype}} monsters",
       "ARCHETYPE_ALLIES_others": "your other {{archetype}} monsters",
       "ADJACENT_ALLIES": "adjacent monsters",
+      "STRONGEST_ENEMY": "the strongest enemy monster",
       "PLAYER": "you",
       "OPPONENT": "your opponent",
       "unknown": "the target ({{type}})"
@@ -475,11 +478,29 @@
       "GAIN_RECYCLE_ENERGY_you": "You gain {{count}} Recycle Energy.",
       "SET_FREE_SUMMON": "This card can be summoned for free.",
       "SUMMONABLE_ON_ENEMY_SIDE": "This card can be summoned on your opponent's field.",
+      "SET_HATCH_COUNTER_one": "{{target}} hatches in {{count}} turn into a card{{filter}} from your deck.",
+      "SET_HATCH_COUNTER_other": "{{target}} hatches in {{count}} turns into a card{{filter}} from your deck.",
+      "SET_HATCH_COUNTER_many_one": "{{target}} hatch in {{count}} turn into a card{{filter}} from your deck.",
+      "SET_HATCH_COUNTER_many_other": "{{target}} hatch in {{count}} turns into a card{{filter}} from your deck.",
+      "ADVANCE_HATCH_one": "{{target}} hatches {{count}} turn sooner.",
+      "ADVANCE_HATCH_other": "{{target}} hatches {{count}} turns sooner.",
+      "ADVANCE_HATCH_many_one": "{{target}} hatch {{count}} turn sooner.",
+      "ADVANCE_HATCH_many_other": "{{target}} hatch {{count}} turns sooner.",
+      "SUMMON_FROM_DECK": "{{target}} summons 1 card{{filter}} from their deck for free.",
+      "SUMMON_FROM_DECK_you": "You summon 1 card{{filter}} from your deck for free.",
+      "EVOLUTION_JOKER": "{{target}} gains **{{kw}}**.",
+      "EVOLUTION_JOKER_many": "{{target}} gain **{{kw}}**.",
+      "INSTANT_EVOLUTION": "{{target}} gains **{{kw}}**.",
+      "INSTANT_EVOLUTION_many": "{{target}} gain **{{kw}}**.",
+      "ALLOW_EVOLUTION_THIS_TURN": "{{target}} can evolve this turn.",
+      "ALLOW_EVOLUTION_THIS_TURN_many": "{{target}} can evolve this turn.",
       "unknown": "Special effect ({{type}})."
     },
     "filter": {
       "name": "name containing “{{name}}”"
     },
+    "stage": { "egg": "Egg", "baby": "Baby", "young": "Young", "adult": "Adult" },
+    "element": { "earth": "Earth", "fire": "Fire", "wind": "Wind", "water": "Water" },
     "archetype": {
       "pipou": "Pipou",
       "dragon": "Dragon",
@@ -551,6 +572,18 @@
     "countdown": {
       "name": "Countdown",
       "desc": "The counter goes down at the start of each turn of the player who played the monster; at 0, the monster is destroyed and that player earns a Prize."
+    },
+    "hatch": {
+      "name": "Hatching",
+      "desc": "After the given number of turns, the egg leaves the field and the card of your choice from your deck is summoned in its place."
+    },
+    "evolutionJoker": {
+      "name": "Evolution joker",
+      "desc": "A Young Drakon of any lineage can evolve onto this monster."
+    },
+    "instantEvolution": {
+      "name": "Instant evolution",
+      "desc": "Can evolve on the turn it is played."
     }
   }
 }

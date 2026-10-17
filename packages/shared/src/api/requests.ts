@@ -1,4 +1,11 @@
-import type { Archetype, CardType, Rarity, SupportType } from "../enums/card";
+import type {
+  Archetype,
+  CardType,
+  DrakonElement,
+  DrakonStage,
+  Rarity,
+  SupportType,
+} from "../enums/card";
 import type { BannerItemType, CardNumber, ProductType } from "../enums/commerce";
 import type {
   ConditionOperator,
@@ -48,6 +55,9 @@ export interface CreateCardRequest {
   cost?: number;
   supportType?: SupportType;
   archetype?: Archetype;
+  element?: DrakonElement;
+  lineage?: string;
+  stage?: DrakonStage;
   effects?: CardEffect[];
 }
 

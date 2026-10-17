@@ -20,6 +20,7 @@ export const EffectConditionType = {
   OPPONENT_HAS_NO_MONSTERS: "OPPONENT_HAS_NO_MONSTERS",
   SPECIFIC_CARD_ON_BOARD: "SPECIFIC_CARD_ON_BOARD",
   EQUIPPED_ON: "EQUIPPED_ON",
+  DRAKON_ON_BOARD: "DRAKON_ON_BOARD",
 } as const;
 export type EffectConditionType =
   (typeof EffectConditionType)[keyof typeof EffectConditionType];
@@ -56,6 +57,12 @@ export const ActionType = {
   SET_COMBAT_IMMUNITY: "SET_COMBAT_IMMUNITY",
   SET_SUPPORT_DESTROY_IMMUNITY: "SET_SUPPORT_DESTROY_IMMUNITY",
   IGNORE_TAUNT: "IGNORE_TAUNT",
+  SET_HATCH_COUNTER: "SET_HATCH_COUNTER",
+  ADVANCE_HATCH: "ADVANCE_HATCH",
+  SUMMON_FROM_DECK: "SUMMON_FROM_DECK",
+  EVOLUTION_JOKER: "EVOLUTION_JOKER",
+  INSTANT_EVOLUTION: "INSTANT_EVOLUTION",
+  ALLOW_EVOLUTION_THIS_TURN: "ALLOW_EVOLUTION_THIS_TURN",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 
@@ -71,5 +78,6 @@ export const EffectTarget = {
   ARCHETYPE_ALLIES: "ARCHETYPE_ALLIES",
   TARGET_ALLY: "TARGET_ALLY",
   ADJACENT_ALLIES: "ADJACENT_ALLIES",
+  STRONGEST_ENEMY: "STRONGEST_ENEMY",
 } as const;
 export type EffectTarget = (typeof EffectTarget)[keyof typeof EffectTarget];

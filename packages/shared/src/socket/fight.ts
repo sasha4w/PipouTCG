@@ -62,6 +62,13 @@ export interface DiscardPayload {
   handIndex: number;
 }
 
+export interface EvolvePayload {
+  matchId: number;
+  handIndex: number;
+  targetInstanceId: string;
+  paymentHandIndices?: number[];
+}
+
 export interface PickCardsPayload {
   matchId: number;
   instanceIds: string[];
@@ -78,6 +85,7 @@ export interface ClientToServerEvents {
   "fight:recycle_support": (payload: RecycleSupportPayload) => void;
   "fight:change_mode": (payload: ChangeModePayload) => void;
   "fight:attack": (payload: AttackPayload) => void;
+  "fight:evolve": (payload: EvolvePayload) => void;
   "fight:discard": (payload: DiscardPayload) => void;
   "fight:pick_cards": (payload: PickCardsPayload) => void;
   "fight:surrender": (payload: MatchPayload) => void;

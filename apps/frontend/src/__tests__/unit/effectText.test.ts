@@ -272,6 +272,9 @@ describe.each(Object.keys(LOCALES) as Lng[])(
         value: "Noyau",
         match: "contains" as const,
       },
+      { type: EffectConditionType.DRAKON_ON_BOARD, stage: "adult" as const },
+      { type: EffectConditionType.DRAKON_ON_BOARD, element: "fire" as const },
+      { type: EffectConditionType.EQUIPPED_ON, stage: "egg" as const },
     ];
     const cards: EffectSourceCard[] = [
       monster([]),
@@ -299,6 +302,8 @@ describe.each(Object.keys(LOCALES) as Lng[])(
             rarities: ["rare" as const],
             type: "support" as const,
             name: "Noyau",
+            stage: "baby" as const,
+            element: "water" as const,
           },
         })),
       ),

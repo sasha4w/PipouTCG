@@ -53,12 +53,12 @@ describe("enum values match the backend database values", () => {
     [
       "EffectConditionType",
       EffectConditionType,
-      ["ARCHETYPE_ON_BOARD", "HP_BELOW", "HAND_SIZE_MIN", "OPPONENT_HAS_NO_MONSTERS", "SPECIFIC_CARD_ON_BOARD", "EQUIPPED_ON"],
+      ["ARCHETYPE_ON_BOARD", "HP_BELOW", "HAND_SIZE_MIN", "OPPONENT_HAS_NO_MONSTERS", "SPECIFIC_CARD_ON_BOARD", "EQUIPPED_ON", "DRAKON_ON_BOARD"],
     ],
     [
       "EffectTarget",
       EffectTarget,
-      ["SELF", "ALLY_MONSTER", "ALL_ALLIES", "ALLIES_EXCEPT_SELF", "ENEMY_MONSTER", "ALL_ENEMIES", "PLAYER", "OPPONENT", "ARCHETYPE_ALLIES", "TARGET_ALLY", "ADJACENT_ALLIES"],
+      ["SELF", "ALLY_MONSTER", "ALL_ALLIES", "ALLIES_EXCEPT_SELF", "ENEMY_MONSTER", "ALL_ENEMIES", "PLAYER", "OPPONENT", "ARCHETYPE_ALLIES", "TARGET_ALLY", "ADJACENT_ALLIES", "STRONGEST_ENEMY"],
     ],
   ])("%s", (_name, enumObject, expected) => {
     expect(Object.values(enumObject)).toEqual(expected);
@@ -74,6 +74,8 @@ describe("enum values match the backend database values", () => {
       "BUFF_HP_PER_ADJACENT_ALLY", "SET_TURN_COUNTER", "FORCE_ATTACK_MODE_ENEMY",
       "BLOCK_ATTACK", "FORCE_GUARD_LOCK_ENEMY", "CANNOT_ATTACK_ON_SUMMON_TURN",
       "SUMMONABLE_ON_ENEMY_SIDE", "SET_COMBAT_IMMUNITY", "SET_SUPPORT_DESTROY_IMMUNITY", "IGNORE_TAUNT",
+      "SET_HATCH_COUNTER", "ADVANCE_HATCH", "SUMMON_FROM_DECK", "EVOLUTION_JOKER",
+      "INSTANT_EVOLUTION", "ALLOW_EVOLUTION_THIS_TURN",
     ]);
   });
 

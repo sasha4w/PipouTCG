@@ -1,3 +1,4 @@
+import type { DrakonStage } from "../enums/card";
 import type { ClientCard } from "./card";
 
 /** Exemplaire d'une carte en partie. C = entité complète côté serveur. */
@@ -60,4 +61,14 @@ export interface MonsterOnBoard<C = ClientCard> {
   supportDestroyImmune?: boolean;
   /** Peut attaquer n'importe quel monstre malgré une Provocation (passif). */
   ignoresTaunt?: boolean;
+  /** Tours restants avant éclosion (œuf). */
+  hatchCounter?: number;
+  /** Stade de la carte tirée du deck à l'éclosion. */
+  hatchStage?: DrakonStage;
+  /** Peut évoluer ce tour malgré le délai (effet). */
+  canEvolveThisTurn?: boolean;
+  /** Accepte un Jeune de n'importe quelle lignée (passif). */
+  evolutionJoker?: boolean;
+  /** Peut évoluer le tour où il est posé (passif). */
+  instantEvolution?: boolean;
 }

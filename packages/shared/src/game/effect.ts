@@ -1,4 +1,10 @@
-import type { Archetype, CardType, Rarity } from "../enums/card";
+import type {
+  Archetype,
+  CardType,
+  DrakonElement,
+  DrakonStage,
+  Rarity,
+} from "../enums/card";
 import type {
   ActionType,
   EffectConditionType,
@@ -11,9 +17,12 @@ export type CardNameMatch = "exact" | "contains";
 
 export interface EffectCondition {
   type: EffectConditionType;
+  /** Absent pour DRAKON_ON_BOARD. */
   value?: number | string;
   /** Conditions portant sur un nom de carte uniquement ("exact" par défaut). */
   match?: CardNameMatch;
+  element?: DrakonElement;
+  stage?: DrakonStage;
 }
 
 export interface EffectFilter {
@@ -21,6 +30,8 @@ export interface EffectFilter {
   rarities?: Rarity[];
   type?: CardType;
   name?: string;
+  element?: DrakonElement;
+  stage?: DrakonStage;
 }
 
 /** Valeur de remplacement quand la condition est remplie (ex. 2 cartes, 3 si Capitaine). */
