@@ -403,6 +403,7 @@
       "OPPONENT": "your opponent",
       "unknown": "the target ({{type}})"
     },
+    "valueIf": "({{value}} {{condition}})",
     "action": {
       "DEAL_DAMAGE": "{{target}} takes {{value}} damage.",
       "DEAL_DAMAGE_many": "{{target}} take {{value}} damage.",
@@ -430,6 +431,12 @@
       "RETURN_TO_HAND_many": "{{target}} return to their owner's hand, along with their equipment.",
       "SET_TAUNT": "{{target}} gains **{{kw}}**.",
       "SET_TAUNT_many": "{{target}} gain **{{kw}}**.",
+      "SET_COMBAT_IMMUNITY": "{{target}} gains **{{kw}}** until your next turn.",
+      "SET_COMBAT_IMMUNITY_many": "{{target}} gain **{{kw}}** until your next turn.",
+      "SET_SUPPORT_DESTROY_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_SUPPORT_DESTROY_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "IGNORE_TAUNT": "{{target}} gains **{{kw}}**.",
+      "IGNORE_TAUNT_many": "{{target}} gain **{{kw}}**.",
       "SET_PIERCING": "{{target}} gains **{{kw}}**.",
       "SET_PIERCING_many": "{{target}} gain **{{kw}}**.",
       "SET_DEBUFF_IMMUNITY": "{{target}} gains **{{kw}}**.",
@@ -498,8 +505,20 @@
       "desc": "Ignores damage reduction, and earns a Prize when destroying a monster in Guard."
     },
     "debuffImmunity": {
-      "name": "Debuff immunity",
-      "desc": "This monster cannot receive temporary ATK penalties."
+      "name": "Immune to enemy effects",
+      "desc": "No enemy card effect can target this monster. Combat still damages it."
+    },
+    "combatImmunity": {
+      "name": "Combat immunity",
+      "desc": "Takes no combat damage, whether attacking or being attacked."
+    },
+    "supportShield": {
+      "name": "Shielded",
+      "desc": "Cannot be destroyed directly by a Support card (damage still applies)."
+    },
+    "ignoreTaunt": {
+      "name": "Bypass",
+      "desc": "Can attack any monster despite Taunt."
     },
     "doubleAttack": {
       "name": "Double attack",

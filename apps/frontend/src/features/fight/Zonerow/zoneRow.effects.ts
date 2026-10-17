@@ -54,6 +54,9 @@ export function getMonsterStatusEntries(
   if (zone.hasTaunt) keyword("taunt", "buff");
   if (zone.hasPiercing) keyword("piercing", "buff");
   if (zone.isImmuneToDebuffs) keyword("debuffImmunity", "buff");
+  if (zone.combatImmune) keyword("combatImmunity", "buff");
+  if (zone.supportDestroyImmune) keyword("supportShield", "buff");
+  if (zone.ignoresTaunt) keyword("ignoreTaunt", "buff");
   if (zone.damageReduction && zone.damageReduction > 1)
     entries.push({
       icon: KEYWORD_ICON.damageReduction,

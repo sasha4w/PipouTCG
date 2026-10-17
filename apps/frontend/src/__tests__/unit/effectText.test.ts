@@ -41,6 +41,58 @@ const support = (
 ) => ({ type: "support", supportType, archetype: null, effects }) as const;
 
 describe("describeCardEffects (fr)", () => {
+  it("valueIf : la quantité conditionnelle est rédigée", () => {
+    const text = describeCardEffects(
+      support("EPHEMERAL", [
+        {
+          trigger: "ON_PLAY",
+          condition: null,
+          actions: [
+            {
+              type: "RETURN_FROM_GRAVEYARD",
+              target: "PLAYER",
+              value: 2,
+              valueIf: {
+                condition: {
+                  type: "SPECIFIC_CARD_ON_BOARD",
+                  value: "Capitaine",
+                  match: "contains",
+                },
+                value: 3,
+              },
+            },
+          ],
+        },
+      ]),
+      t,
+    );
+    expect(text.rules[0].lines[0].text).toBe(
+      "Tu récupères jusqu'à 2 cartes de ton cimetière. (3 si une carte dont le nom contient « Capitaine » est sur ton terrain)",
+    );
+  });
+
+  it("équipement : les trois nouvelles protections sont rédigées avec leur mot-clé", () => {
+    const text = describeCardEffects(
+      support("EQUIPMENT", [
+        {
+          trigger: "ON_PLAY",
+          condition: null,
+          actions: [{ type: "SET_COMBAT_IMMUNITY", target: "SELF" }],
+        },
+        {
+          trigger: "PASSIVE",
+          condition: null,
+          actions: [
+            { type: "SET_SUPPORT_DESTROY_IMMUNITY", target: "SELF" },
+            { type: "IGNORE_TAUNT", target: "SELF" },
+          ],
+        },
+      ]),
+      t,
+    );
+    expect(text.keywords).toEqual(["combatImmunity", "supportShield", "ignoreTaunt"]);
+  });
+
   let t: TFunction;
   beforeAll(async () => {
     t = await makeT("fr");

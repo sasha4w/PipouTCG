@@ -14,6 +14,9 @@ export const KEYWORD_ICON = {
   taunt: "🛡",
   piercing: "🗡",
   debuffImmunity: "✨",
+  combatImmunity: "🌀",
+  supportShield: "🧱",
+  ignoreTaunt: "🎯",
   doubleAttack: "⚡",
   multiAttack: "✖️",
   forcedAttack: "😈",
@@ -116,6 +119,17 @@ const ACTIONS: Record<string, ActionSpec> = {
     subject: "monster",
     keyword: "debuffImmunity",
   },
+  SET_COMBAT_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "combatImmunity",
+  },
+  SET_SUPPORT_DESTROY_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "supportShield",
+  },
+  IGNORE_TAUNT: { tone: "buff", subject: "monster", keyword: "ignoreTaunt" },
   SET_DELAY_DOUBLE_ATK: {
     tone: "buff",
     subject: "monster",
@@ -198,6 +212,11 @@ function cardKind(card: EffectSourceCard): CardKind {
   if (card.supportType === "EQUIPMENT") return "equipment";
   if (card.supportType === "TERRAIN") return "terrain";
   return "ephemeral";
+}
+
+/** Minuscule à la première lettre (condition insérée dans une parenthèse). */
+function lowerFirst(s: string): string {
+  return s.replace(/^\p{L}/u, (letter) => letter.toLowerCase());
 }
 
 /** Majuscule à la première lettre, même derrière un marqueur `**`. */
@@ -322,10 +341,20 @@ function describeAction(
     ...(spec.plural ? { count: value } : {}),
   });
 
+  const conditional = action.valueIf
+    ? t("effects.valueIf", {
+        value: action.valueIf.value,
+        condition: lowerFirst(
+          describeCondition(t, action.valueIf.condition) ?? "",
+        ),
+      })
+    : "";
+  const fullText = conditional ? `${text} ${conditional}` : text;
+
   const negative = value < 0 && action.type.startsWith("BUFF");
   return {
     line: {
-      text: capitalize(text),
+      text: capitalize(fullText),
       tone: negative ? "debuff" : spec.tone,
     },
     keyword: spec.keyword,

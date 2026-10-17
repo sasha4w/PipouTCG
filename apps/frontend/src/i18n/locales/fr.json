@@ -403,6 +403,7 @@
       "OPPONENT": "l'adversaire",
       "unknown": "la cible ({{type}})"
     },
+    "valueIf": "({{value}} {{condition}})",
     "action": {
       "DEAL_DAMAGE": "{{target}} subit {{value}} dégâts.",
       "DEAL_DAMAGE_many": "{{target}} subissent {{value}} dégâts.",
@@ -430,6 +431,12 @@
       "RETURN_TO_HAND_many": "{{target}} retournent dans la main de leur propriétaire, avec leurs équipements.",
       "SET_TAUNT": "{{target}} gagne **{{kw}}**.",
       "SET_TAUNT_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_COMBAT_IMMUNITY": "{{target}} gagne **{{kw}}** jusqu'à ton prochain tour.",
+      "SET_COMBAT_IMMUNITY_many": "{{target}} gagnent **{{kw}}** jusqu'à ton prochain tour.",
+      "SET_SUPPORT_DESTROY_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_SUPPORT_DESTROY_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "IGNORE_TAUNT": "{{target}} gagne **{{kw}}**.",
+      "IGNORE_TAUNT_many": "{{target}} gagnent **{{kw}}**.",
       "SET_PIERCING": "{{target}} gagne **{{kw}}**.",
       "SET_PIERCING_many": "{{target}} gagnent **{{kw}}**.",
       "SET_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
@@ -500,8 +507,20 @@
       "desc": "Ignore la réduction de dégâts, et rapporte une Prime en détruisant un monstre en Garde."
     },
     "debuffImmunity": {
-      "name": "Immunité aux débuffs",
-      "desc": "Le monstre ne peut pas recevoir de malus d'ATK temporaire."
+      "name": "Insensible aux effets adverses",
+      "desc": "Aucun effet d'une carte adverse ne peut viser ce monstre. Le combat le blesse normalement."
+    },
+    "combatImmunity": {
+      "name": "Insensible au combat",
+      "desc": "Ne subit aucun dégât de combat, ni en attaquant ni en étant attaqué."
+    },
+    "supportShield": {
+      "name": "Blindage",
+      "desc": "Ne peut pas être détruit directement par une carte Support (les dégâts passent)."
+    },
+    "ignoreTaunt": {
+      "name": "Contournement",
+      "desc": "Peut attaquer n'importe quel monstre malgré la Provocation."
     },
     "doubleAttack": {
       "name": "Double attaque",

@@ -25,6 +25,7 @@ import {
   HAND_LIMIT,
   canSummonOnEnemySide,
   ephemeralTargetSide,
+  isTargetableByEnemyEffects,
   type CombatMode,
 } from "@pipou/shared";
 
@@ -197,16 +198,22 @@ export default function FightBoard({
     return Math.max(0, cost - gs.me.recycleEnergy) > 0;
   };
 
+  /** Monstres qu'un Éphémère peut viser dans ce camp (immunisés exclus côté adverse). */
+  const targetableZones = (side: "ally" | "enemy"): MonsterOnBoard[] =>
+    side === "ally"
+      ? gs.me.monsterZones.filter((z): z is MonsterOnBoard => z !== null)
+      : gs.opponent.monsterZones.filter(
+          (z): z is MonsterOnBoard =>
+            z !== null && isTargetableByEnemyEffects(z),
+        );
+
   /** Ouvre le CardPickModal pour choisir la cible d'un support éphémère */
   const openTargetPick = (
     handIdx: number,
     cardName: string,
     targetSide: "ally" | "enemy",
   ) => {
-    const zones =
-      targetSide === "ally" ? gs.me.monsterZones : gs.opponent.monsterZones;
-    const candidates: ClientChoiceCandidate[] = zones
-      .filter((z): z is NonNullable<typeof z> => z !== null)
+    const candidates: ClientChoiceCandidate[] = targetableZones(targetSide)
       .map((z) => ({
         instanceId: z.instanceId,
         baseCard: {
@@ -383,11 +390,7 @@ export default function FightBoard({
       : null;
   const playBlockedReason =
     selectedTargetSide !== null &&
-    !(
-      selectedTargetSide === "ally"
-        ? gs.me.monsterZones
-        : gs.opponent.monsterZones
-    ).some(Boolean)
+    targetableZones(selectedTargetSide).length === 0
       ? "Aucune cible valide"
       : undefined;
 
