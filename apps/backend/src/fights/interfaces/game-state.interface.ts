@@ -1,6 +1,7 @@
 import type {
   CardInstance as SharedCardInstance,
   ChoiceSource,
+  FightEvent,
   GameEndReason,
   GamePhase,
   MonsterOnBoard as SharedMonsterOnBoard,
@@ -62,6 +63,8 @@ export interface PendingChoice {
   count: number;
   prompt: string;
   resolution?: PendingChoiceResolution;
+  /** summon_to_zone : zone visée. */
+  zoneIndex?: number;
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────
@@ -78,4 +81,8 @@ export interface GameState {
   log: string[];
   /** Choix à résoudre, dans l'ordre ; la partie attend tant qu'il en reste. */
   pendingChoices: PendingChoice[];
+  /** Événements de la dernière action, vidés après chaque envoi d'état. */
+  pendingEvents: FightEvent[];
+  /** Dernier numéro d'ordre attribué à un terrain posé. */
+  terrainSeq: number;
 }

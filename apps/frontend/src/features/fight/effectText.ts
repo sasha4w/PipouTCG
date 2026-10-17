@@ -14,6 +14,9 @@ export const KEYWORD_ICON = {
   taunt: "🛡",
   piercing: "🗡",
   debuffImmunity: "✨",
+  combatImmunity: "🌀",
+  supportShield: "🧱",
+  ignoreTaunt: "🎯",
   doubleAttack: "⚡",
   multiAttack: "✖️",
   forcedAttack: "😈",
@@ -22,6 +25,10 @@ export const KEYWORD_ICON = {
   damageReduction: "🛡",
   tempAtk: "⚡",
   countdown: "⏳",
+  // Icône SVG fournie par KeywordIcon (pas d'emoji pour les nouveaux mots-clés)
+  hatch: "",
+  evolutionJoker: "",
+  instantEvolution: "",
 } as const;
 export type KeywordId = keyof typeof KEYWORD_ICON;
 export const KEYWORD_IDS = Object.keys(KEYWORD_ICON) as KeywordId[];
@@ -36,6 +43,8 @@ export interface EffectSourceCard {
   supportType?: string | null;
   archetype?: string | null;
   effects?: readonly CardEffect[] | null;
+  /** Stade Drakon : Jeune et Adulte n'arrivent que par évolution. */
+  stage?: string | null;
 }
 
 /** Une phrase ; les mots-clés sont entourés de `**`. */
@@ -116,6 +125,17 @@ const ACTIONS: Record<string, ActionSpec> = {
     subject: "monster",
     keyword: "debuffImmunity",
   },
+  SET_COMBAT_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "combatImmunity",
+  },
+  SET_SUPPORT_DESTROY_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "supportShield",
+  },
+  IGNORE_TAUNT: { tone: "buff", subject: "monster", keyword: "ignoreTaunt" },
   SET_DELAY_DOUBLE_ATK: {
     tone: "buff",
     subject: "monster",
@@ -149,6 +169,31 @@ const ACTIONS: Record<string, ActionSpec> = {
     defaultValue: 1,
     plural: true,
   },
+  SET_HATCH_COUNTER: {
+    tone: "neutral",
+    subject: "monster",
+    keyword: "hatch",
+    defaultValue: 2,
+    plural: true,
+  },
+  ADVANCE_HATCH: {
+    tone: "buff",
+    subject: "monster",
+    defaultValue: 1,
+    plural: true,
+  },
+  SUMMON_FROM_DECK: { tone: "buff", subject: "player", fixedValue: 1 },
+  EVOLUTION_JOKER: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "evolutionJoker",
+  },
+  INSTANT_EVOLUTION: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "instantEvolution",
+  },
+  ALLOW_EVOLUTION_THIS_TURN: { tone: "buff", subject: "monster" },
   SET_TURN_COUNTER: {
     tone: "neutral",
     subject: "monster",
@@ -200,6 +245,11 @@ function cardKind(card: EffectSourceCard): CardKind {
   return "ephemeral";
 }
 
+/** Minuscule à la première lettre (condition insérée dans une parenthèse). */
+function lowerFirst(s: string): string {
+  return s.replace(/^\p{L}/u, (letter) => letter.toLowerCase());
+}
+
 /** Majuscule à la première lettre, même derrière un marqueur `**`. */
 function capitalize(s: string): string {
   return s.replace(
@@ -221,8 +271,19 @@ function describeFilter(t: TFunction, filter?: EffectFilter): string {
   if (filter.type) parts.push(t(`filter.${filter.type}`));
   if (filter.rarities?.length)
     parts.push(filter.rarities.map((r) => t(`rarity.${r}`)).join(" / "));
+  if (filter.stage) parts.push(t(`effects.stage.${filter.stage}`));
+  if (filter.element) parts.push(t(`effects.element.${filter.element}`));
   if (filter.name) parts.push(t("effects.filter.name", { name: filter.name }));
   return parts.length ? ` (${parts.join(" · ")})` : "";
+}
+
+function drakonDetail(t: TFunction, c: EffectCondition): string {
+  return [
+    c.stage ? t(`effects.stage.${c.stage}`) : "",
+    c.element ? t(`effects.element.${c.element}`) : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function describeCondition(
@@ -230,6 +291,10 @@ function describeCondition(
   condition: EffectCondition | null | undefined,
 ): string | null {
   if (!condition) return null;
+  if (condition.type === "EQUIPPED_ON" && condition.value === undefined)
+    return t("effects.condition.EQUIPPED_ON_drakon", {
+      detail: drakonDetail(t, condition),
+    });
   const name = String(condition.value ?? "");
   const context = condition.match === "contains" ? "contains" : undefined;
   switch (condition.type) {
@@ -247,6 +312,10 @@ function describeCondition(
       });
     case "OPPONENT_HAS_NO_MONSTERS":
       return t("effects.condition.OPPONENT_HAS_NO_MONSTERS");
+    case "DRAKON_ON_BOARD":
+      return t("effects.condition.DRAKON_ON_BOARD", {
+        detail: drakonDetail(t, condition),
+      });
     case "SPECIFIC_CARD_ON_BOARD":
     case "EQUIPPED_ON":
       return t(`effects.condition.${condition.type}`, { name, context });
@@ -322,10 +391,23 @@ function describeAction(
     ...(spec.plural ? { count: value } : {}),
   });
 
+  const conditional = action.valueIf
+    ? t("effects.valueIf", {
+        value: action.valueIf.value,
+        condition: lowerFirst(
+          describeCondition(t, action.valueIf.condition) ?? "",
+        ),
+      })
+    : "";
+  const stripped = text.replace(/[.。]$/, "");
+  const fullText = conditional
+    ? `${stripped} ${conditional}${stripped === text ? "" : "."}`
+    : text;
+
   const negative = value < 0 && action.type.startsWith("BUFF");
   return {
     line: {
-      text: capitalize(text),
+      text: capitalize(fullText),
       tone: negative ? "debuff" : spec.tone,
     },
     keyword: spec.keyword,
@@ -340,6 +422,15 @@ export function describeCardEffects(
   const kind = cardKind(card);
   const keywords: KeywordId[] = [];
   const rules: EffectRule[] = [];
+
+  // Règle de pose (miroir de canSummonFromHand) : pas un effet, mais à connaître
+  if (card.stage === "young" || card.stage === "adult")
+    rules.push({
+      icon: "",
+      trigger: t("effects.ui.summonRule"),
+      condition: null,
+      lines: [{ text: t("effects.ui.evolutionOnly"), tone: "neutral" }],
+    });
 
   for (const effect of card.effects ?? []) {
     const trigger = String(effect.trigger);

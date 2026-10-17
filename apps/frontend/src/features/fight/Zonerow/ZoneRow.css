@@ -151,6 +151,137 @@
   }
 }
 
+/* Palier 1+ : lueur à la couleur de rareté */
+.zr-zone--summon-in::after {
+  box-shadow:
+    0 0 0 3px var(--rarity-color, rgba(200, 220, 255, 0.6)),
+    0 0 20px var(--rarity-color, rgba(180, 210, 255, 0.35));
+}
+
+/* Palier 2+ : cercle d'énergie au sol + particules montantes */
+.zr-summon-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.zr-summon-fx::before {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 6px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--rarity-color, #4a90d9);
+  box-shadow: 0 0 12px var(--rarity-color, #4a90d9);
+  animation: zr-ring 0.8s ease-out forwards;
+}
+.zr-summon-fx::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--rarity-color, #4a90d9);
+  box-shadow:
+    -34px 0 0 0 var(--rarity-color, #4a90d9),
+    -22px 6px 0 1px var(--rarity-color, #4a90d9),
+    -10px -4px 0 0 #fff,
+    12px 4px 0 1px var(--rarity-color, #4a90d9),
+    24px -2px 0 0 #fff,
+    34px 6px 0 1px var(--rarity-color, #4a90d9),
+    -28px -10px 0 0 var(--rarity-color, #4a90d9),
+    6px -12px 0 1px var(--rarity-color, #4a90d9),
+    28px -14px 0 0 #fff,
+    -4px 8px 0 0 var(--rarity-color, #4a90d9);
+  animation: zr-rise 0.8s ease-out forwards;
+}
+@keyframes zr-ring {
+  0% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+@keyframes zr-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px);
+    opacity: 0;
+  }
+}
+
+/* Palier 3+ : faisceau vertical */
+.zr-summon-beam {
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  top: -40px;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    var(--rarity-color, #f39c12),
+    rgba(255, 255, 255, 0.8) 40%,
+    transparent
+  );
+  filter: blur(6px);
+  transform-origin: bottom;
+  animation: zr-beam 1.2s ease-out forwards;
+}
+@keyframes zr-beam {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  25% {
+    transform: scaleY(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* Palier 4 : bordure arc-en-ciel + balayage holographique prolongé */
+.zr-zone--summon-t4 {
+  animation:
+    zr-summon 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    zr-rainbow 1.5s linear;
+}
+.zr-zone--summon-t4::before {
+  animation: zr-holo-sweep 0.7s 0.1s ease-out 2 forwards;
+}
+@keyframes zr-rainbow {
+  0%,
+  100% {
+    outline: 3px solid #e74c3c;
+  }
+  20% {
+    outline: 3px solid #f39c12;
+  }
+  40% {
+    outline: 3px solid #2ecc71;
+  }
+  60% {
+    outline: 3px solid #3498db;
+  }
+  80% {
+    outline: 3px solid #9b59b6;
+  }
+}
+
 /* ── Mode flip ───────────────────────────────────────────────────────────── */
 .zr-zone--mode-flip {
   animation: zr-mode-flip 0.4s ease-in-out;
@@ -235,15 +366,20 @@
 
 /* ── Destruction / shatter ───────────────────────────────────────────────── */
 .zr-zone--shattering {
-  animation: zr-shatter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
   z-index: 10;
   background: #fdf6f0;
-  border: 2px solid #e74c3c;
+  border: 2px solid var(--destroy-color, #e74c3c);
   overflow: hidden;
 }
 
-.zr-zone--shattering::before {
+/* Combat : éclatement (animation historique) */
+.zr-zone--destroy-combat {
+  --destroy-color: #e74c3c;
+  animation: zr-shatter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.zr-zone--destroy-combat::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -265,7 +401,7 @@
   z-index: 5;
 }
 
-.zr-zone--shattering::after {
+.zr-zone--destroy-combat::after {
   content: "";
   position: absolute;
   width: 5px;
@@ -358,6 +494,163 @@
   }
 }
 
+/* Effet : dissolution violette vers le haut */
+.zr-zone--destroy-effect {
+  --destroy-color: #8e44ad;
+  animation: zr-dissolve 0.9s ease-in forwards;
+}
+.zr-zone--destroy-effect::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c39bd3;
+  box-shadow:
+    -30px 10px 0 1px #8e44ad,
+    -16px -6px 0 0 #d7bde2,
+    14px 8px 0 1px #8e44ad,
+    28px -4px 0 0 #d7bde2,
+    -6px 18px 0 1px #a569bd,
+    22px 20px 0 0 #8e44ad;
+  animation: zr-rise 0.9s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes zr-dissolve {
+  0% {
+    opacity: 1;
+    filter: none;
+    transform: translateY(0);
+    box-shadow: 0 0 0 transparent;
+  }
+  30% {
+    opacity: 0.9;
+    filter: saturate(0.6) brightness(1.2);
+    box-shadow: 0 0 18px #8e44ad;
+  }
+  100% {
+    opacity: 0;
+    filter: blur(4px) saturate(0);
+    transform: translateY(-18px);
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* Sacrifice : lueur dorée puis repli vers le cimetière du propriétaire */
+.zr-zone--destroy-sacrifice {
+  --destroy-color: #f1c40f;
+  --grave-dx: 140px;
+  animation: zr-sacrifice 0.8s ease-in forwards;
+}
+.zr-wrap--opponent .zr-zone--destroy-sacrifice {
+  --grave-dx: -140px;
+}
+@keyframes zr-sacrifice {
+  0% {
+    transform: none;
+    opacity: 1;
+    box-shadow: 0 0 0 transparent;
+  }
+  35% {
+    transform: scale(1.04);
+    filter: brightness(1.4);
+    box-shadow: 0 0 24px #f1c40f;
+  }
+  100% {
+    transform: translateX(var(--grave-dx)) scale(0.2) rotate(-12deg);
+    opacity: 0;
+    filter: brightness(1);
+  }
+}
+
+/* Autodestruction (compteur) : clignotement accéléré puis onde de choc */
+.zr-zone--destroy-self-destruct {
+  --destroy-color: #e74c3c;
+  animation: zr-countdown-blow 1s ease-in forwards;
+}
+.zr-zone--destroy-self-destruct::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 3px solid #f39c12;
+  opacity: 0;
+  animation: zr-shockwave 1s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes zr-countdown-blow {
+  0%,
+  20%,
+  36%,
+  48%,
+  56% {
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+  10%,
+  28%,
+  42%,
+  52%,
+  60% {
+    filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4);
+  }
+  70% {
+    transform: scale(1.1);
+    filter: brightness(2.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.3);
+    filter: brightness(0.3);
+    opacity: 0;
+  }
+}
+@keyframes zr-shockwave {
+  0%,
+  60% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* PV épuisés : désaturation puis effondrement */
+.zr-zone--destroy-hp-depleted {
+  --destroy-color: #7f8c8d;
+  transform-origin: bottom center;
+  animation: zr-collapse 0.8s ease-in forwards;
+}
+@keyframes zr-collapse {
+  0% {
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+  40% {
+    filter: grayscale(1) brightness(0.8);
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    filter: grayscale(1) brightness(0.6);
+    transform: translateY(24px) scaleY(0.2);
+    opacity: 0;
+  }
+}
+
 .zr-dying-content {
   opacity: inherit;
   pointer-events: none;
@@ -429,6 +722,12 @@
   letter-spacing: -0.5px;
 }
 
+.zr-badge--hatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
 .zr-badge--counter-urgent {
   background: rgba(231, 76, 60, 0.2);
   color: #c0392b;
@@ -442,5 +741,39 @@
   }
   50% {
     opacity: 0.3;
+  }
+}
+
+/* ── Mode réduit (classe posée par FightBoard) ────────────────────────────── */
+.fb--reduced-motion .zr-zone--summon-in {
+  animation: zr-reduced-in 0.25s ease-out;
+}
+.fb--reduced-motion .zr-zone--shattering {
+  animation: zr-reduced-out 0.25s ease-out forwards;
+}
+.fb--reduced-motion .zr-zone--summon-in::before,
+.fb--reduced-motion .zr-zone--summon-in::after,
+.fb--reduced-motion .zr-zone--shattering::before,
+.fb--reduced-motion .zr-zone--shattering::after,
+.fb--reduced-motion .zr-summon-fx,
+.fb--reduced-motion .zr-summon-beam {
+  display: none;
+}
+@keyframes zr-reduced-in {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 3px var(--rarity-color, #a8a8a8);
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes zr-reduced-out {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 3px var(--destroy-color, #e74c3c);
+  }
+  100% {
+    opacity: 0;
   }
 }

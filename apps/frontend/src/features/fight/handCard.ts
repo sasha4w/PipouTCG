@@ -2,6 +2,7 @@ import type {
   Archetype,
   CardEffect,
   CardType,
+  DrakonStage,
   Rarity,
   SupportType,
 } from "@pipou/shared";
@@ -22,6 +23,8 @@ export interface HandCard {
   // ── Enrichis pour l'inspection ───────────────────────────────────────────
   effects?: CardEffect[] | null;
   archetype?: Archetype | null;
+  /** Stade Drakon : Jeune / Adulte n'arrivent que par évolution. */
+  stage?: DrakonStage | null;
   description?: string | null;
 }
 
@@ -40,6 +43,7 @@ export function toHandCard(c: CardInstance): HandCard {
     image: c.baseCard.image,
     effects: c.baseCard.effects ?? null,
     archetype: c.baseCard.archetype ?? null,
+    stage: c.baseCard.stage ?? null,
     description: c.baseCard.description ?? null,
   };
 }

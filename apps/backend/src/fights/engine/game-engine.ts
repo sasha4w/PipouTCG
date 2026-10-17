@@ -1,10 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { HAND_LIMIT, STARTING_HAND, STARTING_PRIMES } from '@pipou/shared';
+import {
+  DestroyCause,
+  HAND_LIMIT,
+  STARTING_HAND,
+  STARTING_PRIMES,
+} from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
 import { CardInstance, GameState } from '../interfaces/game-state.interface';
 import { PhaseService } from '../services/phase.service';
 import { RNG, type Rng } from './rng';
 import { SummonService } from '../services/summon.service';
+import { EvolutionService } from '../services/evolution.service';
 import { SupportService } from '../services/support.service';
 import { BattleService } from '../services/battle.service';
 import { PickService } from '../services/pick.service';
@@ -12,6 +18,7 @@ import {
   addLog,
   checkWinCondition,
   currentChoice,
+  freshCandidates,
   getPlayerState,
   seatPlayer,
 } from '../helpers/game-state.helper';
@@ -33,6 +40,7 @@ export class GameEngine {
   constructor(
     private phase: PhaseService,
     private summon: SummonService,
+    private evolution: EvolutionService,
     private support: SupportService,
     private battle: BattleService,
     private pick: PickService,
@@ -86,7 +94,7 @@ export class GameEngine {
     return {};
   }
 
-  /** Temps écoulé : mains gardées au mulligan, sinon défausse auto, choix annulé, phase suivante. */
+  /** Temps écoulé : mains gardées au mulligan, sinon défausse auto, choix résolus d'office, phase suivante. */
   timeout(game: GameState): void {
     if (game.phase === 'finished' || game.phase === 'waiting') return;
     if (game.phase === 'mulligan') {
@@ -104,9 +112,25 @@ export class GameEngine {
         player.graveyard.push(player.hand.pop()!);
       }
     }
-    game.pendingChoices = [];
+    this.autoResolveChoices(game);
     this.phase.endPhase(game, player.userId);
     this.settle(game);
+  }
+
+  /**
+   * Résout chaque choix en attente avec ses premiers candidats encore
+   * disponibles (une invocation peut en ajouter d'autres, d'où la limite).
+   */
+  private autoResolveChoices(game: GameState): void {
+    for (let i = 0; i < 20; i++) {
+      const choice = currentChoice(game);
+      if (!choice) return;
+      const ids = freshCandidates(game, choice)
+        .slice(0, choice.count)
+        .map((c) => c.instanceId);
+      if (this.pick.pickCards(game, choice.forUserId, ids).error) break;
+    }
+    game.pendingChoices = [];
   }
 
   /** Stabilise l'état après un changement : buffs, monstres à 0 PV, victoire. */
@@ -135,6 +159,7 @@ export class GameEngine {
           log.push(`💀 ${m.card.baseCard.name} succombe`);
           this.effects.destroyMonster(game, player, m.instanceId, log, {
             draw: true,
+            cause: DestroyCause.HP_DEPLETED,
           });
           died = true;
         }
@@ -190,6 +215,14 @@ export class GameEngine {
           action.zoneIndex,
           action.paymentHandIndices,
           action.onOpponentSide ?? false,
+        );
+      case 'evolve':
+        return this.evolution.evolve(
+          game,
+          userId,
+          action.handIndex,
+          action.targetInstanceId,
+          action.paymentHandIndices,
         );
       case 'play_support':
         return this.support.playSupport(

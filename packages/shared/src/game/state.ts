@@ -1,3 +1,4 @@
+import type { FightEvent } from "./events";
 import type { MatchEndReason } from "../enums/match";
 import type { ClientCard } from "./card";
 import type { CardInstance, MonsterOnBoard } from "./instance";
@@ -16,7 +17,7 @@ export type GameEndReason = MatchEndReason;
  * - 'pick_to_hand' : récupère depuis le cimetière ou le deck
  * - 'discard'      : défausse depuis la main
  */
-export type PendingChoiceResolution = "pick_to_hand" | "discard";
+export type PendingChoiceResolution = "pick_to_hand" | "discard" | "summon_to_zone";
 
 export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 
@@ -34,6 +35,8 @@ export interface ClientChoiceCandidate {
     | "cost"
     | "image"
     | "description"
+    | "element"
+    | "stage"
   >;
   source: ChoiceSource;
 }
@@ -83,6 +86,8 @@ export interface ClientGameState {
   me: MyClientState;
   opponent: OpponentClientState;
   log: string[];
+  /** Événements produits par la dernière action (vide à la reconnexion). */
+  events: FightEvent[];
   winner?: number;
   endReason?: GameEndReason;
   pendingChoice?: ClientPendingChoice;

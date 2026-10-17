@@ -27,3 +27,19 @@ export const Archetype = {
   PIXELMAN: "pixelman",
 } as const;
 export type Archetype = (typeof Archetype)[keyof typeof Archetype];
+
+export const DrakonElement = {
+  EARTH: "earth",
+  FIRE: "fire",
+  WIND: "wind",
+  WATER: "water",
+} as const;
+export type DrakonElement = (typeof DrakonElement)[keyof typeof DrakonElement];
+
+export const DrakonStage = {
+  EGG: "egg",
+  BABY: "baby",
+  YOUNG: "young",
+  ADULT: "adult",
+} as const;
+export type DrakonStage = (typeof DrakonStage)[keyof typeof DrakonStage];

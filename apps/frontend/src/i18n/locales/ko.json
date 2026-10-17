@@ -55,7 +55,12 @@
     "logout": "로그아웃",
     "notif_trades": "거래 상태",
     "notif_boosters": "부스터 재고 상태",
-    "notif_news": "뉴스"
+    "notif_news": "뉴스",
+    "animations": "애니메이션",
+    "animations_label": "대결 애니메이션",
+    "animations_auto": "자동 (시스템)",
+    "animations_full": "전체",
+    "animations_reduced": "줄이기"
   },
   "privacy": {
     "private": "비공개 프로필",
@@ -346,6 +351,8 @@
   },
   "effects": {
     "ui": {
+      "summonRule": "소환",
+      "evolutionOnly": "진화 또는 알의 효과로만 필드에 나옵니다.",
       "title": "효과",
       "keywords": "키워드",
       "status": "현재 상태"
@@ -377,6 +384,8 @@
       "SPECIFIC_CARD_ON_BOARD_contains": "내 필드에 이름에 '{{name}}'(이)가 포함된 카드가 있으면",
       "EQUIPPED_ON": "'{{name}}'에 장착되어 있으면",
       "EQUIPPED_ON_contains": "이름에 '{{name}}'(이)가 포함된 몬스터에 장착되어 있으면",
+      "DRAKON_ON_BOARD": "내 필드에 드라콘({{detail}})이 있으면",
+      "EQUIPPED_ON_drakon": "몬스터({{detail}})에 장착되어 있으면",
       "unknown": "조건부 ({{type}})"
     },
     "target": {
@@ -392,10 +401,12 @@
       "ARCHETYPE_ALLIES": "내 {{archetype}} 몬스터",
       "ARCHETYPE_ALLIES_others": "내 다른 {{archetype}} 몬스터",
       "ADJACENT_ALLIES": "인접한 몬스터",
+      "STRONGEST_ENEMY": "가장 강한 상대 몬스터",
       "PLAYER": "나",
       "OPPONENT": "상대",
       "unknown": "대상 ({{type}})"
     },
+    "valueIf": "({{condition}} {{value}})",
     "action": {
       "DEAL_DAMAGE": "{{target}}에게 {{value}} 피해.",
       "HEAL": "{{target}}의 HP {{value}} 회복 (최대치까지).",
@@ -410,6 +421,9 @@
       "DESTROY_MONSTER": "{{target}} 파괴.",
       "RETURN_TO_HAND": "{{target}}: 장착 카드와 함께 주인의 손패로 귀환.",
       "SET_TAUNT": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_COMBAT_IMMUNITY": "{{target}}에게 다음 턴까지 **{{kw}}** 부여.",
+      "SET_SUPPORT_DESTROY_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "IGNORE_TAUNT": "{{target}}에게 **{{kw}}** 부여.",
       "SET_PIERCING": "{{target}}에게 **{{kw}}** 부여.",
       "SET_DEBUFF_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
       "SET_ATTACKS_PER_TURN_other": "{{target}}: 턴당 {{count}}회 공격 가능 (**{{kw}}**).",
@@ -431,14 +445,23 @@
       "GAIN_RECYCLE_ENERGY_you_other": "재활용 에너지 {{count}} 획득.",
       "SET_FREE_SUMMON": "이 카드는 비용 없이 소환할 수 있습니다.",
       "SUMMONABLE_ON_ENEMY_SIDE": "이 카드는 상대 필드에 소환할 수 있습니다.",
+      "SET_HATCH_COUNTER_other": "{{target}}: {{count}}턴 후 덱의 카드{{filter}}(으)로 부화.",
+      "ADVANCE_HATCH_other": "{{target}}의 부화가 {{count}}턴 빨라짐.",
+      "SUMMON_FROM_DECK": "{{target}}: 덱에서 카드{{filter}} 1장을 무료 소환.",
+      "SUMMON_FROM_DECK_you": "덱에서 카드{{filter}} 1장을 무료 소환.",
+      "EVOLUTION_JOKER": "{{target}}에게 **{{kw}}** 부여.",
+      "INSTANT_EVOLUTION": "{{target}}에게 **{{kw}}** 부여.",
+      "ALLOW_EVOLUTION_THIS_TURN": "{{target}}: 이번 턴 진화 가능.",
       "unknown": "특수 효과 ({{type}})."
     },
     "filter": {
       "name": "이름에 '{{name}}' 포함"
     },
+    "stage": { "egg": "알", "baby": "아기", "young": "청년", "adult": "성체" },
+    "element": { "earth": "대지", "fire": "불", "wind": "바람", "water": "물" },
     "archetype": {
       "pipou": "피푸",
-      "dragon": "드래곤",
+      "dragon": "드라콘",
       "pixelman": "픽셀맨"
     },
     "status": {
@@ -446,7 +469,9 @@
       "multiAttack": "턴당 {{count}}회 공격",
       "damageReduction": "받는 피해 ÷{{value}}",
       "freeze_other": "{{count}}턴 더 빙결",
-      "countdown_other": "{{count}}턴 후 파괴"
+      "countdown_other": "{{count}}턴 후 파괴",
+      "hatch_other": "{{count}}턴 후 부화",
+      "canEvolve": "이번 턴 진화 가능"
     }
   },
   "keywords": {
@@ -459,8 +484,20 @@
       "desc": "피해 감소를 무시하며, 가드 상태의 몬스터를 파괴하면 상금을 얻습니다."
     },
     "debuffImmunity": {
-      "name": "디버프 면역",
-      "desc": "일시적인 ATK 감소를 받지 않습니다."
+      "name": "적 효과 면역",
+      "desc": "상대 카드의 효과가 이 몬스터를 대상으로 할 수 없습니다. 전투 피해는 받습니다."
+    },
+    "combatImmunity": {
+      "name": "전투 면역",
+      "desc": "공격하거나 공격받을 때 전투 피해를 받지 않습니다."
+    },
+    "supportShield": {
+      "name": "장갑",
+      "desc": "서포트 카드로 직접 파괴되지 않습니다 (피해는 받습니다)."
+    },
+    "ignoreTaunt": {
+      "name": "우회",
+      "desc": "도발을 무시하고 아무 몬스터나 공격할 수 있습니다."
     },
     "doubleAttack": {
       "name": "2회 공격",
@@ -493,6 +530,22 @@
     "countdown": {
       "name": "카운트다운",
       "desc": "몬스터를 낸 플레이어의 턴이 시작될 때마다 카운터가 줄어들며, 0이 되면 몬스터가 파괴되고 그 플레이어가 상금을 얻습니다."
+    },
+    "hatch": {
+      "name": "부화",
+      "desc": "표시된 턴이 지나면 알이 필드를 떠나고 덱에서 고른 카드가 그 자리에 소환됩니다."
+    },
+    "evolutionJoker": {
+      "name": "진화 조커",
+      "desc": "어떤 계통의 청년 드라콘이든 이 몬스터 위로 진화할 수 있습니다."
+    },
+    "instantEvolution": {
+      "name": "즉시 진화",
+      "desc": "놓인 턴에 바로 진화할 수 있습니다."
     }
+  },
+  "fight": {
+    "evolveHint": "진화시킬 내 몬스터를 터치하세요",
+    "summonPick": "소환"
   }
 }

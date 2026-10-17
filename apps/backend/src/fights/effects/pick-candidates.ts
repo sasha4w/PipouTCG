@@ -1,4 +1,4 @@
-import { ActionType } from '@pipou/shared';
+import { ActionType, CardType } from '@pipou/shared';
 import type { EffectAction, EffectFilter } from '@pipou/shared';
 import {
   CardInstance,
@@ -18,6 +18,8 @@ export function matchesFilter(
   if (filter.type && c.type !== filter.type) return false;
   if (filter.name && !c.name.toLowerCase().includes(filter.name.toLowerCase()))
     return false;
+  if (filter.element && c.element !== filter.element) return false;
+  if (filter.stage && c.stage !== filter.stage) return false;
   return true;
 }
 
@@ -47,6 +49,10 @@ export function pickCandidates(
       ];
     case ActionType.SEARCH_DECK:
       return from(player.deck, 'deck');
+    case ActionType.SUMMON_FROM_DECK:
+      return from(player.deck, 'deck').filter(
+        (c) => c.baseCard.type === CardType.MONSTER,
+      );
     default:
       return [];
   }

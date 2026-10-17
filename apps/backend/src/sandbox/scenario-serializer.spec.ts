@@ -1,4 +1,5 @@
 import type { Card } from '../cards/card.entity';
+import type { GameState } from '../fights/interfaces/game-state.interface';
 import {
   collectCardIds,
   deserializeGame,
@@ -23,6 +24,18 @@ function savedGame() {
   });
   return game;
 }
+
+const cardsOf = (game: GameState): Map<number, Card> => {
+  const cards = new Map<number, Card>();
+  JSON.stringify(game, (key, value: unknown) => {
+    if (key === 'baseCard') {
+      const card = value as Card;
+      cards.set(card.id, card);
+    }
+    return value;
+  });
+  return cards;
+};
 
 describe('scenario-serializer', () => {
   it('réduit chaque carte à son id', () => {
@@ -82,5 +95,21 @@ describe('scenario-serializer', () => {
         p2: { userId: -1, username: 'b', socketId: 's' },
       }),
     ).toThrow(/Carte #\d+ introuvable/);
+  });
+
+  it('initialise événements et compteur de terrains pour une ancienne sauvegarde', () => {
+    const game = savedGame();
+    const state = serializeGame(game);
+    delete state.pendingEvents;
+    delete state.terrainSeq;
+
+    const restored = deserializeGame(state, cardsOf(game), {
+      matchId: -2,
+      p1: { userId: 40, username: 'A', socketId: 's' },
+      p2: { userId: -40, username: 'B', socketId: 's' },
+    });
+
+    expect(restored.pendingEvents).toEqual([]);
+    expect(restored.terrainSeq).toBe(0);
   });
 });

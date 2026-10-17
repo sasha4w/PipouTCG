@@ -1,4 +1,6 @@
-import { buildClientState } from './client-state.builder';
+import type { ClientGameState, FightEvent } from '@pipou/shared';
+import { buildClientState, emitGameState } from './client-state.builder';
+import { fakeServer } from '../testing/fake-server';
 import { instanceOf, P1_ID, scenario } from '../testing/scenario';
 import { monsterCard } from '../testing/cards';
 import type { Card } from '../../cards/card.entity';
@@ -11,9 +13,11 @@ describe('buildClientState — candidats de choix', () => {
       image: { id: 9, url: 'https://cdn.test/gobelin.png' } as Card['image'],
     });
     const game = scenario();
+    const inst = instanceOf(card, P1_ID);
+    game.player1.graveyard.push(inst);
     game.pendingChoices.push({
       forUserId: P1_ID,
-      candidates: [{ ...instanceOf(card, P1_ID), source: 'graveyard' }],
+      candidates: [{ ...inst, source: 'graveyard' }],
       count: 1,
       prompt: 'Choisir',
     });
@@ -31,15 +35,60 @@ describe('buildClientState — candidats de choix', () => {
       cost: 3,
       image: { url: 'https://cdn.test/gobelin.png' },
       description: 'Un gobelin',
+      element: null,
+      stage: null,
     });
+  });
+
+  it('transmet l’élément et le stade d’un Drakon', () => {
+    const card = monsterCard('Bébé Feros', { element: 'fire', stage: 'baby' });
+    const game = scenario();
+    const inst = instanceOf(card, P1_ID);
+    game.player1.deck.push(inst);
+    game.pendingChoices.push({
+      forUserId: P1_ID,
+      candidates: [{ ...inst, source: 'deck' }],
+      count: 1,
+      prompt: 'Choisir',
+    });
+
+    const { baseCard } = buildClientState(game, P1_ID).pendingChoice!
+      .candidates[0];
+
+    expect(baseCard).toMatchObject({ element: 'fire', stage: 'baby' });
+  });
+
+  it('n’envoie que les candidats encore dans leur pile', () => {
+    const game = scenario();
+    const kept = instanceOf(monsterCard('Gardé'), P1_ID);
+    const gone = instanceOf(monsterCard('Parti'), P1_ID);
+    game.player1.deck.push(kept);
+    game.player1.hand.push(gone);
+    game.pendingChoices.push({
+      forUserId: P1_ID,
+      candidates: [
+        { ...gone, source: 'deck' },
+        { ...kept, source: 'deck' },
+      ],
+      count: 1,
+      prompt: 'Choisir',
+    });
+
+    expect(
+      buildClientState(game, P1_ID).pendingChoice?.candidates.map(
+        (c) => c.baseCard.name,
+      ),
+    ).toEqual(['Gardé']);
   });
 
   it('envoie image null quand la carte n’a pas d’illustration', () => {
     const card = monsterCard('Ogre');
     const game = scenario();
+    const inst = instanceOf(card, P1_ID);
+    game.player1.deck.push(inst);
     game.pendingChoices.push({
       forUserId: P1_ID,
-      candidates: [{ ...instanceOf(card, P1_ID), source: 'deck' }],
+      candidates: [{ ...inst, source: 'deck' }],
       count: 1,
       prompt: 'Choisir',
     });
@@ -47,5 +96,34 @@ describe('buildClientState — candidats de choix', () => {
     const state = buildClientState(game, P1_ID);
 
     expect(state.pendingChoice?.candidates[0].baseCard.image).toBeNull();
+  });
+});
+
+describe('buildClientState / emitGameState — événements', () => {
+  const ev: FightEvent = {
+    kind: 'terrain_played',
+    ownerId: P1_ID,
+    zoneIndex: 0,
+    instanceId: 't1',
+  };
+
+  it('recopie les événements en attente', () => {
+    const game = scenario();
+    game.pendingEvents.push(ev);
+
+    expect(buildClientState(game, P1_ID).events).toEqual([ev]);
+  });
+
+  it('envoie les mêmes événements aux deux joueurs puis vide le tampon', () => {
+    const game = scenario();
+    game.pendingEvents.push(ev);
+    const { server, emitted } = fakeServer();
+
+    emitGameState(game, server);
+    emitGameState(game, server);
+
+    const events = emitted.map((e) => (e.payload as ClientGameState).events);
+    expect(events).toEqual([[ev], [ev], [], []]);
+    expect(game.pendingEvents).toEqual([]);
   });
 });

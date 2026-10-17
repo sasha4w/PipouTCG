@@ -4,6 +4,7 @@ import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 import { PhaseService } from '../services/phase.service';
 import { SummonService } from '../services/summon.service';
+import { EvolutionService } from '../services/evolution.service';
 import { SupportService } from '../services/support.service';
 import { BattleService } from '../services/battle.service';
 import { PickService } from '../services/pick.service';
@@ -12,12 +13,14 @@ import { fixedRng } from './fixed-rng';
 /** Moteur câblé à la main, comme le ferait Nest, pour les tests. */
 export function createEngine(rng: Rng = fixedRng()): GameEngine {
   const effects = new EffectsResolverService();
+  const summon = new SummonService(effects);
   return new GameEngine(
     new PhaseService(effects),
-    new SummonService(effects),
+    summon,
+    new EvolutionService(effects),
     new SupportService(effects),
     new BattleService(effects),
-    new PickService(),
+    new PickService(summon),
     effects,
     new BuffsCalculatorService(),
     rng,

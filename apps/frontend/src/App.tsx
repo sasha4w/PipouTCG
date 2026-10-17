@@ -18,6 +18,7 @@ import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import { SoundProvider } from "./contexts/SoundContext";
+import { AnimationProvider } from "./contexts/AnimationContext";
 import Admin from "./pages/Admin";
 import AdminSandbox from "./pages/AdminSandbox";
 import { useScrollRestoration } from "./hooks/useScrollRestoration";
@@ -84,37 +85,39 @@ function App() {
   return (
     <ErrorBoundary>
       <SoundProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Home />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/arena" element={<FightHub />} />
-              <Route path="/decks" element={<DeckBuilder />} />
-              <Route path="/fight" element={<FightPageWrapper />} />
-            </Route>
-            <Route
-              path="/admin/sandbox"
-              element={
-                <ProtectedRoute>
-                  <AdminSandbox />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
+        <AnimationProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<Home />} />
+                <Route path="/marketplace" element={<Marketplace />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/arena" element={<FightHub />} />
+                <Route path="/decks" element={<DeckBuilder />} />
+                <Route path="/fight" element={<FightPageWrapper />} />
+              </Route>
+              <Route
+                path="/admin/sandbox"
+                element={
+                  <ProtectedRoute>
+                    <AdminSandbox />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </AnimationProvider>
       </SoundProvider>
     </ErrorBoundary>
   );

@@ -1,8 +1,9 @@
-import { EffectTarget } from '@pipou/shared';
+import { EffectTarget, isTargetableByEnemyEffects } from '@pipou/shared';
 import {
   PlayerGameState,
   MonsterOnBoard,
 } from '../interfaces/game-state.interface';
+import { effectiveAtk } from '../helpers/game-state.helper';
 import { EffectContext } from './effect-context.interface';
 
 export interface ResolvedTargets {
@@ -14,6 +15,7 @@ export interface ResolvedTargets {
 export function resolveTargets(
   target: EffectTarget,
   ctx: EffectContext,
+  archetype?: string,
 ): ResolvedTargets {
   const owner =
     ctx.game.player1.userId === ctx.ownerUserId
@@ -27,8 +29,9 @@ export function resolveTargets(
   const allies = owner.monsterZones.filter(
     (m): m is MonsterOnBoard => m !== null,
   );
+  // Les monstres insensibles aux effets adverses ne sont jamais visés
   const enemies = opponent.monsterZones.filter(
-    (m): m is MonsterOnBoard => m !== null,
+    (m): m is MonsterOnBoard => m !== null && isTargetableByEnemyEffects(m),
   );
 
   const map = new Map<string, PlayerGameState>();
@@ -81,10 +84,25 @@ export function resolveTargets(
       break;
 
     case EffectTarget.ARCHETYPE_ALLIES: {
-      const arch = ctx.sourceMonster?.card.baseCard.archetype;
+      const arch =
+        archetype ??
+        ctx.sourceMonster?.card.baseCard.archetype ??
+        ctx.sourceCard?.baseCard.archetype;
       if (arch) {
         monsters = allies.filter((m) => m.card.baseCard.archetype === arch);
         register(monsters, owner);
+      }
+      break;
+    }
+
+    case EffectTarget.STRONGEST_ENEMY: {
+      const strongest = enemies.reduce<MonsterOnBoard | undefined>(
+        (best, m) => (!best || effectiveAtk(m) > effectiveAtk(best) ? m : best),
+        undefined,
+      );
+      if (strongest) {
+        monsters = [strongest];
+        register(monsters, opponent);
       }
       break;
     }

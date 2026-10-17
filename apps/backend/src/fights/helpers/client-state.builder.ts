@@ -1,6 +1,11 @@
 import type { FightServer } from '../fight-socket.types';
 import { GameState, ClientGameState } from '../interfaces/game-state.interface';
-import { getPlayerState, getOpponentState } from './game-state.helper';
+import {
+  currentChoice,
+  freshCandidates,
+  getPlayerState,
+  getOpponentState,
+} from './game-state.helper';
 
 export function buildClientState(
   game: GameState,
@@ -9,11 +14,11 @@ export function buildClientState(
   const me = getPlayerState(game, userId);
   const opp = getOpponentState(game, userId);
 
-  const choice = game.pendingChoices[0];
+  const choice = currentChoice(game);
   const pendingChoice =
     choice?.forUserId === userId
       ? {
-          candidates: choice.candidates.map((c) => ({
+          candidates: freshCandidates(game, choice).map((c) => ({
             instanceId: c.instanceId,
             baseCard: {
               id: c.baseCard.id,
@@ -26,6 +31,8 @@ export function buildClientState(
               cost: c.baseCard.cost,
               image: c.baseCard.image ? { url: c.baseCard.image.url } : null,
               description: c.baseCard.description ?? null,
+              element: c.baseCard.element ?? null,
+              stage: c.baseCard.stage ?? null,
             },
             source: c.source,
           })),
@@ -67,6 +74,7 @@ export function buildClientState(
       mulliganDone: opp.mulliganDone,
     },
     log: game.log.slice(-20),
+    events: [...game.pendingEvents],
     winner: game.winner,
     endReason: game.endReason,
     pendingChoice,
@@ -81,4 +89,6 @@ export function emitGameState(game: GameState, server: FightServer): void {
   server
     .to(game.player2.socketId)
     .emit('fight:state', buildClientState(game, game.player2.userId));
+  // Joués une seule fois : une reconnexion reçoit l'état sans événements
+  game.pendingEvents = [];
 }

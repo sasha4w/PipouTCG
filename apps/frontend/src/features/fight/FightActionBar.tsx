@@ -1,4 +1,6 @@
 import { HAND_LIMIT } from "@pipou/shared";
+import { useTranslation } from "react-i18next";
+import { IconEvolve } from "../../components/Icons";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
 import { END_PHASE_LABEL } from "./fight.types";
@@ -24,6 +26,8 @@ interface Props {
   onRecycleFromHand: (handIndex: number) => void;
   /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
   playBlockedReason?: string;
+  /** La carte sélectionnée (Jeune/Adulte) peut évoluer sur un monstre allié. */
+  canEvolve?: boolean;
 }
 
 export default function FightActionBar({
@@ -40,7 +44,9 @@ export default function FightActionBar({
   onSurrender,
   onRecycleFromHand,
   playBlockedReason,
+  canEvolve = false,
 }: Props) {
+  const { t } = useTranslation();
   if (!isMyTurn) return null;
 
   const card = selectedCard !== null ? hand[selectedCard] : null;
@@ -72,6 +78,12 @@ export default function FightActionBar({
             <button onClick={handleSummonClick} className="fab-btn">
               {isFreeCard ? "⚡ Invoquer (gratuit)" : "⬆️ Invoquer"}
             </button>
+          )}
+
+          {card.type === "monster" && canEvolve && (
+            <span className="fab-hint">
+              <IconEvolve size={14} /> {t("fight.evolveHint")}
+            </span>
           )}
 
           {/* Carte EPHEMERAL : le choix de cible éventuel est géré par le plateau */}

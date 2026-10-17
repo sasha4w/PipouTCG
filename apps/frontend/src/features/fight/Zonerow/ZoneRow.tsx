@@ -1,3 +1,4 @@
+import type React from "react";
 import { useState } from "react";
 import "./ZoneRow.css";
 import { getRarityBorderColor, monsterFaceStats } from "./zoneRow.helpers";
@@ -10,6 +11,8 @@ import CardFace from "../../cards/CardFace";
 import CardInspect from "../CardInspect";
 import { isMonsterZone, type BoardZone } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
+import { useAnimationPrefs } from "../../../contexts/useAnimationPrefs";
+import type { ZoneFxMap } from "../fightEvents";
 
 interface Props {
   label: string;
@@ -22,12 +25,16 @@ interface Props {
   onModeChange?: (instanceId: string, mode: CombatMode) => void;
   highlightEmpty?: boolean;
   highlightFilled?: boolean;
+  /** Surligne uniquement les cartes en jeu dont l'instanceId est listé. */
+  highlightInstanceIds?: ReadonlySet<string>;
   highlightOpponentEmpty?: boolean;
   onSupportRecycle?: (idx: number) => void;
   selectedZone?: number | null;
   recycleEnergy?: number;
   attackingZone?: number | null;
   damagedZones?: Set<number>;
+  /** Effets serveur de l'état courant, par index de zone. */
+  fx?: ZoneFxMap;
 }
 
 export default function ZoneRow({
@@ -38,6 +45,7 @@ export default function ZoneRow({
   dim = false,
   highlightEmpty = false,
   highlightFilled = false,
+  highlightInstanceIds,
   highlightOpponentEmpty = false,
   onZoneClick,
   onMonsterClick,
@@ -46,11 +54,15 @@ export default function ZoneRow({
   recycleEnergy,
   attackingZone,
   damagedZones,
+  fx,
 }: Props) {
   const { t } = useTranslation();
+  const { reduced } = useAnimationPrefs();
   const { summoningZones, flippingZones, dyingZones } = useZoneAnimations(
     zones,
     isSupport,
+    fx,
+    reduced,
   );
 
   const [inspectId, setInspectId] = useState<string | null>(null);
@@ -60,7 +72,7 @@ export default function ZoneRow({
       : undefined;
 
   return (
-    <div className="zr-wrap">
+    <div className={`zr-wrap${isOpponent ? " zr-wrap--opponent" : ""}`}>
       <div className="zr-label">
         {label}{" "}
         {recycleEnergy !== undefined && recycleEnergy > 0 && (
@@ -70,8 +82,10 @@ export default function ZoneRow({
 
       <div className="zr-row">
         {zones.map((zone, idx) => {
-          const isShattering = !zone && !!dyingZones.get(idx);
-          const dyingData = dyingZones.get(idx);
+          const dying = !zone ? dyingZones.get(idx) : undefined;
+          const isShattering = !!dying;
+          const dyingData = dying?.zone;
+          const summonTier = zone ? summoningZones.get(idx) : undefined;
           const isZetaTarget = highlightOpponentEmpty && !zone && !isShattering;
           const rarityColor =
             getRarityBorderColor(zone) ?? getRarityBorderColor(dyingData);
@@ -89,9 +103,13 @@ export default function ZoneRow({
             highlightEmpty && !zone && !isShattering
               ? "zr-zone--pulse-target"
               : "",
-            highlightFilled && !!zone ? "zr-zone--pulse-equipment" : "",
+            (highlightFilled && !!zone) ||
+            (!!zone && !!highlightInstanceIds?.has(zone.instanceId))
+              ? "zr-zone--pulse-equipment"
+              : "",
             isZetaTarget ? "zr-zone--pulse-target zr-zone--zeta-target" : "",
-            summoningZones.has(idx) ? "zr-zone--summon-in" : "",
+            summonTier ? `zr-zone--summon-in zr-zone--summon-t${summonTier}` : "",
+            dying ? `zr-zone--destroy-${dying.cause.replace(/_/g, "-")}` : "",
             flippingZones.has(idx) ? "zr-zone--mode-flip" : "",
             attackingZone === idx ? "zr-zone--attacking" : "",
             damagedZones?.has(idx) ? "zr-zone--damaged" : "",
@@ -103,13 +121,26 @@ export default function ZoneRow({
             <div
               key={idx}
               className={zoneClasses}
-              style={rarityColor ? { borderColor: rarityColor } : undefined}
+              style={
+                rarityColor
+                  ? ({
+                      borderColor: rarityColor,
+                      "--rarity-color": rarityColor,
+                    } as React.CSSProperties)
+                  : undefined
+              }
               onClick={() => {
                 if (zone && onMonsterClick && zone.instanceId)
                   onMonsterClick(zone.instanceId);
                 else if (onZoneClick) onZoneClick(idx);
               }}
             >
+              {summonTier && summonTier >= 2 && (
+                <span className="zr-summon-fx" aria-hidden />
+              )}
+              {summonTier && summonTier >= 3 && (
+                <span className="zr-summon-beam" aria-hidden />
+              )}
               {zone ? (
                 isMonsterZone(zone) ? (
                   <MonsterZoneContent

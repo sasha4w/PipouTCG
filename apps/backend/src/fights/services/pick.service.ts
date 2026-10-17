@@ -3,12 +3,17 @@ import { GameState } from '../interfaces/game-state.interface';
 import {
   addLog,
   currentChoice,
+  freshCandidates,
   getPlayerState,
   shuffle,
 } from '../helpers/game-state.helper';
 
+import { SummonService } from './summon.service';
+
 @Injectable()
 export class PickService {
+  constructor(private summon: SummonService) {}
+
   /** Résout le premier choix en attente avec les cartes choisies. */
   pickCards(
     game: GameState,
@@ -19,13 +24,12 @@ export class PickService {
     if (!choice || choice.forUserId !== userId)
       return { error: 'Aucun choix de carte en attente' };
 
-    const expected = Math.min(choice.count, choice.candidates.length);
+    const candidates = freshCandidates(game, choice);
+    const expected = Math.min(choice.count, candidates.length);
     const picked = [...new Set(instanceIds)];
     if (picked.length !== expected)
       return { error: `Sélectionnez exactement ${expected} carte(s)` };
-    if (
-      picked.some((id) => !choice.candidates.some((c) => c.instanceId === id))
-    )
+    if (picked.some((id) => !candidates.some((c) => c.instanceId === id)))
       return { error: 'Carte introuvable dans les choix disponibles' };
 
     const player = getPlayerState(game, userId);
@@ -38,10 +42,24 @@ export class PickService {
         player.graveyard.push(card);
         addLog(game, `🗑️ ${player.username} défausse ${card.baseCard.name}`);
       }
+    } else if (choice.resolution === 'summon_to_zone') {
+      for (const id of picked) {
+        const idx = player.deck.findIndex((c) => c.instanceId === id);
+        if (idx === -1) continue;
+        const [card] = player.deck.splice(idx, 1);
+        if (!this.summon.summonFromDeck(game, player, card, choice.zoneIndex)) {
+          player.deck.push(card);
+          addLog(
+            game,
+            `💨 Aucune zone libre : ${card.baseCard.name} reste dans le deck`,
+          );
+        }
+      }
+      shuffle(player.deck);
     } else {
       let pickedFromDeck = false;
       for (const id of picked) {
-        const candidate = choice.candidates.find((c) => c.instanceId === id)!;
+        const candidate = candidates.find((c) => c.instanceId === id)!;
         const pile =
           candidate.source === 'graveyard' ? player.graveyard : player.deck;
         const idx = pile.findIndex((c) => c.instanceId === id);

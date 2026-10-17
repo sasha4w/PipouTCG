@@ -32,6 +32,21 @@ describe("MonsterZoneContent", () => {
     expect(screen.getByTitle("Provocation")).toBeInTheDocument();
   });
 
+  it("affiche le compteur d'éclosion d'un œuf sur le plateau", () => {
+    const { container } = render(
+      <MonsterZoneContent
+        zone={monster({ hatchCounter: 2 })}
+        isOpponent={false}
+        onInspect={vi.fn()}
+        onInspectEnd={vi.fn()}
+      />,
+    );
+    const badge = container.querySelector(".zr-badge--hatch");
+    expect(badge).toHaveTextContent("2");
+    expect(badge?.querySelector("svg")).not.toBeNull();
+    expect(badge).not.toHaveClass("zr-badge--counter-urgent");
+  });
+
   it("grise un monstre qui a fini d'attaquer", () => {
     render(
       <MonsterZoneContent

@@ -4,7 +4,7 @@ import {
   MonsterOnBoard,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
-import { EffectTrigger } from '@pipou/shared';
+import { DestroyCause, DrakonStage, EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
@@ -16,6 +16,16 @@ import {
   gainPrime,
   drawCard,
 } from '../helpers/game-state.helper';
+
+/** Dégâts de combat : rien sur un monstre insensible au combat. */
+function combatDamage(
+  target: MonsterOnBoard,
+  dmg: number,
+  opts: { ignoreReduction?: boolean },
+): void {
+  if (target.combatImmune) return;
+  applyDamage(target, dmg, opts);
+}
 
 @Injectable()
 export class BattleService {
@@ -40,6 +50,8 @@ export class BattleService {
       (m) => m?.instanceId === attackerInstanceId,
     );
     if (!attacker) return { error: 'Attaquant introuvable' };
+    if (attacker.card.baseCard.stage === DrakonStage.EGG)
+      return { error: 'Un Œuf ne peut pas attaquer' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
 
     if (attacker.summonedThisTurn && attacker.cannotAttackOnSummonTurn)
@@ -71,6 +83,7 @@ export class BattleService {
     } else {
       const tauntMonsters = opponent.monsterZones.filter((m) => m?.hasTaunt);
       if (
+        !attacker.ignoresTaunt &&
         tauntMonsters.length > 0 &&
         !tauntMonsters.find((m) => m?.instanceId === targetInstanceId)
       )
@@ -93,6 +106,7 @@ export class BattleService {
     const destroy = (host: PlayerGameState, m: MonsterOnBoard) =>
       this.effectsResolver.destroyMonster(game, host, m.instanceId, log, {
         draw: true,
+        cause: DestroyCause.COMBAT,
       });
 
     // ── ON_ATTACK ────────────────────────────────────────────────────────────
@@ -151,8 +165,10 @@ export class BattleService {
     const targetAtk = effectiveAtk(target);
 
     if (target.mode === 'attack') {
-      applyDamage(attacker, targetAtk, { ignoreReduction: target.hasPiercing });
-      applyDamage(target, attackerAtk, {
+      combatDamage(attacker, targetAtk, {
+        ignoreReduction: target.hasPiercing,
+      });
+      combatDamage(target, attackerAtk, {
         ignoreReduction: attacker.hasPiercing,
       });
 
@@ -190,7 +206,7 @@ export class BattleService {
       }
     } else {
       // ATK contre Garde : pas de riposte
-      applyDamage(target, attackerAtk, {
+      combatDamage(target, attackerAtk, {
         ignoreReduction: attacker.hasPiercing,
       });
 

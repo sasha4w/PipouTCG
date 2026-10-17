@@ -78,6 +78,31 @@ describe("CardInspect", () => {
     ).toBeInTheDocument();
   });
 
+  it("n'affiche ni récap de stats ni « Aucun effet » : seulement les statuts actifs", () => {
+    render(
+      <CardInspect
+        card={{ ...card, effects: null }}
+        status={[
+          { icon: "⚔️", label: "100 base", type: "neutral", variant: "recap" },
+          { icon: "🧊", label: "Gelé encore 2 tours", type: "debuff" },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.queryByText("100 base")).not.toBeInTheDocument();
+    expect(screen.queryByText("Aucun effet")).not.toBeInTheDocument();
+    expect(screen.getByText("Gelé encore 2 tours")).toBeInTheDocument();
+  });
+
+  it("sans statut ni effet : aucune fiche sous la carte", () => {
+    const { container } = render(
+      <CardInspect card={{ ...card, effects: null }} onClose={vi.fn()} />,
+    );
+    expect(container.ownerDocument.querySelector(".ces")).toBeNull();
+    expect(screen.queryByText("Aucun effet")).not.toBeInTheDocument();
+  });
+
   it("se ferme sur Échap et sur un tap hors de la carte", () => {
     const onClose = vi.fn();
     render(<CardInspect card={card} onClose={onClose} />);

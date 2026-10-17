@@ -1,4 +1,5 @@
 import { ActionType, EffectTarget, EffectTrigger } from "../enums/effect";
+import type { DrakonStage } from "../enums/card";
 import type { CardEffect } from "./effect";
 
 /** Règles de construction d'un deck (création et lancement de match). */
@@ -44,4 +45,132 @@ export function canSummonOnEnemySide(
       e.trigger === EffectTrigger.PASSIVE &&
       e.actions.some((a) => a.type === ActionType.SUMMONABLE_ON_ENEMY_SIDE),
   );
+}
+
+/** Un effet adverse peut-il viser ce monstre ? (Maître Magouille : non.) */
+export function isTargetableByEnemyEffects(monster: {
+  isImmuneToDebuffs: boolean;
+}): boolean {
+  return !monster.isImmuneToDebuffs;
+}
+
+/**
+ * L'Éphémère détruit-il le monstre qu'on lui désigne ? (DESTROY_MONSTER sur
+ * ENEMY_MONSTER / ALLY_MONSTER / TARGET_ALLY dans ses actions ON_PLAY.)
+ */
+export function ephemeralDestroysChosenTarget(
+  effects: readonly CardEffect[] | null | undefined,
+): boolean {
+  return (effects ?? []).some(
+    (e) =>
+      e.trigger === EffectTrigger.ON_PLAY &&
+      e.actions.some(
+        (a) =>
+          a.type === ActionType.DESTROY_MONSTER &&
+          (a.target === EffectTarget.ENEMY_MONSTER ||
+            a.target === EffectTarget.ALLY_MONSTER ||
+            a.target === EffectTarget.TARGET_ALLY),
+      ),
+  );
+}
+
+interface EphemeralTarget {
+  isImmuneToDebuffs: boolean;
+  supportDestroyImmune?: boolean;
+  hatchCounter?: number;
+  summonedThisTurn?: boolean;
+  instantEvolution?: boolean;
+  canEvolveThisTurn?: boolean;
+  card?: { baseCard: { stage?: DrakonStage | null } };
+}
+
+const CHOSEN_TARGETS = new Set<string>([
+  EffectTarget.ENEMY_MONSTER,
+  EffectTarget.ALLY_MONSTER,
+  EffectTarget.TARGET_ALLY,
+]);
+
+/** L'action changerait-elle quelque chose pour ce monstre ? */
+function actionBenefits(type: ActionType, monster: EphemeralTarget): boolean {
+  switch (type) {
+    case ActionType.ADVANCE_HATCH:
+      return monster.hatchCounter !== undefined;
+    case ActionType.ALLOW_EVOLUTION_THIS_TURN:
+      return (
+        !!monster.card?.baseCard.stage &&
+        !canEvolveNow({ ...monster, summonedThisTurn: !!monster.summonedThisTurn })
+      );
+    default:
+      return true;
+  }
+}
+
+/** Un Éphémère aux effets donnés peut-il choisir ce monstre ? */
+export function isTargetableByEphemeral(
+  monster: EphemeralTarget,
+  side: "ally" | "enemy",
+  effects: readonly CardEffect[] | null | undefined,
+): boolean {
+  if (side === "enemy" && !isTargetableByEnemyEffects(monster)) return false;
+  if (ephemeralDestroysChosenTarget(effects) && monster.supportDestroyImmune)
+    return false;
+  // Au moins une action sur la cible choisie doit lui servir à quelque chose
+  const chosenActions = (effects ?? [])
+    .filter((e) => e.trigger === EffectTrigger.ON_PLAY)
+    .flatMap((e) => e.actions)
+    .filter((a) => CHOSEN_TARGETS.has(a.target));
+  return (
+    chosenActions.length === 0 ||
+    chosenActions.some((a) => actionBenefits(a.type, monster))
+  );
+}
+
+const NEXT_STAGE: Partial<Record<DrakonStage, DrakonStage>> = {
+  baby: "young",
+  young: "adult",
+};
+
+interface EvolvingCard {
+  stage: DrakonStage | null;
+  lineage: string | null;
+  cost: number;
+}
+interface EvolutionBase {
+  card: { baseCard: EvolvingCard };
+  evolutionJoker?: boolean;
+}
+
+/** `card` (en main) peut-il évoluer sur `base` (en jeu) ? */
+export function canEvolveOnto(card: EvolvingCard, base: EvolutionBase): boolean {
+  if (card.stage !== "young" && card.stage !== "adult") return false;
+  if (base.evolutionJoker && card.stage === "young") return true;
+  const b = base.card.baseCard;
+  return (
+    !!b.stage &&
+    NEXT_STAGE[b.stage] === card.stage &&
+    !!b.lineage &&
+    b.lineage === card.lineage
+  );
+}
+
+/** Coût restant à payer pour évoluer. */
+export function evolutionCost(card: EvolvingCard, base: EvolutionBase): number {
+  return Math.max(0, card.cost - base.card.baseCard.cost);
+}
+
+/**
+ * Un Jeune ou un Adulte Drakon n'arrive en jeu que par évolution (ou par
+ * l'effet d'un Œuf) : jamais posé directement depuis la main.
+ */
+export function canSummonFromHand(card: { stage: DrakonStage | null }): boolean {
+  return card.stage !== "young" && card.stage !== "adult";
+}
+
+/** Délai : une base posée ce tour n'évolue pas, sauf accélérateur. */
+export function canEvolveNow(base: {
+  summonedThisTurn: boolean;
+  instantEvolution?: boolean;
+  canEvolveThisTurn?: boolean;
+}): boolean {
+  return !base.summonedThisTurn || !!base.instantEvolution || !!base.canEvolveThisTurn;
 }

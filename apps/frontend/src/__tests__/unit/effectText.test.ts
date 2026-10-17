@@ -41,6 +41,58 @@ const support = (
 ) => ({ type: "support", supportType, archetype: null, effects }) as const;
 
 describe("describeCardEffects (fr)", () => {
+  it("valueIf : la quantité conditionnelle est rédigée", () => {
+    const text = describeCardEffects(
+      support("EPHEMERAL", [
+        {
+          trigger: "ON_PLAY",
+          condition: null,
+          actions: [
+            {
+              type: "RETURN_FROM_GRAVEYARD",
+              target: "PLAYER",
+              value: 2,
+              valueIf: {
+                condition: {
+                  type: "SPECIFIC_CARD_ON_BOARD",
+                  value: "Capitaine",
+                  match: "contains",
+                },
+                value: 3,
+              },
+            },
+          ],
+        },
+      ]),
+      t,
+    );
+    expect(text.rules[0].lines[0].text).toBe(
+      "Tu récupères jusqu'à 2 cartes de ton cimetière (3 si une carte dont le nom contient « Capitaine » est sur ton terrain).",
+    );
+  });
+
+  it("équipement : les trois nouvelles protections sont rédigées avec leur mot-clé", () => {
+    const text = describeCardEffects(
+      support("EQUIPMENT", [
+        {
+          trigger: "ON_PLAY",
+          condition: null,
+          actions: [{ type: "SET_COMBAT_IMMUNITY", target: "SELF" }],
+        },
+        {
+          trigger: "PASSIVE",
+          condition: null,
+          actions: [
+            { type: "SET_SUPPORT_DESTROY_IMMUNITY", target: "SELF" },
+            { type: "IGNORE_TAUNT", target: "SELF" },
+          ],
+        },
+      ]),
+      t,
+    );
+    expect(text.keywords).toEqual(["combatImmunity", "supportShield", "ignoreTaunt"]);
+  });
+
   let t: TFunction;
   beforeAll(async () => {
     t = await makeT("fr");
@@ -186,6 +238,18 @@ describe("describeCardEffects (fr)", () => {
     });
   });
 
+  it("Jeune / Adulte Drakon : règle « uniquement par évolution » en tête", () => {
+    const text = describeCardEffects(
+      { ...monster([], "dragon"), stage: "adult" },
+      t,
+    );
+    expect(text.rules[0].trigger).toBe("Invocation");
+    expect(text.rules[0].lines[0].text).toBe(
+      "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
+    );
+    expect(describeCardEffects({ ...monster([], "dragon"), stage: "baby" }, t).rules).toEqual([]);
+  });
+
   it("effectPlainText retire les marqueurs de mots-clés", () => {
     expect(effectPlainText("Ce monstre gagne **Perçant**.")).toBe(
       "Ce monstre gagne Perçant.",
@@ -220,6 +284,9 @@ describe.each(Object.keys(LOCALES) as Lng[])(
         value: "Noyau",
         match: "contains" as const,
       },
+      { type: EffectConditionType.DRAKON_ON_BOARD, stage: "adult" as const },
+      { type: EffectConditionType.DRAKON_ON_BOARD, element: "fire" as const },
+      { type: EffectConditionType.EQUIPPED_ON, stage: "egg" as const },
     ];
     const cards: EffectSourceCard[] = [
       monster([]),
@@ -247,6 +314,8 @@ describe.each(Object.keys(LOCALES) as Lng[])(
             rarities: ["rare" as const],
             type: "support" as const,
             name: "Noyau",
+            stage: "baby" as const,
+            element: "water" as const,
           },
         })),
       ),

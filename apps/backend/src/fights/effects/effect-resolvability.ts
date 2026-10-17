@@ -15,6 +15,7 @@ const PICK_ACTIONS = new Set<ActionType>([
   ActionType.RETURN_FROM_GRAVEYARD,
   ActionType.RETURN_FROM_GRAVEYARD_OR_DECK,
   ActionType.SEARCH_DECK,
+  ActionType.SUMMON_FROM_DECK,
 ]);
 
 /** Vrai si l'action produirait quelque chose dans l'état actuel de la partie. */
@@ -24,7 +25,7 @@ export function canResolveAction(
 ): boolean {
   if (CHOSEN_TARGETS.has(action.target)) return true;
 
-  const targets = resolveTargets(action.target, ctx);
+  const targets = resolveTargets(action.target, ctx, action.archetype);
   if (PICK_ACTIONS.has(action.type))
     return targets.players.some((p) => pickCandidates(action, p).length > 0);
 

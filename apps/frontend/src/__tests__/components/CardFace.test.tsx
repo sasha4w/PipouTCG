@@ -37,12 +37,12 @@ describe("CardFace", () => {
       />,
     );
 
-    expect(screen.getByText("300").closest(".card-face__stat-badge")).toHaveClass(
-      "card-face__stat-badge--up",
-    );
-    expect(screen.getByText("200").closest(".card-face__stat-badge")).toHaveClass(
-      "card-face__stat-badge--down",
-    );
+    expect(
+      screen.getByText("300").closest(".card-face__stat-badge"),
+    ).toHaveClass("card-face__stat-badge--up");
+    expect(
+      screen.getByText("200").closest(".card-face__stat-badge"),
+    ).toHaveClass("card-face__stat-badge--down");
   });
 
   it("affiche la garde et l'état « a attaqué »", () => {
@@ -101,5 +101,20 @@ describe("CardFace", () => {
     render(<CardFace card={gobelin} size="xs" badges={<span>🛡</span>} />);
 
     expect(screen.getByText("🛡").closest(".card-face__badges")).not.toBeNull();
+  });
+
+  it("n'affiche pas l'élément d'un Drakon sur la carte", () => {
+    // Carte de la main : elle porte son élément, la face ne l'affiche pas
+    const bebeFeros = {
+      id: 1,
+      name: "Bébé Feros",
+      rarity: "uncommon" as const,
+      type: "monster" as const,
+      atk: 400,
+      hp: 400,
+      element: "fire" as const,
+    };
+    const { container } = render(<CardFace card={bebeFeros} size="md" />);
+    expect(container.querySelector("[role='img'], svg")).toBeNull();
   });
 });

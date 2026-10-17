@@ -68,6 +68,19 @@ export function useBoardControls(
         zoneIndex: number,
         paymentIndices: number[] = payIndices,
       ) => summonAt(zoneIndex, paymentIndices, true),
+      onEvolve: (
+        targetInstanceId: string,
+        paymentIndices: number[] = payIndices,
+      ) => {
+        if (selectedCard === null) return;
+        send({
+          type: "evolve",
+          handIndex: selectedCard,
+          targetInstanceId,
+          paymentHandIndices: paymentIndices,
+        });
+        clearSelection();
+      },
       onPlaySupport: (
         handIndex: number,
         zoneIndex?: number,

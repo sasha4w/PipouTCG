@@ -3,6 +3,7 @@ import {
   EffectConditionType as ConditionType,
   SupportType,
 } from '@pipou/shared';
+import type { EffectAction, EffectCondition } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 import { cardNameMatches } from './card-name';
 
@@ -11,7 +12,14 @@ export function checkCondition(
   effect: CardEffect,
   ctx: EffectContext,
 ): boolean {
-  const condition = effect.condition;
+  return conditionMet(effect.condition, ctx);
+}
+
+/** Vrai si la condition est remplie (ou absente). */
+export function conditionMet(
+  condition: EffectCondition | null | undefined,
+  ctx: EffectContext,
+): boolean {
   if (!condition) return true;
 
   const owner =
@@ -53,18 +61,42 @@ export function checkCondition(
       );
     }
 
-    case ConditionType.EQUIPPED_ON:
+    case ConditionType.DRAKON_ON_BOARD:
+      return owner.monsterZones.some(
+        (m) =>
+          !!m &&
+          // Sans élément ni stade : n'importe quel Drakon (carte à stade)
+          (condition.element ||
+            condition.stage ||
+            m.card.baseCard.stage != null) &&
+          (!condition.element ||
+            m.card.baseCard.element === condition.element) &&
+          (!condition.stage || m.card.baseCard.stage === condition.stage),
+      );
+
+    case ConditionType.EQUIPPED_ON: {
+      const host = ctx.sourceMonster?.card.baseCard;
       return (
         ctx.sourceCard?.baseCard.supportType === SupportType.EQUIPMENT &&
-        !!ctx.sourceMonster &&
-        cardNameMatches(
-          ctx.sourceMonster.card.baseCard.name,
-          expectedName,
-          condition.match,
-        )
+        !!host &&
+        (condition.value === undefined ||
+          cardNameMatches(host.name, expectedName, condition.match)) &&
+        (!condition.element || host.element === condition.element) &&
+        (!condition.stage || host.stage === condition.stage)
       );
+    }
 
     default:
       return false;
   }
+}
+
+/** L'action avec sa valeur conditionnelle appliquée si la condition est remplie. */
+export function withConditionalValue(
+  action: EffectAction,
+  ctx: EffectContext,
+): EffectAction {
+  return action.valueIf && conditionMet(action.valueIf.condition, ctx)
+    ? { ...action, value: action.valueIf.value }
+    : action;
 }

@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
 import type { CardEffect } from "@pipou/shared";
 import CardFace, {
   type CardFaceCard,
   type CardFaceStats,
 } from "../cards/CardFace";
-import BuffDebuffSections, { type BuffEntry } from "./BuffDebuffSections";
+import type { BuffEntry } from "./BuffDebuffSections";
 import CardEffectSheet from "./CardEffectSheet";
 import "./CardInspect.css";
 
@@ -14,6 +13,8 @@ import "./CardInspect.css";
 export type InspectCard = CardFaceCard & {
   archetype?: string | null;
   effects?: readonly CardEffect[] | null;
+  /** Stade Drakon (règle « uniquement par évolution »). */
+  stage?: string | null;
 };
 
 interface Props {
@@ -36,23 +37,8 @@ export default function CardInspect({
   equipments = [],
   onClose,
 }: Props) {
-  const { t } = useTranslation();
-  // Récap des stats toujours visible ; les statuts sous un titre repliable.
-  const statuses = status.filter((e) => e.variant !== "recap");
-  const statusEntries: BuffEntry[] = [
-    ...status.filter((e) => e.variant === "recap"),
-    ...(statuses.length > 0
-      ? [
-          {
-            icon: "─",
-            label: t("effects.ui.status"),
-            type: "neutral" as const,
-            variant: "separator" as const,
-          },
-          ...statuses,
-        ]
-      : []),
-  ];
+  // Stats déjà sur la grande carte : seuls les statuts actifs sont listés.
+  const statuses = status.filter((e) => !e.variant);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -88,10 +74,8 @@ export default function CardInspect({
             { card },
             ...equipments.map((eq) => ({ card: eq, title: eq.name })),
           ]}
+          statuses={statuses}
         />
-        {status.length > 0 && (
-          <BuffDebuffSections entries={statusEntries} defaultOpen />
-        )}
       </div>
     </div>,
     document.body,

@@ -8,7 +8,9 @@ import {
   CardType,
   SupportType,
   EffectTrigger,
+  ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
+  isTargetableByEphemeral,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
 import { canResolveAction } from '../effects/effect-resolvability';
@@ -51,14 +53,28 @@ export class SupportService {
 
       const side = ephemeralTargetSide(card.baseCard.effects);
       if (side) {
-        const pool =
+        const pool = (
           side === 'ally'
             ? player.monsterZones
-            : getOpponentState(game, userId).monsterZones;
-        if (!pool.some((m) => m !== null))
+            : getOpponentState(game, userId).monsterZones
+        ).filter((m): m is MonsterOnBoard => m !== null);
+        const targetable = pool.filter((m) =>
+          isTargetableByEphemeral(m, side, card.baseCard.effects),
+        );
+        if (targetable.length === 0)
           return { error: 'Aucune cible valide pour cette carte' };
-        targetMonster =
-          pool.find((m) => m?.instanceId === targetInstanceId) ?? undefined;
+        const chosen = pool.find((m) => m.instanceId === targetInstanceId);
+        if (chosen && !targetable.includes(chosen))
+          return {
+            error:
+              side === 'enemy' && chosen.isImmuneToDebuffs
+                ? 'Ce monstre est insensible aux effets adverses'
+                : ephemeralDestroysChosenTarget(card.baseCard.effects) &&
+                    chosen.supportDestroyImmune
+                  ? 'Ce monstre ne peut pas être détruit par une carte Support'
+                  : "Cette carte n'aurait aucun effet sur ce monstre",
+          };
+        targetMonster = chosen;
         if (!targetMonster)
           return {
             error:
@@ -121,7 +137,14 @@ export class SupportService {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Zone de support occupée' };
         }
+        support.placedSeq = ++game.terrainSeq;
         player.supportZones[zoneIndex] = support;
+        game.pendingEvents.push({
+          kind: 'terrain_played',
+          ownerId: player.userId,
+          zoneIndex,
+          instanceId: support.instanceId,
+        });
         addLog(
           game,
           `${player.username} pose ${support.baseCard.name} en zone ${zoneIndex}`,

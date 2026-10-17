@@ -16,6 +16,8 @@ import {
   SupportType,
   CardEffect,
   Archetype,
+  DrakonElement,
+  DrakonStage,
 } from '@pipou/shared';
 @Entity('card')
 export class Card {
@@ -57,6 +59,15 @@ export class Card {
     default: null,
   })
   archetype!: Archetype | null;
+
+  @Column({ type: 'enum', enum: DrakonElement, nullable: true, default: null })
+  element!: DrakonElement | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true, default: null })
+  lineage!: string | null;
+
+  @Column({ type: 'enum', enum: DrakonStage, nullable: true, default: null })
+  stage!: DrakonStage | null;
 
   @Column({ type: 'json', nullable: true, default: null })
   effects!: CardEffect[] | null;

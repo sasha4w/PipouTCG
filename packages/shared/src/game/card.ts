@@ -1,4 +1,11 @@
-import type { Archetype, CardType, Rarity, SupportType } from "../enums/card";
+import type {
+  Archetype,
+  CardType,
+  DrakonElement,
+  DrakonStage,
+  Rarity,
+  SupportType,
+} from "../enums/card";
 import type { CardEffect } from "./effect";
 
 /** Carte telle que sérialisée vers le client (sous-ensemble de l'entité Card). */
@@ -12,6 +19,9 @@ export interface ClientCard {
   cost: number;
   supportType: SupportType | null;
   archetype: Archetype | null;
+  element: DrakonElement | null;
+  lineage: string | null;
+  stage: DrakonStage | null;
   effects: CardEffect[] | null;
   description: string | null;
   image: { url: string } | null;

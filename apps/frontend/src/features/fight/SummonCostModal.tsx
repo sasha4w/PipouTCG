@@ -12,6 +12,8 @@ interface Props {
   onTogglePay: (idx: number) => void;
   onConfirm: () => void;
   onClose: () => void;
+  /** Coût d'évolution : remplace card.cost et passe la fenêtre en mode évolution. */
+  costOverride?: number;
 }
 
 export default function SummonCostModal({
@@ -23,8 +25,10 @@ export default function SummonCostModal({
   onTogglePay,
   onConfirm,
   onClose,
+  costOverride,
 }: Props) {
-  const totalCost = card.cost ?? 0;
+  const isEvolution = costOverride !== undefined;
+  const totalCost = costOverride ?? card.cost ?? 0;
   const fromEnergy = Math.min(recycleEnergy, totalCost);
   const stillNeeded = Math.max(0, totalCost - fromEnergy);
   const handPaid = payIndices.length;
@@ -34,7 +38,9 @@ export default function SummonCostModal({
     <div className="scm-overlay" onClick={onClose}>
       <div className="scm-modal" onClick={(e) => e.stopPropagation()}>
         <div className="scm-header">
-          <span className="scm-title">Invoquer — {card.name}</span>
+          <span className="scm-title">
+            {isEvolution ? "Évolution" : "Invoquer"} — {card.name}
+          </span>
           <Button variant="ghost-bordeaux" size="icon" aria-label="Fermer" onClick={onClose}>
             <IconClose size={16} />
           </Button>
@@ -96,7 +102,7 @@ export default function SummonCostModal({
             disabled={!canConfirm}
             onClick={onConfirm}
           >
-            ⬆️ Recycler &amp; Invoquer
+            {isEvolution ? "Recycler & Évoluer" : "⬆️ Recycler & Invoquer"}
           </Button>
         </div>
       </div>

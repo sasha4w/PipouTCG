@@ -59,6 +59,9 @@ export function deserializeGame(
   }) as GameState;
 
   game.matchId = seats.matchId;
+  // Sauvegardes antérieures aux animations : champs absents
+  game.pendingEvents = [];
+  game.terrainSeq ??= 0;
   for (const [player, seat] of [
     [game.player1, seats.p1],
     [game.player2, seats.p2],

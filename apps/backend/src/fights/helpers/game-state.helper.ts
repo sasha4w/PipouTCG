@@ -3,6 +3,7 @@ import {
   PlayerGameState,
   MonsterOnBoard,
   CardInstance,
+  ChoiceCandidate,
   PendingChoice,
 } from '../interfaces/game-state.interface';
 import type { Seat } from '@pipou/shared';
@@ -44,8 +45,40 @@ export function getOpponentState(
   return seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
 }
 
-/** Choix à résoudre en premier, s'il y en a un. */
+/**
+ * Candidats encore présents dans leur pile d'origine : une pioche ou un choix
+ * précédent a pu les déplacer depuis la mise en file du choix.
+ */
+export function freshCandidates(
+  game: GameState,
+  choice: PendingChoice,
+): ChoiceCandidate[] {
+  const owner = getPlayerState(game, choice.forUserId);
+  const ids = (source: ChoiceCandidate['source']): string[] => {
+    switch (source) {
+      case 'deck':
+        return owner.deck.map((c) => c.instanceId);
+      case 'graveyard':
+        return owner.graveyard.map((c) => c.instanceId);
+      case 'hand':
+        return owner.hand.map((c) => c.instanceId);
+      case 'board':
+        return owner.monsterZones.flatMap((m) => (m ? [m.instanceId] : []));
+    }
+  };
+  return choice.candidates.filter((c) => ids(c.source).includes(c.instanceId));
+}
+
+/**
+ * Choix à résoudre en premier, s'il y en a un. Les choix dont plus aucun
+ * candidat n'est disponible sont abandonnés pour ne pas bloquer la partie.
+ */
 export function currentChoice(game: GameState): PendingChoice | undefined {
+  while (
+    game.pendingChoices.length > 0 &&
+    freshCandidates(game, game.pendingChoices[0]).length === 0
+  )
+    game.pendingChoices.shift();
   return game.pendingChoices[0];
 }
 

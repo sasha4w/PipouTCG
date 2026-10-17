@@ -5,18 +5,27 @@ import {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { EffectContext } from './effect-context.interface';
+import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
 import { drawCard, queueChoice } from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
+import { hatchEgg } from '../helpers/hatching';
+
+export type DestroyKind = 'destroy' | 'damage';
 
 export function applyActions(
   effect: CardEffect,
   card: CardInstance,
   ctx: EffectContext,
-  destroy: (host: PlayerGameState, instanceId: string) => void,
+  destroy: (
+    host: PlayerGameState,
+    instanceId: string,
+    kind: DestroyKind,
+  ) => void,
 ): void {
-  for (const action of effect.actions) {
-    const targets = resolveTargets(action.target, ctx);
+  for (const rawAction of effect.actions) {
+    const action = withConditionalValue(rawAction, ctx);
+    const targets = resolveTargets(action.target, ctx, action.archetype);
 
     switch (action.type) {
       // ── Damage ────────────────────────────────────────────────────────────
@@ -31,7 +40,11 @@ export function applyActions(
             `✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`,
           );
           if (target.currentHp <= 0) {
-            destroy(targets.ownerOfMonster(target), target.instanceId);
+            destroy(
+              targets.ownerOfMonster(target),
+              target.instanceId,
+              'damage',
+            );
           }
         }
         break;
@@ -88,7 +101,7 @@ export function applyActions(
 
       case ActionType.DESTROY_MONSTER:
         for (const target of targets.monsters)
-          destroy(targets.ownerOfMonster(target), target.instanceId);
+          destroy(targets.ownerOfMonster(target), target.instanceId, 'destroy');
         break;
 
       case ActionType.RETURN_TO_HAND:
@@ -132,6 +145,12 @@ export function applyActions(
         }
         break;
 
+      case ActionType.ALLOW_EVOLUTION_THIS_TURN:
+        for (const m of targets.monsters) {
+          m.canEvolveThisTurn = true;
+          ctx.log.push(`🧬 ${m.card.baseCard.name} peut évoluer ce tour`);
+        }
+        break;
       case ActionType.SET_PIERCING:
         for (const m of targets.monsters) {
           m.perm.piercing = true;
@@ -178,6 +197,15 @@ export function applyActions(
         for (const m of targets.monsters) m.cannotAttackOnSummonTurn = true;
         break;
 
+      case ActionType.SET_COMBAT_IMMUNITY:
+        for (const m of targets.monsters) {
+          m.combatImmune = true;
+          ctx.log.push(
+            `🌀 ${m.card.baseCard.name} est insensible aux dégâts de combat jusqu'à son prochain tour`,
+          );
+        }
+        break;
+
       case ActionType.SET_DAMAGE_REDUCTION:
         for (const m of targets.monsters) {
           const v = action.value ?? 2;
@@ -198,6 +226,43 @@ export function applyActions(
           ctx.log.push(
             `⚡ ${card.baseCard.name} peut être invoqué gratuitement !`,
           );
+        }
+        break;
+
+      case ActionType.SET_HATCH_COUNTER:
+        for (const m of targets.monsters) {
+          m.hatchCounter = action.value ?? 2;
+          m.hatchStage = action.filter?.stage;
+          ctx.log.push(
+            `🥚 ${m.card.baseCard.name} éclora dans ${m.hatchCounter} tour(s)`,
+          );
+        }
+        break;
+
+      case ActionType.ADVANCE_HATCH:
+        for (const m of targets.monsters) {
+          if (m.hatchCounter === undefined) continue;
+          m.hatchCounter -= action.value ?? 1;
+          if (m.hatchCounter <= 0)
+            hatchEgg(ctx.game, targets.ownerOfMonster(m), m, ctx.log);
+        }
+        break;
+
+      case ActionType.SUMMON_FROM_DECK:
+        for (const p of targets.players) {
+          const candidates = pickCandidates(action, p);
+          if (candidates.length === 0) continue;
+          const zone = ctx.sourceMonster
+            ? p.monsterZones.indexOf(ctx.sourceMonster)
+            : -1;
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates,
+            count: 1,
+            prompt: 'Choisis la carte à invoquer',
+            resolution: 'summon_to_zone',
+            zoneIndex: zone === -1 ? undefined : zone,
+          });
         }
         break;
 

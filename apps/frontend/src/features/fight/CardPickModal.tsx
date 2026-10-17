@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { CSSProperties } from "react";
 import type {
   PendingChoice,
@@ -24,27 +25,32 @@ interface Props {
 const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "🔮",
   discard: "🗑️",
+  summon_to_zone: "", // pas d'emoji pour les nouveaux écrans
 };
 
 const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "✅ Récupérer",
   discard: "🗑️ Défausser",
+  summon_to_zone: "", // traduit : fight.summonPick
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
 const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#fdf6f9",
   discard: "#fff5f5",
+  summon_to_zone: "#f3faf5",
 };
 
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
   discard: "#c0392b",
+  summon_to_zone: "#1f6b3a",
 };
 
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
   discard: "#c0392b",
+  summon_to_zone: "#1f6b3a",
 };
 
 function sourceLabel(source: ClientChoiceCandidate["source"]): string {
@@ -62,6 +68,7 @@ export default function CardPickModal({
   onCancel,
   confirmLabel,
 }: Props) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string[]>([]);
   const [inspected, setInspected] = useState<ClientChoiceCandidate | null>(
     null,
@@ -83,7 +90,11 @@ export default function CardPickModal({
     selected.length === Math.min(choice.count, choice.candidates.length);
 
   const icon = RESOLUTION_ICON[resolution];
-  const confirmText = confirmLabel ?? RESOLUTION_CONFIRM[resolution];
+  const confirmText =
+    confirmLabel ??
+    (resolution === "summon_to_zone"
+      ? t("fight.summonPick")
+      : RESOLUTION_CONFIRM[resolution]);
   const headerBg = RESOLUTION_HEADER_BG[resolution];
   const headerColor = RESOLUTION_HEADER_COLOR[resolution];
   const btnBg = RESOLUTION_BTN_BG[resolution];

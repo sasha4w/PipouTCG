@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import CardPickModal from "../../features/fight/CardPickModal";
 import type { PendingChoice } from "../../features/fight/fight.types";
+import i18n from "../../i18n";
 
 const choice: PendingChoice = {
   count: 1,
@@ -21,6 +22,8 @@ const choice: PendingChoice = {
       cost: 2,
       image: null,
       description: `Texte de ${name}`,
+      element: null,
+      stage: null,
     },
   })),
 };
@@ -53,5 +56,18 @@ describe("CardPickModal", () => {
     expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
     expect(screen.getByText("Texte de Gobelin")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /\(0\/1\)/ })).toBeDisabled();
+  });
+
+  it("invocation depuis le deck : bouton « Invoquer »", async () => {
+    await i18n.changeLanguage("fr");
+    render(
+      <CardPickModal
+        choice={{ ...choice, resolution: "summon_to_zone" }}
+        onConfirm={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: /^Invoquer \(0\/1\)$/ }),
+    ).toBeInTheDocument();
   });
 });

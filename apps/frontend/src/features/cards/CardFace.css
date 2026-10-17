@@ -391,10 +391,14 @@
 .card-face[data-rarity="secret"] .card-face__stat-value {
   color: #f0e8ff;
 }
-.card-face[data-rarity="secret"] .card-face__stat-badge--up .card-face__stat-value {
+.card-face[data-rarity="secret"]
+  .card-face__stat-badge--up
+  .card-face__stat-value {
   color: var(--stat-up);
 }
-.card-face[data-rarity="secret"] .card-face__stat-badge--down .card-face__stat-value {
+.card-face[data-rarity="secret"]
+  .card-face__stat-badge--down
+  .card-face__stat-value {
   color: var(--stat-down);
 }
 .card-face[data-rarity="secret"] .card-face__cost {

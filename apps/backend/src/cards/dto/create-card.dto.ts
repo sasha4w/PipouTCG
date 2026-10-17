@@ -3,6 +3,7 @@ import {
   IsNumber,
   IsNotEmpty,
   IsEnum,
+  IsDefined,
   IsOptional,
   IsArray,
   ValidateNested,
@@ -25,6 +26,8 @@ import {
   Rarity,
   SupportType,
   Archetype,
+  DrakonElement,
+  DrakonStage,
   EffectTrigger,
   EffectConditionType as ConditionType,
   ActionType,
@@ -37,6 +40,7 @@ import type {
   CreateCardRequest,
   EffectAction,
   EffectCondition,
+  EffectValueIf,
 } from '@pipou/shared';
 
 export class EffectConditionDto implements EffectCondition {
@@ -49,12 +53,38 @@ export class EffectConditionDto implements EffectCondition {
   @IsOptional()
   @IsIn(['exact', 'contains'])
   match?: CardNameMatch;
+
+  @IsOptional()
+  @IsEnum(DrakonElement)
+  element?: DrakonElement;
+
+  @IsOptional()
+  @IsEnum(DrakonStage)
+  stage?: DrakonStage;
+}
+
+export class EffectValueIfDto implements EffectValueIf {
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => EffectConditionDto)
+  condition!: EffectConditionDto;
+
+  @IsNumber()
+  value!: number;
 }
 
 export class EffectFilterDto implements EffectFilter {
   @IsOptional()
   @IsEnum(Archetype)
   archetype?: Archetype;
+
+  @IsOptional()
+  @IsEnum(DrakonElement)
+  element?: DrakonElement;
+
+  @IsOptional()
+  @IsEnum(DrakonStage)
+  stage?: DrakonStage;
 
   @IsOptional()
   @IsArray()
@@ -106,6 +136,11 @@ export class EffectActionDto implements EffectAction {
   @ValidateNested()
   @Type(() => EffectFilterDto)
   filter?: EffectFilterDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EffectValueIfDto)
+  valueIf?: EffectValueIfDto;
 }
 
 export class CardEffectDto implements CardEffect {
@@ -179,6 +214,19 @@ export class CreateCardDto implements CreateCardRequest {
   @IsOptional()
   @IsEnum(Archetype)
   archetype?: Archetype;
+
+  @IsOptional()
+  @IsEnum(DrakonElement)
+  element?: DrakonElement;
+
+  @IsOptional()
+  @IsEnum(DrakonStage)
+  stage?: DrakonStage;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  lineage?: string;
 
   @IsOptional()
   @IsArray()

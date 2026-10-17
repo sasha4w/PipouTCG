@@ -12,6 +12,7 @@ import type {
   ChangeModePayload,
   DiscardPayload,
   GameAction,
+  EvolvePayload,
   MatchPayload,
   MulliganPayload,
   PickCardsPayload,
@@ -160,6 +161,19 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       zoneIndex: data.zoneIndex,
       paymentHandIndices: data.paymentHandIndices ?? [],
       onOpponentSide: data.onOpponentSide ?? false,
+    });
+  }
+
+  @SubscribeMessage('fight:evolve')
+  async evolveMonster(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: EvolvePayload,
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'evolve',
+      handIndex: data.handIndex,
+      targetInstanceId: data.targetInstanceId,
+      paymentHandIndices: data.paymentHandIndices ?? [],
     });
   }
 

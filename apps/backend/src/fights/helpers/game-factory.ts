@@ -48,5 +48,7 @@ export function createGameState(
     turnNumber: 0,
     log: [],
     pendingChoices: [],
+    pendingEvents: [],
+    terrainSeq: 0,
   };
 }

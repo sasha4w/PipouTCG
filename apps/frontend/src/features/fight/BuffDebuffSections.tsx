@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import "./BuffDebuffSections.css";
 
 export interface BuffEntry {
-  icon: string;
+  icon: ReactNode;
   label: string;
   type: "buff" | "debuff" | "neutral";
   /** "recap" = ligne stats calculée, "separator" = début de section accordion */

@@ -5,8 +5,10 @@ import {
   EffectTarget,
   EffectTrigger,
   SupportType,
+  canSummonFromHand,
   canSummonOnEnemySide,
   ephemeralTargetSide,
+  isTargetableByEphemeral,
 } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
 import { createEngine } from '../testing/engine';
@@ -61,6 +63,14 @@ describe('couverture des effets', () => {
     const engine = createEngine();
 
     function play(card: Card) {
+      // Jeune / Adulte Drakon : il n'arrive que par évolution, sur le stade
+      // précédent de sa lignée
+      const evolvesOnly = !canSummonFromHand(card);
+      const base = monsterCard('Base', {
+        archetype: 'dragon',
+        lineage: card.lineage,
+        stage: card.stage === 'adult' ? 'young' : 'baby',
+      });
       const game = scenario({
         p1: {
           hand: [card],
@@ -68,18 +78,40 @@ describe('couverture des effets', () => {
           graveyard: allRealCards(),
           deck: allRealCards(),
           recycleEnergy: 3,
-          monsters: [monsterCard('Allié', { hp: 5000 })],
+          monsters: [
+            monsterCard('Allié', { hp: 5000, archetype: 'dragon' }),
+            // Drakon posé ce tour : cible utile pour les accélérateurs (Incubation)
+            {
+              card: monsterCard('Drakon posé', {
+                archetype: 'dragon',
+                stage: 'baby',
+              }),
+              summonedThisTurn: true,
+            },
+            ...(evolvesOnly ? [base] : []),
+          ],
         },
         p2: { monsters: [monsterCard('Ennemi', { hp: 5000 })] },
       });
       const ally = monsterNamed(game, 'p1', 'Allié');
+      const allyTarget = (c: Card) =>
+        game.player1.monsterZones.find(
+          (m) => !!m && isTargetableByEphemeral(m, 'ally', c.effects),
+        ) ?? ally;
       const enemy = monsterNamed(game, 'p2', 'Ennemi');
 
+      if (evolvesOnly)
+        return engine.dispatch(game, 'p1', {
+          type: 'evolve',
+          handIndex: 0,
+          targetInstanceId: monsterNamed(game, 'p1', 'Base').instanceId,
+          paymentHandIndices: [],
+        });
       if (card.type === CardType.MONSTER)
         return engine.dispatch(game, 'p1', {
           type: 'summon',
           handIndex: 0,
-          zoneIndex: 1,
+          zoneIndex: 2,
           paymentHandIndices: [],
           onOpponentSide: canSummonOnEnemySide(card.effects),
         });
@@ -102,7 +134,7 @@ describe('couverture des effets', () => {
         handIndex: 0,
         targetInstanceId:
           side === 'ally'
-            ? ally.instanceId
+            ? allyTarget(card).instanceId
             : side === 'enemy'
               ? enemy.instanceId
               : undefined,

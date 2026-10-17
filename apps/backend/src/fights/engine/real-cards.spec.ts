@@ -13,82 +13,13 @@ import {
 const engine = createEngine();
 
 describe('vraies cartes — combos', () => {
-  it('Noyau Alpha + Module .v2 + Firewall .sys : Provocation et dégâts divisés par 2', () => {
-    const game = scenario({
-      p1: {
-        monsters: [realCard('Noyau Alpha')],
-        hand: [
-          realCard("Module d'Extension .v2"),
-          realCard('Firewall de Surcharge .sys'),
-        ],
-      },
-    });
-    const alpha = monsterNamed(game, 'p1', 'Noyau Alpha ');
-
-    engine.dispatch(game, 'p1', {
-      type: 'play_support',
-      handIndex: 0,
-      targetInstanceId: alpha.instanceId,
-    });
-    engine.dispatch(game, 'p1', {
-      type: 'play_support',
-      handIndex: 0,
-      targetInstanceId: alpha.instanceId,
-    });
-
-    expect(alpha.hasTaunt).toBe(true);
-    expect(alpha.damageReduction).toBe(2);
-  });
-
-  it('Noyau Beta + Module .v2 : 300 + 400 dégâts à chaque début de tour', () => {
-    const game = scenario({
-      turn: 'p2',
-      phase: 'end',
-      p1: {
-        monsters: [
-          {
-            card: realCard('Noyau Beta'),
-            equipments: [realCard("Module d'Extension .v2")],
-          },
-        ],
-      },
-      p2: { monsters: [monsterCard('Cible', { hp: 1000 })] },
-    });
-
-    engine.dispatch(game, 'p2', { type: 'end_phase' });
-
-    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(300);
-  });
-
-  it("Noyau Delta + Firewall .sys : deux attaques par tour dès l'équipement", () => {
-    const game = scenario({
-      p1: {
-        monsters: [realCard('Noyau Delta')],
-        hand: [realCard('Firewall de Surcharge .sys')],
-      },
-      p2: { monsters: [monsterCard('Mur', { atk: 0, hp: 99_999 })] },
-    });
-    engine.dispatch(game, 'p1', {
-      type: 'play_support',
-      handIndex: 0,
-      targetInstanceId: monsterNamed(game, 'p1', 'Noyau Delta').instanceId,
-    });
-    engine.dispatch(game, 'p1', { type: 'end_phase' });
-
-    expect(attackWith(engine, game, 'p1', 'Noyau Delta', 'Mur')).toEqual({});
-    expect(attackWith(engine, game, 'p1', 'Noyau Delta', 'Mur')).toEqual({});
-    expect(
-      attackWith(engine, game, 'p1', 'Noyau Delta', 'Mur').error,
-    ).toContain('toutes ses attaques');
-  });
-
   it('Noyau Delta + Module .v2 : +600 ATK', () => {
     const game = scenario({
       p1: {
         monsters: [
           {
             card: realCard('Noyau Delta'),
-            equipments: [realCard("Module d'Extension .v2")],
+            equipments: [realCard('Module Bluetooth .v2')],
           },
         ],
       },

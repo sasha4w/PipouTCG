@@ -1,3 +1,4 @@
+import type { DrakonStage } from "../enums/card";
 import type { ClientCard } from "./card";
 
 /** Exemplaire d'une carte en partie. C = entité complète côté serveur. */
@@ -9,6 +10,8 @@ export interface CardInstance<C = ClientCard> {
   atkBuff?: number;
   hpBuff?: number;
   status?: string[];
+  /** Ordre de pose d'un terrain en zone Support (croissant sur la partie). */
+  placedSeq?: number;
 }
 
 export type CombatMode = "attack" | "guard";
@@ -52,4 +55,20 @@ export interface MonsterOnBoard<C = ClientCard> {
   ownerUserId?: number;
   blockAttackTurns?: number;
   guardLocked?: boolean;
+  /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
+  combatImmune?: boolean;
+  /** Une destruction directe venant d'une carte Support n'a pas d'effet (passif). */
+  supportDestroyImmune?: boolean;
+  /** Peut attaquer n'importe quel monstre malgré une Provocation (passif). */
+  ignoresTaunt?: boolean;
+  /** Tours restants avant éclosion (œuf). */
+  hatchCounter?: number;
+  /** Stade de la carte tirée du deck à l'éclosion. */
+  hatchStage?: DrakonStage;
+  /** Peut évoluer ce tour malgré le délai (effet). */
+  canEvolveThisTurn?: boolean;
+  /** Accepte un Jeune de n'importe quelle lignée (passif). */
+  evolutionJoker?: boolean;
+  /** Peut évoluer le tour où il est posé (passif). */
+  instantEvolution?: boolean;
 }

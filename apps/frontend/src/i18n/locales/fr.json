@@ -55,7 +55,12 @@
     "logout": "Se déconnecter",
     "notif_trades": "Trades Status",
     "notif_boosters": "Booster stock Status",
-    "notif_news": "News"
+    "notif_news": "News",
+    "animations": "Animations",
+    "animations_label": "Animations de duel",
+    "animations_auto": "Auto (système)",
+    "animations_full": "Complètes",
+    "animations_reduced": "Réduites"
   },
   "privacy": {
     "private": "Profil privé",
@@ -347,6 +352,8 @@
   },
   "effects": {
     "ui": {
+      "summonRule": "Invocation",
+      "evolutionOnly": "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
       "title": "Effets",
       "keywords": "Mots-clés",
       "status": "État actuel"
@@ -379,6 +386,8 @@
       "SPECIFIC_CARD_ON_BOARD_contains": "Si une carte dont le nom contient « {{name}} » est sur ton terrain",
       "EQUIPPED_ON": "Si elle est équipée sur « {{name}} »",
       "EQUIPPED_ON_contains": "Si elle est équipée sur un monstre dont le nom contient « {{name}} »",
+      "DRAKON_ON_BOARD": "Si tu contrôles un Drakon ({{detail}})",
+      "EQUIPPED_ON_drakon": "Si elle est équipée sur un monstre ({{detail}})",
       "unknown": "Sous condition ({{type}})"
     },
     "target": {
@@ -394,10 +403,12 @@
       "ARCHETYPE_ALLIES": "tes monstres {{archetype}}",
       "ARCHETYPE_ALLIES_others": "tes autres monstres {{archetype}}",
       "ADJACENT_ALLIES": "les monstres adjacents",
+      "STRONGEST_ENEMY": "le monstre adverse le plus fort",
       "PLAYER": "toi",
       "OPPONENT": "l'adversaire",
       "unknown": "la cible ({{type}})"
     },
+    "valueIf": "({{value}} {{condition}})",
     "action": {
       "DEAL_DAMAGE": "{{target}} subit {{value}} dégâts.",
       "DEAL_DAMAGE_many": "{{target}} subissent {{value}} dégâts.",
@@ -425,6 +436,12 @@
       "RETURN_TO_HAND_many": "{{target}} retournent dans la main de leur propriétaire, avec leurs équipements.",
       "SET_TAUNT": "{{target}} gagne **{{kw}}**.",
       "SET_TAUNT_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_COMBAT_IMMUNITY": "{{target}} gagne **{{kw}}** jusqu'à ton prochain tour.",
+      "SET_COMBAT_IMMUNITY_many": "{{target}} gagnent **{{kw}}** jusqu'à ton prochain tour.",
+      "SET_SUPPORT_DESTROY_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_SUPPORT_DESTROY_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "IGNORE_TAUNT": "{{target}} gagne **{{kw}}**.",
+      "IGNORE_TAUNT_many": "{{target}} gagnent **{{kw}}**.",
       "SET_PIERCING": "{{target}} gagne **{{kw}}**.",
       "SET_PIERCING_many": "{{target}} gagnent **{{kw}}**.",
       "SET_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
@@ -465,14 +482,32 @@
       "GAIN_RECYCLE_ENERGY_you_other": "Tu gagnes {{count}} Énergies de recyclage.",
       "SET_FREE_SUMMON": "Cette carte peut être invoquée gratuitement.",
       "SUMMONABLE_ON_ENEMY_SIDE": "Cette carte peut être invoquée sur le terrain adverse.",
+      "SET_HATCH_COUNTER_one": "{{target}} éclot dans {{count}} tour en une carte{{filter}} de ton deck.",
+      "SET_HATCH_COUNTER_other": "{{target}} éclot dans {{count}} tours en une carte{{filter}} de ton deck.",
+      "SET_HATCH_COUNTER_many_one": "{{target}} éclosent dans {{count}} tour en une carte{{filter}} de ton deck.",
+      "SET_HATCH_COUNTER_many_other": "{{target}} éclosent dans {{count}} tours en une carte{{filter}} de ton deck.",
+      "ADVANCE_HATCH_one": "L'éclosion de {{target}} avance de {{count}} tour.",
+      "ADVANCE_HATCH_other": "L'éclosion de {{target}} avance de {{count}} tours.",
+      "ADVANCE_HATCH_many_one": "L'éclosion de {{target}} avance de {{count}} tour.",
+      "ADVANCE_HATCH_many_other": "L'éclosion de {{target}} avance de {{count}} tours.",
+      "SUMMON_FROM_DECK": "{{target}} invoque gratuitement 1 carte{{filter}} de son deck.",
+      "SUMMON_FROM_DECK_you": "Tu invoques gratuitement 1 carte{{filter}} de ton deck.",
+      "EVOLUTION_JOKER": "{{target}} gagne **{{kw}}**.",
+      "EVOLUTION_JOKER_many": "{{target}} gagnent **{{kw}}**.",
+      "INSTANT_EVOLUTION": "{{target}} gagne **{{kw}}**.",
+      "INSTANT_EVOLUTION_many": "{{target}} gagnent **{{kw}}**.",
+      "ALLOW_EVOLUTION_THIS_TURN": "{{target}} peut évoluer ce tour.",
+      "ALLOW_EVOLUTION_THIS_TURN_many": "{{target}} peuvent évoluer ce tour.",
       "unknown": "Effet spécial ({{type}})."
     },
     "filter": {
       "name": "nom contenant « {{name}} »"
     },
+    "stage": { "egg": "Œuf", "baby": "Bébé", "young": "Jeune", "adult": "Adulte" },
+    "element": { "earth": "Terre", "fire": "Feu", "wind": "Vent", "water": "Eau" },
     "archetype": {
       "pipou": "Pipou",
-      "dragon": "Dragon",
+      "dragon": "Drakon",
       "pixelman": "Pixelman"
     },
     "status": {
@@ -482,7 +517,10 @@
       "freeze_one": "Gelé encore {{count}} tour",
       "freeze_other": "Gelé encore {{count}} tours",
       "countdown_one": "Détruit dans {{count}} tour",
-      "countdown_other": "Détruit dans {{count}} tours"
+      "countdown_other": "Détruit dans {{count}} tours",
+      "hatch_one": "Éclot dans {{count}} tour",
+      "hatch_other": "Éclot dans {{count}} tours",
+      "canEvolve": "Peut évoluer ce tour"
     }
   },
   "keywords": {
@@ -495,8 +533,20 @@
       "desc": "Ignore la réduction de dégâts, et rapporte une Prime en détruisant un monstre en Garde."
     },
     "debuffImmunity": {
-      "name": "Immunité aux débuffs",
-      "desc": "Le monstre ne peut pas recevoir de malus d'ATK temporaire."
+      "name": "Insensible aux effets adverses",
+      "desc": "Aucun effet d'une carte adverse ne peut viser ce monstre. Le combat le blesse normalement."
+    },
+    "combatImmunity": {
+      "name": "Insensible au combat",
+      "desc": "Ne subit aucun dégât de combat, ni en attaquant ni en étant attaqué."
+    },
+    "supportShield": {
+      "name": "Blindage",
+      "desc": "Ne peut pas être détruit directement par une carte Support (les dégâts passent)."
+    },
+    "ignoreTaunt": {
+      "name": "Contournement",
+      "desc": "Peut attaquer n'importe quel monstre malgré la Provocation."
     },
     "doubleAttack": {
       "name": "Double attaque",
@@ -529,6 +579,22 @@
     "countdown": {
       "name": "Compte à rebours",
       "desc": "Le compteur baisse au début de chaque tour du joueur qui a posé le monstre ; à 0, le monstre est détruit et ce joueur gagne une Prime."
+    },
+    "hatch": {
+      "name": "Éclosion",
+      "desc": "Après le nombre de tours indiqué, l'œuf quitte le terrain et la carte de ton choix tirée de ton deck est invoquée à sa place."
+    },
+    "evolutionJoker": {
+      "name": "Joker d'évolution",
+      "desc": "Un Jeune Drakon de n'importe quelle lignée peut évoluer sur ce monstre."
+    },
+    "instantEvolution": {
+      "name": "Évolution immédiate",
+      "desc": "Peut évoluer dès le tour où il est posé."
     }
+  },
+  "fight": {
+    "evolveHint": "Touche un de tes monstres pour évoluer",
+    "summonPick": "Invoquer"
   }
 }

@@ -29,6 +29,16 @@ describe("emitGameAction", () => {
       },
     ],
     [
+      {
+        type: "evolve",
+        handIndex: 2,
+        targetInstanceId: "m1",
+        paymentHandIndices: [0],
+      },
+      "fight:evolve",
+      { handIndex: 2, targetInstanceId: "m1", paymentHandIndices: [0] },
+    ],
+    [
       { type: "play_support", handIndex: 0, targetInstanceId: "m1" },
       "fight:play_support",
       { handIndex: 0, targetInstanceId: "m1" },

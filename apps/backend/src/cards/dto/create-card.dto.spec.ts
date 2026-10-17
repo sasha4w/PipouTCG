@@ -70,4 +70,88 @@ describe('CreateCardDto — effets', () => {
     ]);
     expect(errors).not.toEqual([]);
   });
+
+  it('accepte une quantité conditionnelle (valueIf)', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [
+          {
+            type: 'RETURN_FROM_GRAVEYARD',
+            target: 'PLAYER',
+            value: 2,
+            valueIf: {
+              condition: {
+                type: 'SPECIFIC_CARD_ON_BOARD',
+                value: 'Capitaine',
+                match: 'contains',
+              },
+              value: 3,
+            },
+          },
+        ],
+      },
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  it('refuse un valueIf sans valeur numérique', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [
+          {
+            type: 'DRAW',
+            target: 'PLAYER',
+            valueIf: { condition: { type: 'HAND_SIZE_MIN', value: 1 } },
+          },
+        ],
+      },
+    ]);
+    expect(errors).not.toEqual([]);
+  });
+
+  it('refuse un valueIf sans condition', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [{ type: 'DRAW', target: 'PLAYER', valueIf: { value: 3 } }],
+      },
+    ]);
+    expect(errors).not.toEqual([]);
+  });
+});
+
+describe('CreateCardDto — Drakon', () => {
+  it('accepte élément, lignée et stade de Drakon', async () => {
+    const dto = plainToInstance(CreateCardDto, {
+      name: 'Bébé Test',
+      rarity: 'common',
+      type: 'monster',
+      atk: 100,
+      hp: 500,
+      cardSetId: 3,
+      element: 'fire',
+      lineage: 'feros',
+      stage: 'baby',
+    });
+    expect(
+      await validate(dto, { whitelist: true, forbidNonWhitelisted: true }),
+    ).toEqual([]);
+  });
+
+  it('refuse un élément inconnu', async () => {
+    const dto = plainToInstance(CreateCardDto, {
+      name: 'Bébé Test',
+      rarity: 'common',
+      type: 'monster',
+      atk: 0,
+      hp: 1,
+      cardSetId: 3,
+      element: 'lava',
+    });
+    expect(
+      await validate(dto, { whitelist: true, forbidNonWhitelisted: true }),
+    ).not.toEqual([]);
+  });
 });

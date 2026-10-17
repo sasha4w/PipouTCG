@@ -284,6 +284,7 @@ export class SandboxService {
 
   private publish(sb: Sandbox, server: SandboxServer): void {
     server.to(sb.admin.socketId).emit('sandbox:state', buildSandboxState(sb));
+    sb.game.pendingEvents = [];
     this.scheduleTimer(sb, server);
   }
 

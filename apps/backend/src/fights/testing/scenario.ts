@@ -122,6 +122,8 @@ export function scenario(spec: ScenarioSpec = {}): GameState {
     turnNumber: spec.turnNumber ?? 2,
     log: [],
     pendingChoices: [],
+    pendingEvents: [],
+    terrainSeq: 0,
   };
 }
 

@@ -7,12 +7,14 @@ import type {
 import {
   Archetype,
   CardType,
+  DrakonElement,
+  DrakonStage,
   Rarity,
   SupportType,
   type CardEffect,
 } from "@pipou/shared";
 
-export { Archetype, CardType, Rarity, SupportType };
+export { Archetype, CardType, DrakonElement, DrakonStage, Rarity, SupportType };
 export type { CardEffect };
 
 export interface Card {
@@ -26,6 +28,9 @@ export interface Card {
   cost: number;
   supportType?: SupportType | null;
   archetype?: Archetype | null;
+  element?: DrakonElement | null;
+  lineage?: string | null;
+  stage?: DrakonStage | null;
   effects?: CardEffect[] | null;
   image?: { id: number; url: string } | null;
   cardSet: { id: number; name: string };
