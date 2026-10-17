@@ -1,4 +1,6 @@
-import { buildClientState } from './client-state.builder';
+import type { ClientGameState, FightEvent } from '@pipou/shared';
+import { buildClientState, emitGameState } from './client-state.builder';
+import { fakeServer } from '../testing/fake-server';
 import { instanceOf, P1_ID, scenario } from '../testing/scenario';
 import { monsterCard } from '../testing/cards';
 import type { Card } from '../../cards/card.entity';
@@ -47,5 +49,34 @@ describe('buildClientState — candidats de choix', () => {
     const state = buildClientState(game, P1_ID);
 
     expect(state.pendingChoice?.candidates[0].baseCard.image).toBeNull();
+  });
+});
+
+describe('buildClientState / emitGameState — événements', () => {
+  const ev: FightEvent = {
+    kind: 'terrain_played',
+    ownerId: P1_ID,
+    zoneIndex: 0,
+    instanceId: 't1',
+  };
+
+  it('recopie les événements en attente', () => {
+    const game = scenario();
+    game.pendingEvents.push(ev);
+
+    expect(buildClientState(game, P1_ID).events).toEqual([ev]);
+  });
+
+  it('envoie les mêmes événements aux deux joueurs puis vide le tampon', () => {
+    const game = scenario();
+    game.pendingEvents.push(ev);
+    const { server, emitted } = fakeServer();
+
+    emitGameState(game, server);
+    emitGameState(game, server);
+
+    const events = emitted.map((e) => (e.payload as ClientGameState).events);
+    expect(events).toEqual([[ev], [ev], [], []]);
+    expect(game.pendingEvents).toEqual([]);
   });
 });

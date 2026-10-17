@@ -9,6 +9,8 @@ export interface CardInstance<C = ClientCard> {
   atkBuff?: number;
   hpBuff?: number;
   status?: string[];
+  /** Ordre de pose d'un terrain en zone Support (croissant sur la partie). */
+  placedSeq?: number;
 }
 
 export type CombatMode = "attack" | "guard";

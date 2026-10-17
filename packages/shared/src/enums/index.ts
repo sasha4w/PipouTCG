@@ -5,3 +5,4 @@ export * from "./match";
 export * from "./quest";
 export * from "./reward";
 export * from "./notification";
+export * from "./fight";

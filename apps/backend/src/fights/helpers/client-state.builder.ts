@@ -67,6 +67,7 @@ export function buildClientState(
       mulliganDone: opp.mulliganDone,
     },
     log: game.log.slice(-20),
+    events: [...game.pendingEvents],
     winner: game.winner,
     endReason: game.endReason,
     pendingChoice,
@@ -81,4 +82,6 @@ export function emitGameState(game: GameState, server: FightServer): void {
   server
     .to(game.player2.socketId)
     .emit('fight:state', buildClientState(game, game.player2.userId));
+  // Joués une seule fois : une reconnexion reçoit l'état sans événements
+  game.pendingEvents = [];
 }
