@@ -366,15 +366,20 @@
 
 /* ── Destruction / shatter ───────────────────────────────────────────────── */
 .zr-zone--shattering {
-  animation: zr-shatter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
   z-index: 10;
   background: #fdf6f0;
-  border: 2px solid #e74c3c;
+  border: 2px solid var(--destroy-color, #e74c3c);
   overflow: hidden;
 }
 
-.zr-zone--shattering::before {
+/* Combat : éclatement (animation historique) */
+.zr-zone--destroy-combat {
+  --destroy-color: #e74c3c;
+  animation: zr-shatter 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.zr-zone--destroy-combat::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -396,7 +401,7 @@
   z-index: 5;
 }
 
-.zr-zone--shattering::after {
+.zr-zone--destroy-combat::after {
   content: "";
   position: absolute;
   width: 5px;
@@ -486,6 +491,163 @@
     transform: scale(0) rotate(18deg);
     opacity: 0;
     filter: brightness(0);
+  }
+}
+
+/* Effet : dissolution violette vers le haut */
+.zr-zone--destroy-effect {
+  --destroy-color: #8e44ad;
+  animation: zr-dissolve 0.9s ease-in forwards;
+}
+.zr-zone--destroy-effect::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c39bd3;
+  box-shadow:
+    -30px 10px 0 1px #8e44ad,
+    -16px -6px 0 0 #d7bde2,
+    14px 8px 0 1px #8e44ad,
+    28px -4px 0 0 #d7bde2,
+    -6px 18px 0 1px #a569bd,
+    22px 20px 0 0 #8e44ad;
+  animation: zr-rise 0.9s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes zr-dissolve {
+  0% {
+    opacity: 1;
+    filter: none;
+    transform: translateY(0);
+    box-shadow: 0 0 0 transparent;
+  }
+  30% {
+    opacity: 0.9;
+    filter: saturate(0.6) brightness(1.2);
+    box-shadow: 0 0 18px #8e44ad;
+  }
+  100% {
+    opacity: 0;
+    filter: blur(4px) saturate(0);
+    transform: translateY(-18px);
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* Sacrifice : lueur dorée puis repli vers le cimetière du propriétaire */
+.zr-zone--destroy-sacrifice {
+  --destroy-color: #f1c40f;
+  --grave-dx: 140px;
+  animation: zr-sacrifice 0.8s ease-in forwards;
+}
+.zr-wrap--opponent .zr-zone--destroy-sacrifice {
+  --grave-dx: -140px;
+}
+@keyframes zr-sacrifice {
+  0% {
+    transform: none;
+    opacity: 1;
+    box-shadow: 0 0 0 transparent;
+  }
+  35% {
+    transform: scale(1.04);
+    filter: brightness(1.4);
+    box-shadow: 0 0 24px #f1c40f;
+  }
+  100% {
+    transform: translateX(var(--grave-dx)) scale(0.2) rotate(-12deg);
+    opacity: 0;
+    filter: brightness(1);
+  }
+}
+
+/* Autodestruction (compteur) : clignotement accéléré puis onde de choc */
+.zr-zone--destroy-self-destruct {
+  --destroy-color: #e74c3c;
+  animation: zr-countdown-blow 1s ease-in forwards;
+}
+.zr-zone--destroy-self-destruct::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  border: 3px solid #f39c12;
+  opacity: 0;
+  animation: zr-shockwave 1s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes zr-countdown-blow {
+  0%,
+  20%,
+  36%,
+  48%,
+  56% {
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+  10%,
+  28%,
+  42%,
+  52%,
+  60% {
+    filter: brightness(1.6) sepia(1) hue-rotate(-40deg) saturate(4);
+  }
+  70% {
+    transform: scale(1.1);
+    filter: brightness(2.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.3);
+    filter: brightness(0.3);
+    opacity: 0;
+  }
+}
+@keyframes zr-shockwave {
+  0%,
+  60% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* PV épuisés : désaturation puis effondrement */
+.zr-zone--destroy-hp-depleted {
+  --destroy-color: #7f8c8d;
+  transform-origin: bottom center;
+  animation: zr-collapse 0.8s ease-in forwards;
+}
+@keyframes zr-collapse {
+  0% {
+    filter: none;
+    transform: none;
+    opacity: 1;
+  }
+  40% {
+    filter: grayscale(1) brightness(0.8);
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    filter: grayscale(1) brightness(0.6);
+    transform: translateY(24px) scaleY(0.2);
+    opacity: 0;
   }
 }
 
