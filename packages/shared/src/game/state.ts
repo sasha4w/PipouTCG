@@ -1,3 +1,4 @@
+import type { AchievementFamily } from "../enums/achievement";
 import type { FightEvent } from "./events";
 import type { MatchEndReason } from "../enums/match";
 import type { ClientCard } from "./card";
@@ -51,6 +52,8 @@ export interface ClientPendingChoice {
 export interface MyClientState {
   userId: number;
   username: string;
+  /** Titre équipé (famille de succès), absent en sandbox. */
+  title?: AchievementFamily | null;
   primes: number;
   hand: CardInstance[];
   deckCount: number;
@@ -67,6 +70,8 @@ export interface MyClientState {
 export interface OpponentClientState {
   userId: number;
   username: string;
+  /** Titre équipé (famille de succès), absent en sandbox. */
+  title?: AchievementFamily | null;
   primes: number;
   handCount: number;
   deckCount: number;

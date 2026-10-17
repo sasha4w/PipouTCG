@@ -49,6 +49,12 @@ const CONDITION_LABELS: Record<ConditionType, string> = {
   COMPLETE_SET: "Compléter set",
   REACH_LEVEL: "Atteindre niveau",
   WIN_FIGHT: "Gagner combat",
+  PLAY_FIGHT: "Jouer un combat",
+  OBTAIN_CARD: "Obtenir carte",
+  CLAIM_DAILY_REWARD: "Récompense quotidienne",
+  LIST_CARD: "Mettre en vente",
+  EARN_GOLD: "Gagner de l'or",
+  COMPLETE_QUEST: "Terminer quête",
 };
 
 const STEPS = [

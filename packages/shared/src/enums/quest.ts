@@ -30,6 +30,12 @@ export const QuestConditionType = {
   COMPLETE_SET: "COMPLETE_SET",
   REACH_LEVEL: "REACH_LEVEL",
   WIN_FIGHT: "WIN_FIGHT",
+  PLAY_FIGHT: "PLAY_FIGHT",
+  OBTAIN_CARD: "OBTAIN_CARD",
+  CLAIM_DAILY_REWARD: "CLAIM_DAILY_REWARD",
+  LIST_CARD: "LIST_CARD",
+  EARN_GOLD: "EARN_GOLD",
+  COMPLETE_QUEST: "COMPLETE_QUEST",
 } as const;
 export type QuestConditionType =
   (typeof QuestConditionType)[keyof typeof QuestConditionType];

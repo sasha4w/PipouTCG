@@ -43,3 +43,17 @@ export const DrakonStage = {
   ADULT: "adult",
 } as const;
 export type DrakonStage = (typeof DrakonStage)[keyof typeof DrakonStage];
+
+/** Rang de rareté : common = 0 … secret = 5. */
+export const RARITY_RANK: Record<Rarity, number> = {
+  [Rarity.COMMON]: 0,
+  [Rarity.UNCOMMON]: 1,
+  [Rarity.RARE]: 2,
+  [Rarity.EPIC]: 3,
+  [Rarity.LEGENDARY]: 4,
+  [Rarity.SECRET]: 5,
+};
+
+export function rarityAtLeast(rarity: Rarity, min: Rarity): boolean {
+  return RARITY_RANK[rarity] >= RARITY_RANK[min];
+}
