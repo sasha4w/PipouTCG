@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { CSSProperties } from "react";
 import type {
   PendingChoice,
@@ -30,7 +31,7 @@ const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
 const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "✅ Récupérer",
   discard: "🗑️ Défausser",
-  summon_to_zone: "Invoquer",
+  summon_to_zone: "", // traduit : fight.summonPick
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
@@ -67,6 +68,7 @@ export default function CardPickModal({
   onCancel,
   confirmLabel,
 }: Props) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string[]>([]);
   const [inspected, setInspected] = useState<ClientChoiceCandidate | null>(
     null,
@@ -88,7 +90,11 @@ export default function CardPickModal({
     selected.length === Math.min(choice.count, choice.candidates.length);
 
   const icon = RESOLUTION_ICON[resolution];
-  const confirmText = confirmLabel ?? RESOLUTION_CONFIRM[resolution];
+  const confirmText =
+    confirmLabel ??
+    (resolution === "summon_to_zone"
+      ? t("fight.summonPick")
+      : RESOLUTION_CONFIRM[resolution]);
   const headerBg = RESOLUTION_HEADER_BG[resolution];
   const headerColor = RESOLUTION_HEADER_COLOR[resolution];
   const btnBg = RESOLUTION_BTN_BG[resolution];

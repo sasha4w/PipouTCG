@@ -590,5 +590,9 @@
       "name": "Évolution immédiate",
       "desc": "Peut évoluer dès le tour où il est posé."
     }
+  },
+  "fight": {
+    "evolveHint": "Touche un de tes monstres pour évoluer",
+    "summonPick": "Invoquer"
   }
 }

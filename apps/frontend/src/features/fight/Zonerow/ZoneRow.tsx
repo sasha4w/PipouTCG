@@ -25,6 +25,8 @@ interface Props {
   onModeChange?: (instanceId: string, mode: CombatMode) => void;
   highlightEmpty?: boolean;
   highlightFilled?: boolean;
+  /** Surligne uniquement les cartes en jeu dont l'instanceId est listé. */
+  highlightInstanceIds?: ReadonlySet<string>;
   highlightOpponentEmpty?: boolean;
   onSupportRecycle?: (idx: number) => void;
   selectedZone?: number | null;
@@ -43,6 +45,7 @@ export default function ZoneRow({
   dim = false,
   highlightEmpty = false,
   highlightFilled = false,
+  highlightInstanceIds,
   highlightOpponentEmpty = false,
   onZoneClick,
   onMonsterClick,
@@ -100,7 +103,10 @@ export default function ZoneRow({
             highlightEmpty && !zone && !isShattering
               ? "zr-zone--pulse-target"
               : "",
-            highlightFilled && !!zone ? "zr-zone--pulse-equipment" : "",
+            (highlightFilled && !!zone) ||
+            (!!zone && !!highlightInstanceIds?.has(zone.instanceId))
+              ? "zr-zone--pulse-equipment"
+              : "",
             isZetaTarget ? "zr-zone--pulse-target zr-zone--zeta-target" : "",
             summonTier ? `zr-zone--summon-in zr-zone--summon-t${summonTier}` : "",
             dying ? `zr-zone--destroy-${dying.cause.replace(/_/g, "-")}` : "",

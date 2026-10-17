@@ -51,4 +51,20 @@ describe("useBoardControls", () => {
 
     expect(send).not.toHaveBeenCalled();
   });
+
+  it("fait évoluer la carte sélectionnée sur le monstre visé, puis vide la sélection", () => {
+    const send = vi.fn();
+    const { result } = renderHook(() => useBoardControls(gs, send));
+
+    act(() => result.current.board.onSetSelectedCard(3));
+    act(() => result.current.board.onEvolve("m1", [2]));
+
+    expect(send).toHaveBeenCalledWith({
+      type: "evolve",
+      handIndex: 3,
+      targetInstanceId: "m1",
+      paymentHandIndices: [2],
+    });
+    expect(result.current.board.selectedCard).toBeNull();
+  });
 });

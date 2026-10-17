@@ -97,4 +97,29 @@ describe("ZoneRow animations", () => {
     expect(zoneEl(container)).not.toHaveClass("zr-zone--summon-in");
     expect(container.querySelector(".zr-summon-beam")).toBeNull();
   });
+
+  it("évolution (autre monstre dans la même zone) : animation d'invocation", () => {
+    const { container, rerender } = render(<ZoneRow label="M" zones={[monster()]} />);
+    rerender(
+      <ZoneRow label="M" zones={[monster({ instanceId: "m2" })]} fx={new Map([[0, { summonTier: 2 }]])} />,
+    );
+    expect(container.querySelector(".zr-zone")).toHaveClass("zr-zone--summon-t2");
+    expect(container.querySelector(".zr-zone")).not.toHaveClass("zr-zone--shattering");
+  });
+});
+
+describe("ZoneRow surbrillance", () => {
+  it("ne surligne que les monstres listés", () => {
+    const { container } = render(
+      <ZoneRow
+        label="M"
+        zones={[monster(), monster({ instanceId: "m2" }), null]}
+        highlightInstanceIds={new Set(["m2"])}
+      />,
+    );
+    const [first, second, third] = container.querySelectorAll(".zr-zone");
+    expect(first).not.toHaveClass("zr-zone--pulse-equipment");
+    expect(second).toHaveClass("zr-zone--pulse-equipment");
+    expect(third).not.toHaveClass("zr-zone--pulse-equipment");
+  });
 });

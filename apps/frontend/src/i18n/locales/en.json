@@ -588,5 +588,9 @@
       "name": "Instant evolution",
       "desc": "Can evolve on the turn it is played."
     }
+  },
+  "fight": {
+    "evolveHint": "Tap one of your monsters to evolve",
+    "summonPick": "Summon"
   }
 }

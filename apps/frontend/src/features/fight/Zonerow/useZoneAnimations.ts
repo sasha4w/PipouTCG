@@ -59,7 +59,8 @@ export function useZoneAnimations(
     zones.forEach((zone, idx) => {
       const prev = prevZones[idx];
 
-      if (!prev && zone) {
+      // Zone remplie, ou monstre remplacé sur place (évolution) : invocation
+      if (zone && (!prev || prev.instanceId !== zone.instanceId)) {
         const tier: SummonTier = isSupport
           ? 1
           : (fx.get(idx)?.summonTier ??

@@ -23,7 +23,10 @@ import CardPickModal from "./CardPickModal";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
 import {
   HAND_LIMIT,
+  canEvolveNow,
+  canEvolveOnto,
   canSummonOnEnemySide,
+  evolutionCost,
   ephemeralTargetSide,
   isTargetableByEphemeral,
   type CardEffect,
@@ -45,6 +48,8 @@ interface Props {
   onSummon: () => void;
   /** Invoque Noyau Zeta sur la zone adverse zoneIndex */
   onSummonZeta: (zoneIndex: number) => void;
+  /** Fait évoluer la carte sélectionnée sur le monstre allié visé */
+  onEvolve: (targetInstanceId: string, paymentIndices?: number[]) => void;
   onPlaySupport: (
     handIndex: number,
     zoneIndex?: number,
@@ -71,6 +76,7 @@ export default function FightBoard({
   onDirectAttack,
   onSummon,
   onSummonZeta,
+  onEvolve,
   onPlaySupport,
   onChangeMode,
   onRecycleSupport,
@@ -107,6 +113,8 @@ export default function FightBoard({
   }, [fx, reduced]);
 
   const [showSummonModal, setShowSummonModal] = useState(false);
+  // Monstre visé par une évolution en attente de paiement
+  const [evolveTargetId, setEvolveTargetId] = useState<string | null>(null);
 
   // ── Support ciblé sur monstre (CardPickModal interne) ────────────────────
   const [targetSupportHandIdx, setTargetSupportHandIdx] = useState<
@@ -192,6 +200,24 @@ export default function FightBoard({
     isZeta && oppZoneChoice?.card === selectedCard ? oppZoneChoice.zone : null;
   const setSelectedOppZone = (zone: number | null) =>
     setOppZoneChoice(zone === null ? null : { card: selectedCard, zone });
+
+  // Monstres alliés sur lesquels la carte sélectionnée peut évoluer maintenant
+  const selectedInstance =
+    selectedCard !== null ? gs.me.hand[selectedCard] : undefined;
+  const evolvableTargets: MonsterOnBoard[] =
+    gs.isMyTurn && phase === "main" && selectedInstance
+      ? gs.me.monsterZones.filter(
+          (m): m is MonsterOnBoard =>
+            !!m &&
+            canEvolveOnto(selectedInstance.baseCard, m) &&
+            canEvolveNow(m),
+        )
+      : [];
+  const evolvableIds = new Set(evolvableTargets.map((m) => m.instanceId));
+  const evolveTarget =
+    evolveTargetId !== null
+      ? gs.me.monsterZones.find((m) => m?.instanceId === evolveTargetId)
+      : undefined;
 
   const monsterNeedsPayment = (card: HandCard): boolean => {
     const cost = card.cost ?? 0;
@@ -281,6 +307,18 @@ export default function FightBoard({
     if (phase === "main") {
       if (selectedCard !== null) {
         if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
+        const occupant = gs.me.monsterZones[idx];
+        if (occupant && evolvableIds.has(occupant.instanceId) && selectedInstance) {
+          const cost = evolutionCost(selectedInstance.baseCard, occupant);
+          if (Math.max(0, cost - gs.me.recycleEnergy) > 0) {
+            onSetPayIndices([]);
+            setEvolveTargetId(occupant.instanceId);
+            setShowSummonModal(true);
+          } else {
+            onEvolve(occupant.instanceId, []);
+          }
+          return;
+        }
         const card = mappedHand[selectedCard];
         const isFreeCard =
           selectedHandCard !== null &&
@@ -351,7 +389,10 @@ export default function FightBoard({
   // Modal confirm : selon contexte, invocation normale ou Zeta adverse
   const handleModalConfirm = () => {
     setShowSummonModal(false);
-    if (isZeta && selectedOppZone !== null) {
+    if (evolveTargetId !== null) {
+      onEvolve(evolveTargetId, payIndices);
+      setEvolveTargetId(null);
+    } else if (isZeta && selectedOppZone !== null) {
       onSummonZeta(selectedOppZone);
       onSetSelectedCard(null);
       setSelectedOppZone(null);
@@ -362,6 +403,7 @@ export default function FightBoard({
 
   const handleModalClose = () => {
     setShowSummonModal(false);
+    setEvolveTargetId(null);
     onSetSelectedZone(null);
     setSelectedOppZone(null);
     onSetPayIndices([]);
@@ -510,6 +552,7 @@ export default function FightBoard({
               !isZeta
             }
             highlightFilled={gs.isMyTurn && phase === "main" && isEquipment}
+            highlightInstanceIds={evolvableIds}
           />
 
           <ZoneRow
@@ -591,6 +634,7 @@ export default function FightBoard({
         }}
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
         playBlockedReason={playBlockedReason}
+        canEvolve={evolvableTargets.length > 0}
       />
 
       {showSummonModal &&
@@ -605,6 +649,11 @@ export default function FightBoard({
             onTogglePay={handleTogglePay}
             onConfirm={handleModalConfirm}
             onClose={handleModalClose}
+            costOverride={
+              evolveTarget && selectedInstance
+                ? evolutionCost(selectedInstance.baseCard, evolveTarget)
+                : undefined
+            }
           />
         )}
 
