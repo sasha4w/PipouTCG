@@ -722,6 +722,12 @@
   letter-spacing: -0.5px;
 }
 
+.zr-badge--hatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
 .zr-badge--counter-urgent {
   background: rgba(231, 76, 60, 0.2);
   color: #c0392b;

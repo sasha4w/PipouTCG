@@ -76,6 +76,40 @@
   border-left-color: #c0392b;
 }
 
+/* ── Statuts actifs (monstre en jeu) ────────────────────────────────────── */
+
+.ces-statuses ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.ces-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #e0cfc8;
+  background: #fff;
+  font-size: 12px;
+}
+
+.ces-status--buff {
+  border-color: #27ae60;
+}
+
+.ces-status--debuff {
+  border-color: #c0392b;
+}
+
+.ces-status-icon {
+  display: inline-flex;
+}
+
 /* ── Glossaire ──────────────────────────────────────────────────────────── */
 
 .ces-glossary {

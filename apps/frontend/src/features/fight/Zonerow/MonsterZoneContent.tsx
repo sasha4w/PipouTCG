@@ -6,6 +6,7 @@ import {
   monsterFaceStats,
 } from "./zoneRow.helpers";
 import InspectableCard from "../InspectableCard";
+import { IconEgg } from "../../../components/Icons";
 import type { MonsterOnBoard } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
 import "./MonsterZoneContent.css";
@@ -77,6 +78,20 @@ export default function MonsterZoneContent({
           title={`S'autodétruit dans ${zone.turnCounter} tour(s)`}
         >
           ⏳{zone.turnCounter}
+        </span>
+      )}
+      {zone.hatchCounter !== undefined && zone.hatchCounter > 0 && (
+        <span
+          className={[
+            "zr-badge zr-badge--counter zr-badge--hatch",
+            zone.hatchCounter <= 1 ? "zr-badge--counter-urgent" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          title={t("effects.status.hatch", { count: zone.hatchCounter })}
+        >
+          <IconEgg size={11} />
+          {zone.hatchCounter}
         </span>
       )}
       {(zone.blockAttackTurns ?? 0) > 0 && (
