@@ -1,5 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { HAND_LIMIT, STARTING_HAND, STARTING_PRIMES } from '@pipou/shared';
+import {
+  DestroyCause,
+  HAND_LIMIT,
+  STARTING_HAND,
+  STARTING_PRIMES,
+} from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
 import { CardInstance, GameState } from '../interfaces/game-state.interface';
 import { PhaseService } from '../services/phase.service';
@@ -135,6 +140,7 @@ export class GameEngine {
           log.push(`💀 ${m.card.baseCard.name} succombe`);
           this.effects.destroyMonster(game, player, m.instanceId, log, {
             draw: true,
+            cause: DestroyCause.HP_DEPLETED,
           });
           died = true;
         }

@@ -109,6 +109,13 @@ export class SummonService {
     });
 
     target.monsterZones[zoneIndex] = instance;
+    game.pendingEvents.push({
+      kind: 'monster_summoned',
+      ownerId: target.userId,
+      zoneIndex,
+      instanceId: instance.instanceId,
+      rarity: monster.baseCard.rarity,
+    });
 
     addLog(
       game,

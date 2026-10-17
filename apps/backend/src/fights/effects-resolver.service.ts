@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EffectTrigger } from '@pipou/shared';
+import { DestroyCause, EffectTrigger } from '@pipou/shared';
 import {
   CardInstance,
   GameState,
@@ -35,30 +35,45 @@ export class EffectsResolverService {
     for (const effect of effects) {
       if (effect.trigger !== trigger) continue;
       if (!checkCondition(effect, effectCtx)) continue;
-      applyActions(effect, card, effectCtx, (host, instanceId) =>
+      applyActions(effect, card, effectCtx, (host, instanceId) => {
+        // Son propre monstre détruit par son propre effet : sacrifice, sans pioche
+        const sacrifice = host.userId === ctx.ownerUserId;
         this.destroyMonster(ctx.game, host, instanceId, ctx.log, {
-          // Sacrifice par son propre effet : pas de pioche
-          draw: host.userId !== ctx.ownerUserId,
-        }),
-      );
+          draw: !sacrifice,
+          cause: sacrifice ? DestroyCause.SACRIFICE : DestroyCause.EFFECT,
+        });
+      });
       changed = true;
     }
     return changed;
   }
 
   /**
-   * Détruit un monstre : ON_DEATH (monstre encore en jeu), puis monstre et
-   * équipements au cimetière de l'hôte, puis pioche de l'hôte si demandée.
+   * Détruit un monstre : événement de destruction, ON_DEATH (monstre encore en
+   * jeu), puis monstre et équipements au cimetière de l'hôte, puis pioche de
+   * l'hôte si demandée.
    */
   destroyMonster(
     game: GameState,
     host: PlayerGameState,
     instanceId: string,
     log: string[],
-    opts: { draw: boolean },
+    opts: { draw: boolean; cause: DestroyCause },
   ): MonsterOnBoard | null {
-    const monster = host.monsterZones.find((m) => m?.instanceId === instanceId);
+    const zoneIndex = host.monsterZones.findIndex(
+      (m) => m?.instanceId === instanceId,
+    );
+    const monster = host.monsterZones[zoneIndex];
     if (!monster) return null;
+
+    // Avant ON_DEATH : les morts en chaîne suivent dans l'ordre
+    game.pendingEvents.push({
+      kind: 'monster_destroyed',
+      ownerId: host.userId,
+      zoneIndex,
+      instanceId,
+      cause: opts.cause,
+    });
 
     this.resolve(monster.card, EffectTrigger.ON_DEATH, {
       game,

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EffectTrigger, HAND_LIMIT } from '@pipou/shared';
+import { DestroyCause, EffectTrigger, HAND_LIMIT } from '@pipou/shared';
 import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
 import {
   addLog,
@@ -197,6 +197,7 @@ export class PhaseService {
         gainPrime(game, player.userId, zone.card.baseCard.name);
         this.effectsResolver.destroyMonster(game, host, zone.instanceId, log, {
           draw: false,
+          cause: DestroyCause.SELF_DESTRUCT,
         });
       }
     }

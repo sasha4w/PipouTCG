@@ -121,7 +121,14 @@ export class SupportService {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Zone de support occupée' };
         }
+        support.placedSeq = ++game.terrainSeq;
         player.supportZones[zoneIndex] = support;
+        game.pendingEvents.push({
+          kind: 'terrain_played',
+          ownerId: player.userId,
+          zoneIndex,
+          instanceId: support.instanceId,
+        });
         addLog(
           game,
           `${player.username} pose ${support.baseCard.name} en zone ${zoneIndex}`,

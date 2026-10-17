@@ -4,7 +4,7 @@ import {
   MonsterOnBoard,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
-import { EffectTrigger } from '@pipou/shared';
+import { DestroyCause, EffectTrigger } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
@@ -93,6 +93,7 @@ export class BattleService {
     const destroy = (host: PlayerGameState, m: MonsterOnBoard) =>
       this.effectsResolver.destroyMonster(game, host, m.instanceId, log, {
         draw: true,
+        cause: DestroyCause.COMBAT,
       });
 
     // ── ON_ATTACK ────────────────────────────────────────────────────────────
