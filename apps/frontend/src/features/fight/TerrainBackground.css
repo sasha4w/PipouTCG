@@ -15,9 +15,11 @@
   opacity: 0.55;
 }
 .tbg--me .tbg__layer {
+  -webkit-mask-image: linear-gradient(to top, #000 55%, transparent);
   mask-image: linear-gradient(to top, #000 55%, transparent);
 }
 .tbg--opponent .tbg__layer {
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
   mask-image: linear-gradient(to bottom, #000 55%, transparent);
 }
 .tbg__layer--fade {

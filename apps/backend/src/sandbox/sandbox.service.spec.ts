@@ -1,6 +1,6 @@
 import type { Repository } from 'typeorm';
 import type { Card } from '../cards/card.entity';
-import type { SandboxDeckEntry, SandboxState } from '@pipou/shared';
+import type { FightEvent, SandboxDeckEntry, SandboxState } from '@pipou/shared';
 import { TurnTimeoutService } from '../fights/services/turn-timeout.service';
 import { createEngine } from '../fights/testing/engine';
 import { monsterCard } from '../fights/testing/cards';
@@ -220,5 +220,22 @@ describe('SandboxService', () => {
 
     expect(last().views.p1.phase).toBe('battle');
     expect(service.get(ADMIN.userId)!.undo.length).toBeGreaterThan(0);
+  });
+
+  it('vide pendingEvents après avoir émis sandbox:state (via resume)', async () => {
+    const { service, server, last } = await inGame();
+    const ev: FightEvent = {
+      kind: 'terrain_played',
+      ownerId: ADMIN.userId,
+      zoneIndex: 0,
+      instanceId: 't1',
+    };
+    const game = service.get(ADMIN.userId)!.game;
+    game.pendingEvents.push(ev);
+
+    service.resume(ADMIN.userId, 'sock-neuf', server);
+
+    expect(last().views.p1.events).toEqual([ev]);
+    expect(game.pendingEvents).toEqual([]);
   });
 });

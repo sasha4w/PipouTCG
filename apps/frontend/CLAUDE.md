@@ -12,7 +12,7 @@ src/
 ├── pages/        pages routées
 ├── components/   composants réutilisables
 ├── hooks/        hooks transverses (toast, SSE, données de jeu)
-├── contexts/     SoundContext, DailyRewardContext
+├── contexts/     SoundContext, AnimationContext, DailyRewardContext
 ├── utils/        querykeys.ts, errors.ts
 └── i18n/         traductions (fr, en, ko)
 ```

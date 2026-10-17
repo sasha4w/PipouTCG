@@ -102,8 +102,6 @@ export default function FightBoard({
       color: RARITY_COLOR[top.rarity],
     }));
     setShaking(true);
-    const t = setTimeout(() => setShaking(false), 400);
-    return () => clearTimeout(t);
   }, [fx, reduced]);
 
   const [showSummonModal, setShowSummonModal] = useState(false);
@@ -404,6 +402,10 @@ export default function FightBoard({
       ]
         .filter(Boolean)
         .join(" ")}
+      onAnimationEnd={(e) => {
+        if (e.target === e.currentTarget && e.animationName === "fb-shake")
+          setShaking(false);
+      }}
     >
       <FightFxLayer flash={flash} />
       <FightHUD

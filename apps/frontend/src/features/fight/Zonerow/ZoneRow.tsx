@@ -82,7 +82,7 @@ export default function ZoneRow({
           const dying = !zone ? dyingZones.get(idx) : undefined;
           const isShattering = !!dying;
           const dyingData = dying?.zone;
-          const summonTier = summoningZones.get(idx);
+          const summonTier = zone ? summoningZones.get(idx) : undefined;
           const isZetaTarget = highlightOpponentEmpty && !zone && !isShattering;
           const rarityColor =
             getRarityBorderColor(zone) ?? getRarityBorderColor(dyingData);

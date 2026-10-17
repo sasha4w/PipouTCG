@@ -80,4 +80,21 @@ describe("ZoneRow animations", () => {
     expect(first).toHaveClass("zr-zone--shattering", "zr-zone--destroy-self-destruct");
     expect(second).toHaveClass("zr-zone--shattering", "zr-zone--destroy-combat");
   });
+
+  it("zone vidée pendant l'invocation : seule la destruction s'affiche", () => {
+    const { container, rerender } = render(<ZoneRow label="M" zones={[null]} />);
+    rerender(
+      <ZoneRow label="M" zones={[monster()]} fx={new Map([[0, { summonTier: 3 }]])} />,
+    );
+    rerender(
+      <ZoneRow
+        label="M"
+        zones={[null]}
+        fx={new Map([[0, { destroyCause: "effect" }]])}
+      />,
+    );
+    expect(zoneEl(container)).toHaveClass("zr-zone--destroy-effect");
+    expect(zoneEl(container)).not.toHaveClass("zr-zone--summon-in");
+    expect(container.querySelector(".zr-summon-beam")).toBeNull();
+  });
 });
