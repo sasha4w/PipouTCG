@@ -82,10 +82,10 @@ export class PhaseService {
   /** Début de tour : compteurs, ON_TURN_START, double attaque différée, pioche. */
   startTurn(game: GameState, player: PlayerGameState): void {
     const log: string[] = [];
-    // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
-    // pas son ON_TURN_START ce même tour.
     // L'immunité au combat dure jusqu'au début du tour de son propriétaire
     for (const m of player.monsterZones) if (m) m.combatImmune = false;
+    // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
+    // pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);
     this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);
     for (const m of player.monsterZones) {

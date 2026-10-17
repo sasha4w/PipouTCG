@@ -349,7 +349,10 @@ function describeAction(
         ),
       })
     : "";
-  const fullText = conditional ? `${text} ${conditional}` : text;
+  const stripped = text.replace(/[.。]$/, "");
+  const fullText = conditional
+    ? `${stripped} ${conditional}${stripped === text ? "" : "."}`
+    : text;
 
   const negative = value < 0 && action.type.startsWith("BUFF");
   return {

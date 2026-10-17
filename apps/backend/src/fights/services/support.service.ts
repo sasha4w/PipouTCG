@@ -9,7 +9,7 @@ import {
   SupportType,
   EffectTrigger,
   ephemeralTargetSide,
-  isTargetableByEnemyEffects,
+  isTargetableByEphemeral,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
 import { canResolveAction } from '../effects/effect-resolvability';
@@ -57,13 +57,19 @@ export class SupportService {
             ? player.monsterZones
             : getOpponentState(game, userId).monsterZones
         ).filter((m): m is MonsterOnBoard => m !== null);
-        const targetable =
-          side === 'ally' ? pool : pool.filter(isTargetableByEnemyEffects);
+        const targetable = pool.filter((m) =>
+          isTargetableByEphemeral(m, side, card.baseCard.effects),
+        );
         if (targetable.length === 0)
           return { error: 'Aucune cible valide pour cette carte' };
         const chosen = pool.find((m) => m.instanceId === targetInstanceId);
         if (chosen && !targetable.includes(chosen))
-          return { error: 'Ce monstre est insensible aux effets adverses' };
+          return {
+            error:
+              side === 'enemy' && chosen.isImmuneToDebuffs
+                ? 'Ce monstre est insensible aux effets adverses'
+                : 'Ce monstre ne peut pas être détruit par une carte Support',
+          };
         targetMonster = chosen;
         if (!targetMonster)
           return {

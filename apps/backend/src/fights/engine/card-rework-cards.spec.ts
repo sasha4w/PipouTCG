@@ -178,4 +178,126 @@ describe('cartes retravaillées', () => {
     expect(monsterNamed(game, 'p1', 'Gauche').atkBuff).toBe(100);
     expect(monsterNamed(game, 'p1', 'Droite').atkBuff).toBe(100);
   });
+
+  describe('Maître Magouille', () => {
+    const magouilleSeule = (hand: ReturnType<typeof realCard>[]) =>
+      scenario({
+        p1: { hand, monsters: [realCard('Noyau Beta')] },
+        p2: {
+          monsters: [
+            {
+              card: realCard('Maître Magouille'),
+              patch: {
+                perm: {
+                  atk: 0,
+                  hp: 0,
+                  taunt: false,
+                  piercing: false,
+                  debuffImmune: true,
+                  attacksPerTurn: 1,
+                },
+                isImmuneToDebuffs: true,
+              },
+            },
+          ],
+        },
+      });
+
+    it.each([
+      'Force Delta',
+      'Rootkit de Transmission',
+      'Protocole de Gel .frz',
+      'Verrou de Position .lock',
+    ])('%s ne peut pas le cibler', (name) => {
+      const game = magouilleSeule([realCard(name)]);
+      const res = engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p2', 'Maître Magouille')
+          .instanceId,
+      });
+      expect(res.error).toBe('Aucune cible valide pour cette carte');
+      expect(handNames(game, 'p1')).toEqual([name]);
+    });
+
+    it('Module Bluetooth .v2 sur Beta ne touche pas Magouille', () => {
+      const game = magouilleSeule([realCard('Module Bluetooth .v2')]);
+      const hp = monsterNamed(game, 'p2', 'Maître Magouille').currentHp;
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Noyau Beta').instanceId,
+      });
+      expect(monsterNamed(game, 'p2', 'Maître Magouille').currentHp).toBe(hp);
+    });
+  });
+
+  describe('Éphémères destructeurs vs bouclier Support', () => {
+    it('Recyclage .bat ne peut pas viser son propre Beta protégé', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Recyclage .bat')],
+          deck: [monsterCard('Pioche')],
+          monsters: [
+            {
+              card: realCard('Noyau Beta'),
+              patch: { supportDestroyImmune: true },
+            },
+          ],
+        },
+      });
+      const res = engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Noyau Beta').instanceId,
+      });
+      expect(res.error).toBe('Aucune cible valide pour cette carte');
+      expect(handNames(game, 'p1')).toEqual(['Recyclage .bat']);
+    });
+
+    it('Recyclage .bat sur Beta protégé avec un autre allié : erreur dédiée', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Recyclage .bat')],
+          deck: [monsterCard('Pioche')],
+          monsters: [
+            {
+              card: realCard('Noyau Beta'),
+              patch: { supportDestroyImmune: true },
+            },
+            monsterCard('Autre'),
+          ],
+        },
+      });
+      const res = engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Noyau Beta').instanceId,
+      });
+      expect(res.error).toBe(
+        'Ce monstre ne peut pas être détruit par une carte Support',
+      );
+      expect(handNames(game, 'p1')).toEqual(['Recyclage .bat']);
+    });
+
+    it('Force Delta ne peut pas viser un Beta ennemi protégé', () => {
+      const game = scenario({
+        p1: { hand: [realCard('Force Delta')] },
+        p2: {
+          monsters: [
+            {
+              card: realCard('Noyau Beta'),
+              patch: { supportDestroyImmune: true },
+            },
+          ],
+        },
+      });
+      const res = engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p2', 'Noyau Beta').instanceId,
+      });
+      expect(res.error).toBe('Aucune cible valide pour cette carte');
+    });
+  });
 });

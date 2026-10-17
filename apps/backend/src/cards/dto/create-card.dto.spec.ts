@@ -110,4 +110,14 @@ describe('CreateCardDto — effets', () => {
     ]);
     expect(errors).not.toEqual([]);
   });
+
+  it('refuse un valueIf sans condition', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [{ type: 'DRAW', target: 'PLAYER', valueIf: { value: 3 } }],
+      },
+    ]);
+    expect(errors).not.toEqual([]);
+  });
 });

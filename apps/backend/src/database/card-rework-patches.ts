@@ -368,7 +368,7 @@ export const CARD_REWORK_PATCHES: CardReworkPatch[] = [
     after: {
       name: 'Module Bluetooth .v2',
       description:
-        'Sur Alpha : attaque 2 fois par tour. Sur Beta : à l’équipement, inflige 600 dégâts à tous les monstres adverses. Sur Delta : +600 ATK.',
+        "Sur Alpha : attaque 2 fois par tour. Sur Beta : à l'équipement, inflige 600 dégâts à tous les monstres adverses. Sur Delta : +600 ATK.",
       effects: [
         {
           actions: [{ type: 'SET_ATTACKS_PER_TURN', value: 2, target: 'SELF' }],
@@ -414,7 +414,7 @@ export const CARD_REWORK_PATCHES: CardReworkPatch[] = [
     after: {
       name: 'Firewall de Surcharge .sys',
       description:
-        'Sur Alpha : à l’équipement, insensible aux dégâts de combat jusqu’à votre prochain tour. Sur Beta : ne peut pas être détruit par une carte Support. Sur Delta : ignore la Provocation.',
+        "Sur Alpha : à l'équipement, insensible aux dégâts de combat jusqu'à votre prochain tour. Sur Beta : ne peut pas être détruit par une carte Support. Sur Delta : ignore la Provocation.",
       effects: [
         {
           actions: [{ type: 'SET_COMBAT_IMMUNITY', target: 'SELF' }],

@@ -3,6 +3,7 @@ import {
   IsNumber,
   IsNotEmpty,
   IsEnum,
+  IsDefined,
   IsOptional,
   IsArray,
   ValidateNested,
@@ -53,6 +54,7 @@ export class EffectConditionDto implements EffectCondition {
 }
 
 export class EffectValueIfDto implements EffectValueIf {
+  @IsDefined()
   @ValidateNested()
   @Type(() => EffectConditionDto)
   condition!: EffectConditionDto;

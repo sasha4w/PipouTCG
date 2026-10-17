@@ -177,6 +177,8 @@ describe('mécaniques du retravail des cartes', () => {
       engine.dispatch(game, 'p1', { type: 'end_phase' });
       attackWith(engine, game, 'p1', 'Mur', 'Ogre');
       expect(monsterNamed(game, 'p1', 'Mur').currentHp).toBe(500);
+      // Seul le monstre immunisé est épargné : l'Ogre encaisse l'ATK de Mur
+      expect(monsterNamed(game, 'p2', 'Ogre').currentHp).toBe(2900);
 
       passTurn(engine, game);
       engine.dispatch(game, 'p2', { type: 'end_phase' });
@@ -212,13 +214,15 @@ describe('mécaniques du retravail des cartes', () => {
       engine.settle(game); // recalcul des passifs
       expect(monsterNamed(game, 'p2', 'Beta').supportDestroyImmune).toBe(true);
 
-      engine.dispatch(game, 'p1', {
+      const res = engine.dispatch(game, 'p1', {
         type: 'play_support',
         handIndex: 0,
         targetInstanceId: monsterNamed(game, 'p2', 'Beta').instanceId,
       });
+      // Seul monstre adverse protégé : la carte ne peut pas être jouée
+      expect(res.error).toBe('Aucune cible valide pour cette carte');
       expect(monsterNamed(game, 'p2', 'Beta')).toBeDefined();
-      expect(graveyardNames(game, 'p1')).toEqual(['Destruction']);
+      expect(graveyardNames(game, 'p1')).toEqual([]);
     });
 
     it('des dégâts mortels venant d’un Support le détruisent', () => {

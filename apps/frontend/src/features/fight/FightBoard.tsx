@@ -25,7 +25,8 @@ import {
   HAND_LIMIT,
   canSummonOnEnemySide,
   ephemeralTargetSide,
-  isTargetableByEnemyEffects,
+  isTargetableByEphemeral,
+  type CardEffect,
   type CombatMode,
 } from "@pipou/shared";
 
@@ -198,22 +199,27 @@ export default function FightBoard({
     return Math.max(0, cost - gs.me.recycleEnergy) > 0;
   };
 
-  /** Monstres qu'un Éphémère peut viser dans ce camp (immunisés exclus côté adverse). */
-  const targetableZones = (side: "ally" | "enemy"): MonsterOnBoard[] =>
-    side === "ally"
-      ? gs.me.monsterZones.filter((z): z is MonsterOnBoard => z !== null)
-      : gs.opponent.monsterZones.filter(
-          (z): z is MonsterOnBoard =>
-            z !== null && isTargetableByEnemyEffects(z),
-        );
+  /** Monstres qu'un Éphémère peut viser dans ce camp (immunisés exclus). */
+  const targetableZones = (
+    side: "ally" | "enemy",
+    effects: CardEffect[] | null | undefined,
+  ): MonsterOnBoard[] =>
+    (side === "ally" ? gs.me.monsterZones : gs.opponent.monsterZones).filter(
+      (z): z is MonsterOnBoard =>
+        z !== null && isTargetableByEphemeral(z, side, effects),
+    );
 
   /** Ouvre le CardPickModal pour choisir la cible d'un support éphémère */
   const openTargetPick = (
     handIdx: number,
     cardName: string,
     targetSide: "ally" | "enemy",
+    effects: CardEffect[] | null | undefined,
   ) => {
-    const candidates: ClientChoiceCandidate[] = targetableZones(targetSide)
+    const candidates: ClientChoiceCandidate[] = targetableZones(
+      targetSide,
+      effects,
+    )
       .map((z) => ({
         instanceId: z.instanceId,
         baseCard: {
@@ -390,7 +396,10 @@ export default function FightBoard({
       : null;
   const playBlockedReason =
     selectedTargetSide !== null &&
-    targetableZones(selectedTargetSide).length === 0
+    targetableZones(
+      selectedTargetSide,
+      gs.me.hand[selectedCard ?? 0]?.baseCard.effects,
+    ).length === 0
       ? "Aucune cible valide"
       : undefined;
 
@@ -560,7 +569,12 @@ export default function FightBoard({
           const instance = gs.me.hand[handIdx];
           const side = ephemeralTargetSide(instance?.baseCard.effects);
           if (instance && side) {
-            openTargetPick(handIdx, instance.baseCard.name, side);
+            openTargetPick(
+              handIdx,
+              instance.baseCard.name,
+              side,
+              instance.baseCard.effects,
+            );
             return;
           }
           onPlaySupport(handIdx);

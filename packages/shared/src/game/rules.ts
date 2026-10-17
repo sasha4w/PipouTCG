@@ -52,3 +52,35 @@ export function isTargetableByEnemyEffects(monster: {
 }): boolean {
   return !monster.isImmuneToDebuffs;
 }
+
+/**
+ * L'Éphémère détruit-il le monstre qu'on lui désigne ? (DESTROY_MONSTER sur
+ * ENEMY_MONSTER / ALLY_MONSTER / TARGET_ALLY dans ses actions ON_PLAY.)
+ */
+export function ephemeralDestroysChosenTarget(
+  effects: readonly CardEffect[] | null | undefined,
+): boolean {
+  return (effects ?? []).some(
+    (e) =>
+      e.trigger === EffectTrigger.ON_PLAY &&
+      e.actions.some(
+        (a) =>
+          a.type === ActionType.DESTROY_MONSTER &&
+          (a.target === EffectTarget.ENEMY_MONSTER ||
+            a.target === EffectTarget.ALLY_MONSTER ||
+            a.target === EffectTarget.TARGET_ALLY),
+      ),
+  );
+}
+
+/** Un Éphémère aux effets donnés peut-il choisir ce monstre ? */
+export function isTargetableByEphemeral(
+  monster: { isImmuneToDebuffs: boolean; supportDestroyImmune?: boolean },
+  side: "ally" | "enemy",
+  effects: readonly CardEffect[] | null | undefined,
+): boolean {
+  if (side === "enemy" && !isTargetableByEnemyEffects(monster)) return false;
+  if (ephemeralDestroysChosenTarget(effects) && monster.supportDestroyImmune)
+    return false;
+  return true;
+}

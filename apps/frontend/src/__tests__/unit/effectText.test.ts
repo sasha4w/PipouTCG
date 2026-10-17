@@ -67,7 +67,7 @@ describe("describeCardEffects (fr)", () => {
       t,
     );
     expect(text.rules[0].lines[0].text).toBe(
-      "Tu récupères jusqu'à 2 cartes de ton cimetière. (3 si une carte dont le nom contient « Capitaine » est sur ton terrain)",
+      "Tu récupères jusqu'à 2 cartes de ton cimetière (3 si une carte dont le nom contient « Capitaine » est sur ton terrain).",
     );
   });
 
