@@ -22,44 +22,6 @@
 }
 
 /* ── Header : nom + coût ── */
-.card-face__element {
-  position: absolute;
-  top: 50%;
-  left: 4%;
-  transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  color: #fff;
-}
-.card-face--xs .card-face__element {
-  left: 3px;
-  width: 12px;
-  height: 12px;
-}
-/* Réserve la place de la pastille : le nom ne passe jamais dessous */
-.card-face__header:has(.card-face__element) {
-  padding-left: 18%;
-}
-.card-face--xs .card-face__header:has(.card-face__element) {
-  padding-left: 16px;
-}
-.card-face__element--earth {
-  background: #8d6e4a;
-}
-.card-face__element--fire {
-  background: #d9482b;
-}
-.card-face__element--wind {
-  background: #4fa3a5;
-}
-.card-face__element--water {
-  background: #3a78c9;
-}
-
 .card-face__header {
   position: relative;
   padding: 6% 18% 4% 6%;

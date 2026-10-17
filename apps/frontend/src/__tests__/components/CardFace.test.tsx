@@ -103,21 +103,18 @@ describe("CardFace", () => {
     expect(screen.getByText("🛡").closest(".card-face__badges")).not.toBeNull();
   });
 
-  it("affiche la pastille d'élément d'un Drakon", () => {
-    render(
-      <CardFace
-        card={{
-          id: 1,
-          name: "Bébé Feros",
-          rarity: "uncommon",
-          type: "monster",
-          atk: 400,
-          hp: 400,
-          element: "fire",
-        }}
-        size="md"
-      />,
-    );
-    expect(screen.getByRole("img", { name: /feu|fire/i })).toBeInTheDocument();
+  it("n'affiche pas l'élément d'un Drakon sur la carte", () => {
+    // Carte de la main : elle porte son élément, la face ne l'affiche pas
+    const bebeFeros = {
+      id: 1,
+      name: "Bébé Feros",
+      rarity: "uncommon" as const,
+      type: "monster" as const,
+      atk: 400,
+      hp: 400,
+      element: "fire" as const,
+    };
+    const { container } = render(<CardFace card={bebeFeros} size="md" />);
+    expect(container.querySelector("[role='img'], svg")).toBeNull();
   });
 });
