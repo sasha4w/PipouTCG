@@ -10,11 +10,17 @@ import { resolveTargets } from './effect-targets.resolver';
 import { drawCard, queueChoice } from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
 
+export type DestroyKind = 'destroy' | 'damage';
+
 export function applyActions(
   effect: CardEffect,
   card: CardInstance,
   ctx: EffectContext,
-  destroy: (host: PlayerGameState, instanceId: string) => void,
+  destroy: (
+    host: PlayerGameState,
+    instanceId: string,
+    kind: DestroyKind,
+  ) => void,
 ): void {
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
@@ -33,7 +39,11 @@ export function applyActions(
             `✨ ${card.baseCard.name} inflige ${dmg} à ${target.card.baseCard.name}`,
           );
           if (target.currentHp <= 0) {
-            destroy(targets.ownerOfMonster(target), target.instanceId);
+            destroy(
+              targets.ownerOfMonster(target),
+              target.instanceId,
+              'damage',
+            );
           }
         }
         break;
@@ -90,7 +100,7 @@ export function applyActions(
 
       case ActionType.DESTROY_MONSTER:
         for (const target of targets.monsters)
-          destroy(targets.ownerOfMonster(target), target.instanceId);
+          destroy(targets.ownerOfMonster(target), target.instanceId, 'destroy');
         break;
 
       case ActionType.RETURN_TO_HAND:
@@ -178,6 +188,15 @@ export function applyActions(
 
       case ActionType.CANNOT_ATTACK_ON_SUMMON_TURN:
         for (const m of targets.monsters) m.cannotAttackOnSummonTurn = true;
+        break;
+
+      case ActionType.SET_COMBAT_IMMUNITY:
+        for (const m of targets.monsters) {
+          m.combatImmune = true;
+          ctx.log.push(
+            `🌀 ${m.card.baseCard.name} est insensible aux dégâts de combat jusqu'à son prochain tour`,
+          );
+        }
         break;
 
       case ActionType.SET_DAMAGE_REDUCTION:

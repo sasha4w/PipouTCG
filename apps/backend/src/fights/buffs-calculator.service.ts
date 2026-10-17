@@ -53,6 +53,8 @@ export class BuffsCalculatorService {
       m.isImmuneToDebuffs = m.perm.debuffImmune;
       m.damageReduction = m.perm.damageReduction;
       m.attacksPerTurn = m.perm.attacksPerTurn;
+      m.supportDestroyImmune = false;
+      m.ignoresTaunt = false;
     }
 
     // 2. Terrains : uniquement les monstres de leur propriétaire
@@ -182,6 +184,12 @@ function applyPassive(m: MonsterOnBoard, action: EffectAction): void {
       break;
     case ActionType.SET_TAUNT:
       m.hasTaunt = true;
+      break;
+    case ActionType.SET_SUPPORT_DESTROY_IMMUNITY:
+      m.supportDestroyImmune = true;
+      break;
+    case ActionType.IGNORE_TAUNT:
+      m.ignoresTaunt = true;
       break;
     case ActionType.SET_PIERCING:
       m.hasPiercing = true;

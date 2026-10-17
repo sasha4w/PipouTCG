@@ -17,6 +17,16 @@ import {
   drawCard,
 } from '../helpers/game-state.helper';
 
+/** Dégâts de combat : rien sur un monstre insensible au combat. */
+function combatDamage(
+  target: MonsterOnBoard,
+  dmg: number,
+  opts: { ignoreReduction?: boolean },
+): void {
+  if (target.combatImmune) return;
+  applyDamage(target, dmg, opts);
+}
+
 @Injectable()
 export class BattleService {
   constructor(private effectsResolver: EffectsResolverService) {}
@@ -71,6 +81,7 @@ export class BattleService {
     } else {
       const tauntMonsters = opponent.monsterZones.filter((m) => m?.hasTaunt);
       if (
+        !attacker.ignoresTaunt &&
         tauntMonsters.length > 0 &&
         !tauntMonsters.find((m) => m?.instanceId === targetInstanceId)
       )
@@ -152,8 +163,10 @@ export class BattleService {
     const targetAtk = effectiveAtk(target);
 
     if (target.mode === 'attack') {
-      applyDamage(attacker, targetAtk, { ignoreReduction: target.hasPiercing });
-      applyDamage(target, attackerAtk, {
+      combatDamage(attacker, targetAtk, {
+        ignoreReduction: target.hasPiercing,
+      });
+      combatDamage(target, attackerAtk, {
         ignoreReduction: attacker.hasPiercing,
       });
 
@@ -191,7 +204,7 @@ export class BattleService {
       }
     } else {
       // ATK contre Garde : pas de riposte
-      applyDamage(target, attackerAtk, {
+      combatDamage(target, attackerAtk, {
         ignoreReduction: attacker.hasPiercing,
       });
 

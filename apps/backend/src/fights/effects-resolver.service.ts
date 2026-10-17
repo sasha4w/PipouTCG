@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DestroyCause, EffectTrigger } from '@pipou/shared';
+import { CardType, DestroyCause, EffectTrigger } from '@pipou/shared';
 import {
   CardInstance,
   GameState,
@@ -35,7 +35,20 @@ export class EffectsResolverService {
     for (const effect of effects) {
       if (effect.trigger !== trigger) continue;
       if (!checkCondition(effect, effectCtx)) continue;
-      applyActions(effect, card, effectCtx, (host, instanceId) => {
+      applyActions(effect, card, effectCtx, (host, instanceId, kind) => {
+        const target = host.monsterZones.find(
+          (m) => m?.instanceId === instanceId,
+        );
+        if (
+          kind === 'destroy' &&
+          card.baseCard.type === CardType.SUPPORT &&
+          target?.supportDestroyImmune
+        ) {
+          ctx.log.push(
+            `🧱 ${target.card.baseCard.name} résiste à la destruction`,
+          );
+          return;
+        }
         // Son propre monstre détruit par son propre effet : sacrifice, sans pioche
         const sacrifice = host.userId === ctx.ownerUserId;
         this.destroyMonster(ctx.game, host, instanceId, ctx.log, {
