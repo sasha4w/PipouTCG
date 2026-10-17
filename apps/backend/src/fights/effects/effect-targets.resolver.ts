@@ -1,4 +1,4 @@
-import { EffectTarget } from '@pipou/shared';
+import { EffectTarget, isTargetableByEnemyEffects } from '@pipou/shared';
 import {
   PlayerGameState,
   MonsterOnBoard,
@@ -27,8 +27,9 @@ export function resolveTargets(
   const allies = owner.monsterZones.filter(
     (m): m is MonsterOnBoard => m !== null,
   );
+  // Les monstres insensibles aux effets adverses ne sont jamais visés
   const enemies = opponent.monsterZones.filter(
-    (m): m is MonsterOnBoard => m !== null,
+    (m): m is MonsterOnBoard => m !== null && isTargetableByEnemyEffects(m),
   );
 
   const map = new Map<string, PlayerGameState>();

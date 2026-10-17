@@ -9,6 +9,7 @@ import {
   SupportType,
   EffectTrigger,
   ephemeralTargetSide,
+  isTargetableByEnemyEffects,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
 import { canResolveAction } from '../effects/effect-resolvability';
@@ -51,14 +52,19 @@ export class SupportService {
 
       const side = ephemeralTargetSide(card.baseCard.effects);
       if (side) {
-        const pool =
+        const pool = (
           side === 'ally'
             ? player.monsterZones
-            : getOpponentState(game, userId).monsterZones;
-        if (!pool.some((m) => m !== null))
+            : getOpponentState(game, userId).monsterZones
+        ).filter((m): m is MonsterOnBoard => m !== null);
+        const targetable =
+          side === 'ally' ? pool : pool.filter(isTargetableByEnemyEffects);
+        if (targetable.length === 0)
           return { error: 'Aucune cible valide pour cette carte' };
-        targetMonster =
-          pool.find((m) => m?.instanceId === targetInstanceId) ?? undefined;
+        const chosen = pool.find((m) => m.instanceId === targetInstanceId);
+        if (chosen && !targetable.includes(chosen))
+          return { error: 'Ce monstre est insensible aux effets adverses' };
+        targetMonster = chosen;
         if (!targetMonster)
           return {
             error:
