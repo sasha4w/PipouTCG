@@ -71,7 +71,9 @@ Résolution :
 - conservés : `equipments`, `mode` ; PV = PV max du nouveau stade ; `perm` remis à zéro ; drapeaux temporaires
   effacés (gel, verrou, forçage, compteurs) ;
 - l'attaque : `attacksUsedThisTurn` et `hasAttackedThisTurn` sont **reportés** (pas de double attaque par
-  évolution) ; `summonedThisTurn` = valeur de la cible (une évolution ne rend pas « fraîchement invoqué ») ;
+  évolution) ; `summonedThisTurn` = **vrai** : le monstre évolué compte comme posé ce tour, il ne peut donc pas
+  réévoluer avant ton prochain tour (du Bébé à l'Adulte : au moins 2 tours, sauf accélérateur). Cela ne l'empêche pas
+  d'attaquer (seul `cannotAttackOnSummonTurn` bloque l'attaque le tour de pose) ;
 - l'effet `ON_SUMMON` du nouveau stade se déclenche, puis `ON_ALLY_SUMMON` comme une invocation ;
 - événement `monster_summoned` (animation par rareté) ; journal « X évolue en Y ».
 
