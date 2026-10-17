@@ -338,7 +338,13 @@ describe('mécaniques Drakon', () => {
           act(ActionType.ALLOW_EVOLUTION_THIS_TURN, EffectTarget.TARGET_ALLY),
         ]),
       ]);
-      const g2 = scenario({ p1: { hand: [accel], monsters: [bebe()] } });
+      // Posé ce tour : l'effet lui sert (sinon la cible serait refusée)
+      const g2 = scenario({
+        p1: {
+          hand: [accel],
+          monsters: [{ card: bebe(), summonedThisTurn: true }],
+        },
+      });
       const id = monsterNamed(g2, 'p1', 'Bébé Feros').instanceId;
       engine.dispatch(g2, 'p1', {
         type: 'play_support',

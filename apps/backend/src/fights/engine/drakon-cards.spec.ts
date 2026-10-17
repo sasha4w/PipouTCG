@@ -103,4 +103,56 @@ describe('cartes Drakon', () => {
       }),
     ).toEqual({});
   });
+  describe('Incubation Rapide : seulement les cibles qui en profitent', () => {
+    const play = (game: ReturnType<typeof scenario>, target: string) =>
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', target).instanceId,
+      });
+
+    it('un Bébé posé ce tour peut évoluer grâce à elle', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Incubation Rapide')],
+          monsters: [{ card: realCard('Bébé Feros'), summonedThisTurn: true }],
+          recycleEnergy: 3,
+        },
+      });
+      expect(play(game, 'Bébé Feros')).toEqual({});
+      expect(monsterNamed(game, 'p1', 'Bébé Feros').canEvolveThisTurn).toBe(
+        true,
+      );
+    });
+
+    it('un Drakon qui peut déjà évoluer est refusé', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Incubation Rapide')],
+          monsters: [
+            realCard('Bébé Feros'),
+            { card: realCard('Bébé Teros'), summonedThisTurn: true },
+          ],
+          recycleEnergy: 3,
+        },
+      });
+      expect(play(game, 'Bébé Feros').error).toBe(
+        "Cette carte n'aurait aucun effet sur ce monstre",
+      );
+      expect(game.player1.hand).toHaveLength(1);
+    });
+
+    it('sans Œuf ni Drakon en attente : injouable', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Incubation Rapide')],
+          monsters: [realCard('Bébé Feros'), monsterCard('Pipou')],
+          recycleEnergy: 3,
+        },
+      });
+      expect(play(game, 'Pipou').error).toBe(
+        'Aucune cible valide pour cette carte',
+      );
+    });
+  });
 });

@@ -8,6 +8,7 @@ import {
   CardType,
   SupportType,
   EffectTrigger,
+  ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
   isTargetableByEphemeral,
 } from '@pipou/shared';
@@ -68,7 +69,10 @@ export class SupportService {
             error:
               side === 'enemy' && chosen.isImmuneToDebuffs
                 ? 'Ce monstre est insensible aux effets adverses'
-                : 'Ce monstre ne peut pas être détruit par une carte Support',
+                : ephemeralDestroysChosenTarget(card.baseCard.effects) &&
+                    chosen.supportDestroyImmune
+                  ? 'Ce monstre ne peut pas être détruit par une carte Support'
+                  : "Cette carte n'aurait aucun effet sur ce monstre",
           };
         targetMonster = chosen;
         if (!targetMonster)

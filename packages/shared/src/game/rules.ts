@@ -74,16 +74,55 @@ export function ephemeralDestroysChosenTarget(
   );
 }
 
+interface EphemeralTarget {
+  isImmuneToDebuffs: boolean;
+  supportDestroyImmune?: boolean;
+  hatchCounter?: number;
+  summonedThisTurn?: boolean;
+  instantEvolution?: boolean;
+  canEvolveThisTurn?: boolean;
+  card?: { baseCard: { stage?: DrakonStage | null } };
+}
+
+const CHOSEN_TARGETS = new Set<string>([
+  EffectTarget.ENEMY_MONSTER,
+  EffectTarget.ALLY_MONSTER,
+  EffectTarget.TARGET_ALLY,
+]);
+
+/** L'action changerait-elle quelque chose pour ce monstre ? */
+function actionBenefits(type: ActionType, monster: EphemeralTarget): boolean {
+  switch (type) {
+    case ActionType.ADVANCE_HATCH:
+      return monster.hatchCounter !== undefined;
+    case ActionType.ALLOW_EVOLUTION_THIS_TURN:
+      return (
+        !!monster.card?.baseCard.stage &&
+        !canEvolveNow({ ...monster, summonedThisTurn: !!monster.summonedThisTurn })
+      );
+    default:
+      return true;
+  }
+}
+
 /** Un Éphémère aux effets donnés peut-il choisir ce monstre ? */
 export function isTargetableByEphemeral(
-  monster: { isImmuneToDebuffs: boolean; supportDestroyImmune?: boolean },
+  monster: EphemeralTarget,
   side: "ally" | "enemy",
   effects: readonly CardEffect[] | null | undefined,
 ): boolean {
   if (side === "enemy" && !isTargetableByEnemyEffects(monster)) return false;
   if (ephemeralDestroysChosenTarget(effects) && monster.supportDestroyImmune)
     return false;
-  return true;
+  // Au moins une action sur la cible choisie doit lui servir à quelque chose
+  const chosenActions = (effects ?? [])
+    .filter((e) => e.trigger === EffectTrigger.ON_PLAY)
+    .flatMap((e) => e.actions)
+    .filter((a) => CHOSEN_TARGETS.has(a.target));
+  return (
+    chosenActions.length === 0 ||
+    chosenActions.some((a) => actionBenefits(a.type, monster))
+  );
 }
 
 const NEXT_STAGE: Partial<Record<DrakonStage, DrakonStage>> = {

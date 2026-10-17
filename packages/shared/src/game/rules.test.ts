@@ -151,3 +151,51 @@ describe("invocation depuis la main", () => {
     expect(canSummonFromHand({ stage: null })).toBe(true);
   });
 });
+
+describe("isTargetableByEphemeral — cibles qui profitent de l'effet", () => {
+  // Incubation Rapide : avance l'éclosion ou autorise l'évolution ce tour
+  const incubation: CardEffect[] = [
+    {
+      trigger: "ON_PLAY",
+      actions: [
+        { type: "ADVANCE_HATCH", target: "TARGET_ALLY", value: 2 },
+        { type: "ALLOW_EVOLUTION_THIS_TURN", target: "TARGET_ALLY" },
+      ],
+    },
+  ];
+  const drakon = (
+    stage: "egg" | "baby" | "young" | null,
+    flags: { summonedThisTurn?: boolean; hatchCounter?: number; instantEvolution?: boolean } = {},
+  ) => ({
+    isImmuneToDebuffs: false,
+    summonedThisTurn: false,
+    card: { baseCard: { stage } },
+    ...flags,
+  });
+
+  it("un Œuf qui éclot est une cible", () => {
+    expect(isTargetableByEphemeral(drakon("egg", { hatchCounter: 2 }), "ally", incubation)).toBe(true);
+  });
+
+  it("un Drakon posé ce tour est une cible (il ne pouvait pas évoluer)", () => {
+    expect(isTargetableByEphemeral(drakon("baby", { summonedThisTurn: true }), "ally", incubation)).toBe(true);
+  });
+
+  it("un Drakon qui peut déjà évoluer n'est pas une cible", () => {
+    expect(isTargetableByEphemeral(drakon("baby"), "ally", incubation)).toBe(false);
+    expect(
+      isTargetableByEphemeral(drakon("baby", { summonedThisTurn: true, instantEvolution: true }), "ally", incubation),
+    ).toBe(false);
+  });
+
+  it("un monstre qui n'est pas un Drakon n'est pas une cible", () => {
+    expect(isTargetableByEphemeral(drakon(null, { summonedThisTurn: true }), "ally", incubation)).toBe(false);
+  });
+
+  it("les autres Éphémères ciblés ne sont pas concernés", () => {
+    const soin: CardEffect[] = [
+      { trigger: "ON_PLAY", actions: [{ type: "HEAL", target: "TARGET_ALLY", value: 600 }] },
+    ];
+    expect(isTargetableByEphemeral(drakon(null), "ally", soin)).toBe(true);
+  });
+});
