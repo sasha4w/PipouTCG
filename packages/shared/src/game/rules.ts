@@ -45,3 +45,10 @@ export function canSummonOnEnemySide(
       e.actions.some((a) => a.type === ActionType.SUMMONABLE_ON_ENEMY_SIDE),
   );
 }
+
+/** Un effet adverse peut-il viser ce monstre ? (Maître Magouille : non.) */
+export function isTargetableByEnemyEffects(monster: {
+  isImmuneToDebuffs: boolean;
+}): boolean {
+  return !monster.isImmuneToDebuffs;
+}

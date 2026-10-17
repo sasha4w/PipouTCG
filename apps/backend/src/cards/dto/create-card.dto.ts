@@ -37,6 +37,7 @@ import type {
   CreateCardRequest,
   EffectAction,
   EffectCondition,
+  EffectValueIf,
 } from '@pipou/shared';
 
 export class EffectConditionDto implements EffectCondition {
@@ -49,6 +50,15 @@ export class EffectConditionDto implements EffectCondition {
   @IsOptional()
   @IsIn(['exact', 'contains'])
   match?: CardNameMatch;
+}
+
+export class EffectValueIfDto implements EffectValueIf {
+  @ValidateNested()
+  @Type(() => EffectConditionDto)
+  condition!: EffectConditionDto;
+
+  @IsNumber()
+  value!: number;
 }
 
 export class EffectFilterDto implements EffectFilter {
@@ -106,6 +116,11 @@ export class EffectActionDto implements EffectAction {
   @ValidateNested()
   @Type(() => EffectFilterDto)
   filter?: EffectFilterDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => EffectValueIfDto)
+  valueIf?: EffectValueIfDto;
 }
 
 export class CardEffectDto implements CardEffect {

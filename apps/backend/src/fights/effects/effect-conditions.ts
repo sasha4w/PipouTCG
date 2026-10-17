@@ -3,6 +3,7 @@ import {
   EffectConditionType as ConditionType,
   SupportType,
 } from '@pipou/shared';
+import type { EffectAction, EffectCondition } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 import { cardNameMatches } from './card-name';
 
@@ -11,7 +12,14 @@ export function checkCondition(
   effect: CardEffect,
   ctx: EffectContext,
 ): boolean {
-  const condition = effect.condition;
+  return conditionMet(effect.condition, ctx);
+}
+
+/** Vrai si la condition est remplie (ou absente). */
+export function conditionMet(
+  condition: EffectCondition | null | undefined,
+  ctx: EffectContext,
+): boolean {
   if (!condition) return true;
 
   const owner =
@@ -67,4 +75,14 @@ export function checkCondition(
     default:
       return false;
   }
+}
+
+/** L'action avec sa valeur conditionnelle appliquée si la condition est remplie. */
+export function withConditionalValue(
+  action: EffectAction,
+  ctx: EffectContext,
+): EffectAction {
+  return action.valueIf && conditionMet(action.valueIf.condition, ctx)
+    ? { ...action, value: action.valueIf.value }
+    : action;
 }

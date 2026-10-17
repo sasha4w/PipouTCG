@@ -5,6 +5,7 @@ import {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { EffectContext } from './effect-context.interface';
+import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
 import { drawCard, queueChoice } from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
@@ -15,7 +16,8 @@ export function applyActions(
   ctx: EffectContext,
   destroy: (host: PlayerGameState, instanceId: string) => void,
 ): void {
-  for (const action of effect.actions) {
+  for (const rawAction of effect.actions) {
+    const action = withConditionalValue(rawAction, ctx);
     const targets = resolveTargets(action.target, ctx);
 
     switch (action.type) {

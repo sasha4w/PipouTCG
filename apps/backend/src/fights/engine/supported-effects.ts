@@ -60,6 +60,9 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.FORCE_GUARD_LOCK_ENEMY,
   ActionType.CANNOT_ATTACK_ON_SUMMON_TURN,
   ActionType.SUMMONABLE_ON_ENEMY_SIDE,
+  ActionType.SET_COMBAT_IMMUNITY,
+  ActionType.SET_SUPPORT_DESTROY_IMMUNITY,
+  ActionType.IGNORE_TAUNT,
 ]);
 
 export const SUPPORTED_TARGETS: ReadonlySet<EffectTarget> = new Set(

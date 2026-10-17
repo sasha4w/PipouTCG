@@ -70,4 +70,44 @@ describe('CreateCardDto — effets', () => {
     ]);
     expect(errors).not.toEqual([]);
   });
+
+  it('accepte une quantité conditionnelle (valueIf)', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [
+          {
+            type: 'RETURN_FROM_GRAVEYARD',
+            target: 'PLAYER',
+            value: 2,
+            valueIf: {
+              condition: {
+                type: 'SPECIFIC_CARD_ON_BOARD',
+                value: 'Capitaine',
+                match: 'contains',
+              },
+              value: 3,
+            },
+          },
+        ],
+      },
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  it('refuse un valueIf sans valeur numérique', async () => {
+    const errors = await errorsFor([
+      {
+        trigger: 'ON_PLAY',
+        actions: [
+          {
+            type: 'DRAW',
+            target: 'PLAYER',
+            valueIf: { condition: { type: 'HAND_SIZE_MIN', value: 1 } },
+          },
+        ],
+      },
+    ]);
+    expect(errors).not.toEqual([]);
+  });
 });

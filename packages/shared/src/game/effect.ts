@@ -23,12 +23,19 @@ export interface EffectFilter {
   name?: string;
 }
 
+/** Valeur de remplacement quand la condition est remplie (ex. 2 cartes, 3 si Capitaine). */
+export interface EffectValueIf {
+  condition: EffectCondition;
+  value: number;
+}
+
 export interface EffectAction {
   type: ActionType;
   target: EffectTarget;
   value?: number;
   archetype?: string;
   filter?: EffectFilter;
+  valueIf?: EffectValueIf;
 }
 
 export interface CardEffect {

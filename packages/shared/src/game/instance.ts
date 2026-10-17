@@ -54,4 +54,10 @@ export interface MonsterOnBoard<C = ClientCard> {
   ownerUserId?: number;
   blockAttackTurns?: number;
   guardLocked?: boolean;
+  /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
+  combatImmune?: boolean;
+  /** Une destruction directe venant d'une carte Support n'a pas d'effet (passif). */
+  supportDestroyImmune?: boolean;
+  /** Peut attaquer n'importe quel monstre malgré une Provocation (passif). */
+  ignoresTaunt?: boolean;
 }
