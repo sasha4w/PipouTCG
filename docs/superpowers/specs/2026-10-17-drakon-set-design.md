@@ -24,6 +24,7 @@ d'Œufs à protéger, et chaque élément a sa spécialité. On peut jouer mono-
 | Délai | Le monstre de base doit être en jeu depuis au moins un de tes tours (sauf accélérateur) |
 | Conservé à l'évolution | Équipements et mode ; PV remis au maximum du nouveau stade ; bonus temporaires et malus effacés |
 | Monstre de base | Part au cimetière |
+| Invocation directe | Jeunes et Adultes **ne s'invoquent jamais depuis la main** : uniquement par évolution, ou par l'effet d'un Œuf (éclosion, Dualité détruit). Bébés et Œufs s'invoquent normalement (règle partagée `canSummonFromHand`) |
 | Œufs | Genèse (joker + éclosion Bébé en 2 tours), Dualité (Jeune si détruit, Bébé si éclot en 2 tours), Céleste (Adulte en 4 tours) |
 | Éléments | Terre = PV et immunité · Feu = dégâts · Vent = vitesse d'évolution · Eau = soin et cimetière |
 | Lignées | Teros = Terre · Feros = Feu · Tempestu = Vent · Ackos = Eau |

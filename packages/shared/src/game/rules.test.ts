@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canSummonFromHand,
   canEvolveNow,
   canEvolveOnto,
   evolutionCost,
@@ -135,5 +136,18 @@ describe("évolution des Drakons", () => {
     expect(canEvolveNow({ summonedThisTurn: false })).toBe(true);
     expect(canEvolveNow({ summonedThisTurn: true, instantEvolution: true })).toBe(true);
     expect(canEvolveNow({ summonedThisTurn: true, canEvolveThisTurn: true })).toBe(true);
+  });
+});
+
+describe("invocation depuis la main", () => {
+  it("Jeunes et Adultes Drakon n'arrivent que par évolution", () => {
+    expect(canSummonFromHand({ stage: "young" })).toBe(false);
+    expect(canSummonFromHand({ stage: "adult" })).toBe(false);
+  });
+
+  it("Bébés, Œufs et monstres sans stade s'invoquent normalement", () => {
+    expect(canSummonFromHand({ stage: "baby" })).toBe(true);
+    expect(canSummonFromHand({ stage: "egg" })).toBe(true);
+    expect(canSummonFromHand({ stage: null })).toBe(true);
   });
 });

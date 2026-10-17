@@ -351,6 +351,8 @@
   },
   "effects": {
     "ui": {
+      "summonRule": "소환",
+      "evolutionOnly": "진화 또는 알의 효과로만 필드에 나옵니다.",
       "title": "효과",
       "keywords": "키워드",
       "status": "현재 상태"

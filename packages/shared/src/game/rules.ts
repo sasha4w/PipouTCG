@@ -119,6 +119,14 @@ export function evolutionCost(card: EvolvingCard, base: EvolutionBase): number {
   return Math.max(0, card.cost - base.card.baseCard.cost);
 }
 
+/**
+ * Un Jeune ou un Adulte Drakon n'arrive en jeu que par évolution (ou par
+ * l'effet d'un Œuf) : jamais posé directement depuis la main.
+ */
+export function canSummonFromHand(card: { stage: DrakonStage | null }): boolean {
+  return card.stage !== "young" && card.stage !== "adult";
+}
+
 /** Délai : une base posée ce tour n'évolue pas, sauf accélérateur. */
 export function canEvolveNow(base: {
   summonedThisTurn: boolean;

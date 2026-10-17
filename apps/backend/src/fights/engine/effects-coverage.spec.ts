@@ -5,6 +5,7 @@ import {
   EffectTarget,
   EffectTrigger,
   SupportType,
+  canSummonFromHand,
   canSummonOnEnemySide,
   ephemeralTargetSide,
 } from '@pipou/shared';
@@ -61,6 +62,14 @@ describe('couverture des effets', () => {
     const engine = createEngine();
 
     function play(card: Card) {
+      // Jeune / Adulte Drakon : il n'arrive que par évolution, sur le stade
+      // précédent de sa lignée
+      const evolvesOnly = !canSummonFromHand(card);
+      const base = monsterCard('Base', {
+        archetype: 'dragon',
+        lineage: card.lineage,
+        stage: card.stage === 'adult' ? 'young' : 'baby',
+      });
       const game = scenario({
         p1: {
           hand: [card],
@@ -68,13 +77,23 @@ describe('couverture des effets', () => {
           graveyard: allRealCards(),
           deck: allRealCards(),
           recycleEnergy: 3,
-          monsters: [monsterCard('Allié', { hp: 5000, archetype: 'dragon' })],
+          monsters: [
+            monsterCard('Allié', { hp: 5000, archetype: 'dragon' }),
+            ...(evolvesOnly ? [base] : []),
+          ],
         },
         p2: { monsters: [monsterCard('Ennemi', { hp: 5000 })] },
       });
       const ally = monsterNamed(game, 'p1', 'Allié');
       const enemy = monsterNamed(game, 'p2', 'Ennemi');
 
+      if (evolvesOnly)
+        return engine.dispatch(game, 'p1', {
+          type: 'evolve',
+          handIndex: 0,
+          targetInstanceId: monsterNamed(game, 'p1', 'Base').instanceId,
+          paymentHandIndices: [],
+        });
       if (card.type === CardType.MONSTER)
         return engine.dispatch(game, 'p1', {
           type: 'summon',

@@ -43,6 +43,8 @@ export interface EffectSourceCard {
   supportType?: string | null;
   archetype?: string | null;
   effects?: readonly CardEffect[] | null;
+  /** Stade Drakon : Jeune et Adulte n'arrivent que par évolution. */
+  stage?: string | null;
 }
 
 /** Une phrase ; les mots-clés sont entourés de `**`. */
@@ -420,6 +422,15 @@ export function describeCardEffects(
   const kind = cardKind(card);
   const keywords: KeywordId[] = [];
   const rules: EffectRule[] = [];
+
+  // Règle de pose (miroir de canSummonFromHand) : pas un effet, mais à connaître
+  if (card.stage === "young" || card.stage === "adult")
+    rules.push({
+      icon: "",
+      trigger: t("effects.ui.summonRule"),
+      condition: null,
+      lines: [{ text: t("effects.ui.evolutionOnly"), tone: "neutral" }],
+    });
 
   for (const effect of card.effects ?? []) {
     const trigger = String(effect.trigger);

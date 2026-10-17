@@ -238,6 +238,18 @@ describe("describeCardEffects (fr)", () => {
     });
   });
 
+  it("Jeune / Adulte Drakon : règle « uniquement par évolution » en tête", () => {
+    const text = describeCardEffects(
+      { ...monster([], "dragon"), stage: "adult" },
+      t,
+    );
+    expect(text.rules[0].trigger).toBe("Invocation");
+    expect(text.rules[0].lines[0].text).toBe(
+      "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
+    );
+    expect(describeCardEffects({ ...monster([], "dragon"), stage: "baby" }, t).rules).toEqual([]);
+  });
+
   it("effectPlainText retire les marqueurs de mots-clés", () => {
     expect(effectPlainText("Ce monstre gagne **Perçant**.")).toBe(
       "Ce monstre gagne Perçant.",

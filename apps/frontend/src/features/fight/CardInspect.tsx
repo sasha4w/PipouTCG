@@ -13,6 +13,8 @@ import "./CardInspect.css";
 export type InspectCard = CardFaceCard & {
   archetype?: string | null;
   effects?: readonly CardEffect[] | null;
+  /** Stade Drakon (règle « uniquement par évolution »). */
+  stage?: string | null;
 };
 
 interface Props {

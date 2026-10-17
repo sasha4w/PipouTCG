@@ -93,7 +93,7 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
   const row = screen.getByText("Mes Monstres").closest(".zr-wrap")!;
   const select = (selectedCard: number | null) =>
     rerender(<FightBoard {...props} selectedCard={selectedCard} />);
-  return { zones: row.querySelectorAll(".zr-zone"), onEvolve, select };
+  return { zones: row.querySelectorAll(".zr-zone"), onEvolve, select, props };
 }
 
 describe("FightBoard — évolution", () => {
@@ -134,6 +134,14 @@ describe("FightBoard — évolution", () => {
     select(0);
     expect(screen.queryByText(/Évolution —/)).not.toBeInTheDocument();
     expect(onEvolve).not.toHaveBeenCalled();
+  });
+
+  it("un Jeune sélectionné ne peut pas se poser sur une zone vide", () => {
+    const { zones, props } = renderBoard(state(5));
+    expect(zones[2]).not.toHaveClass("zr-zone--pulse-target");
+    fireEvent.click(zones[2]);
+    expect(props.onSetSelectedZone).not.toHaveBeenCalled();
+    expect(props.onSummon).not.toHaveBeenCalled();
   });
 
   it("clic sur un monstre non éligible : pas d'évolution", () => {

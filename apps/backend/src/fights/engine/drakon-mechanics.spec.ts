@@ -728,4 +728,42 @@ describe('mécaniques Drakon', () => {
       );
     });
   });
+  describe('invocation depuis la main', () => {
+    const summon = (game: ReturnType<typeof scenario>) =>
+      engine.dispatch(game, 'p1', {
+        type: 'summon',
+        handIndex: 0,
+        zoneIndex: 0,
+        paymentHandIndices: [],
+      });
+
+    it.each(['young', 'adult'] as const)(
+      'un Drakon %s ne se pose pas depuis la main',
+      (stage) => {
+        const game = scenario({
+          p1: {
+            hand: [dragon('Drakon Test', { stage, lineage: 'feros', cost: 0 })],
+          },
+        });
+        expect(summon(game).error).toBe(
+          'Drakon Test ne peut arriver en jeu que par évolution',
+        );
+        expect(game.player1.monsterZones[0]).toBeNull();
+        expect(game.player1.hand).toHaveLength(1);
+      },
+    );
+
+    it('un Bébé et un Œuf se posent normalement', () => {
+      const game = scenario({
+        p1: {
+          hand: [
+            dragon('Bébé', { stage: 'baby', cost: 0 }),
+            dragon('Œuf', { stage: 'egg', atk: 0, cost: 0 }),
+          ],
+        },
+      });
+      expect(summon(game)).toEqual({});
+      expect(summon(game)).toEqual({ error: 'Zone occupée' });
+    });
+  });
 });

@@ -352,6 +352,8 @@
   },
   "effects": {
     "ui": {
+      "summonRule": "Summoning",
+      "evolutionOnly": "Only enters play by evolution or through an Egg's effect.",
       "title": "Effects",
       "keywords": "Keywords",
       "status": "Current state"

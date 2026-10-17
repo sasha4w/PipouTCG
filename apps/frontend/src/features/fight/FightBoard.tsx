@@ -25,6 +25,7 @@ import {
   HAND_LIMIT,
   canEvolveNow,
   canEvolveOnto,
+  canSummonFromHand,
   canSummonOnEnemySide,
   evolutionCost,
   ephemeralTargetSide,
@@ -213,6 +214,9 @@ export default function FightBoard({
   // Monstres alliés sur lesquels la carte sélectionnée peut évoluer maintenant
   const selectedInstance =
     selectedCard !== null ? gs.me.hand[selectedCard] : undefined;
+  // Jeune / Adulte Drakon : jamais posé sur une zone vide, seulement par évolution
+  const evolvesOnly =
+    !!selectedInstance && !canSummonFromHand(selectedInstance.baseCard);
   const evolvableTargets: MonsterOnBoard[] =
     gs.isMyTurn && phase === "main" && selectedInstance
       ? gs.me.monsterZones.filter(
@@ -330,6 +334,7 @@ export default function FightBoard({
           }
           return;
         }
+        if (evolvesOnly) return;
         const card = mappedHand[selectedCard];
         const isFreeCard =
           selectedHandCard !== null &&
@@ -560,7 +565,8 @@ export default function FightBoard({
               gs.isMyTurn &&
               phase === "main" &&
               selectedHandCard?.type === "monster" &&
-              !isZeta
+              !isZeta &&
+              !evolvesOnly
             }
             highlightFilled={gs.isMyTurn && phase === "main" && isEquipment}
             highlightInstanceIds={evolvableIds}

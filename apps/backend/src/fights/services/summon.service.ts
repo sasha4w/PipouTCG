@@ -5,7 +5,12 @@ import {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
-import { CardType, EffectTrigger, canSummonOnEnemySide } from '@pipou/shared';
+import {
+  CardType,
+  EffectTrigger,
+  canSummonFromHand,
+  canSummonOnEnemySide,
+} from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
@@ -106,6 +111,10 @@ export class SummonService {
     const card = player.hand[handIndex];
     if (card.baseCard.type !== CardType.MONSTER)
       return { error: 'Pas un Monstre' };
+    if (!canSummonFromHand(card.baseCard))
+      return {
+        error: `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
+      };
 
     const isFree = player.freeSummonInstanceIds.includes(card.instanceId);
     if (isFree)

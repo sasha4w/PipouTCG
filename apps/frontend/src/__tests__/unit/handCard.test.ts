@@ -3,7 +3,7 @@ import { toHandCard } from "../../features/fight/handCard";
 import type { CardInstance } from "../../features/fight/fight.types";
 
 describe("toHandCard", () => {
-  it("conserve l'élément d'un Drakon pour la pastille", () => {
+  it("conserve le stade d'un Drakon pour la règle d'évolution", () => {
     const instance = {
       instanceId: "i1",
       baseCard: {
@@ -15,14 +15,14 @@ describe("toHandCard", () => {
         cost: 2,
         rarity: "rare",
         image: null,
-        element: "fire",
+        stage: "young",
       },
     } as unknown as CardInstance;
 
-    expect(toHandCard(instance).element).toBe("fire");
+    expect(toHandCard(instance).stage).toBe("young");
   });
 
-  it("met null pour une carte sans élément", () => {
+  it("met null pour une carte sans stade", () => {
     const instance = {
       instanceId: "i2",
       baseCard: {
@@ -37,6 +37,6 @@ describe("toHandCard", () => {
       },
     } as unknown as CardInstance;
 
-    expect(toHandCard(instance).element).toBeNull();
+    expect(toHandCard(instance).stage).toBeNull();
   });
 });

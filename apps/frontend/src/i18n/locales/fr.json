@@ -352,6 +352,8 @@
   },
   "effects": {
     "ui": {
+      "summonRule": "Invocation",
+      "evolutionOnly": "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
       "title": "Effets",
       "keywords": "Mots-clés",
       "status": "État actuel"
