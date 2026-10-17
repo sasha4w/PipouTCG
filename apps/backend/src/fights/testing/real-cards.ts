@@ -11,7 +11,15 @@ const SNAPSHOT = JSON.parse(
 
 /** Cartes telles qu'extraites du dump (avant la migration GenericCardEffects). */
 export function rawSnapshotCards(): Card[] {
-  return SNAPSHOT.map((c) => ({ ...c, image: null }));
+  return SNAPSHOT.map(
+    (c: Omit<Card, 'image' | 'element' | 'lineage' | 'stage'>) => ({
+      element: null,
+      lineage: null,
+      stage: null,
+      ...c,
+      image: null,
+    }),
+  );
 }
 
 /** Cartes après GenericCardEffects, avant le retravail (état de prod au 2026-10-17). */

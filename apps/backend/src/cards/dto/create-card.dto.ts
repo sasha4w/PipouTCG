@@ -26,6 +26,8 @@ import {
   Rarity,
   SupportType,
   Archetype,
+  DrakonElement,
+  DrakonStage,
   EffectTrigger,
   EffectConditionType as ConditionType,
   ActionType,
@@ -51,6 +53,14 @@ export class EffectConditionDto implements EffectCondition {
   @IsOptional()
   @IsIn(['exact', 'contains'])
   match?: CardNameMatch;
+
+  @IsOptional()
+  @IsEnum(DrakonElement)
+  element?: DrakonElement;
+
+  @IsOptional()
+  @IsEnum(DrakonStage)
+  stage?: DrakonStage;
 }
 
 export class EffectValueIfDto implements EffectValueIf {
@@ -67,6 +77,14 @@ export class EffectFilterDto implements EffectFilter {
   @IsOptional()
   @IsEnum(Archetype)
   archetype?: Archetype;
+
+  @IsOptional()
+  @IsEnum(DrakonElement)
+  element?: DrakonElement;
+
+  @IsOptional()
+  @IsEnum(DrakonStage)
+  stage?: DrakonStage;
 
   @IsOptional()
   @IsArray()
@@ -196,6 +214,19 @@ export class CreateCardDto implements CreateCardRequest {
   @IsOptional()
   @IsEnum(Archetype)
   archetype?: Archetype;
+
+  @IsOptional()
+  @IsEnum(DrakonElement)
+  element?: DrakonElement;
+
+  @IsOptional()
+  @IsEnum(DrakonStage)
+  stage?: DrakonStage;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  lineage?: string;
 
   @IsOptional()
   @IsArray()

@@ -121,3 +121,37 @@ describe('CreateCardDto â€” effets', () => {
     expect(errors).not.toEqual([]);
   });
 });
+
+describe('CreateCardDto — Drakon', () => {
+  it('accepte élément, lignée et stade de Drakon', async () => {
+    const dto = plainToInstance(CreateCardDto, {
+      name: 'Bébé Test',
+      rarity: 'common',
+      type: 'monster',
+      atk: 100,
+      hp: 500,
+      cardSetId: 3,
+      element: 'fire',
+      lineage: 'feros',
+      stage: 'baby',
+    });
+    expect(
+      await validate(dto, { whitelist: true, forbidNonWhitelisted: true }),
+    ).toEqual([]);
+  });
+
+  it('refuse un élément inconnu', async () => {
+    const dto = plainToInstance(CreateCardDto, {
+      name: 'Bébé Test',
+      rarity: 'common',
+      type: 'monster',
+      atk: 0,
+      hp: 1,
+      cardSetId: 3,
+      element: 'lava',
+    });
+    expect(
+      await validate(dto, { whitelist: true, forbidNonWhitelisted: true }),
+    ).not.toEqual([]);
+  });
+});
