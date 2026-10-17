@@ -68,7 +68,7 @@ describe('couverture des effets', () => {
           graveyard: allRealCards(),
           deck: allRealCards(),
           recycleEnergy: 3,
-          monsters: [monsterCard('Allié', { hp: 5000 })],
+          monsters: [monsterCard('Allié', { hp: 5000, archetype: 'dragon' })],
         },
         p2: { monsters: [monsterCard('Ennemi', { hp: 5000 })] },
       });
