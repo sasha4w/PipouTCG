@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, Index } from 'typeorm';
 import {
   QuestResetType,
   QuestRewardType as RewardType,
   ConditionOperator,
   QuestConditionType as ConditionType,
+  type Rarity,
 } from '@pipou/shared';
 import { UserQuest } from '../users/user-quest.entity';
 
@@ -14,6 +15,7 @@ export interface QuestCondition {
   setId?: number;
   boosterId?: number;
   level?: number;
+  minRarity?: Rarity;
 }
 
 export interface QuestConditionGroup {
@@ -25,6 +27,11 @@ export interface QuestConditionGroup {
 export class Quest {
   @PrimaryGeneratedColumn()
   id!: number;
+
+  /** Identifiant stable des quêtes seedées depuis quest-pool.ts ; null pour les quêtes admin. */
+  @Index('UQ_quest_pool_key', { unique: true })
+  @Column({ name: 'pool_key', type: 'varchar', length: 64, nullable: true, default: null })
+  poolKey!: string | null;
 
   @Column()
   title!: string;

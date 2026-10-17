@@ -9,26 +9,8 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Quest } from '../quests/quest.entity';
-import {
-  ConditionOperator,
-  QuestConditionType as ConditionType,
-} from '@pipou/shared';
-
-export interface ConditionProgress {
-  type: ConditionType;
-  current: number;
-  target: number;
-  completed: boolean;
-  rarity?: string;
-  setId?: number;
-  boosterId?: number;
-}
-
-export interface QuestProgress {
-  operator: ConditionOperator;
-  conditions: ConditionProgress[];
-  globalCompleted: boolean;
-}
+import type { QuestProgress } from '@pipou/shared';
+export type { ConditionProgress, QuestProgress } from '@pipou/shared';
 
 @Entity('user_quest')
 @Index(['user', 'quest'], { unique: true })
