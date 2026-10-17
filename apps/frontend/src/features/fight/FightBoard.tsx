@@ -9,6 +9,8 @@ import {
 import FightHUD from "./FightHUD";
 import FightFxLayer from "./FightFxLayer";
 import { boardFxFromEvents } from "./fightEvents";
+import TerrainBackground from "./TerrainBackground";
+import { pickActiveTerrain, terrainWaveZone } from "./terrainSelection";
 import { useAnimationPrefs } from "../../contexts/useAnimationPrefs";
 import ZoneRow from "./Zonerow/ZoneRow";
 import FightHand from "./FightHand";
@@ -82,6 +84,8 @@ export default function FightBoard({
     () => boardFxFromEvents(gs.events ?? [], gs.me.userId),
     [gs.events, gs.me.userId],
   );
+  const myTerrain = pickActiveTerrain(gs.me.supportZones);
+  const oppTerrain = pickActiveTerrain(gs.opponent.supportZones);
 
   // ── Invocation légendaire / secrète : flash + secousse ───────────────────
   const [flash, setFlash] = useState<{ key: number; color: string } | null>(
@@ -412,6 +416,12 @@ export default function FightBoard({
       />
 
       <div className="fb-side-row">
+        <TerrainBackground
+          terrain={oppTerrain}
+          side="opponent"
+          waveFromZone={terrainWaveZone(oppTerrain, gs.opponent.supportZones, fx.opponent.supports)}
+          reduced={reduced}
+        />
         <GraveyardPile
           graveyard={gs.opponent.graveyard}
           label={gs.opponent.username}
@@ -461,6 +471,12 @@ export default function FightBoard({
       )}
 
       <div className="fb-side-row">
+        <TerrainBackground
+          terrain={myTerrain}
+          side="me"
+          waveFromZone={terrainWaveZone(myTerrain, gs.me.supportZones, fx.me.supports)}
+          reduced={reduced}
+        />
         <div className="fb-zones-col">
           <ZoneRow
             label="Mes Monstres"

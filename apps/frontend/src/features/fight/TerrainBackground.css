@@ -1,0 +1,62 @@
+.tbg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.tbg__layer {
+  position: absolute;
+  inset: -12px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(6px) brightness(0.45);
+  opacity: 0.55;
+}
+.tbg--me .tbg__layer {
+  mask-image: linear-gradient(to top, #000 55%, transparent);
+}
+.tbg--opponent .tbg__layer {
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+.tbg__layer--fade {
+  animation: tbg-fade-in 0.3s ease-out both;
+}
+.tbg__layer--wave {
+  animation: tbg-wave 0.7s ease-out both;
+}
+.tbg__layer--out {
+  animation: tbg-fade-out 0.3s ease-out forwards;
+}
+.tbg--reduced .tbg__layer--wave,
+.tbg--reduced .tbg__layer--fade {
+  animation: tbg-fade-in 0.25s ease-out both;
+}
+.tbg--reduced .tbg__layer--out {
+  animation-duration: 0.25s;
+}
+@keyframes tbg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+@keyframes tbg-fade-out {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes tbg-wave {
+  from {
+    clip-path: circle(0% at var(--wave-x, 50%) var(--wave-y, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--wave-x, 50%) var(--wave-y, 50%));
+  }
+}

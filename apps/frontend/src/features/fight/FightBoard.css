@@ -29,6 +29,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  position: relative;
+  isolation: isolate;
+  border-radius: 14px;
 }
 
 .fb-zones-col {
