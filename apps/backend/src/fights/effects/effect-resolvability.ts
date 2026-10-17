@@ -15,6 +15,7 @@ const PICK_ACTIONS = new Set<ActionType>([
   ActionType.RETURN_FROM_GRAVEYARD,
   ActionType.RETURN_FROM_GRAVEYARD_OR_DECK,
   ActionType.SEARCH_DECK,
+  ActionType.SUMMON_FROM_DECK,
 ]);
 
 /** Vrai si l'action produirait quelque chose dans l'état actuel de la partie. */

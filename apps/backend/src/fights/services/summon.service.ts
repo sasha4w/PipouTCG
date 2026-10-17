@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GameState } from '../interfaces/game-state.interface';
+import {
+  CardInstance,
+  GameState,
+  PlayerGameState,
+} from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { CardType, EffectTrigger, canSummonOnEnemySide } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
@@ -39,6 +43,39 @@ export class SummonService {
       paymentHandIndices,
       onOpponentSide,
     );
+  }
+
+  /** Invocation gratuite d'une carte (éclosion, invocation depuis le deck). */
+  summonFromDeck(
+    game: GameState,
+    owner: PlayerGameState,
+    card: CardInstance,
+    preferredZone?: number,
+  ): boolean {
+    const zone =
+      preferredZone !== undefined && !owner.monsterZones[preferredZone]
+        ? preferredZone
+        : owner.monsterZones.findIndex((z) => z === null);
+    if (zone === -1) return false;
+    const monster = createMonsterOnBoard(card);
+    owner.monsterZones[zone] = monster;
+    game.pendingEvents.push({
+      kind: 'monster_summoned',
+      ownerId: owner.userId,
+      zoneIndex: zone,
+      instanceId: monster.instanceId,
+      rarity: card.baseCard.rarity,
+    });
+    addLog(game, `✨ ${card.baseCard.name} est invoqué gratuitement`);
+    const log: string[] = [];
+    this.effectsResolver.resolve(card, EffectTrigger.ON_SUMMON, {
+      game,
+      ownerUserId: owner.userId,
+      sourceMonster: monster,
+      log,
+    });
+    log.forEach((l) => addLog(game, l));
+    return true;
   }
 
   // ── Logique commune ────────────────────────────────────────────────────────

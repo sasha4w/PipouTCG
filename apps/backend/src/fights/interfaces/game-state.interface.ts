@@ -63,6 +63,8 @@ export interface PendingChoice {
   count: number;
   prompt: string;
   resolution?: PendingChoiceResolution;
+  /** summon_to_zone : zone visée. */
+  zoneIndex?: number;
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────

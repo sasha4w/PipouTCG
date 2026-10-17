@@ -10,6 +10,7 @@ import {
   isCurrentPlayer,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
+import { hatchEgg } from '../helpers/hatching';
 import { EffectsResolverService } from '../effects-resolver.service';
 
 @Injectable()
@@ -87,6 +88,11 @@ export class PhaseService {
     // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
     // pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);
+    for (const m of [...player.monsterZones]) {
+      if (!m || m.hatchCounter === undefined) continue;
+      m.hatchCounter -= 1;
+      if (m.hatchCounter <= 0) hatchEgg(game, player, m, log);
+    }
     this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);
     for (const m of player.monsterZones) {
       if (!m?.doubleAtkNextTurn) continue;

@@ -9,6 +9,7 @@ import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
 import { drawCard, queueChoice } from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
+import { hatchEgg } from '../helpers/hatching';
 
 export type DestroyKind = 'destroy' | 'damage';
 
@@ -225,6 +226,43 @@ export function applyActions(
           ctx.log.push(
             `⚡ ${card.baseCard.name} peut être invoqué gratuitement !`,
           );
+        }
+        break;
+
+      case ActionType.SET_HATCH_COUNTER:
+        for (const m of targets.monsters) {
+          m.hatchCounter = action.value ?? 2;
+          m.hatchStage = action.filter?.stage;
+          ctx.log.push(
+            `🥚 ${m.card.baseCard.name} éclora dans ${m.hatchCounter} tour(s)`,
+          );
+        }
+        break;
+
+      case ActionType.ADVANCE_HATCH:
+        for (const m of targets.monsters) {
+          if (m.hatchCounter === undefined) continue;
+          m.hatchCounter -= action.value ?? 1;
+          if (m.hatchCounter <= 0)
+            hatchEgg(ctx.game, targets.ownerOfMonster(m), m, ctx.log);
+        }
+        break;
+
+      case ActionType.SUMMON_FROM_DECK:
+        for (const p of targets.players) {
+          const candidates = pickCandidates(action, p);
+          if (candidates.length === 0) continue;
+          const zone = ctx.sourceMonster
+            ? p.monsterZones.indexOf(ctx.sourceMonster)
+            : -1;
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates,
+            count: 1,
+            prompt: 'Choisis la carte à invoquer',
+            resolution: 'summon_to_zone',
+            zoneIndex: zone === -1 ? undefined : zone,
+          });
         }
         break;
 

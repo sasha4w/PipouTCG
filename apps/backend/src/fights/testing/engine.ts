@@ -13,13 +13,14 @@ import { fixedRng } from './fixed-rng';
 /** Moteur câblé à la main, comme le ferait Nest, pour les tests. */
 export function createEngine(rng: Rng = fixedRng()): GameEngine {
   const effects = new EffectsResolverService();
+  const summon = new SummonService(effects);
   return new GameEngine(
     new PhaseService(effects),
-    new SummonService(effects),
+    summon,
     new EvolutionService(effects),
     new SupportService(effects),
     new BattleService(effects),
-    new PickService(),
+    new PickService(summon),
     effects,
     new BuffsCalculatorService(),
     rng,

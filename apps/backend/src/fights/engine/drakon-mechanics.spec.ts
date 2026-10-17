@@ -1,5 +1,6 @@
 import {
   ActionType,
+  CardEffect,
   EffectConditionType,
   EffectTarget,
   EffectTrigger,
@@ -356,6 +357,160 @@ describe('mécaniques Drakon', () => {
       });
       expect(attackWith(engine, game, 'p1', 'Œuf', 'Cible').error).toBe(
         'Un Œuf ne peut pas attaquer',
+      );
+    });
+  });
+
+  describe('éclosion', () => {
+    const oeuf = (
+      turns: number,
+      stage: 'baby' | 'adult',
+      extra: CardEffect[] = [],
+    ) =>
+      dragon(`Œuf ${stage}`, {
+        stage: 'egg',
+        atk: 0,
+        hp: 300,
+        effects: [
+          effect(EffectTrigger.ON_SUMMON, [
+            act(ActionType.SET_HATCH_COUNTER, EffectTarget.SELF, {
+              value: turns,
+              filter: { stage },
+            }),
+          ]),
+          ...extra,
+        ],
+      });
+    // Cartes neutres d'abord : la pioche de début de tour ne prend pas les candidats
+    const deck = () => [
+      ...['F1', 'F2', 'F3', 'F4'].map((n) => monsterCard(n)),
+      dragon('Bébé Deck', { stage: 'baby' }),
+      dragon('Adulte Deck', { stage: 'adult' }),
+    ];
+    const pose = (game: ReturnType<typeof scenario>) =>
+      engine.dispatch(game, 'p1', {
+        type: 'summon',
+        handIndex: 0,
+        zoneIndex: 1,
+        paymentHandIndices: [],
+      });
+
+    it('éclot après 2 tours du propriétaire en la carte choisie, dans la zone de l’œuf', () => {
+      const game = scenario({ p1: { hand: [oeuf(2, 'baby')], deck: deck() } });
+      pose(game);
+      passTurn(engine, game); // tour p2
+      passTurn(engine, game); // début du 1er tour de p1 après la pose : 2 → 1
+      expect(game.pendingChoices).toHaveLength(0);
+      passTurn(engine, game);
+      passTurn(engine, game); // début du 2e tour de p1 après la pose : 1 → 0, éclosion
+      const choice = game.pendingChoices[0];
+      expect(choice).toMatchObject({
+        resolution: 'summon_to_zone',
+        zoneIndex: 1,
+      });
+      expect(choice.candidates.map((c) => c.baseCard.name)).toEqual([
+        'Bébé Deck',
+      ]);
+      expect(game.player1.monsterZones[1]).toBeNull();
+      engine.dispatch(game, 'p1', {
+        type: 'pick_cards',
+        instanceIds: [choice.candidates[0].instanceId],
+      });
+      expect(game.player1.monsterZones[1]?.card.baseCard.name).toBe(
+        'Bébé Deck',
+      );
+      expect(graveyardNames(game, 'p1')).toContain('Œuf baby');
+    });
+
+    it('éclore ne déclenche pas ON_DEATH', () => {
+      const piege = effect(EffectTrigger.ON_DEATH, [
+        act(ActionType.DRAW, EffectTarget.PLAYER, { value: 3 }),
+      ]);
+      const game = scenario({
+        p1: { hand: [oeuf(1, 'baby', [piege])], deck: deck() },
+      });
+      pose(game);
+      const handBefore = game.player1.hand.length;
+      passTurn(engine, game);
+      passTurn(engine, game);
+      // seule la pioche de début de tour : pas les 3 cartes d'ON_DEATH
+      expect(game.player1.hand.length).toBe(handBefore + 1);
+    });
+
+    it('deck sans candidat : l’œuf part au cimetière, pas de choix', () => {
+      const game = scenario({
+        p1: { hand: [oeuf(1, 'adult')], deck: [monsterCard('Rien')] },
+      });
+      pose(game);
+      passTurn(engine, game);
+      passTurn(engine, game);
+      expect(game.pendingChoices).toHaveLength(0);
+      expect(game.player1.monsterZones[1]).toBeNull();
+    });
+
+    it('ADVANCE_HATCH jusqu’à 0 : éclosion immédiate', () => {
+      const incub = ephemeralCard('Incubation', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.ADVANCE_HATCH, EffectTarget.TARGET_ALLY, { value: 2 }),
+        ]),
+      ]);
+      const game = scenario({
+        p1: { hand: [oeuf(2, 'baby'), incub], deck: deck() },
+      });
+      pose(game);
+      const egg = monsterNamed(game, 'p1', 'Œuf baby');
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: egg.instanceId,
+      });
+      expect(game.pendingChoices[0]).toMatchObject({
+        resolution: 'summon_to_zone',
+        zoneIndex: 1,
+      });
+    });
+
+    it('SUMMON_FROM_DECK à la destruction : Jeune choisi invoqué dans la zone libérée', () => {
+      const dualite = dragon('Dualité', {
+        stage: 'egg',
+        atk: 0,
+        hp: 300,
+        effects: [
+          effect(EffectTrigger.ON_DEATH, [
+            act(ActionType.SUMMON_FROM_DECK, EffectTarget.PLAYER, {
+              filter: { stage: 'young' },
+            }),
+          ]),
+        ],
+      });
+      const formatage = ephemeralCard('Formatage', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.DESTROY_MONSTER, EffectTarget.TARGET_ALLY),
+        ]),
+      ]);
+      const game = scenario({
+        p1: {
+          hand: [formatage],
+          monsters: [null, dualite],
+          deck: [dragon('Jeune Deck', { stage: 'young' })],
+        },
+      });
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Dualité').instanceId,
+      });
+      const choice = game.pendingChoices[0];
+      expect(choice).toMatchObject({
+        resolution: 'summon_to_zone',
+        zoneIndex: 1,
+      });
+      engine.dispatch(game, 'p1', {
+        type: 'pick_cards',
+        instanceIds: [choice.candidates[0].instanceId],
+      });
+      expect(game.player1.monsterZones[1]?.card.baseCard.name).toBe(
+        'Jeune Deck',
       );
     });
   });

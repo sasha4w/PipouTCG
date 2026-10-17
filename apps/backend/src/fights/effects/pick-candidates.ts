@@ -48,6 +48,7 @@ export function pickCandidates(
         ...from(player.deck, 'deck'),
       ];
     case ActionType.SEARCH_DECK:
+    case ActionType.SUMMON_FROM_DECK:
       return from(player.deck, 'deck');
     default:
       return [];
