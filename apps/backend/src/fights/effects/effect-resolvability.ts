@@ -24,7 +24,7 @@ export function canResolveAction(
 ): boolean {
   if (CHOSEN_TARGETS.has(action.target)) return true;
 
-  const targets = resolveTargets(action.target, ctx);
+  const targets = resolveTargets(action.target, ctx, action.archetype);
   if (PICK_ACTIONS.has(action.type))
     return targets.players.some((p) => pickCandidates(action, p).length > 0);
 

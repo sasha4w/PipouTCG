@@ -61,16 +61,26 @@ export function conditionMet(
       );
     }
 
-    case ConditionType.EQUIPPED_ON:
+    case ConditionType.DRAKON_ON_BOARD:
+      return owner.monsterZones.some(
+        (m) =>
+          !!m &&
+          (!condition.element ||
+            m.card.baseCard.element === condition.element) &&
+          (!condition.stage || m.card.baseCard.stage === condition.stage),
+      );
+
+    case ConditionType.EQUIPPED_ON: {
+      const host = ctx.sourceMonster?.card.baseCard;
       return (
         ctx.sourceCard?.baseCard.supportType === SupportType.EQUIPMENT &&
-        !!ctx.sourceMonster &&
-        cardNameMatches(
-          ctx.sourceMonster.card.baseCard.name,
-          expectedName,
-          condition.match,
-        )
+        !!host &&
+        (condition.value === undefined ||
+          cardNameMatches(host.name, expectedName, condition.match)) &&
+        (!condition.element || host.element === condition.element) &&
+        (!condition.stage || host.stage === condition.stage)
       );
+    }
 
     default:
       return false;

@@ -18,6 +18,8 @@ export function matchesFilter(
   if (filter.type && c.type !== filter.type) return false;
   if (filter.name && !c.name.toLowerCase().includes(filter.name.toLowerCase()))
     return false;
+  if (filter.element && c.element !== filter.element) return false;
+  if (filter.stage && c.stage !== filter.stage) return false;
   return true;
 }
 

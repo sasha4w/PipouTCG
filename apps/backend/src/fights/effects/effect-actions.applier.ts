@@ -24,7 +24,7 @@ export function applyActions(
 ): void {
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
-    const targets = resolveTargets(action.target, ctx);
+    const targets = resolveTargets(action.target, ctx, action.archetype);
 
     switch (action.type) {
       // ── Damage ────────────────────────────────────────────────────────────
