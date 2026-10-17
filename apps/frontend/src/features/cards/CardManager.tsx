@@ -9,6 +9,8 @@ import {
   Rarity,
   CardType,
   SupportType,
+  DrakonElement,
+  DrakonStage,
 } from "../../services/card.service";
 import { cardSetService } from "../../services/card-set.service";
 import { imageService } from "../../services/image.service";
@@ -191,6 +193,9 @@ export default function CardManager() {
       hp: c.hp,
       cost: c.cost,
       cardSetId: c.cardSet.id,
+      element: c.element ?? undefined,
+      lineage: c.lineage ?? undefined,
+      stage: c.stage ?? undefined,
     });
     setSelectedImageId(c.image?.id ?? null);
     setUploadMode("existing");
@@ -515,6 +520,62 @@ export default function CardManager() {
                 ))}
               </select>
             </div>
+          </div>
+          <div className="manager-form__grid">
+            <div className="manager-form__row">
+              <label className="manager-form__label">Élément</label>
+              <select
+                className="manager-form__select"
+                value={form.element ?? ""}
+                onChange={(e) =>
+                  setField(
+                    "element",
+                    e.target.value
+                      ? (e.target.value as DrakonElement)
+                      : undefined,
+                  )
+                }
+              >
+                <option value="">--</option>
+                {Object.values(DrakonElement).map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="manager-form__row">
+              <label className="manager-form__label">Stade</label>
+              <select
+                className="manager-form__select"
+                value={form.stage ?? ""}
+                onChange={(e) =>
+                  setField(
+                    "stage",
+                    e.target.value
+                      ? (e.target.value as DrakonStage)
+                      : undefined,
+                  )
+                }
+              >
+                <option value="">--</option>
+                {Object.values(DrakonStage).map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="manager-form__row">
+            <label className="manager-form__label">Lignée</label>
+            <input
+              className="manager-form__input"
+              value={form.lineage ?? ""}
+              maxLength={50}
+              onChange={(e) => setField("lineage", e.target.value || undefined)}
+              placeholder="ex. feros"
+            />
           </div>
         </div>
       )}

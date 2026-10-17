@@ -995,3 +995,177 @@ export function IconUndo({
     </svg>
   );
 }
+
+// ── Icônes Drakon (éléments, œuf, évolution) ─────────────────────────────────
+export function IconEarth({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M3 19L9 8L13 14L16 10L21 19H3Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconWind({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M3 8H14A3 3 0 1 0 11 5M3 12H19A3 3 0 1 1 16 15M3 16H10"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconWater({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3C12 3 6 10 6 14A6 6 0 0 0 18 14C18 10 12 3 12 3Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconEgg({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3C8.5 3 5.5 9 5.5 14A6.5 6.5 0 0 0 18.5 14C18.5 9 15.5 3 12 3Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 13L10 11L12 13L14 11L16 13"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconEvolve({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 20V8M7 12L12 7L17 12M7 5H17"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconJoker({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3L14.5 9H21L15.8 12.8L17.8 19L12 15.2L6.2 19L8.2 12.8L3 9H9.5L12 3Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

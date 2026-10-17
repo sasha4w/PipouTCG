@@ -467,7 +467,9 @@
       "multiAttack": "턴당 {{count}}회 공격",
       "damageReduction": "받는 피해 ÷{{value}}",
       "freeze_other": "{{count}}턴 더 빙결",
-      "countdown_other": "{{count}}턴 후 파괴"
+      "countdown_other": "{{count}}턴 후 파괴",
+      "hatch_other": "{{count}}턴 후 부화",
+      "canEvolve": "이번 턴 진화 가능"
     }
   },
   "keywords": {

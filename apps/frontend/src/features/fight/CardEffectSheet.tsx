@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import {
-  KEYWORD_ICON,
   describeCardEffects,
   type EffectSourceCard,
   type KeywordId,
 } from "./effectText";
+import KeywordIcon from "./KeywordIcon";
 import "./CardEffectSheet.css";
 
 export interface EffectSheetSource {
@@ -67,7 +67,9 @@ export default function CardEffectSheet({ sources }: Props) {
             {keywords.map((id: KeywordId) => (
               <div key={id} className="ces-keyword">
                 <dt>
-                  <span aria-hidden="true">{KEYWORD_ICON[id]}</span>{" "}
+                  <span aria-hidden="true">
+                    <KeywordIcon id={id} />
+                  </span>{" "}
                   {t(`keywords.${id}.name`)}
                 </dt>
                 <dd>{t(`keywords.${id}.desc`)}</dd>

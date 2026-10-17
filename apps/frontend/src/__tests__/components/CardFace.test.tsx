@@ -37,12 +37,12 @@ describe("CardFace", () => {
       />,
     );
 
-    expect(screen.getByText("300").closest(".card-face__stat-badge")).toHaveClass(
-      "card-face__stat-badge--up",
-    );
-    expect(screen.getByText("200").closest(".card-face__stat-badge")).toHaveClass(
-      "card-face__stat-badge--down",
-    );
+    expect(
+      screen.getByText("300").closest(".card-face__stat-badge"),
+    ).toHaveClass("card-face__stat-badge--up");
+    expect(
+      screen.getByText("200").closest(".card-face__stat-badge"),
+    ).toHaveClass("card-face__stat-badge--down");
   });
 
   it("affiche la garde et l'état « a attaqué »", () => {

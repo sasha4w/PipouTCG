@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
-import type { ClientCard, SupportType } from "@pipou/shared";
+import { useTranslation } from "react-i18next";
+import type { ClientCard, DrakonElement, SupportType } from "@pipou/shared";
+import type { TFunction } from "i18next";
+import {
+  IconEarth,
+  IconFire,
+  IconWater,
+  IconWind,
+} from "../../components/Icons";
 import "./CardFace.css";
 
 const SUPPORT_TYPE_LABELS: Record<string, string> = {
@@ -17,6 +25,7 @@ export type CardFaceCard = Pick<
   cost?: number;
   description?: string | null;
   image?: { url: string } | null;
+  element?: DrakonElement | null;
 };
 
 export type StatState = "up" | "down";
@@ -44,6 +53,31 @@ export interface CardFaceProps {
   badges?: ReactNode;
 }
 
+const ELEMENT_ICON = {
+  earth: IconEarth,
+  fire: IconFire,
+  wind: IconWind,
+  water: IconWater,
+} as const;
+
+/** Pastille d'élément d'un Drakon, posée dans l'en-tête à gauche du nom. */
+function elementBadge(
+  element: DrakonElement,
+  size: CardFaceSize,
+  t: TFunction,
+) {
+  const Icon = ELEMENT_ICON[element];
+  return (
+    <span
+      className={`card-face__element card-face__element--${element}`}
+      role="img"
+      aria-label={t(`effects.element.${element}`)}
+    >
+      <Icon size={size === "xs" ? 9 : 13} />
+    </span>
+  );
+}
+
 function statBadgeClass(state: StatState | undefined): string {
   return state
     ? `card-face__stat-badge card-face__stat-badge--${state}`
@@ -60,6 +94,7 @@ export default function CardFace({
   spent = false,
   badges,
 }: CardFaceProps) {
+  const { t } = useTranslation();
   const isSupport = card.type.toLowerCase() === "support";
   const supportLabel = card.supportType
     ? (SUPPORT_TYPE_LABELS[card.supportType] ?? card.supportType)
@@ -80,6 +115,7 @@ export default function CardFace({
       data-rarity={card.rarity.toLowerCase()}
     >
       <div className="card-face__header">
+        {card.element && elementBadge(card.element, size, t)}
         <div className="card-face__name">{card.name}</div>
         {card.cost !== undefined && (
           <div className="card-face__cost">{card.cost}</div>

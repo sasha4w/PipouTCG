@@ -8,13 +8,21 @@ describe("getMonsterStatusEntries — nouvelles protections", () => {
   let t: TFunction;
   beforeAll(async () => {
     const i = i18next.createInstance();
-    await i.init({ lng: "fr", resources: { fr: { translation: fr } }, fallbackLng: false });
+    await i.init({
+      lng: "fr",
+      resources: { fr: { translation: fr } },
+      fallbackLng: false,
+    });
     t = i.t;
   });
 
   it("affiche les trois drapeaux", () => {
     const labels = getMonsterStatusEntries(
-      monster({ combatImmune: true, supportDestroyImmune: true, ignoresTaunt: true }),
+      monster({
+        combatImmune: true,
+        supportDestroyImmune: true,
+        ignoresTaunt: true,
+      }),
       t,
     ).map((e) => e.label);
     expect(labels).toEqual(

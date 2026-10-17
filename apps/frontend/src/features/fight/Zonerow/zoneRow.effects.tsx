@@ -2,9 +2,12 @@ import type { TFunction } from "i18next";
 import type { BuffEntry } from "../BuffDebuffSections";
 import {
   KEYWORD_ICON,
+  type KeywordId,
   describeCardEffects,
   effectPlainText,
 } from "../effectText";
+import { IconEgg, IconEvolve } from "../../../components/Icons";
+import KeywordIcon from "../KeywordIcon";
 import { buildStatRecap } from "./zoneRow.helpers";
 import type { CardInstance, MonsterOnBoard } from "../fight.types";
 
@@ -44,9 +47,9 @@ export function getMonsterStatusEntries(
     });
   }
 
-  const keyword = (id: keyof typeof KEYWORD_ICON, type: BuffEntry["type"]) =>
+  const keyword = (id: KeywordId, type: BuffEntry["type"]) =>
     entries.push({
-      icon: KEYWORD_ICON[id],
+      icon: <KeywordIcon id={id} />,
       label: t(`keywords.${id}.name`),
       type,
     });
@@ -91,6 +94,20 @@ export function getMonsterStatusEntries(
       label: t("effects.status.countdown", { count: zone.turnCounter }),
       type: "neutral",
     });
+  if (zone.hatchCounter !== undefined && zone.hatchCounter > 0)
+    entries.push({
+      icon: <IconEgg size={14} />,
+      label: t("effects.status.hatch", { count: zone.hatchCounter }),
+      type: "neutral",
+    });
+  if (zone.canEvolveThisTurn)
+    entries.push({
+      icon: <IconEvolve size={14} />,
+      label: t("effects.status.canEvolve"),
+      type: "buff",
+    });
+  if (zone.evolutionJoker) keyword("evolutionJoker", "buff");
+  if (zone.instantEvolution) keyword("instantEvolution", "buff");
 
   return entries;
 }

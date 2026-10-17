@@ -513,7 +513,10 @@
       "freeze_one": "Frozen for {{count}} more turn",
       "freeze_other": "Frozen for {{count}} more turns",
       "countdown_one": "Destroyed in {{count}} turn",
-      "countdown_other": "Destroyed in {{count}} turns"
+      "countdown_other": "Destroyed in {{count}} turns",
+      "hatch_one": "Hatches in {{count}} turn",
+      "hatch_other": "Hatches in {{count}} turns",
+      "canEvolve": "Can evolve this turn"
     }
   },
   "keywords": {

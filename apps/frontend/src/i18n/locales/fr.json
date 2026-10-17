@@ -515,7 +515,10 @@
       "freeze_one": "Gelé encore {{count}} tour",
       "freeze_other": "Gelé encore {{count}} tours",
       "countdown_one": "Détruit dans {{count}} tour",
-      "countdown_other": "Détruit dans {{count}} tours"
+      "countdown_other": "Détruit dans {{count}} tours",
+      "hatch_one": "Éclot dans {{count}} tour",
+      "hatch_other": "Éclot dans {{count}} tours",
+      "canEvolve": "Peut évoluer ce tour"
     }
   },
   "keywords": {

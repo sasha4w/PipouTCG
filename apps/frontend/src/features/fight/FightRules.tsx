@@ -8,7 +8,8 @@ import {
 import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
-import { KEYWORD_ICON, KEYWORD_IDS } from "./effectText";
+import { KEYWORD_IDS } from "./effectText";
+import KeywordIcon from "./KeywordIcon";
 import "./FightRules.css";
 
 /** Statuts des monstres : le même glossaire que la fiche d'effet des cartes. */
@@ -18,7 +19,9 @@ function StatusGrid() {
     <div className="fr-status-grid">
       {KEYWORD_IDS.map((id) => (
         <div key={id} className="fr-status-card">
-          <div className="fr-status-icon">{KEYWORD_ICON[id]}</div>
+          <div className="fr-status-icon">
+            <KeywordIcon id={id} />
+          </div>
           <div>
             <div className="fr-status-name">{t(`keywords.${id}.name`)}</div>
             <div className="fr-status-desc">{t(`keywords.${id}.desc`)}</div>
