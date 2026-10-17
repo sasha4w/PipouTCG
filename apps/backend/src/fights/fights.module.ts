@@ -19,6 +19,7 @@ import { MatchmakingService } from './services/matchmaking.service';
 import { DeckSubmissionService } from './services/deck-submission.service';
 import { PhaseService } from './services/phase.service';
 import { SummonService } from './services/summon.service';
+import { EvolutionService } from './services/evolution.service';
 import { SupportService } from './services/support.service';
 import { BattleService } from './services/battle.service';
 import { PickService } from './services/pick.service';
@@ -53,6 +54,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     DeckSubmissionService,
     PhaseService,
     SummonService,
+    EvolutionService,
     SupportService,
     BattleService,
     PickService,

@@ -12,7 +12,14 @@ import {
   equipmentCard,
   monsterCard,
 } from '../testing/cards';
-import { handNames, monsterNamed, scenario } from '../testing/scenario';
+import {
+  attackWith,
+  graveyardNames,
+  handNames,
+  monsterNamed,
+  passTurn,
+  scenario,
+} from '../testing/scenario';
 
 const dragon = (name: string, extra: Parameters<typeof monsterCard>[1] = {}) =>
   monsterCard(name, { archetype: 'dragon', ...extra });
@@ -146,6 +153,210 @@ describe('mécaniques Drakon', () => {
       engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 });
       expect(monsterNamed(game, 'p1', 'Drakon').tempAtkBuff).toBe(300);
       expect(monsterNamed(game, 'p1', 'Pipou').tempAtkBuff).toBe(0);
+    });
+  });
+
+  describe('évolution', () => {
+    const bebe = (extra = {}) =>
+      dragon('Bébé Feros', {
+        stage: 'baby',
+        lineage: 'feros',
+        element: 'fire',
+        cost: 1,
+        atk: 400,
+        hp: 400,
+        ...extra,
+      });
+    const jeune = (extra = {}) =>
+      dragon('Jeune Feros', {
+        stage: 'young',
+        lineage: 'feros',
+        element: 'fire',
+        cost: 2,
+        atk: 800,
+        hp: 900,
+        effects: [
+          effect(EffectTrigger.ON_SUMMON, [
+            act(ActionType.SET_PIERCING, EffectTarget.SELF),
+          ]),
+        ],
+        ...extra,
+      });
+    const evolve = (
+      game: ReturnType<typeof scenario>,
+      name = 'Bébé Feros',
+      paymentHandIndices: number[] = [],
+    ) =>
+      engine.dispatch(game, 'p1', {
+        type: 'evolve',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', name).instanceId,
+        paymentHandIndices,
+      });
+
+    it('remplace la base : équipements et mode gardés, PV pleins, base au cimetière, ON_SUMMON', () => {
+      const casque = equipmentCard('Casque', []);
+      const game = scenario({
+        p1: {
+          hand: [jeune()],
+          recycleEnergy: 1,
+          monsters: [
+            {
+              card: bebe(),
+              equipments: [casque],
+              mode: 'guard',
+              currentHp: 100,
+            },
+          ],
+        },
+      });
+      expect(evolve(game)).toEqual({});
+      const evolved = monsterNamed(game, 'p1', 'Jeune Feros');
+      expect(game.player1.monsterZones[0]).toBe(evolved);
+      expect(evolved.equipments.map((e) => e.baseCard.name)).toEqual([
+        'Casque',
+      ]);
+      expect(evolved.mode).toBe('guard');
+      expect(evolved.currentHp).toBe(900);
+      expect(evolved.hasPiercing).toBe(true);
+      expect(graveyardNames(game, 'p1')).toEqual(['Bébé Feros']);
+      expect(game.player1.recycleEnergy).toBe(0);
+      expect(game.pendingEvents.at(-1)).toMatchObject({
+        kind: 'monster_summoned',
+        zoneIndex: 0,
+      });
+    });
+
+    it('coût en différence payé par défausse', () => {
+      const game = scenario({
+        p1: { hand: [jeune(), monsterCard('Payeur')], monsters: [bebe()] },
+      });
+      expect(evolve(game, 'Bébé Feros', [])).toEqual({
+        error: 'Pas assez de cartes défaussées (besoin: 1)',
+      });
+      expect(evolve(game, 'Bébé Feros', [1])).toEqual({});
+      expect(graveyardNames(game, 'p1')).toEqual(['Payeur', 'Bébé Feros']);
+    });
+
+    it('refuse le tour de pose, sauf Évolution immédiate ou Peut évoluer ce tour', () => {
+      const posé = { card: bebe(), summonedThisTurn: true };
+      const refus = scenario({
+        p1: { hand: [jeune()], recycleEnergy: 1, monsters: [posé] },
+      });
+      expect(evolve(refus).error).toBe(
+        "Bébé Feros doit attendre un tour avant d'évoluer",
+      );
+
+      const rapide = scenario({
+        p1: {
+          hand: [jeune()],
+          recycleEnergy: 1,
+          monsters: [{ ...posé, patch: { canEvolveThisTurn: true } }],
+        },
+      });
+      expect(evolve(rapide)).toEqual({});
+    });
+
+    it('refuse une autre lignée', () => {
+      const game = scenario({
+        p1: {
+          hand: [jeune({ lineage: 'teros' })],
+          recycleEnergy: 1,
+          monsters: [bebe()],
+        },
+      });
+      expect(evolve(game).error).toBe(
+        'Jeune Feros ne peut pas évoluer depuis Bébé Feros',
+      );
+    });
+
+    it('le joker accepte un Jeune de toute lignée', () => {
+      const oeuf = dragon('Œuf', {
+        stage: 'egg',
+        atk: 0,
+        hp: 300,
+        cost: 1,
+        effects: [
+          effect(EffectTrigger.PASSIVE, [
+            act(ActionType.EVOLUTION_JOKER, EffectTarget.SELF),
+          ]),
+        ],
+      });
+      const game = scenario({
+        p1: {
+          hand: [jeune({ lineage: 'ackos' })],
+          recycleEnergy: 1,
+          monsters: [oeuf],
+        },
+      });
+      engine.settle(game);
+      expect(evolve(game, 'Œuf')).toEqual({});
+    });
+
+    it("pas d'attaque supplémentaire en évoluant", () => {
+      const game = scenario({
+        p1: {
+          hand: [jeune()],
+          recycleEnergy: 1,
+          monsters: [
+            {
+              card: bebe(),
+              patch: { attacksUsedThisTurn: 1, hasAttackedThisTurn: true },
+            },
+          ],
+        },
+      });
+      evolve(game);
+      expect(monsterNamed(game, 'p1', 'Jeune Feros').hasAttackedThisTurn).toBe(
+        true,
+      );
+    });
+
+    it('INSTANT_EVOLUTION (passif) et ALLOW_EVOLUTION_THIS_TURN (effet, expire en fin de tour)', () => {
+      const vent = dragon('Bébé Vent', {
+        stage: 'baby',
+        lineage: 'tempestu',
+        cost: 1,
+        effects: [
+          effect(EffectTrigger.PASSIVE, [
+            act(ActionType.INSTANT_EVOLUTION, EffectTarget.SELF),
+          ]),
+        ],
+      });
+      const game = scenario({
+        p1: { monsters: [{ card: vent, summonedThisTurn: true }] },
+      });
+      engine.settle(game);
+      expect(monsterNamed(game, 'p1', 'Bébé Vent').instantEvolution).toBe(true);
+
+      const accel = ephemeralCard('Accélère', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.ALLOW_EVOLUTION_THIS_TURN, EffectTarget.TARGET_ALLY),
+        ]),
+      ]);
+      const g2 = scenario({ p1: { hand: [accel], monsters: [bebe()] } });
+      const id = monsterNamed(g2, 'p1', 'Bébé Feros').instanceId;
+      engine.dispatch(g2, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: id,
+      });
+      expect(monsterNamed(g2, 'p1', 'Bébé Feros').canEvolveThisTurn).toBe(true);
+      passTurn(engine, g2);
+      expect(
+        monsterNamed(g2, 'p1', 'Bébé Feros').canEvolveThisTurn,
+      ).toBeFalsy();
+    });
+
+    it('un Œuf ne peut pas attaquer', () => {
+      const game = scenario({
+        phase: 'battle',
+        p1: { monsters: [dragon('Œuf', { stage: 'egg', atk: 0 })] },
+        p2: { monsters: [monsterCard('Cible')] },
+      });
+      expect(attackWith(engine, game, 'p1', 'Œuf', 'Cible').error).toBe(
+        'Un Œuf ne peut pas attaquer',
+      );
     });
   });
 });

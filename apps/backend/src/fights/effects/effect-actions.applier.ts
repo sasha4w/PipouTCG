@@ -144,6 +144,12 @@ export function applyActions(
         }
         break;
 
+      case ActionType.ALLOW_EVOLUTION_THIS_TURN:
+        for (const m of targets.monsters) {
+          m.canEvolveThisTurn = true;
+          ctx.log.push(`🧬 ${m.card.baseCard.name} peut évoluer ce tour`);
+        }
+        break;
       case ActionType.SET_PIERCING:
         for (const m of targets.monsters) {
           m.perm.piercing = true;

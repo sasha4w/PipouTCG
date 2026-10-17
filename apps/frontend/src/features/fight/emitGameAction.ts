@@ -23,6 +23,14 @@ export function emitGameAction(
         ...(action.onOpponentSide && { onOpponentSide: true }),
       });
       return;
+    case "evolve":
+      socket.emit("fight:evolve", {
+        matchId,
+        handIndex: action.handIndex,
+        targetInstanceId: action.targetInstanceId,
+        paymentHandIndices: action.paymentHandIndices,
+      });
+      return;
     case "play_support":
       socket.emit("fight:play_support", {
         matchId,

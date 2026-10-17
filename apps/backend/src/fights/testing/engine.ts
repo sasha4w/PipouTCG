@@ -4,6 +4,7 @@ import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 import { PhaseService } from '../services/phase.service';
 import { SummonService } from '../services/summon.service';
+import { EvolutionService } from '../services/evolution.service';
 import { SupportService } from '../services/support.service';
 import { BattleService } from '../services/battle.service';
 import { PickService } from '../services/pick.service';
@@ -15,6 +16,7 @@ export function createEngine(rng: Rng = fixedRng()): GameEngine {
   return new GameEngine(
     new PhaseService(effects),
     new SummonService(effects),
+    new EvolutionService(effects),
     new SupportService(effects),
     new BattleService(effects),
     new PickService(),

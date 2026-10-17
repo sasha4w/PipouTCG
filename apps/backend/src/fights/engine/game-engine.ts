@@ -10,6 +10,7 @@ import { CardInstance, GameState } from '../interfaces/game-state.interface';
 import { PhaseService } from '../services/phase.service';
 import { RNG, type Rng } from './rng';
 import { SummonService } from '../services/summon.service';
+import { EvolutionService } from '../services/evolution.service';
 import { SupportService } from '../services/support.service';
 import { BattleService } from '../services/battle.service';
 import { PickService } from '../services/pick.service';
@@ -38,6 +39,7 @@ export class GameEngine {
   constructor(
     private phase: PhaseService,
     private summon: SummonService,
+    private evolution: EvolutionService,
     private support: SupportService,
     private battle: BattleService,
     private pick: PickService,
@@ -196,6 +198,14 @@ export class GameEngine {
           action.zoneIndex,
           action.paymentHandIndices,
           action.onOpponentSide ?? false,
+        );
+      case 'evolve':
+        return this.evolution.evolve(
+          game,
+          userId,
+          action.handIndex,
+          action.targetInstanceId,
+          action.paymentHandIndices,
         );
       case 'play_support':
         return this.support.playSupport(

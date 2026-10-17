@@ -55,6 +55,8 @@ export class BuffsCalculatorService {
       m.attacksPerTurn = m.perm.attacksPerTurn;
       m.supportDestroyImmune = false;
       m.ignoresTaunt = false;
+      m.evolutionJoker = false;
+      m.instantEvolution = false;
     }
 
     // 2. Terrains : uniquement les monstres de leur propriétaire
@@ -193,6 +195,12 @@ function applyPassive(m: MonsterOnBoard, action: EffectAction): void {
       break;
     case ActionType.SET_PIERCING:
       m.hasPiercing = true;
+      break;
+    case ActionType.EVOLUTION_JOKER:
+      m.evolutionJoker = true;
+      break;
+    case ActionType.INSTANT_EVOLUTION:
+      m.instantEvolution = true;
       break;
     case ActionType.SET_DEBUFF_IMMUNITY:
       m.isImmuneToDebuffs = true;

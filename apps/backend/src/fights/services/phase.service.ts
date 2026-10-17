@@ -124,6 +124,7 @@ export class PhaseService {
       m.attacksUsedThisTurn = 0;
       m.extraAttacksThisTurn = 0;
       m.summonedThisTurn = false;
+      m.canEvolveThisTurn = false;
       // Le gel compte les tours du propriétaire du monstre gelé
       if (m.blockAttackTurns !== undefined) {
         m.blockAttackTurns -= 1;
