@@ -1,8 +1,15 @@
 import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "./FightBoard.css";
-import type { GameState, MonsterOnBoard } from "./fight.types";
+import {
+  RARITY_COLOR,
+  type GameState,
+  type MonsterOnBoard,
+} from "./fight.types";
 import FightHUD from "./FightHUD";
+import FightFxLayer from "./FightFxLayer";
+import { boardFxFromEvents } from "./fightEvents";
+import { useAnimationPrefs } from "../../contexts/useAnimationPrefs";
 import ZoneRow from "./Zonerow/ZoneRow";
 import FightHand from "./FightHand";
 import { toHandCard, type HandCard } from "./handCard";
@@ -68,6 +75,32 @@ export default function FightBoard({
   onSurrender,
 }: Props) {
   const phase = gs.phase;
+
+  const { reduced } = useAnimationPrefs();
+  const fx = useMemo(
+    // `?? []` : état envoyé par un backend pas encore redéployé
+    () => boardFxFromEvents(gs.events ?? [], gs.me.userId),
+    [gs.events, gs.me.userId],
+  );
+
+  // ── Invocation légendaire / secrète : flash + secousse ───────────────────
+  const [flash, setFlash] = useState<{ key: number; color: string } | null>(
+    null,
+  );
+  const [shaking, setShaking] = useState(false);
+  useEffect(() => {
+    const top = fx.topSummon;
+    if (reduced || !top || top.tier < 3) return;
+    // Déclenchement d'un effet visuel ponctuel en réaction à de nouveaux événements
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFlash((f) => ({
+      key: (f?.key ?? 0) + 1,
+      color: RARITY_COLOR[top.rarity],
+    }));
+    setShaking(true);
+    const t = setTimeout(() => setShaking(false), 400);
+    return () => clearTimeout(t);
+  }, [fx, reduced]);
 
   const [showSummonModal, setShowSummonModal] = useState(false);
 
@@ -359,7 +392,16 @@ export default function FightBoard({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="fb-wrap">
+    <div
+      className={[
+        "fb-wrap",
+        reduced ? "fb--reduced-motion" : "",
+        shaking ? "fb-wrap--shake" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <FightFxLayer flash={flash} />
       <FightHUD
         me={gs.me}
         opponent={gs.opponent}
@@ -378,12 +420,14 @@ export default function FightBoard({
           <ZoneRow
             label="Adversaire — Supports"
             zones={gs.opponent.supportZones}
+            fx={fx.opponent.supports}
             isSupport
             dim
           />
           <ZoneRow
             label="Adversaire — Monstres"
             zones={gs.opponent.monsterZones}
+            fx={fx.opponent.monsters}
             isOpponent
             damagedZones={damagedOppZones}
             highlightOpponentEmpty={gs.isMyTurn && phase === "main" && isZeta}
@@ -421,6 +465,7 @@ export default function FightBoard({
           <ZoneRow
             label="Mes Monstres"
             zones={gs.me.monsterZones}
+            fx={fx.me.monsters}
             onZoneClick={gs.isMyTurn && !isZeta ? handleZoneClick : undefined}
             onModeChange={
               phase === "main" && gs.isMyTurn ? onChangeMode : undefined
@@ -440,6 +485,7 @@ export default function FightBoard({
           <ZoneRow
             label="Mes Supports"
             zones={gs.me.supportZones}
+            fx={fx.me.supports}
             isSupport
             recycleEnergy={gs.me.recycleEnergy}
             onZoneClick={
