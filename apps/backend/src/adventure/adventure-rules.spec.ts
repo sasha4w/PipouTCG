@@ -2,6 +2,7 @@ import type { AdventureRewardConfig } from '@pipou/shared';
 import { RESET_HOUR } from '../quests/quest-schedule';
 import {
   canActivateWorld,
+  countsAsPlayed,
   farmWindowStart,
   isWorldUnlocked,
   opponentStates,
@@ -149,5 +150,14 @@ describe('rollLoot', () => {
       legendary: false,
       capped: true,
     });
+  });
+});
+
+describe('countsAsPlayed', () => {
+  it('victoire : toujours jouée ; défaite : à partir de 2 tours', () => {
+    expect(countsAsPlayed(true, 0)).toBe(true);
+    expect(countsAsPlayed(false, 0)).toBe(false);
+    expect(countsAsPlayed(false, 1)).toBe(false);
+    expect(countsAsPlayed(false, 2)).toBe(true);
   });
 });

@@ -198,6 +198,7 @@ Nouvel onglet « Aventure » dans [Admin.tsx](../../../apps/frontend/src/pages/A
 - **Câblage Nest** : `FightsService` reçoit les hooks PvE (`PVE_HOOKS`, fournis par `AdventureService`) en `@Optional()`. Sans eux, `adventure:start` répond « Mode Aventure indisponible ». `AdventureModule` n'importe pas `FightsModule`, ce qui évite un cycle.
 - **IA** : elle ne change le mode d'un monstre qu'en phase principale (règle du moteur). Si son choix de mulligan échoue, elle garde sa main (`redraw: false`). Elle regarde un seul coup en avance pour décider de passer en garde.
 - **Fin forcée par timeouts** : après 3 timeouts consécutifs du joueur, la partie se termine avec `endReason = 'surrender'`. `MatchEndReason` n'a pas de valeur `timeout`, et c'est un enum en BDD sur `match`.
+- **Combat PvE « joué »** : une partie compte comme jouée (quêtes `PLAY_FIGHT` / `PLAY_PVE_FIGHT` via `adventure.finished`, succès `PVE_PLAYED`) seulement si elle est gagnée **ou** a duré au moins 2 tours (`adventure_match.turns >= 2`). Un abandon immédiat ferme la ligne mais ne compte pas, pour empêcher de farmer ces compteurs.
 - **Prérequis** : si un monde prérequis est inactif, le monde qui en dépend reste verrouillé.
 - **Monde devenu injouable** : un monde dont le booster a été supprimé ou dont le set n'a plus de légendaire refuse le lancement d'un combat. La vue `GET /adventure` le montre quand même. Le joueur voit donc une IA « disponible » qui renvoie une erreur au lancement.
 - **Admin** :

@@ -27,6 +27,7 @@ import { UsersService } from '../users/users.service';
 import {
   farmWindowStart,
   canActivateWorld,
+  countsAsPlayed,
   isWorldUnlocked,
   opponentStates,
   rollLoot,
@@ -328,8 +329,11 @@ export class AdventureService implements PveHooks {
       return { userId: match.userId, payload: result };
     });
 
-    const finished: AdventureFinishedEvent = { userId, won: payload.won };
-    this.events.emit('adventure.finished', finished);
+    // Un abandon immédiat ne compte pas comme combat joué (quêtes).
+    if (countsAsPlayed(payload.won, game.turnNumber)) {
+      const finished: AdventureFinishedEvent = { userId, won: payload.won };
+      this.events.emit('adventure.finished', finished);
+    }
     if (setCheck !== null)
       this.events.emit('card.set.check', { userId, setId: setCheck });
     return payload;

@@ -62,7 +62,8 @@ export class AchievementStatsService {
           GROUP BY s.id`,
           [userId],
         ),
-        // won IS NULL = combat non terminé : ignoré partout.
+        // won IS NULL = combat non terminé : ignoré partout. « Joué » =
+        // gagné ou au moins 2 tours (cf. countsAsPlayed, adventure-rules).
         this.dataSource.query<
           {
             played: string | number;
@@ -71,7 +72,7 @@ export class AchievementStatsService {
           }[]
         >(
           `SELECT
-            (SELECT COUNT(*) FROM adventure_match WHERE user_id = ? AND won IS NOT NULL) AS played,
+            (SELECT COUNT(*) FROM adventure_match WHERE user_id = ? AND won IS NOT NULL AND (won = 1 OR turns >= 2)) AS played,
             (SELECT COUNT(*) FROM adventure_match WHERE user_id = ? AND won = 1) AS won,
             (SELECT COUNT(*)
                FROM adventure_world w

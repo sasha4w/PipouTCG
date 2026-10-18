@@ -37,6 +37,18 @@ export function canActivateWorld(input: {
   return { ok: true };
 }
 
+/** Tours minimum pour qu'une défaite PvE compte comme « jouée ». */
+export const ADVENTURE_MIN_PLAYED_TURNS = 2;
+
+/**
+ * Un combat PvE terminé compte comme joué (quêtes, succès) s'il est gagné
+ * ou s'il a duré au moins 2 tours : un abandon immédiat ne compte pas.
+ * À garder aligné avec le SQL de `AchievementStatsService`.
+ */
+export function countsAsPlayed(won: boolean, turns: number): boolean {
+  return won || turns >= ADVENTURE_MIN_PLAYED_TURNS;
+}
+
 /** Début de la fenêtre de farm courante (même reset que les quêtes daily). */
 export function farmWindowStart(now: Date): Date {
   return lastDailyReset(now);

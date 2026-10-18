@@ -294,12 +294,12 @@ function setup(opts?: { worlds?: Row[]; cards?: Row[]; dailyCap?: number }) {
   };
 }
 
-function game(winner: number | undefined): GameState {
+function game(winner: number | undefined, turnNumber = 9): GameState {
   return {
     matchId: AI,
     winner,
     endReason: 'primes_depleted',
-    turnNumber: 9,
+    turnNumber,
     player1: { userId: USER },
     player2: { userId: AI },
   } as unknown as GameState;
@@ -719,6 +719,48 @@ describe('AdventureService.recordResult', () => {
       won: false,
       rewarded: false,
       turns: 9,
+    });
+  });
+
+  it.each([0, 1])(
+    'abandon au tour %i : ligne fermée mais pas de adventure.finished',
+    async (turns) => {
+      const ctx = setup();
+      const id = await startedMatch(ctx, 11);
+      const r = await ctx.service.recordResult(
+        game(AI, turns),
+        pve(id, 11),
+        NOW,
+      );
+      expect(r.won).toBe(false);
+      expect(ctx.matchRows.find((m) => m.id === id)).toMatchObject({
+        won: false,
+        turns,
+      });
+      expect(ctx.events.emit).not.toHaveBeenCalledWith(
+        'adventure.finished',
+        expect.anything(),
+      );
+    },
+  );
+
+  it('défaite au tour 2 : adventure.finished { won: false }', async () => {
+    const ctx = setup();
+    const id = await startedMatch(ctx, 11);
+    await ctx.service.recordResult(game(AI, 2), pve(id, 11), NOW);
+    expect(ctx.events.emit).toHaveBeenCalledWith('adventure.finished', {
+      userId: USER,
+      won: false,
+    });
+  });
+
+  it('victoire au tour 1 : adventure.finished { won: true } quand même', async () => {
+    const ctx = setup();
+    const id = await startedMatch(ctx, 11);
+    await ctx.service.recordResult(game(USER, 1), pve(id, 11), NOW);
+    expect(ctx.events.emit).toHaveBeenCalledWith('adventure.finished', {
+      userId: USER,
+      won: true,
     });
   });
 
