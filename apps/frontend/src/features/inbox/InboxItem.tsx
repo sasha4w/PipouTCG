@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { questTitle } from "../quests/questTitle";
 import { useTranslation } from "react-i18next";
 import type { NotificationItem } from "@pipou/shared";
 import { NotificationType } from "@pipou/shared";
@@ -49,7 +50,7 @@ export default function InboxItem({
         <div className="inbox__item inbox__item--reward">
           <div className="inbox__row">
             <IconQuest size={14} color="#eebc77" />
-            <span className="inbox__title">{title}</span>
+            <span className="inbox__title">{questTitle(title)}</span>
             <span className="inbox__chip">
               <RewardIcon type={rewardType} />+{rewardAmount}
             </span>

@@ -104,7 +104,7 @@
   "quests": {
     "title": "Missions",
     "daily": "Daily",
-    "weekly": "Weekly",
+    "weekly": "Hebdo",
     "monthly": "Monthly",
     "achievement": "Achievements",
     "event": "Événements",
@@ -118,7 +118,38 @@
     "remaining_hours": "{{h}}h {{m}}min restantes",
     "remaining_mins": "{{m}}min {{s}}s restantes",
     "remaining_secs": "{{s}}s restantes",
-    "see_all": "Voir toutes les quêtes"
+    "see_all": "Voir toutes les quêtes",
+    "reset": "Reset dans",
+    "reroll": "Changer cette quête",
+    "reroll_hint": "1 relance par jour",
+    "loading": "Chargement…",
+    "pool": {
+      "d_open_1": "Ouvre 1 booster",
+      "d_open_2": "Ouvre 2 boosters",
+      "d_open_3": "Ouvre 3 boosters",
+      "d_play_1": "Joue 1 duel",
+      "d_play_2": "Joue 2 duels",
+      "d_play_3": "Joue 3 duels",
+      "d_win_1": "Gagne 1 duel",
+      "d_win_2": "Gagne 2 duels",
+      "d_buy_card_1": "Achète 1 carte au marché",
+      "d_sell_card_1": "Vends 1 carte au marché",
+      "d_list_card_1": "Mets 1 carte en vente",
+      "d_buy_booster_1": "Achète 1 booster",
+      "d_obtain_10": "Obtiens 10 cartes",
+      "d_obtain_rare": "Obtiens 1 carte rare ou mieux",
+      "d_daily_reward": "Réclame ta récompense quotidienne",
+      "w_open_15": "Ouvre 15 boosters",
+      "w_play_15": "Joue 15 duels",
+      "w_win_10": "Gagne 10 duels",
+      "w_buy_card_10": "Achète 10 cartes au marché",
+      "w_sell_card_10": "Vends 10 cartes au marché",
+      "w_earn_1000": "Gagne 1 000 or au marché",
+      "w_obtain_100": "Obtiens 100 cartes",
+      "w_obtain_epic_3": "Obtiens 3 cartes épiques ou mieux",
+      "w_daily_reward_5": "Réclame ta récompense quotidienne 5 fois",
+      "w_quests_10": "Termine 10 quêtes quotidiennes"
+    }
   },
   "inbox": {
     "label": "Boîte de réception",
@@ -503,8 +534,18 @@
     "filter": {
       "name": "nom contenant « {{name}} »"
     },
-    "stage": { "egg": "Œuf", "baby": "Bébé", "young": "Jeune", "adult": "Adulte" },
-    "element": { "earth": "Terre", "fire": "Feu", "wind": "Vent", "water": "Eau" },
+    "stage": {
+      "egg": "Œuf",
+      "baby": "Bébé",
+      "young": "Jeune",
+      "adult": "Adulte"
+    },
+    "element": {
+      "earth": "Terre",
+      "fire": "Feu",
+      "wind": "Vent",
+      "water": "Eau"
+    },
     "archetype": {
       "pipou": "Pipou",
       "dragon": "Drakon",
@@ -596,5 +637,8 @@
   "fight": {
     "evolveHint": "Touche un de tes monstres pour évoluer",
     "summonPick": "Invoquer"
+  },
+  "achievements": {
+    "tab": "Succès"
   }
 }

@@ -1,5 +1,5 @@
 import { api } from "../api/api";
-import type { PaginatedResponse } from "@pipou/shared";
+import type { AchievementFamily, PaginatedResponse } from "@pipou/shared";
 import type { CardType, Rarity, SupportType } from "./card.service";
 
 /** Carte du portfolio public d'un joueur (GET /users/:id/portfolio). */
@@ -25,6 +25,7 @@ export const isInventoryCard = (item: InventoryItem): item is InventoryCard =>
   "userCardId" in item;
 
 export interface UserProfile {
+  equippedTitle: AchievementFamily | null;
   id: number;
   username: string;
   isPrivate: boolean;

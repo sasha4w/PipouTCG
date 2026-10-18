@@ -118,7 +118,38 @@
     "remaining_hours": "{{h}}h {{m}}min remaining",
     "remaining_mins": "{{m}}min {{s}}s remaining",
     "remaining_secs": "{{s}}s remaining",
-    "see_all": "See all quests"
+    "see_all": "See all quests",
+    "reset": "Resets in",
+    "reroll": "Swap this quest",
+    "reroll_hint": "1 swap per day",
+    "loading": "Loading…",
+    "pool": {
+      "d_open_1": "Open 1 booster",
+      "d_open_2": "Open 2 boosters",
+      "d_open_3": "Open 3 boosters",
+      "d_play_1": "Play 1 duel",
+      "d_play_2": "Play 2 duels",
+      "d_play_3": "Play 3 duels",
+      "d_win_1": "Win 1 duel",
+      "d_win_2": "Win 2 duels",
+      "d_buy_card_1": "Buy 1 card on the market",
+      "d_sell_card_1": "Sell 1 card on the market",
+      "d_list_card_1": "List 1 card for sale",
+      "d_buy_booster_1": "Buy 1 booster",
+      "d_obtain_10": "Get 10 cards",
+      "d_obtain_rare": "Get 1 rare card or better",
+      "d_daily_reward": "Claim your daily reward",
+      "w_open_15": "Open 15 boosters",
+      "w_play_15": "Play 15 duels",
+      "w_win_10": "Win 10 duels",
+      "w_buy_card_10": "Buy 10 cards on the market",
+      "w_sell_card_10": "Sell 10 cards on the market",
+      "w_earn_1000": "Earn 1,000 gold on the market",
+      "w_obtain_100": "Get 100 cards",
+      "w_obtain_epic_3": "Get 3 epic cards or better",
+      "w_daily_reward_5": "Claim your daily reward 5 times",
+      "w_quests_10": "Complete 10 daily quests"
+    }
   },
   "inbox": {
     "label": "Inbox",
@@ -501,8 +532,18 @@
     "filter": {
       "name": "name containing “{{name}}”"
     },
-    "stage": { "egg": "Egg", "baby": "Baby", "young": "Young", "adult": "Adult" },
-    "element": { "earth": "Earth", "fire": "Fire", "wind": "Wind", "water": "Water" },
+    "stage": {
+      "egg": "Egg",
+      "baby": "Baby",
+      "young": "Young",
+      "adult": "Adult"
+    },
+    "element": {
+      "earth": "Earth",
+      "fire": "Fire",
+      "wind": "Wind",
+      "water": "Water"
+    },
     "archetype": {
       "pipou": "Pipou",
       "dragon": "Drakon",
@@ -594,5 +635,8 @@
   "fight": {
     "evolveHint": "Tap one of your monsters to evolve",
     "summonPick": "Summon"
+  },
+  "achievements": {
+    "tab": "Achievements"
   }
 }
