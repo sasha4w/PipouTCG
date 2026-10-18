@@ -36,6 +36,32 @@ D'après le dump de prod (`apps/backend/.e2e/aiven-dump.sql`, 2026-10-18). *L'or
 | 2 | SquareWorld - dans le monde virtuel (2) | La foire au pixel (3) — alternative : PixelKing (5) | Noyau Omega | 23 (8 monstres, 15 supports) |
 | 3 | Drakon - Les légendes primaires (3) | Les quatres éléments (4) | Œuf Céleste | 21 (15 monstres, 6 supports) |
 
+### Identité de chaque monde (donnée par Sasha)
+
+Les decks **et** le jeu de l'IA doivent incarner la philosophie du set. Une IA qui joue Pixelman sans équiper son noyau serait un échec.
+
+- **PipouSquad (archétype `pipou`) — « l'union fait la force »** : beaucoup de monstres qui se boostent entre eux. On invoque en nombre, et les monstres se renforcent les uns les autres.
+- **SquareWorld (archétype `pixelman`) — un noyau, bombardé d'équipements** : il y a plusieurs Noyaux, chacun avec sa philosophie de combat. On choisit un noyau et on l'empile d'équipements. Le faible nombre de monstres du set est voulu.
+- **Drakon (archétype `dragon`) — protéger le faible pour le faire évoluer** : des monstres évolutifs (œuf → bébé → jeune → adulte) de 4 éléments. On protège ses unités faibles pour en faire des monstres puissants.
+
+**Signature de chaque IA** (*proposition de Claude*, modifiable dans l'admin) : chaque IA d'un monde porte une variante de l'archétype, et sa carte signature lui sert de portrait.
+
+| Niveau | PipouSquad | SquareWorld (noyau) | Drakon (élément) |
+|---|---|---|---|
+| 1 | Recrue Andouille — petite escouade | Noyau Alpha | Teros (terre) |
+| 2 | Caporal Gazouille | Noyau Beta | Feros (feu) |
+| 3 | Capitaine Gribouille | Noyau Zeta | Ackos (eau) |
+| 4 | Commandant Quenouille | Noyau Delta | Tempestu (vent) |
+| 5 boss | Général Chatouille | Noyau Omega | Œuf Céleste — multi-éléments |
+
+- Les noms des IA restent au choix du builder. La carte signature indique le thème et sert de portrait par défaut.
+- **Génération de decks** : elle part de la signature. Pixelman : 1 noyau (en 2 ou 3 exemplaires) + une majorité d'équipements et de supports qui les servent. Drakon : les œufs et les stades de l'élément signature. Pipou : un maximum de monstres, avec les cartes de boost d'équipe (Clairon de l'Union, Tactique Gang Gang…).
+- **Heuristiques par archétype**, en plus du socle commun :
+  - Pipou : remplir le terrain en priorité, garder les monstres qui boostent les autres en vie.
+  - Pixelman : poser le noyau, puis lui donner tous les équipements ; protéger le noyau équipé.
+  - Drakon : ne pas exposer les unités en cours d'évolution, et évoluer dès que c'est possible.
+- Les **combats instructifs** (projet suivant) expliqueront ces trois mêmes philosophies : la signature et les heuristiques doivent pouvoir être réutilisées.
+
 - Le booster par défaut est celui de plus petit id du set ; l'admin peut le changer.
 - Le seed retrouve les sets **par id** et vérifie qu'ils existent toujours et que la condition d'activation est remplie (booster et légendaire). Sinon il crée le monde inactif.
 - Points d'attention pour la génération de decks (30 à 40 cartes, 3 exemplaires max, cartes du set uniquement) :
