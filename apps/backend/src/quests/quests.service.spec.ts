@@ -628,6 +628,83 @@ describe('QuestService', () => {
     });
   });
 
+  describe('syncUserQuests - quêtes héritées inactives', () => {
+    const legacy = {
+      ...fakeQuest,
+      id: 99,
+      isActive: false,
+      resetType: QuestResetType.DAILY,
+    };
+    const legacyRow = (over: object = {}) => ({
+      ...fakeUserQuest,
+      id: 50,
+      resetAt: new Date(Date.now() + 3_600_000),
+      quest: legacy,
+      ...over,
+    });
+
+    beforeEach(() => {
+      mockQuestRepo.find.mockImplementation(
+        ({ where }: { where: { isActive?: boolean; resetType?: unknown } }) => {
+          if (where.isActive === false) return Promise.resolve([{ id: 99 }]);
+          if (where.isActive && where.resetType === QuestResetType.DAILY)
+            return Promise.resolve(
+              [1, 2, 3, 4].map((id) => ({ ...fakeQuest, id })),
+            );
+          return Promise.resolve([]);
+        },
+      );
+      mockUserQuestRepo.create.mockImplementation((x: object) => x);
+    });
+
+    it('tire 3 quêtes malgré une ligne héritée inactive à resetAt futur', async () => {
+      mockUserQuestRepo.find.mockImplementation(
+        ({
+          where,
+        }: {
+          where: { quest?: { id?: unknown; resetType?: string } };
+        }) =>
+          Promise.resolve(
+            where.quest?.id || where.quest?.resetType === QuestResetType.DAILY
+              ? [legacyRow()]
+              : [],
+          ),
+      );
+
+      await service.syncUserQuests(1);
+
+      const saved = (
+        mockUserQuestRepo.save.mock.calls as [{ quest: { id: number } }[]][]
+      )
+        .map((c) => c[0])
+        .find((a) => Array.isArray(a));
+      expect(saved).toHaveLength(3);
+    });
+
+    it('paie la récompense terminée non réclamée d’une quête désactivée', async () => {
+      const row = legacyRow({ isCompleted: true, rewardClaimed: false });
+      mockUserQuestRepo.find.mockImplementation(
+        ({
+          where,
+        }: {
+          where: { quest?: { id?: unknown; resetType?: string } };
+        }) => Promise.resolve(where.quest?.id ? [row] : []),
+      );
+
+      const claimed = await service.syncUserQuests(1);
+
+      expect(mockUsersService.addGold).toHaveBeenCalledWith(1, 100);
+      expect(mockUserQuestRepo.remove).toHaveBeenCalledWith([row]);
+      expect(claimed).toEqual([
+        { title: legacy.title, rewardType: 'GOLD', rewardAmount: 100 },
+      ]);
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quest.claimed', {
+        userId: 1,
+        userQuestIds: [50],
+      });
+    });
+  });
+
   describe('rerollQuest', () => {
     const held = (id: number, questId: number, extra = {}) => ({
       ...fakeUserQuest,

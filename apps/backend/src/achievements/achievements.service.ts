@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -27,6 +28,8 @@ function isDuplicateEntry(err: unknown): boolean {
 
 @Injectable()
 export class AchievementsService {
+  private readonly logger = new Logger(AchievementsService.name);
+
   constructor(
     @InjectRepository(UserAchievement)
     private readonly repo: Repository<UserAchievement>,
@@ -78,7 +81,13 @@ export class AchievementsService {
     try {
       await this.distribute(userId, next.reward);
     } catch (err) {
-      await this.repo.delete(row);
+      try {
+        await this.repo.delete(row);
+      } catch (deleteErr) {
+        this.logger.error(
+          `Rollback du palier ${row.family}/${row.tier} impossible pour l'utilisateur ${userId}: ${String(deleteErr)}`,
+        );
+      }
       throw err;
     }
     return { family, tier: next.tier, reward: next.reward };

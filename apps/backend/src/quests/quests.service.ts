@@ -122,11 +122,12 @@ export class QuestService {
   }
 
   private async doSync(userId: number): Promise<AutoClaimedReward[]> {
-    const claimed: AutoClaimedReward[] = [];
+    // Les lignes de quêtes désactivées partent d'abord, sinon elles bloqueraient le tirage.
+    const claimed: AutoClaimedReward[] =
+      await this.removeInactiveUserQuests(userId);
     for (const type of POOL_TYPES)
       claimed.push(...(await this.redrawPool(userId, type)));
     claimed.push(...(await this.resetExpiredQuests(userId)));
-    await this.removeInactiveUserQuests(userId);
     await this.assignMissingQuests(userId);
     return claimed;
   }
@@ -141,7 +142,10 @@ export class QuestService {
       where: { user: { id: userId }, quest: { resetType: type } },
       relations: { quest: true },
     });
-    if (held.some((uq) => uq.resetAt && uq.resetAt > now)) return [];
+    const inProgress = held.some(
+      (uq) => uq.quest.isActive !== false && uq.resetAt && uq.resetAt > now,
+    );
+    if (inProgress) return [];
 
     const claimed = await this.autoClaim(userId, held);
     if (held.length > 0) await this.userQuestRepository.remove(held);
@@ -189,13 +193,15 @@ export class QuestService {
     return claimed;
   }
 
-  private async removeInactiveUserQuests(userId: number): Promise<void> {
+  private async removeInactiveUserQuests(
+    userId: number,
+  ): Promise<AutoClaimedReward[]> {
     const inactiveQuests = await this.questRepository.find({
       where: { isActive: false },
       select: ['id'],
     });
 
-    if (inactiveQuests.length === 0) return;
+    if (inactiveQuests.length === 0) return [];
 
     const inactiveQuestIds = inactiveQuests.map((q) => q.id);
 
@@ -207,9 +213,11 @@ export class QuestService {
       relations: { quest: true },
     });
 
-    if (toDelete.length === 0) return;
+    if (toDelete.length === 0) return [];
 
+    const claimed = await this.autoClaim(userId, toDelete);
     await this.userQuestRepository.remove(toDelete);
+    return claimed;
   }
 
   private async resetExpiredQuests(

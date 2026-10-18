@@ -89,7 +89,9 @@ export class TransactionController {
 
   @OnEvent('listing.created')
   handleListingCreated(payload: Record<string, unknown>) {
-    this.sseMarketSubject.next({ type: 'listing.created', ...payload });
+    // sellerId sert aux quêtes, pas aux clients du flux public.
+    const { sellerId: _sellerId, ...publicPayload } = payload;
+    this.sseMarketSubject.next({ type: 'listing.created', ...publicPayload });
   }
 
   @OnEvent('listing.cancelled')

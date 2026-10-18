@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import {
   ACHIEVEMENT_REWARD_BOOSTER_ID,
   AchievementFamily,
@@ -161,6 +161,18 @@ describe('AchievementsService', () => {
       family: AchievementFamily.LEVEL,
       tier: AchievementTier.BRONZE,
     });
+  });
+
+  it('relance l’erreur de distribution d’origine si le rollback échoue aussi', async () => {
+    withValue(AchievementFamily.LEVEL, 5);
+    usersService.addGold.mockRejectedValueOnce(new Error('boom'));
+    repo.delete.mockRejectedValueOnce(new Error('delete failed'));
+    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    await expect(service.claim(1, AchievementFamily.LEVEL)).rejects.toThrow(
+      'boom',
+    );
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
   });
 
   it('refuse un titre dont l’or n’est pas réclamé', async () => {
