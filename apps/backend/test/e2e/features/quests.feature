@@ -1,4 +1,4 @@
-Feature: Système de quêtes et achievements
+Feature: Système de quêtes
   En tant que joueur
   Je veux consulter et réclamer mes récompenses de quêtes
   Pour progresser dans le jeu
@@ -13,7 +13,13 @@ Feature: Système de quêtes et achievements
     Then le statut de réponse est 200
     And la réponse contient un champ "DAILY"
     And la réponse contient un champ "WEEKLY"
-    And la réponse contient un champ "ACHIEVEMENT"
+    And la réponse contient un champ "rerollAvailable"
+    And la réponse contient un champ "dailyResetAt"
+    And la réponse contient un champ "weeklyResetAt"
+
+  Scenario: Relancer une quête inexistante renvoie 404
+    When j'envoie une requête POST authentifiée sur "/quests/99999/reroll"
+    Then le statut de réponse est 404
 
   Scenario: Un non-admin ne peut pas lister toutes les quêtes renvoie 403
     When j'envoie une requête GET authentifiée sur "/quests"
