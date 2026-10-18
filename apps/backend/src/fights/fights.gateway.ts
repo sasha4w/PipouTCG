@@ -8,6 +8,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import type {
+  AdventureStartPayload,
   AttackPayload,
   ChangeModePayload,
   DiscardPayload,
@@ -65,6 +66,9 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('fight:resumed', {
         matchId: resumed.matchId,
         opponentName: resumed.opponentName,
+        ...(resumed.adventureOpponentId !== undefined && {
+          adventureOpponentId: resumed.adventureOpponentId,
+        }),
       });
       this.fightsService.emitState(resumed.matchId, this.server);
     }
@@ -109,6 +113,25 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   leaveQueue(@ConnectedSocket() client: FightSocket): void {
     this.fightsService.leaveQueue(client.data.userId);
     client.emit('fight:dequeued');
+  }
+
+  // ── Aventure (PvE) ─────────────────────────────────────────────────────────
+
+  @SubscribeMessage('adventure:start')
+  async startAdventure(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: AdventureStartPayload,
+  ): Promise<void> {
+    this.reply(
+      client,
+      await this.fightsService.startAdventure(
+        client.data.userId,
+        client.data.username,
+        client.id,
+        data,
+        this.server,
+      ),
+    );
   }
 
   // ── Deck submission ────────────────────────────────────────────────────────
