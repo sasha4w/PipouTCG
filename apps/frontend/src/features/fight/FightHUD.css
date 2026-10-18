@@ -146,3 +146,11 @@
     opacity: 0.2;
   }
 }
+
+.hud-title {
+  margin-left: 0.35rem;
+  font-size: 0.68em;
+  font-weight: 700;
+  color: #eebc77;
+  opacity: 0.85;
+}

@@ -97,6 +97,11 @@ export default function HeroCard({ profile }: { profile: UserProfile }) {
     <div className="hero-card">
       <div className="hero-card__top">
         <h1 className="hero-card__username">{profile.username}</h1>
+        {profile.equippedTitle && (
+          <span className="hero-card__title">
+            {t(`achievements.titles.${profile.equippedTitle}`)}
+          </span>
+        )}
         <div className="hero-card__level">
           <StarYellow width={18} height={20} />
           <span className="hero-card__level-badge">
