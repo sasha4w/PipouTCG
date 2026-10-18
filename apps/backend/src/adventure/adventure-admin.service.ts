@@ -75,7 +75,7 @@ export class AdventureAdminService {
     if (!set) throw new BadRequestException('Set introuvable');
     if (await m.findOne(AdventureWorld, { where: { cardSetId: set.id } }))
       throw new BadRequestException('Un monde existe déjà pour ce set');
-    await this.checkBooster(m, body.boosterId);
+    await this.checkBooster(m, body.boosterId, set.id);
     await this.checkPrerequisites(m, null, body.prerequisiteIds);
     if (body.isActive) await this.checkActivation(m, set.id, body.boosterId);
 
@@ -129,7 +129,7 @@ export class AdventureAdminService {
       throw new BadRequestException(
         "Le set d'un monde ne peut pas être modifié",
       );
-    await this.checkBooster(m, body.boosterId);
+    await this.checkBooster(m, body.boosterId, world.cardSetId);
     await this.checkPrerequisites(m, id, body.prerequisiteIds);
     if (body.isActive)
       await this.checkActivation(m, world.cardSetId, body.boosterId);
@@ -299,9 +299,21 @@ export class AdventureAdminService {
     return opponent;
   }
 
-  private async checkBooster(m: EntityManager, boosterId: number) {
+  /** Le booster de récompense doit exister et appartenir au set du monde. */
+  private async checkBooster(
+    m: EntityManager,
+    boosterId: number,
+    cardSetId: number,
+  ) {
     if (!(await m.findOne(Booster, { where: { id: boosterId } })))
       throw new BadRequestException('Booster introuvable');
+    const owned = await m.findOne(Booster, {
+      where: { id: boosterId, cardSet: { id: cardSetId } },
+    });
+    if (!owned)
+      throw new BadRequestException(
+        'Le booster doit appartenir au set du monde',
+      );
   }
 
   private async checkActivation(

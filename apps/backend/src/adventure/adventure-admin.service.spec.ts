@@ -133,8 +133,16 @@ function setup(opts?: { noLegendary?: number[] }) {
             ? { id: w.id, name: SET_NAMES[w.id as number] }
             : null,
         );
-      if (entity === Booster)
-        return Promise.resolve(w.id === 999 ? null : { id: w.id });
+      if (entity === Booster) {
+        // Booster n*10+1 appartient au set n ; 999 n'existe pas.
+        const sid = (w.cardSet as { id: number } | undefined)?.id;
+        const owner = Math.floor((w.id as number) / 10);
+        return Promise.resolve(
+          w.id === 999 || (sid !== undefined && sid !== owner)
+            ? null
+            : { id: w.id },
+        );
+      }
       if (entity === Card) {
         const c = cardById(w.id);
         const sid = (w.cardSet as { id: number } | undefined)?.id;
@@ -186,7 +194,8 @@ function setup(opts?: { noLegendary?: number[] }) {
 const worldBody = (over: Record<string, unknown> = {}) => ({
   name: 'Mon monde',
   cardSetId: 1,
-  boosterId: 11,
+  // Booster du set : set n -> booster n*10+1
+  boosterId: ((over.cardSetId as number | undefined) ?? 1) * 10 + 1,
   order: 1,
   isActive: false,
   prerequisiteIds: [] as number[],
@@ -257,7 +266,7 @@ describe('AdventureAdminService.createWorld', () => {
 
   it('refuse un 2e monde pour le même set, un set ou un booster inconnu', async () => {
     const { service } = setup();
-    await service.createWorld(worldBody());
+    const first = await service.createWorld(worldBody());
     await rejects(service.createWorld(worldBody()), /existe déjà/);
     await rejects(
       service.createWorld(worldBody({ cardSetId: 42 })),
@@ -266,6 +275,14 @@ describe('AdventureAdminService.createWorld', () => {
     await rejects(
       service.createWorld(worldBody({ cardSetId: 2, boosterId: 999 })),
       /Booster introuvable/,
+    );
+    await rejects(
+      service.createWorld(worldBody({ cardSetId: 2, boosterId: 11 })),
+      'Le booster doit appartenir au set du monde',
+    );
+    await rejects(
+      service.updateWorld(first.id, worldBody({ boosterId: 21 })),
+      'Le booster doit appartenir au set du monde',
     );
   });
 });
