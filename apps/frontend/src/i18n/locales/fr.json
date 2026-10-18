@@ -372,7 +372,8 @@
       "quests": "Quêtes",
       "banners": "Bannières",
       "patchnotes": "Patchnotes",
-      "sandbox": "Sandbox"
+      "sandbox": "Sandbox",
+      "adventure": "Aventure"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
@@ -788,6 +789,66 @@
       "f2": "Un booster à chaque première victoire",
       "f3": "Des récompenses à farmer chaque jour",
       "cta": "Partir à l'aventure"
+    }
+  },
+  "adventure_admin": {
+    "title": "Aventure",
+    "loading": "Chargement…",
+    "load_error": "Impossible de charger l'aventure.",
+    "error_generic": "Une erreur est survenue.",
+    "empty": "Aucun monde.",
+    "back": "Retour",
+    "new_world": "Nouveau monde",
+    "edit_world": "Modifier le monde",
+    "create": "Créer",
+    "save": "Enregistrer",
+    "saving": "…",
+    "status_active": "Actif",
+    "status_inactive": "Inactif",
+    "inactive_reason": "Inactif : {{reason}}",
+    "world_meta": "{{set}} · ordre {{order}}",
+    "opponents": "IA",
+    "deck_count": "{{count}} cartes",
+    "deck_error": "Deck invalide : {{reason}}",
+    "edit_opponent": "Identité et récompenses",
+    "edit_deck": "Deck",
+    "cap": {
+      "title": "Plafond journalier de farm",
+      "label": "Récompenses de farm par jour et par joueur (0 à 1000)",
+      "invalid": "Entier entre 0 et 1000."
+    },
+    "world": {
+      "name": "Nom",
+      "card_set": "Set de cartes",
+      "booster": "Booster (récompense)",
+      "order": "Ordre",
+      "prerequisites": "Prérequis",
+      "active": "Monde actif",
+      "choose": "Choisir…",
+      "no_booster": "Aucun booster pour ce set."
+    },
+    "opponent": {
+      "title": "IA : {{name}}",
+      "name": "Nom",
+      "quote": "Réplique",
+      "portrait": "Portrait (carte du set)",
+      "first_win_gold": "Or (première victoire)",
+      "first_win_xp": "XP (première victoire)",
+      "farm_gold": "Or (farm)",
+      "farm_xp": "XP (farm)",
+      "farm_booster_pct": "Chance de booster en farm (%)",
+      "farm_legendary_pct": "Chance de légendaire en farm (%)"
+    },
+    "deck": {
+      "title": "Deck de {{name}}",
+      "total": "Total : {{count}} cartes (entre {{min}} et {{max}})",
+      "range_error": "Le deck doit contenir entre {{min}} et {{max}} cartes.",
+      "add": "Ajouter {{name}}",
+      "remove": "Retirer {{name}}",
+      "save": "Enregistrer le deck",
+      "regenerate": "Régénérer",
+      "regenerate_confirm": "Régénérer le deck de cette IA ? Le deck actuel sera remplacé.",
+      "no_cards": "Aucune carte dans ce set."
     }
   }
 }

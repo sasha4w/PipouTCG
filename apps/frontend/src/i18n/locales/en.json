@@ -372,7 +372,8 @@
       "quests": "Quests",
       "banners": "Banners",
       "patchnotes": "Patch notes",
-      "sandbox": "Sandbox"
+      "sandbox": "Sandbox",
+      "adventure": "Adventure"
     },
     "sandbox_back": "Back to admin",
     "patchnote": {
@@ -787,6 +788,66 @@
       "f2": "A booster for every first victory",
       "f3": "Farm rewards every day",
       "cta": "Start the adventure"
+    }
+  },
+  "adventure_admin": {
+    "title": "Adventure",
+    "loading": "Loading…",
+    "load_error": "Unable to load adventure.",
+    "error_generic": "An error occurred.",
+    "empty": "No world.",
+    "back": "Back",
+    "new_world": "New world",
+    "edit_world": "Edit world",
+    "create": "Create",
+    "save": "Save",
+    "saving": "…",
+    "status_active": "Active",
+    "status_inactive": "Inactive",
+    "inactive_reason": "Inactive: {{reason}}",
+    "world_meta": "{{set}} · order {{order}}",
+    "opponents": "AI",
+    "deck_count": "{{count}} cards",
+    "deck_error": "Invalid deck: {{reason}}",
+    "edit_opponent": "Identity and rewards",
+    "edit_deck": "Deck",
+    "cap": {
+      "title": "Daily farm cap",
+      "label": "Farm rewards per day and per player (0 to 1000)",
+      "invalid": "Integer between 0 and 1000."
+    },
+    "world": {
+      "name": "Name",
+      "card_set": "Card set",
+      "booster": "Booster (reward)",
+      "order": "Order",
+      "prerequisites": "Prerequisites",
+      "active": "Active world",
+      "choose": "Choose…",
+      "no_booster": "No booster for this set."
+    },
+    "opponent": {
+      "title": "AI: {{name}}",
+      "name": "Name",
+      "quote": "Quote",
+      "portrait": "Portrait (set card)",
+      "first_win_gold": "Gold (first win)",
+      "first_win_xp": "XP (first win)",
+      "farm_gold": "Gold (farm)",
+      "farm_xp": "XP (farm)",
+      "farm_booster_pct": "Booster chance in farm (%)",
+      "farm_legendary_pct": "Legendary chance in farm (%)"
+    },
+    "deck": {
+      "title": "{{name}}'s deck",
+      "total": "Total: {{count}} cards (between {{min}} and {{max}})",
+      "range_error": "The deck must contain between {{min}} and {{max}} cards.",
+      "add": "Add {{name}}",
+      "remove": "Remove {{name}}",
+      "save": "Save deck",
+      "regenerate": "Regenerate",
+      "regenerate_confirm": "Regenerate this AI's deck? The current deck will be replaced.",
+      "no_cards": "No card in this set."
     }
   }
 }

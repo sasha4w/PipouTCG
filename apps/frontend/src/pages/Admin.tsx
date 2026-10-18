@@ -10,6 +10,7 @@ import CardSetManager from "../features/cards/CardSetManager";
 import CardManager from "../features/cards/CardManager";
 import BoosterManager from "../features/boosters/BoosterManager";
 import BundleManager from "../features/bundles/BundleManager";
+import AdventureManager from "../features/adventure/admin/AdventureManager";
 import QuestManager from "../features/quests/QuestManager";
 import BannerManager from "../features/shop/BannerManager";
 import ScenarioList from "../features/sandbox/ScenarioList";
@@ -22,6 +23,7 @@ import {
   IconCards,
   IconCollection,
   IconFlask,
+  IconMap,
   IconQuest,
   IconTag,
 } from "../components/Icons";
@@ -33,6 +35,7 @@ type AdminTab =
   | "boosters"
   | "bundles"
   | "quests"
+  | "adventure"
   | "banners"
   | "patchnotes"
   | "sandbox";
@@ -43,6 +46,7 @@ const TABS: { key: AdminTab; icon: ReactNode }[] = [
   { key: "boosters", icon: <IconBooster size={22} /> },
   { key: "bundles", icon: <IconBundle size={22} /> },
   { key: "quests", icon: <IconQuest size={22} /> },
+  { key: "adventure", icon: <IconMap size={22} /> },
   { key: "banners", icon: <IconTag size={22} /> },
   { key: "patchnotes", icon: <IconBell size={22} /> },
   { key: "sandbox", icon: <IconFlask size={22} /> },
@@ -95,6 +99,7 @@ export default function Admin() {
       {tab === "boosters" && <BoosterManager />}
       {tab === "bundles" && <BundleManager />}
       {tab === "quests" && <QuestManager />}
+      {tab === "adventure" && <AdventureManager />}
       {tab === "banners" && <BannerManager />}
       {tab === "patchnotes" && <PatchnoteManager />}
       {tab === "sandbox" && <ScenarioList />}

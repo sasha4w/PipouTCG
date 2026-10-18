@@ -371,7 +371,8 @@
       "quests": "퀘스트",
       "banners": "배너",
       "patchnotes": "패치노트",
-      "sandbox": "샌드박스"
+      "sandbox": "샌드박스",
+      "adventure": "모험"
     },
     "sandbox_back": "관리자로 돌아가기",
     "patchnote": {
@@ -739,6 +740,66 @@
       "f2": "첫 승리마다 부스터 1개",
       "f3": "매일 파밍 보상",
       "cta": "모험 떠나기"
+    }
+  },
+  "adventure_admin": {
+    "title": "모험",
+    "loading": "불러오는 중…",
+    "load_error": "모험을 불러올 수 없습니다.",
+    "error_generic": "오류가 발생했습니다.",
+    "empty": "월드가 없습니다.",
+    "back": "뒤로",
+    "new_world": "새 월드",
+    "edit_world": "월드 수정",
+    "create": "만들기",
+    "save": "저장",
+    "saving": "…",
+    "status_active": "활성",
+    "status_inactive": "비활성",
+    "inactive_reason": "비활성: {{reason}}",
+    "world_meta": "{{set}} · 순서 {{order}}",
+    "opponents": "AI",
+    "deck_count": "카드 {{count}}장",
+    "deck_error": "덱 오류: {{reason}}",
+    "edit_opponent": "정보 및 보상",
+    "edit_deck": "덱",
+    "cap": {
+      "title": "일일 파밍 한도",
+      "label": "플레이어당 하루 파밍 보상 (0~1000)",
+      "invalid": "0에서 1000 사이의 정수."
+    },
+    "world": {
+      "name": "이름",
+      "card_set": "카드 세트",
+      "booster": "부스터 (보상)",
+      "order": "순서",
+      "prerequisites": "선행 월드",
+      "active": "월드 활성",
+      "choose": "선택…",
+      "no_booster": "이 세트의 부스터가 없습니다."
+    },
+    "opponent": {
+      "title": "AI: {{name}}",
+      "name": "이름",
+      "quote": "대사",
+      "portrait": "초상화 (세트 카드)",
+      "first_win_gold": "골드 (첫 승리)",
+      "first_win_xp": "XP (첫 승리)",
+      "farm_gold": "골드 (파밍)",
+      "farm_xp": "XP (파밍)",
+      "farm_booster_pct": "파밍 부스터 확률 (%)",
+      "farm_legendary_pct": "파밍 전설 확률 (%)"
+    },
+    "deck": {
+      "title": "{{name}}의 덱",
+      "total": "합계: 카드 {{count}}장 ({{min}}~{{max}}장)",
+      "range_error": "덱은 {{min}}~{{max}}장이어야 합니다.",
+      "add": "{{name}} 추가",
+      "remove": "{{name}} 제거",
+      "save": "덱 저장",
+      "regenerate": "재생성",
+      "regenerate_confirm": "이 AI의 덱을 재생성할까요? 현재 덱이 교체됩니다.",
+      "no_cards": "이 세트에 카드가 없습니다."
     }
   }
 }

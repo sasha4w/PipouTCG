@@ -1,0 +1,81 @@
+.adv-admin__cap {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+}
+.adv-admin__cap .manager-form__row {
+  flex: 1;
+}
+.adv-admin__opponents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.adv-admin__world {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.adv-admin__reason {
+  color: #b03060;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.adv-admin__checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+.adv-admin__check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #491021;
+  cursor: pointer;
+}
+.adv-admin__check input {
+  accent-color: #7a1c3b;
+  width: 16px;
+  height: 16px;
+}
+.adv-deck__total {
+  font-weight: 700;
+  color: #491021;
+  margin: 0;
+}
+.adv-deck__total--bad {
+  color: #b03060;
+}
+.adv-deck__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+.adv-deck__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.3rem 0.5rem;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid rgba(61, 16, 32, 0.06);
+}
+.adv-deck__row-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  color: #491021;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adv-deck__qty {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+  color: #7a1c3b;
+}
