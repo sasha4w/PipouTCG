@@ -702,8 +702,8 @@
       "GOLD_EARNED": "Tycoon",
       "QUESTS_DONE": "Adventurer",
       "ADVENTURE_WORLDS": "Explorer",
-      "PVE_WON": "Adventure Victor",
-      "PVE_PLAYED": "PvE Adventurer"
+      "PVE_WON": "AI Hunter",
+      "PVE_PLAYED": "Tireless"
     }
   }
 }

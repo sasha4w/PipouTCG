@@ -704,8 +704,8 @@
       "GOLD_EARNED": "Magnat",
       "QUESTS_DONE": "Aventurier",
       "ADVENTURE_WORLDS": "Explorateur",
-      "PVE_WON": "Vainqueur d'aventure",
-      "PVE_PLAYED": "Aventurier PvE"
+      "PVE_WON": "Chasseur d'IA",
+      "PVE_PLAYED": "Infatigable"
     }
   }
 }

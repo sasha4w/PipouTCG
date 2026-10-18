@@ -1,3 +1,4 @@
+import type { Rarity } from "../enums/card";
 import type { AdventureRewardConfig } from "../game/adventure";
 
 export type AdventureOpponentState = "beaten" | "available" | "locked";
@@ -6,7 +7,7 @@ export interface AdventureLoot {
   gold: number;
   xp: number;
   boosters: { boosterId: number; name: string; quantity: number }[];
-  cards: { cardId: number; name: string; rarity: string; imageUrl: string | null }[];
+  cards: { cardId: number; name: string; rarity: Rarity; imageUrl: string | null }[];
   /** true : plafond quotidien de farm atteint, récompenses de farm non données. */
   capped: boolean;
 }

@@ -1,5 +1,9 @@
 import { describe, expectTypeOf, it } from "vitest";
 import type {
+  AdventureResultPayload,
+  AdventureStartPayload,
+  GameOverPayload,
+  MatchFoundPayload,
   ClientGameState,
   ClientToServerEvents,
   ServerToClientEvents,
@@ -22,5 +26,24 @@ describe("fight socket events", () => {
     expectTypeOf<
       Parameters<ClientToServerEvents["fight:recycle_support"]>[0]
     >().toEqualTypeOf<{ matchId: number; handIndex: number }>();
+  });
+
+  it("starts an adventure fight", () => {
+    expectTypeOf<
+      Parameters<ClientToServerEvents["adventure:start"]>[0]
+    >().toEqualTypeOf<AdventureStartPayload>();
+    expectTypeOf<AdventureStartPayload>().toEqualTypeOf<{
+      opponentId: number;
+      deckId: number;
+    }>();
+  });
+
+  it("carries adventure data on match found and game over", () => {
+    expectTypeOf<MatchFoundPayload["adventureOpponentId"]>().toEqualTypeOf<
+      number | undefined
+    >();
+    expectTypeOf<GameOverPayload["adventure"]>().toEqualTypeOf<
+      AdventureResultPayload | undefined
+    >();
   });
 });

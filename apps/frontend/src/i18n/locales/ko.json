@@ -655,8 +655,8 @@
       "GOLD_EARNED": "거물",
       "QUESTS_DONE": "모험가",
       "ADVENTURE_WORLDS": "탐험가",
-      "PVE_WON": "모험의 승자",
-      "PVE_PLAYED": "PvE 모험가"
+      "PVE_WON": "AI 사냥꾼",
+      "PVE_PLAYED": "지치지 않는 자"
     }
   }
 }
