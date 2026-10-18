@@ -8,12 +8,26 @@ import {
   type DeckCardEntry,
 } from "../../services/deck.service";
 import { userService } from "../../services/user.service";
+import { soundService } from "../../services/sound.service";
 import type { Card } from "../../services/card.service";
-import CardDisplay from "../cards/CardDisplay";
+import CardFace from "../cards/CardFace";
+import CardInspect from "../fight/CardInspect";
+import CardFilterBar from "../glossary/CardFilterBar";
+import CardEffectsText from "../glossary/CardEffectsText";
+import {
+  KIND_LABELS,
+  NO_FILTERS,
+  cardKind,
+  matchesFilters,
+  setsOf,
+  shortSetName,
+  useCardCatalog,
+} from "../glossary/cardCatalog";
 import Button from "../../components/Button";
+import Loading from "../../components/Loading";
 import {
   IconArrowLeft,
-  IconClose,
+  IconCards,
   IconMinus,
   IconPencil,
   IconPlus,
@@ -35,7 +49,9 @@ type PickableCard = CardInDeck & {
 
 const NO_DECKS: Deck[] = [];
 const NO_CARDS: PickableCard[] = [];
+const NO_CATALOG: Card[] = [];
 
+/** Repli quand la carte manque au catalogue : sans effets. */
 function toCard(c: PickableCard): Card {
   return {
     id: c.id,
@@ -52,6 +68,10 @@ function toCard(c: PickableCard): Card {
   };
 }
 
+function maxCopies(c: PickableCard): number {
+  return Math.min(DECK_RULES.MAX_COPIES, c.quantity);
+}
+
 export default function DeckBuilder() {
   const [view, setView] = useState<View>("list");
   const queryClient = useQueryClient();
@@ -63,16 +83,17 @@ export default function DeckBuilder() {
     queryKey: QUERY_KEYS.inventory,
     queryFn: () => userService.getMyInventory(),
   });
+  const catalogQuery = useCardCatalog();
   const decks = decksQuery.data ?? NO_DECKS;
   const inventoryCards: PickableCard[] =
     inventoryQuery.data?.cards.data ?? NO_CARDS;
+  const catalog = catalogQuery.data?.data ?? NO_CATALOG;
   const loading = decksQuery.isPending || inventoryQuery.isPending;
   const [editing, setEditing] = useState<Deck | null>(null);
   const [deckName, setDeckName] = useState("");
   const [cards, setCards] = useState<DeckCardEntry[]>([]);
-  const [search, setSearch] = useState("");
-  const [selectedCard, setSelectedCard] = useState<PickableCard | null>(null);
-  const [tab, setTab] = useState<"inventory" | "deck">("inventory");
+  const [filters, setFilters] = useState(NO_FILTERS);
+  const [inspected, setInspected] = useState<Card | null>(null);
 
   const refreshDecks = () =>
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.decks });
@@ -82,8 +103,7 @@ export default function DeckBuilder() {
     setEditing(null);
     setDeckName("");
     setCards([]);
-    setSearch("");
-    setTab("inventory");
+    setFilters(NO_FILTERS);
     setView("editor");
   };
 
@@ -96,8 +116,7 @@ export default function DeckBuilder() {
         quantity: dc.quantity,
       })),
     );
-    setSearch("");
-    setTab("inventory");
+    setFilters(NO_FILTERS);
     setView("editor");
   };
 
@@ -119,11 +138,25 @@ export default function DeckBuilder() {
     }
   });
 
-  const allCards = Array.from(allCardsMap.values()).filter((c) =>
-    c.name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  // L'inventaire n'a pas les effets : on les prend dans le catalogue.
+  const catalogById = new Map(catalog.map((c) => [c.id, c]));
+  const fullCard = (c: PickableCard): Card => catalogById.get(c.id) ?? toCard(c);
+
+  const owned = Array.from(allCardsMap.values());
+  const ownedCards = owned.map(fullCard);
+  const visible = owned.filter((c) => matchesFilters(fullCard(c), filters));
+
+  const deckCards = cards
+    .flatMap((entry) => {
+      const info = allCardsMap.get(entry.userCardId);
+      return info ? [{ ...entry, info }] : [];
+    })
+    .sort(
+      (a, b) => a.info.cost - b.info.cost || a.info.name.localeCompare(b.info.name),
+    );
 
   const totalCards = cards.reduce((s, c) => s + c.quantity, 0);
+  const deckFull = totalCards >= DECK_RULES.MAX_CARDS;
   const isValid =
     totalCards >= DECK_RULES.MIN_CARDS && totalCards <= DECK_RULES.MAX_CARDS;
 
@@ -133,10 +166,7 @@ export default function DeckBuilder() {
       const total = prev.reduce((s, c) => s + c.quantity, 0);
       if (total >= DECK_RULES.MAX_CARDS) return prev;
       const inventoryCard = allCardsMap.get(userCardId);
-      const maxAllowed = Math.min(
-        DECK_RULES.MAX_COPIES,
-        inventoryCard?.quantity ?? 0,
-      );
+      const maxAllowed = inventoryCard ? maxCopies(inventoryCard) : 0;
       const found = prev.find((c) => c.userCardId === userCardId);
       if (found) {
         if (found.quantity >= maxAllowed) return prev;
@@ -144,6 +174,7 @@ export default function DeckBuilder() {
           c.userCardId === userCardId ? { ...c, quantity: c.quantity + 1 } : c,
         );
       }
+      if (maxAllowed === 0) return prev;
       return [...prev, { userCardId, quantity: 1 }];
     });
   };
@@ -156,6 +187,11 @@ export default function DeckBuilder() {
         )
         .filter((c) => c.quantity > 0),
     );
+  };
+
+  const inspect = (card: Card) => {
+    soundService.play("select");
+    setInspected(card);
   };
 
   // ─── SAVE ─────────────────────────────────────
@@ -174,92 +210,6 @@ export default function DeckBuilder() {
     void refreshDecks();
   };
 
-  const rarityColor: Record<string, string> = {
-    common: "#9e9e9e",
-    uncommon: "#4caf50",
-    rare: "#2196f3",
-    epic: "#9c27b0",
-    legendary: "#ff9800",
-    secret: "#f44336",
-  };
-
-  // ─── MODAL CARTE ──────────────────────────────
-  // Fonction de rendu, pas composant : un composant déclaré ici changerait
-  // d'identité à chaque rendu et remonterait la modale (flip de carte perdu).
-  const renderCardModal = () => {
-    if (!selectedCard) return null;
-    const c = selectedCard;
-    const inDeck = cards.find((x) => x.userCardId === c.userCardId);
-    const maxAllowed = Math.min(DECK_RULES.MAX_COPIES, c.quantity);
-    const atMax = inDeck ? inDeck.quantity >= maxAllowed : false;
-    const deckFull = totalCards >= DECK_RULES.MAX_CARDS;
-    const inDeckQty = inDeck?.quantity ?? 0;
-
-    return (
-      <div className="deck-modal-overlay" onClick={() => setSelectedCard(null)}>
-        <div className="deck-modal" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost-bordeaux"
-            size="icon"
-            aria-label="Fermer"
-            className="deck-modal-close"
-            onClick={() => setSelectedCard(null)}
-          >
-            <IconClose size={16} />
-          </Button>
-
-          <div className="deck-modal-card">
-            <CardDisplay
-              card={toCard(c)}
-              size="md"
-              interactive={true}
-              flippable={true}
-            />
-          </div>
-
-          <div className="deck-modal-info">
-            <div className="deck-modal-stock">
-              Possédé : <strong>x{c.quantity}</strong>
-            </div>
-          </div>
-
-          <div className="deck-modal-controls">
-            <Button
-              variant="ghost-bordeaux"
-              size="icon"
-              aria-label="Retirer"
-              onClick={() => removeCard(c.userCardId)}
-              disabled={!inDeck}
-            >
-              <IconMinus size={16} />
-            </Button>
-            <div className="deck-modal-qty">
-              <span className="deck-modal-qty-num">{inDeckQty}</span>
-              <span className="deck-modal-qty-label">dans le deck</span>
-            </div>
-            <Button
-              variant="ghost-bordeaux"
-              size="icon"
-              aria-label="Ajouter"
-              onClick={() => addCard(c.userCardId)}
-              disabled={atMax || deckFull}
-            >
-              <IconPlus size={16} />
-            </Button>
-          </div>
-
-          {(atMax || deckFull) && (
-            <p className="deck-modal-hint">
-              {deckFull
-                ? `Deck plein (${DECK_RULES.MAX_CARDS} cartes)`
-                : `Maximum ${maxAllowed} exemplaire${maxAllowed > 1 ? "s" : ""}`}
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  };
-
   // ═════════════════ LIST ═════════════════
   if (view === "list") {
     return (
@@ -275,7 +225,7 @@ export default function DeckBuilder() {
           <p className="manager-empty">Chargement...</p>
         ) : decks.length === 0 ? (
           <div className="deck-empty-state">
-            <div className="deck-empty-icon">🃏</div>
+            <IconCards size={48} className="deck-empty-icon" />
             <p>Aucun deck créé</p>
             <span>Construis ton premier deck !</span>
           </div>
@@ -325,141 +275,130 @@ export default function DeckBuilder() {
   }
 
   // ═════════════════ EDITOR ═════════════════
+  if (catalogQuery.isPending)
+    return <Loading message="Chargement des cartes..." />;
+
   return (
     <div className="manager deck-editor">
-      {renderCardModal()}
-
       {/* Header */}
       <div className="manager__header deck-editor__topbar">
-        <Button variant="ghost-bordeaux" onClick={back}>
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          aria-label="Retour"
+          onClick={back}
+        >
           <IconArrowLeft size={16} />
-          Retour
         </Button>
         <input
           value={deckName}
           onChange={(e) => setDeckName(e.target.value)}
           placeholder="Nom du deck"
+          aria-label="Nom du deck"
           className="manager-form__input deck-editor__name-input"
         />
       </div>
 
-      {/* Onglets */}
-      <div className="deck-tabs">
-        <Button
-          variant="ghost-bordeaux"
-          active={tab === "inventory"}
-          className="deck-tab"
-          onClick={() => setTab("inventory")}
-        >
-          Inventaire
-          <span className="deck-tab__badge">{allCards.length}</span>
-        </Button>
-        <Button
-          variant="ghost-bordeaux"
-          active={tab === "deck"}
-          className="deck-tab"
-          onClick={() => setTab("deck")}
-        >
-          Mon deck
-          <span
-            className={`deck-tab__badge ${totalCards > 0 ? "deck-tab__badge--filled" : ""}`}
-          >
-            {totalCards}/{DECK_RULES.MAX_CARDS}
-          </span>
-        </Button>
-      </div>
-
-      {/* Contenu scrollable */}
-      <div className="deck-tab-content">
-        {tab === "inventory" ? (
-          <>
-            <input
-              className="deck-search"
-              placeholder="🔍 Rechercher..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <div className="deck-inventory-grid">
-              {allCards.map((c) => {
-                const inDeck = cards.find((x) => x.userCardId === c.userCardId);
-                const inDeckQty = inDeck?.quantity ?? 0;
-                return (
-                  <div
-                    key={c.userCardId}
-                    className="deck-inv-card"
-                    onClick={() => setSelectedCard(c)}
-                  >
-                    <CardDisplay
-                      card={toCard(c)}
-                      size="sm"
-                      interactive={false}
-                      flippable={false}
-                    />
-                    <span className="deck-inv-stock">x{c.quantity}</span>
-                    {inDeck && (
-                      <span className="deck-inv-in-deck">✓{inDeckQty}</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </>
+      {/* Bandeau du deck */}
+      <section className="deck-strip" aria-label="Mon deck">
+        <div className="deck-strip__label">
+          Mon deck · {totalCards} / {DECK_RULES.MAX_CARDS}
+        </div>
+        {deckCards.length === 0 ? (
+          <p className="deck-strip__empty">
+            Ajoute des cartes depuis ta collection
+          </p>
         ) : (
-          <div className="deck-list-tab">
-            {cards.length === 0 ? (
-              <p className="deck-list--empty">
-                Va dans l'inventaire pour ajouter des cartes
-              </p>
-            ) : (
-              cards.map((c) => {
-                const info = allCardsMap.get(c.userCardId);
-                const maxAllowed = Math.min(
-                  3,
-                  allCardsMap.get(c.userCardId)?.quantity ?? 0,
-                );
-                return (
-                  <div key={c.userCardId} className="deck-row">
-                    <div className="deck-row__info">
-                      <span
-                        className="deck-card-row__dot"
-                        style={{
-                          background:
-                            (info && rarityColor[info.rarity]) ?? "#ccc",
-                        }}
-                      />
-                      <span className="deck-row__name">
-                        {info?.name ?? `Carte #${c.userCardId}`}
-                      </span>
-                    </div>
-                    <div className="deck-row__controls">
-                      <Button
-                        variant="ghost-bordeaux"
-                        size="icon"
-                        aria-label="Retirer"
-                        onClick={() => removeCard(c.userCardId)}
-                      >
-                        <IconMinus size={16} />
-                      </Button>
-                      <span className="deck-row__qty">x{c.quantity}</span>
-                      <Button
-                        variant="ghost-bordeaux"
-                        size="icon"
-                        aria-label="Ajouter"
-                        onClick={() => addCard(c.userCardId)}
-                        disabled={
-                          c.quantity >= maxAllowed ||
-                          totalCards >= DECK_RULES.MAX_CARDS
-                        }
-                      >
-                        <IconPlus size={16} />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+          <ul className="deck-strip__list">
+            {deckCards.map(({ userCardId, quantity, info }) => (
+              <li key={userCardId}>
+                <button
+                  type="button"
+                  className="deck-strip__card"
+                  aria-label={`Voir ${info.name} (x${quantity})`}
+                  onClick={() => inspect(fullCard(info))}
+                >
+                  <CardFace card={fullCard(info)} size="xs" />
+                  <span className="deck-strip__qty">{quantity}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Collection */}
+      <div className="deck-tab-content">
+        <CardFilterBar
+          filters={filters}
+          sets={setsOf(ownedCards)}
+          onChange={setFilters}
+        />
+
+        {visible.length === 0 && (
+          <div className="cg__state">
+            {owned.length === 0
+              ? "Ta collection est vide."
+              : "Aucune carte ne correspond."}
           </div>
         )}
+
+        <ul className="cg__list">
+          {visible.map((c) => {
+            const card = fullCard(c);
+            const inDeckQty =
+              cards.find((x) => x.userCardId === c.userCardId)?.quantity ?? 0;
+            return (
+              <li
+                key={c.userCardId}
+                className={`deck-row${inDeckQty > 0 ? " deck-row--in" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="deck-row__main"
+                  aria-label={`Voir ${card.name}`}
+                  onClick={() => inspect(card)}
+                >
+                  <div className="cg__thumb">
+                    <CardFace card={card} size="xs" />
+                  </div>
+                  <div className="cg__body">
+                    <div className="cg__name">{card.name}</div>
+                    <div className="cg__meta">
+                      {KIND_LABELS[cardKind(card)]} ·{" "}
+                      {shortSetName(card.cardSet.name)}
+                    </div>
+                    <CardEffectsText card={card} />
+                  </div>
+                </button>
+                <div className="deck-row__qty">
+                  <Button
+                    variant="ghost-bordeaux"
+                    size="icon"
+                    aria-label={`Ajouter ${card.name}`}
+                    onClick={() => addCard(c.userCardId)}
+                    disabled={inDeckQty >= maxCopies(c) || deckFull}
+                  >
+                    <IconPlus size={14} />
+                  </Button>
+                  <span className="deck-row__count">{inDeckQty}</span>
+                  <span className="deck-row__owned">
+                    / {c.quantity} possédé{c.quantity > 1 ? "s" : ""}
+                  </span>
+                  <Button
+                    variant="ghost-bordeaux"
+                    size="icon"
+                    aria-label={`Retirer ${card.name}`}
+                    onClick={() => removeCard(c.userCardId)}
+                    disabled={inDeckQty === 0}
+                  >
+                    <IconMinus size={14} />
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       {/* Barre sticky bottom */}
@@ -467,7 +406,9 @@ export default function DeckBuilder() {
         <div className="deck-counter-bar">
           <div
             className="deck-counter-fill"
-            style={{ width: `${Math.min((totalCards / 40) * 100, 100)}%` }}
+            style={{
+              width: `${Math.min((totalCards / DECK_RULES.MAX_CARDS) * 100, 100)}%`,
+            }}
           />
         </div>
         <div className="deck-bottom-bar__row">
@@ -488,10 +429,14 @@ export default function DeckBuilder() {
             disabled={!isValid || !deckName.trim()}
             className="deck-save-btn"
           >
-            {isValid ? "💾 Sauvegarder" : "⚠ Invalide"}
+            Sauvegarder
           </Button>
         </div>
       </div>
+
+      {inspected && (
+        <CardInspect card={inspected} onClose={() => setInspected(null)} />
+      )}
     </div>
   );
 }
