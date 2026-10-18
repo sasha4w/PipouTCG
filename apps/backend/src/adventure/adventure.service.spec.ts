@@ -163,6 +163,16 @@ function setup(opts?: { worlds?: Row[]; cards?: Row[]; dailyCap?: number }) {
       throw new Error('findOne inattendu');
     }),
     count: jest.fn((e: unknown, o: { where: Row }) => {
+      if (e === Card) {
+        const w = o.where as { cardSet: { id: number }; rarity: string };
+        return Promise.resolve(
+          cards.filter(
+            (c) =>
+              (c.cardSet as { id: number }).id === w.cardSet.id &&
+              c.rarity === w.rarity,
+          ).length,
+        );
+      }
       if (e !== AdventureMatch) throw new Error('count inattendu');
       return Promise.resolve(
         matchRows.filter((m) => matches(o.where, m)).length,
@@ -499,6 +509,22 @@ describe('AdventureService.prepareStart', () => {
     );
     expect(ctx.matchRows).toHaveLength(0);
   });
+
+  it('monde sans booster de récompense (supprimé) : refusé', async () => {
+    const ctx = setup({ worlds: [world(1, { boosterId: null })] });
+    await expect(ctx.service.prepareStart(USER, 11)).rejects.toThrow(
+      new BadRequestException("Ce monde n'est pas disponible pour le moment"),
+    );
+    expect(ctx.matchRows).toHaveLength(0);
+  });
+
+  it('set sans carte légendaire : refusé', async () => {
+    const ctx = setup({ cards: [card(901, 10, Rarity.EPIC)] });
+    await expect(ctx.service.prepareStart(USER, 11)).rejects.toThrow(
+      new BadRequestException("Ce monde n'est pas disponible pour le moment"),
+    );
+    expect(ctx.matchRows).toHaveLength(0);
+  });
 });
 
 // ── recordResult ────────────────────────────────────────────────────────────
@@ -622,6 +648,32 @@ describe('AdventureService.recordResult', () => {
       userId: USER,
       won: true,
     });
+  });
+
+  it('19 farm payés aujourd’hui : la 20e est encore créditée', async () => {
+    const ctx = setup();
+    ctx.beat(1, 1);
+    for (let i = 0; i < 19; i++)
+      ctx.addMatch({ opponentId: 11, rewarded: true });
+    const id = await startedMatch(ctx, 11);
+    jest.spyOn(Math, 'random').mockReturnValue(0.99); // pas de booster
+    try {
+      const r = await ctx.service.recordResult(game(USER), pve(id, 11), NOW);
+      expect(r.loot).toMatchObject({ gold: 15, xp: 10, capped: false });
+      expect(ctx.users.addGold).toHaveBeenCalledWith(USER, 15, ctx.manager);
+      expect(ctx.users.addExperience).toHaveBeenCalledWith(
+        USER,
+        10,
+        ctx.manager,
+      );
+      expect(ctx.matchRows.find((m) => m.id === id)).toMatchObject({
+        firstWin: false,
+        rewarded: true,
+      });
+      expect(await ctx.service.countFarmRewardsToday(USER, NOW)).toBe(20);
+    } finally {
+      jest.restoreAllMocks();
+    }
   });
 
   it('farm sous le plafond : or/XP garantis, rewarded = true', async () => {

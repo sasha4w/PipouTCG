@@ -26,6 +26,7 @@ import type { PveHooks, PveInfo, PveStart } from '../fights/pve';
 import { UsersService } from '../users/users.service';
 import {
   farmWindowStart,
+  canActivateWorld,
   isWorldUnlocked,
   opponentStates,
   rollLoot,
@@ -130,6 +131,21 @@ export class AdventureService implements PveHooks {
     if (!opponent) throw new BadRequestException('IA introuvable');
     if (!opponent.world.isActive)
       throw new BadRequestException("Ce monde n'est pas disponible");
+    // Booster supprimé (FK SET NULL) ou set sans légendaire depuis
+    // l'activation : la 1re victoire ne pourrait pas être payée en entier.
+    const legendaryCount = await m.count(Card, {
+      where: {
+        cardSet: { id: opponent.world.cardSetId },
+        rarity: Rarity.LEGENDARY,
+      },
+    });
+    if (
+      !canActivateWorld({ boosterId: opponent.world.boosterId, legendaryCount })
+        .ok
+    )
+      throw new BadRequestException(
+        "Ce monde n'est pas disponible pour le moment",
+      );
 
     const progress = await this.progress(userId, m);
     const prerequisiteIds = opponent.world.prerequisites.map((p) => p.id);
@@ -183,6 +199,11 @@ export class AdventureService implements PveHooks {
     pve: PveInfo,
     now = new Date(),
   ): Promise<AdventureResultPayload> {
+    // Invariants : un seul combat PvE à la fois par joueur (garanti par
+    // FightsService), d'où l'absence de verrou sur firstWin et le plafond
+    // de farm. Le monde n'est pas revérifié ici : un monde désactivé (ou
+    // privé de booster/légendaire) en cours de partie paie quand même le
+    // combat en cours, avec ce qui reste disponible.
     let setCheck: number | null = null;
     const { userId, payload } = await this.dataSource.transaction(async (m) => {
       const match = await m.findOne(AdventureMatch, {
