@@ -257,3 +257,14 @@ Toutes les nouvelles chaînes en fr/en/ko : noms de familles, titres, paliers, r
 - Succès secrets, événements à durée limitée liés aux succès.
 - Édition des récompenses des succès dans l'admin (un changement passe par un déploiement).
 - Anti-farm des duels entre comptes liés.
+
+## Écarts lors de l'implémentation
+
+- La route du titre devient `PUT /achievements/title`, pour éviter une dépendance circulaire `UsersModule` ↔ `AchievementsModule`.
+- Le claim d'un succès ne crée pas de message inbox : le joueur vient de cliquer, le message n'apporterait rien.
+- Claim : on insère d'abord `user_achievement` (l'index unique protège contre le double claim), puis on distribue. Si la distribution échoue, la ligne est supprimée et l'erreur remonte. `UsersService` n'accepte pas de `EntityManager`, d'où ce mécanisme plutôt qu'une transaction.
+- La migration désactive toutes les quêtes existantes `NONE`/`DAILY`/`WEEKLY` sans `pool_key` (ids 1 à 4 en prod, remplacées par le pool). L'admin peut les réactiver.
+- `EARN_GOLD` écoute l'événement existant `listing.sold` (qui porte déjà `sellerId` et `totalPrice`) au lieu d'enrichir trois événements.
+- La migration a été vérifiée sur la base locale `cardcollect_local`.
+- Le titre équipé du duel est un frère de `.hud-name` (non imbriqué), pour éviter qu'il soit coupé par le clipping du nom.
+- La clé i18n `achievements.tab` a été ajoutée lors de la tâche 9 (libellé de l'onglet Succès).

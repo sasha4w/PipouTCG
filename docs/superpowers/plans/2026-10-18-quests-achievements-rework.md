@@ -29,6 +29,9 @@
 - Claim : on insère d'abord `user_achievement` (l'index unique protège contre le double claim), puis on distribue. Si la distribution échoue, la ligne est supprimée et l'erreur remonte. `UsersService` n'accepte pas de `EntityManager`, d'où ce mécanisme plutôt qu'une transaction.
 - La migration désactive **toutes** les quêtes existantes `NONE`/`DAILY`/`WEEKLY` sans `pool_key` (ids 1 à 4 en prod, remplacées par le pool). L'admin peut les réactiver.
 - `EARN_GOLD` écoute l'événement existant `listing.sold` (qui porte déjà `sellerId` et `totalPrice`) au lieu d'enrichir trois événements.
+- La migration a été vérifiée sur la base locale `cardcollect_local`.
+- Le titre équipé du duel est un frère de `.hud-name` (non imbriqué), pour éviter le clipping.
+- `achievements.tab` a été ajouté lors de la tâche 9.
 
 ## Structure des fichiers
 
