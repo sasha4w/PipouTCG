@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Match } from './entities/match.entity';
 import { PlayerStats } from './entities/player-stats.entity';
 import { DecksModule } from '../decks/decks.module';
+import { AdventureModule } from '../adventure/adventure.module';
 
 // Gateway / Controller
 import { FightsGateway } from './fights.gateway';
@@ -36,6 +37,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
   imports: [
     TypeOrmModule.forFeature([Match, PlayerStats]),
     DecksModule,
+    AdventureModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
