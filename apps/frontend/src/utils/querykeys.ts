@@ -7,6 +7,7 @@ export const QUERY_KEYS = {
   inventory: ["user", "inventory"] as const,
   collection: ["user", "collection"] as const,
   quests: ["user", "quests"] as const,
+  achievements: ["user", "achievements"] as const,
   dailyRewardStatus: ["daily-reward", "status"] as const,
   notifications: {
     all: ["notifications"] as const,

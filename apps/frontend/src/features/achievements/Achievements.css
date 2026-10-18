@@ -1,0 +1,106 @@
+.ach {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ach-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  background: linear-gradient(135deg, #5a1830, #3d1020);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+.ach-header__info { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; flex: 1; }
+.ach-header__count { font-size: 0.78rem; font-weight: 700; color: rgba(255, 255, 255, 0.6); }
+.ach-header__title { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 700; color: #eebc77; }
+.ach-header__title select {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: 1px solid rgba(238, 188, 119, 0.3);
+  border-radius: 8px;
+  padding: 0.25rem 0.4rem;
+  font: inherit;
+}
+
+.ach-ring__track { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 5; }
+.ach-ring__fill { fill: none; stroke: #eebc77; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.4s; }
+.ach-ring__label { fill: #eebc77; font-size: 11px; font-weight: 800; }
+
+.ach-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.ach-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.6rem 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+}
+.ach-tile--claimable {
+  border-color: #eebc77;
+  animation: achPulse 1.6s ease-in-out infinite;
+}
+@keyframes achPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(238, 188, 119, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(238, 188, 119, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ach-tile--claimable { animation: none; }
+}
+.ach-tile__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(238, 188, 119, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ach-tile__name { font-size: 0.7rem; font-weight: 700; text-align: center; line-height: 1.15; }
+.ach-tile__pips { display: flex; gap: 4px; }
+
+.ach-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.ach-pip--bronze.ach-pip--on { background: #b9764a; border-color: #b9764a; }
+.ach-pip--silver.ach-pip--on { background: #c9ccd6; border-color: #c9ccd6; }
+.ach-pip--gold.ach-pip--on { background: #eebc77; border-color: #eebc77; }
+
+.ach-sheet__progress { display: flex; align-items: center; gap: 0.5rem; }
+.ach-sheet__tiers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; }
+.ach-sheet__tier {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.8rem;
+}
+.ach-sheet__tier--claimed { opacity: 0.6; }
+.ach-sheet__tier--ready { border: 1px solid rgba(238, 188, 119, 0.5); }
+.ach-sheet__goal { display: flex; flex-direction: column; min-width: 0; }
+.ach-sheet__tier-name { font-size: 0.68rem; font-weight: 800; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; }
+.ach-sheet__state { font-size: 0.68rem; color: rgba(255, 255, 255, 0.45); }
+.ach-sheet__title-reward { margin: 0; font-size: 0.78rem; font-weight: 700; color: #eebc77; }
+.ach-sheet__done { margin: 0; text-align: center; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5); }

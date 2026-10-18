@@ -160,6 +160,7 @@ export interface QuestCondition {
   type: QuestConditionType;
   amount?: number;
   rarity?: string;
+  minRarity?: Rarity;
   setId?: number;
   boosterId?: number;
   level?: number;

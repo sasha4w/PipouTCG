@@ -1,8 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { questService } from "../services/quest.service";
+import { achievementService } from "../services/achievement.service";
 import {
-  questService,
-  type UserQuestsGrouped,
-} from "../services/quest.service";
+  QUEST_LIST_KEYS,
+  type AchievementFamily,
+  type UserQuestsResponse,
+} from "@pipou/shared";
 import { api } from "../api/api";
 import { QUERY_KEYS } from "../utils/querykeys";
 // --- Hook pour les données utilisateur (Or, Niveau, etc.) ---
@@ -40,12 +43,12 @@ export const useClaimReward = () => {
       const previousQuests = queryClient.getQueryData(QUERY_KEYS.quests);
 
       // On modifie localement le cache de manière optimiste
-      queryClient.setQueryData<UserQuestsGrouped>(QUERY_KEYS.quests, (old) => {
+      queryClient.setQueryData<UserQuestsResponse>(QUERY_KEYS.quests, (old) => {
         if (!old) return old;
         // On parcourt les catégories (DAILY, WEEKLY...) pour trouver la quête
         const updated = { ...old };
-        for (const key of Object.keys(updated) as (keyof UserQuestsGrouped)[]) {
-          updated[key] = updated[key].map((q) =>
+        for (const key of QUEST_LIST_KEYS) {
+          updated[key] = old[key].map((q) =>
             q.id === userQuestId ? { ...q, rewardClaimed: true } : q,
           );
         }
@@ -66,6 +69,44 @@ export const useClaimReward = () => {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+    },
+  });
+};
+
+export const useRerollQuest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userQuestId: number) => questService.reroll(userQuestId),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests }),
+  });
+};
+
+export const useAchievements = () =>
+  useQuery({
+    queryKey: QUERY_KEYS.achievements,
+    queryFn: () => achievementService.getMine(),
+  });
+
+export const useClaimAchievement = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (family: AchievementFamily) => achievementService.claim(family),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.achievements });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+    },
+  });
+};
+
+export const useSetTitle = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (family: AchievementFamily | null) => achievementService.setTitle(family),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.achievements });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
     },
   });
 };

@@ -6,11 +6,13 @@ import { QuestService } from './quests.service';
 import { Quest } from './quest.entity';
 import { UserQuest } from '../users/user-quest.entity';
 import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
 import {
   QuestResetType,
   QuestRewardType as RewardType,
   ConditionOperator,
   QuestConditionType as ConditionType,
+  ProductType,
 } from '@pipou/shared';
 import type { CreateQuestDto } from './dto/create-quest.dto';
 
@@ -28,6 +30,13 @@ const mockUserQuestRepo = {
   findOne: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
+  remove: jest.fn(),
+};
+
+const mockUserRepo = {
+  findOne: jest.fn(),
+  update: jest.fn(),
+  increment: jest.fn(),
 };
 
 const mockEmitter = { emit: jest.fn() };
@@ -85,6 +94,7 @@ describe('QuestService', () => {
         QuestService,
         { provide: getRepositoryToken(Quest), useValue: mockQuestRepo },
         { provide: getRepositoryToken(UserQuest), useValue: mockUserQuestRepo },
+        { provide: getRepositoryToken(User), useValue: mockUserRepo },
         { provide: UsersService, useValue: mockUsersService },
         { provide: EventEmitter2, useValue: mockEmitter },
       ],
@@ -200,30 +210,29 @@ describe('QuestService', () => {
 
   // ======= USER QUESTS =======
   describe('getUserQuests', () => {
-    it('should return quests grouped by resetType', async () => {
-      mockUserQuestRepo.find.mockResolvedValue([fakeUserQuest]); // fakeQuest est DAILY
-
-      const result = await service.getUserQuests(1);
-
-      expect(result).toHaveProperty('DAILY');
-      expect(result).toHaveProperty('WEEKLY');
-      expect(result).toHaveProperty('MONTHLY');
-      expect(result).toHaveProperty('EVENT');
-      expect(result).toHaveProperty('ACHIEVEMENT');
-      expect(result.DAILY).toHaveLength(1);
-      expect(result.DAILY[0].title).toBe('Ouvre 3 boosters');
-    });
-
-    it('should return empty groups if no quests', async () => {
-      mockUserQuestRepo.find.mockResolvedValue([]);
-
-      const result = await service.getUserQuests(1);
-
-      expect(result.DAILY).toEqual([]);
-      expect(result.WEEKLY).toEqual([]);
-      expect(result.MONTHLY).toEqual([]);
-      expect(result.EVENT).toEqual([]);
-      expect(result.ACHIEVEMENT).toEqual([]);
+    it('groupe par type et expose relance + resets', async () => {
+      mockUserQuestRepo.find.mockResolvedValue([
+        {
+          ...fakeUserQuest,
+          id: 1,
+          quest: { ...fakeQuest, resetType: QuestResetType.DAILY },
+        },
+        {
+          ...fakeUserQuest,
+          id: 2,
+          quest: { ...fakeQuest, resetType: QuestResetType.WEEKLY },
+        },
+      ]);
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 1,
+        lastQuestRerollAt: null,
+      });
+      const res = await service.getUserQuests(1);
+      expect(res.DAILY.map((q) => q.id)).toEqual([1]);
+      expect(res.WEEKLY.map((q) => q.id)).toEqual([2]);
+      expect(res.rerollAvailable).toBe(true);
+      expect(res.dailyResetAt).toBeInstanceOf(Date);
+      expect(res).not.toHaveProperty('ACHIEVEMENT');
     });
   });
 
@@ -450,15 +459,16 @@ describe('QuestService', () => {
       expect(result).toBeNull();
     });
 
-    it('should return next day for DAILY reset type', () => {
-      const quest = {
+    it('should return the next 4am for DAILY reset type', () => {
+      const result = service['computeNextReset']({
         ...fakeQuest,
         resetType: QuestResetType.DAILY,
-        resetHour: 4,
-      } as Quest;
-      const result = service['computeNextReset'](quest);
-      expect(result).toBeInstanceOf(Date);
-      expect(result?.getHours()).toBe(4);
+      } as Quest);
+      expect(result!.getHours()).toBe(4);
+      expect(result!.getTime()).toBeGreaterThan(Date.now());
+      expect(result!.getTime() - Date.now()).toBeLessThanOrEqual(
+        24 * 3_600_000,
+      );
     });
 
     it('should return next month 1st for MONTHLY reset type', () => {
@@ -548,6 +558,312 @@ describe('QuestService', () => {
         userId: 7,
         userQuestIds: [1, 2],
       });
+    });
+  });
+
+  describe('tirage du pool', () => {
+    const poolQuest = (id: number, resetType = QuestResetType.DAILY) => ({
+      ...fakeQuest,
+      id,
+      resetType,
+    });
+
+    it('tire 3 quêtes distinctes quand le joueur n’en a aucune en cours', async () => {
+      mockUserQuestRepo.find.mockResolvedValue([]);
+      mockQuestRepo.find.mockImplementation(
+        ({ where }: { where: { resetType?: string } }) =>
+          Promise.resolve(
+            where?.resetType === QuestResetType.DAILY
+              ? [1, 2, 3, 4, 5].map((id) => poolQuest(id))
+              : [],
+          ),
+      );
+      mockUserQuestRepo.create.mockImplementation((x: object) => x);
+
+      await service['redrawPool'](1, QuestResetType.DAILY);
+
+      const calls = mockUserQuestRepo.save.mock.calls as [
+        { quest: { id: number } }[],
+      ][];
+      const saved = calls[0][0];
+      expect(saved).toHaveLength(3);
+      expect(new Set(saved.map((s) => s.quest.id)).size).toBe(3);
+    });
+
+    it('ne retire pas tant qu’une quête du type est en cours', async () => {
+      mockUserQuestRepo.find.mockResolvedValue([
+        {
+          ...fakeUserQuest,
+          resetAt: new Date(Date.now() + 3_600_000),
+          quest: poolQuest(1),
+        },
+      ]);
+      await service['redrawPool'](1, QuestResetType.DAILY);
+      expect(mockUserQuestRepo.save).not.toHaveBeenCalled();
+      expect(mockUserQuestRepo.remove).not.toHaveBeenCalled();
+    });
+
+    it('auto-réclame une quête expirée terminée puis la remplace', async () => {
+      const expired = {
+        ...fakeUserQuest,
+        id: 9,
+        isCompleted: true,
+        rewardClaimed: false,
+        resetAt: new Date(Date.now() - 1000),
+        quest: poolQuest(1),
+      };
+      mockUserQuestRepo.find.mockResolvedValue([expired]);
+      mockQuestRepo.find.mockResolvedValue([poolQuest(2)]);
+      mockUserQuestRepo.create.mockImplementation((x: object) => x);
+
+      const claimed = await service['redrawPool'](1, QuestResetType.DAILY);
+
+      expect(mockUsersService.addGold).toHaveBeenCalledWith(1, 100);
+      expect(claimed).toHaveLength(1);
+      expect(mockUserQuestRepo.remove).toHaveBeenCalledWith([expired]);
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quest.claimed', {
+        userId: 1,
+        userQuestIds: [9],
+      });
+    });
+  });
+
+  describe('syncUserQuests - quêtes héritées inactives', () => {
+    const legacy = {
+      ...fakeQuest,
+      id: 99,
+      isActive: false,
+      resetType: QuestResetType.DAILY,
+    };
+    const legacyRow = (over: object = {}) => ({
+      ...fakeUserQuest,
+      id: 50,
+      resetAt: new Date(Date.now() + 3_600_000),
+      quest: legacy,
+      ...over,
+    });
+
+    beforeEach(() => {
+      mockQuestRepo.find.mockImplementation(
+        ({ where }: { where: { isActive?: boolean; resetType?: unknown } }) => {
+          if (where.isActive === false) return Promise.resolve([{ id: 99 }]);
+          if (where.isActive && where.resetType === QuestResetType.DAILY)
+            return Promise.resolve(
+              [1, 2, 3, 4].map((id) => ({ ...fakeQuest, id })),
+            );
+          return Promise.resolve([]);
+        },
+      );
+      mockUserQuestRepo.create.mockImplementation((x: object) => x);
+    });
+
+    it('tire 3 quêtes malgré une ligne héritée inactive à resetAt futur', async () => {
+      mockUserQuestRepo.find.mockImplementation(
+        ({
+          where,
+        }: {
+          where: { quest?: { id?: unknown; resetType?: string } };
+        }) =>
+          Promise.resolve(
+            where.quest?.id || where.quest?.resetType === QuestResetType.DAILY
+              ? [legacyRow()]
+              : [],
+          ),
+      );
+
+      await service.syncUserQuests(1);
+
+      const saved = (
+        mockUserQuestRepo.save.mock.calls as [{ quest: { id: number } }[]][]
+      )
+        .map((c) => c[0])
+        .find((a) => Array.isArray(a));
+      expect(saved).toHaveLength(3);
+    });
+
+    it('paie la récompense terminée non réclamée d’une quête désactivée', async () => {
+      const row = legacyRow({ isCompleted: true, rewardClaimed: false });
+      mockUserQuestRepo.find.mockImplementation(
+        ({
+          where,
+        }: {
+          where: { quest?: { id?: unknown; resetType?: string } };
+        }) => Promise.resolve(where.quest?.id ? [row] : []),
+      );
+
+      const claimed = await service.syncUserQuests(1);
+
+      expect(mockUsersService.addGold).toHaveBeenCalledWith(1, 100);
+      expect(mockUserQuestRepo.remove).toHaveBeenCalledWith([row]);
+      expect(claimed).toEqual([
+        { title: legacy.title, rewardType: 'GOLD', rewardAmount: 100 },
+      ]);
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quest.claimed', {
+        userId: 1,
+        userQuestIds: [50],
+      });
+    });
+  });
+
+  describe('rerollQuest', () => {
+    const held = (id: number, questId: number, extra = {}) => ({
+      ...fakeUserQuest,
+      id,
+      resetAt: new Date(Date.now() + 3_600_000),
+      quest: { ...fakeQuest, id: questId, resetType: QuestResetType.DAILY },
+      ...extra,
+    });
+
+    it('remplace par une quête du pool non détenue et consomme la relance', async () => {
+      const target = held(1, 10);
+      mockUserQuestRepo.findOne.mockResolvedValue(target);
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 1,
+        lastQuestRerollAt: null,
+      });
+      mockUserQuestRepo.find.mockResolvedValue([target, held(2, 11)]);
+      mockQuestRepo.find.mockResolvedValue(
+        [10, 11, 12].map((id) => ({ ...fakeQuest, id })),
+      );
+      mockUserQuestRepo.save.mockImplementation((x: unknown) =>
+        Promise.resolve(x),
+      );
+
+      const res = await service.rerollQuest(1, 1);
+
+      expect(res.quest.id).toBe(12);
+      expect(res.resetAt).toEqual(target.resetAt);
+      expect(mockUserRepo.update).toHaveBeenCalledWith(1, {
+        lastQuestRerollAt: expect.any(Date) as Date,
+      });
+    });
+
+    it('refuse une quête terminée', async () => {
+      mockUserQuestRepo.findOne.mockResolvedValue(
+        held(1, 10, { isCompleted: true }),
+      );
+      await expect(service.rerollQuest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('refuse si la relance du jour est utilisée', async () => {
+      mockUserQuestRepo.findOne.mockResolvedValue(held(1, 10));
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 1,
+        lastQuestRerollAt: new Date(),
+      });
+      await expect(service.rerollQuest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('refuse si le pool est épuisé', async () => {
+      const target = held(1, 10);
+      mockUserQuestRepo.findOne.mockResolvedValue(target);
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 1,
+        lastQuestRerollAt: null,
+      });
+      mockUserQuestRepo.find.mockResolvedValue([target]);
+      mockQuestRepo.find.mockResolvedValue([{ ...fakeQuest, id: 10 }]);
+      await expect(service.rerollQuest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('404 si la quête n’appartient pas au joueur', async () => {
+      mockUserQuestRepo.findOne.mockResolvedValue(null);
+      await expect(service.rerollQuest(1, 1)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('nouvelles conditions', () => {
+    const uqWith = (
+      condition: Record<string, unknown>,
+      resetType: QuestResetType = QuestResetType.DAILY,
+    ) => ({
+      ...fakeUserQuest,
+      id: 5,
+      quest: { ...fakeQuest, resetType },
+      progress: {
+        operator: ConditionOperator.AND,
+        conditions: [{ current: 0, completed: false, ...condition }],
+        globalCompleted: false,
+      },
+    });
+
+    it('OBTAIN_CARD + minRarity ne compte que les cartes assez rares', async () => {
+      const uq = uqWith({
+        type: ConditionType.OBTAIN_CARD,
+        target: 2,
+        minRarity: 'rare',
+      });
+      mockUserQuestRepo.find.mockResolvedValue([uq]);
+      jest.spyOn(service, 'checkSetCompletion').mockResolvedValue(undefined);
+      await service.handleBoosterOpened({
+        userId: 1,
+        boosterId: 1,
+        setId: 1,
+        amount: 1,
+        rarities: ['common', 'common', 'epic'],
+      });
+      expect(uq.progress.conditions[0].current).toBe(1);
+    });
+
+    it('fight.finished : PLAY_FIGHT pour les deux, WIN_FIGHT pour le gagnant', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleFightFinished({
+        player1Id: 1,
+        player2Id: 2,
+        winnerId: 2,
+      });
+      expect(track).toHaveBeenCalledWith(1, ConditionType.PLAY_FIGHT);
+      expect(track).toHaveBeenCalledWith(2, ConditionType.PLAY_FIGHT);
+      expect(track).toHaveBeenCalledWith(2, ConditionType.WIN_FIGHT);
+      expect(track).not.toHaveBeenCalledWith(1, ConditionType.WIN_FIGHT);
+    });
+
+    it('listing.sold : EARN_GOLD du montant pour le vendeur', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleListingSold({ sellerId: 3, totalPrice: 450 });
+      expect(track).toHaveBeenCalledWith(3, ConditionType.EARN_GOLD, {
+        amount: 450,
+      });
+    });
+
+    it('listing.created : LIST_CARD seulement pour une carte', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleListingCreated({
+        sellerId: 3,
+        productType: ProductType.BOOSTER,
+      });
+      expect(track).not.toHaveBeenCalled();
+      await service.handleListingCreated({
+        sellerId: 3,
+        productType: ProductType.CARD,
+      });
+      expect(track).toHaveBeenCalledWith(3, ConditionType.LIST_CARD);
+    });
+
+    it('une daily terminée incrémente questsCompleted et alimente COMPLETE_QUEST', async () => {
+      const daily = uqWith({ type: ConditionType.OPEN_BOOSTER, target: 1 });
+      const weekly = uqWith(
+        { type: ConditionType.COMPLETE_QUEST, target: 10 },
+        QuestResetType.WEEKLY,
+      );
+      mockUserQuestRepo.find
+        .mockResolvedValueOnce([daily])
+        .mockResolvedValueOnce([weekly]);
+      await service.track(1, ConditionType.OPEN_BOOSTER, { amount: 1 });
+      expect(mockUserRepo.increment).toHaveBeenCalledWith(
+        { id: 1 },
+        'questsCompleted',
+        1,
+      );
+      expect(weekly.progress.conditions[0].current).toBe(1);
     });
   });
 });

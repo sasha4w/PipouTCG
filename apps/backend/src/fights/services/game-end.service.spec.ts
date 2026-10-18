@@ -2,6 +2,7 @@ import { GameEndService, calcElo } from './game-end.service';
 import { scenario, P1_ID, P2_ID } from '../testing/scenario';
 
 function setup() {
+  const emitter = { emit: jest.fn() };
   const stats = new Map<number, Record<string, number>>();
   const matchRepo = { update: jest.fn().mockResolvedValue(undefined) };
   const statsRepo = {
@@ -15,8 +16,12 @@ function setup() {
     }),
     save: jest.fn((s: unknown) => Promise.resolve(s)),
   };
-  const service = new GameEndService(matchRepo as never, statsRepo as never);
-  return { service, matchRepo, stats };
+  const service = new GameEndService(
+    matchRepo as never,
+    statsRepo as never,
+    emitter as never,
+  );
+  return { service, matchRepo, stats, emitter };
 }
 
 describe('GameEndService.persistResult', () => {
@@ -47,7 +52,7 @@ describe('GameEndService.persistResult', () => {
   });
 
   it('victoire : +1 victoire, +1 défaite et ±16 ELO à niveau égal', async () => {
-    const { service, stats } = setup();
+    const { service, stats, emitter } = setup();
     const game = scenario();
     game.phase = 'finished';
     game.winner = P1_ID;
@@ -57,6 +62,11 @@ describe('GameEndService.persistResult', () => {
 
     expect(stats.get(P1_ID)).toMatchObject({ wins: 1, elo: 1016 });
     expect(stats.get(P2_ID)).toMatchObject({ losses: 1, elo: 984 });
+    expect(emitter.emit).toHaveBeenCalledWith('fight.finished', {
+      player1Id: P1_ID,
+      player2Id: P2_ID,
+      winnerId: P1_ID,
+    });
   });
 });
 

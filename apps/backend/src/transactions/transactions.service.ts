@@ -223,6 +223,7 @@ export class TransactionService {
 
     this.eventEmitter.emit('listing.created', {
       id: saved.id,
+      sellerId: saved.seller.id,
       productType: saved.productType,
       itemName: saved.itemName,
       unitPrice: saved.unitPrice,

@@ -13,6 +13,7 @@ describe('DailyRewardService — reward definition lookup', () => {
     {} as never,
     {} as never,
     {} as never,
+    { emit: jest.fn() } as never,
   );
 
   afterEach(() => jest.clearAllMocks());
@@ -99,6 +100,7 @@ function setup(row: Partial<LoginStreak> | null, gold = 10_000) {
     addBundleToUser: jest.fn(),
     findOne: jest.fn().mockResolvedValue({ gold }),
   };
+  const emitter = { emit: jest.fn() };
   const service = new DailyRewardService(
     repos.streak as never,
     repos.def as never,
@@ -106,8 +108,9 @@ function setup(row: Partial<LoginStreak> | null, gold = 10_000) {
     repos.history as never,
     repos.rescue as never,
     users as never,
+    emitter as never,
   );
-  return { service, repos, users, streak };
+  return { service, repos, users, streak, emitter };
 }
 
 describe('DailyRewardService — claim', () => {
@@ -119,9 +122,12 @@ describe('DailyRewardService — claim', () => {
   afterEach(() => jest.useRealTimers());
 
   it('premier claim : streak 1, semaine 1 jour 1', async () => {
-    const { service, repos } = setup(null);
+    const { service, repos, emitter } = setup(null);
     const res = await service.claimDaily(1);
     expect(res.status).toBe('claimed');
+    expect(emitter.emit).toHaveBeenCalledWith('daily-reward.claimed', {
+      userId: 1,
+    });
     expect(res.streak.current).toBe(1);
     expect(repos.def.findOne).toHaveBeenCalledWith({
       where: { cycleDay: 1, weekNumber: 1, isActive: true },

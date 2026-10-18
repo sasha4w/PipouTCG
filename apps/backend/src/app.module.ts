@@ -12,6 +12,7 @@ import { CardSetsModule } from './card-sets/card-sets.module';
 import { ImagesModule } from './images/images.module';
 import { CardsModule } from './cards/cards.module';
 import { QuestModule } from './quests/quests.module';
+import { AchievementsModule } from './achievements/achievements.module';
 import { BoostersModule } from './boosters/boosters.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BundlesModule } from './bundles/bundles.module';
@@ -72,6 +73,7 @@ import { shouldSynchronize } from './database/synchronize';
     CardSetsModule,
     CardsModule,
     QuestModule,
+    AchievementsModule,
     BoostersModule,
     TransactionsModule,
     BundlesModule,

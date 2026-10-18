@@ -6,3 +6,4 @@ export * from "./seat";
 export * from "./action";
 export * from "./rules";
 export * from "./events";
+export * from "./achievements";

@@ -1,4 +1,5 @@
 import type {
+  AchievementFamily,
   CardInstance as SharedCardInstance,
   ChoiceSource,
   FightEvent,
@@ -31,6 +32,7 @@ export type MonsterOnBoard = SharedMonsterOnBoard<Card>;
 export interface PlayerGameState {
   userId: number;
   username: string;
+  title?: AchievementFamily | null;
   socketId: string;
   primes: number;
   primeDeck: CardInstance[];

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import "./FightHUD.css";
 import type { MyState, OppState, Phase } from "./fight.types";
 import { PHASE_LABEL } from "./fight.types";
@@ -38,11 +39,15 @@ export default function FightHUD({
   isMyTurn,
   timeLeft,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="hud">
       {/* ── Ligne adversaire ── */}
       <div className="hud-row hud-row--opp">
         <span className="hud-name hud-name--opp">{opponent.username}</span>
+        {opponent.title && (
+          <span className="hud-title">{t(`achievements.titles.${opponent.title}`)}</span>
+        )}
         <PrimesRow primes={opponent.primes} />
         <span
           className="hud-stat"
@@ -77,6 +82,9 @@ export default function FightHUD({
       {/* ── Ligne moi ── */}
       <div className="hud-row hud-row--me">
         <span className="hud-name hud-name--me">{me.username}</span>
+        {me.title && (
+          <span className="hud-title">{t(`achievements.titles.${me.title}`)}</span>
+        )}
         <PrimesRow primes={me.primes} />
         <span
           className="hud-stat"

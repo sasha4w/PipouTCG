@@ -146,3 +146,16 @@
     opacity: 0.2;
   }
 }
+
+.hud-title {
+  max-width: 80px;
+  flex-shrink: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
+  font-weight: 700;
+  color: #eebc77;
+  opacity: 0.85;
+}

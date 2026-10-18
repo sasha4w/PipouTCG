@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Repository, IsNull, MoreThanOrEqual } from 'typeorm';
 import { LoginStreak } from './login-streak.entity';
 import { DailyRewardDefinition } from './daily-reward-definition.entity';
@@ -50,6 +51,7 @@ export class DailyRewardService {
     @InjectRepository(StreakRescue)
     private rescueRepo: Repository<StreakRescue>,
     private readonly usersService: UsersService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // ── Streak helpers ─────────────────────────────────────────────────────────
@@ -224,6 +226,8 @@ export class DailyRewardService {
         }),
       );
     }
+
+    this.eventEmitter.emit('daily-reward.claimed', { userId });
 
     return {
       status: 'claimed',

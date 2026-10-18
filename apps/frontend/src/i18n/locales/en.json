@@ -114,11 +114,42 @@
     "claim_all": "Claim all",
     "permanent": "Permanent",
     "expired": "Expired",
-    "remaining_days": "{{d}}d {{h}}h remaining",
-    "remaining_hours": "{{h}}h {{m}}min remaining",
-    "remaining_mins": "{{m}}min {{s}}s remaining",
-    "remaining_secs": "{{s}}s remaining",
-    "see_all": "See all quests"
+    "duration_days": "{{d}}d {{h}}h",
+    "duration_hours": "{{h}}h {{m}}min",
+    "duration_mins": "{{m}}min {{s}}s",
+    "duration_secs": "{{s}}s",
+    "see_all": "See all quests",
+    "reset_in": "Resets in {{time}}",
+    "reroll": "Swap this quest",
+    "reroll_hint": "1 swap per day",
+    "loading": "Loading…",
+    "pool": {
+      "d_open_1": "Open 1 booster",
+      "d_open_2": "Open 2 boosters",
+      "d_open_3": "Open 3 boosters",
+      "d_play_1": "Play 1 duel",
+      "d_play_2": "Play 2 duels",
+      "d_play_3": "Play 3 duels",
+      "d_win_1": "Win 1 duel",
+      "d_win_2": "Win 2 duels",
+      "d_buy_card_1": "Buy 1 card on the market",
+      "d_sell_card_1": "Sell 1 card on the market",
+      "d_list_card_1": "List 1 card for sale",
+      "d_buy_booster_1": "Buy 1 booster",
+      "d_obtain_10": "Get 10 cards",
+      "d_obtain_rare": "Get 1 rare card or better",
+      "d_daily_reward": "Claim your daily reward",
+      "w_open_15": "Open 15 boosters",
+      "w_play_15": "Play 15 duels",
+      "w_win_10": "Win 10 duels",
+      "w_buy_card_10": "Buy 10 cards on the market",
+      "w_sell_card_10": "Sell 10 cards on the market",
+      "w_earn_1000": "Earn 1,000 gold on the market",
+      "w_obtain_100": "Get 100 cards",
+      "w_obtain_epic_3": "Get 3 epic cards or better",
+      "w_daily_reward_5": "Claim your daily reward 5 times",
+      "w_quests_10": "Complete 10 daily quests"
+    }
   },
   "inbox": {
     "label": "Inbox",
@@ -501,8 +532,18 @@
     "filter": {
       "name": "name containing “{{name}}”"
     },
-    "stage": { "egg": "Egg", "baby": "Baby", "young": "Young", "adult": "Adult" },
-    "element": { "earth": "Earth", "fire": "Fire", "wind": "Wind", "water": "Water" },
+    "stage": {
+      "egg": "Egg",
+      "baby": "Baby",
+      "young": "Young",
+      "adult": "Adult"
+    },
+    "element": {
+      "earth": "Earth",
+      "fire": "Fire",
+      "wind": "Wind",
+      "water": "Water"
+    },
     "archetype": {
       "pipou": "Pipou",
       "dragon": "Drakon",
@@ -594,5 +635,66 @@
   "fight": {
     "evolveHint": "Tap one of your monsters to evolve",
     "summonPick": "Summon"
+  },
+  "achievements": {
+    "tab": "Achievements",
+    "error": "Couldn't load achievements.",
+    "loading": "Loading achievements…",
+    "unlocked": "{{count}} / {{total}} tiers",
+    "title_label": "Title",
+    "no_title": "No title",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "locked": "To reach",
+    "all_done": "All tiers claimed",
+    "unlocks_title": "Unlocks the title “{{title}}”",
+    "close": "Close",
+    "tiers": {
+      "BRONZE": "Bronze",
+      "SILVER": "Silver",
+      "GOLD": "Gold"
+    },
+    "families": {
+      "BOOSTERS_OPENED": "Opener",
+      "CARDS_BOUGHT": "Buyer",
+      "CARDS_SOLD": "Seller",
+      "SETS_COMPLETED": "Full Sets",
+      "DUELS_WON": "Victories",
+      "DUELS_PLAYED": "Duels Played",
+      "LEVEL": "Level",
+      "UNIQUE_CARDS": "Collection",
+      "HIGH_RARITY": "Rarities",
+      "LOGIN_STREAK": "Dedication",
+      "GOLD_EARNED": "Fortune",
+      "QUESTS_DONE": "Quests"
+    },
+    "goals": {
+      "BOOSTERS_OPENED": "Open {{n}} boosters",
+      "CARDS_BOUGHT": "Buy {{n}} cards on the market",
+      "CARDS_SOLD": "Sell {{n}} cards on the market",
+      "SETS_COMPLETED": "Complete {{n}} sets",
+      "DUELS_WON": "Win {{n}} duels",
+      "DUELS_PLAYED": "Play {{n}} duels",
+      "LEVEL": "Reach level {{n}}",
+      "UNIQUE_CARDS": "Own {{n}} different cards",
+      "HIGH_RARITY": "Own {{n}} epic cards or better",
+      "LOGIN_STREAK": "Log in {{n}} days in a row",
+      "GOLD_EARNED": "Earn {{n}} gold on the market",
+      "QUESTS_DONE": "Complete {{n}} quests"
+    },
+    "titles": {
+      "BOOSTERS_OPENED": "Master Opener",
+      "CARDS_BOUGHT": "Bargain Hunter",
+      "CARDS_SOLD": "Merchant",
+      "SETS_COMPLETED": "Archivist",
+      "DUELS_WON": "Champion",
+      "DUELS_PLAYED": "Veteran",
+      "LEVEL": "Legend",
+      "UNIQUE_CARDS": "Collector",
+      "HIGH_RARITY": "Relic Hunter",
+      "LOGIN_STREAK": "Faithful",
+      "GOLD_EARNED": "Tycoon",
+      "QUESTS_DONE": "Adventurer"
+    }
   }
 }

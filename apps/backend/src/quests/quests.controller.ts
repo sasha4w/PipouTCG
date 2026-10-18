@@ -38,6 +38,15 @@ export class QuestController {
   ) {
     return this.questService.claimReward(req.user.userId, id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/reroll')
+  reroll(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.questService.rerollQuest(req.user.userId, id);
+  }
   @UseGuards(JwtAuthGuard)
   @Post('claim-all')
   async claimAll(@Request() req: AuthenticatedRequest) {

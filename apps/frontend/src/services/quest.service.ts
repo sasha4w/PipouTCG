@@ -4,6 +4,7 @@ import type {
   QuestCondition,
   QuestConditionGroup,
   UpdateQuestRequest,
+  UserQuestsResponse,
 } from "@pipou/shared";
 import {
   ConditionOperator,
@@ -29,58 +30,22 @@ export interface Quest {
   isActive: boolean;
 }
 
-/** Avancement d'une condition (miroir de ConditionProgress côté back). */
-export interface ConditionProgress {
-  type: ConditionType;
-  current: number;
-  target: number;
-  completed: boolean;
-  rarity?: string;
-  setId?: number;
-  boosterId?: number;
-}
-
-export interface QuestProgress {
-  operator: ConditionOperator;
-  conditions: ConditionProgress[];
-  globalCompleted: boolean;
-}
-
-export interface UserQuest {
-  id: number;
-  questId: number;
-  title: string;
-  description?: string;
-  resetType: QuestResetType;
-  rewardType: RewardType;
-  rewardAmount: number;
-  rewardItemId?: number;
-  progress: QuestProgress | null;
-  isCompleted: boolean;
-  rewardClaimed: boolean;
-  resetAt: string | null;
-}
-
-export interface UserQuestsGrouped {
-  DAILY: UserQuest[];
-  WEEKLY: UserQuest[];
-  MONTHLY: UserQuest[];
-  EVENT: UserQuest[];
-  ACHIEVEMENT: UserQuest[];
-}
-
 export type { QuestCondition, QuestConditionGroup };
 export type CreateQuestData = CreateQuestRequest;
 
 export const questService = {
   // USER
-  async getMyQuests(): Promise<UserQuestsGrouped> {
+  async getMyQuests(): Promise<UserQuestsResponse> {
     const res = await api.get("/quests/me");
     return res.data;
   },
 
   async claimReward(userQuestId: number) {
     const res = await api.post(`/quests/${userQuestId}/claim`);
+    return res.data;
+  },
+  async reroll(userQuestId: number) {
+    const res = await api.post(`/quests/${userQuestId}/reroll`);
     return res.data;
   },
   async claimAllRewards() {

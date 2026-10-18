@@ -45,7 +45,6 @@ Feature: Flux complet d'un joueur
     When j'envoie une requête GET authentifiée sur "/quests/me"
     Then le statut de réponse est 200
     And la réponse contient un champ "DAILY"
-    And la réponse contient un champ "ACHIEVEMENT"
 
     # ── Admin crée un booster gratuit pour le test ───────────
     Given je suis connecté en tant qu'admin

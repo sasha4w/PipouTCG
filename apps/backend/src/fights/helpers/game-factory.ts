@@ -1,3 +1,4 @@
+import type { AchievementFamily } from '@pipou/shared';
 import type {
   GameState,
   PlayerGameState,
@@ -8,6 +9,7 @@ export interface SeatEntry {
   userId: number;
   username: string;
   socketId: string;
+  title?: AchievementFamily | null;
 }
 
 /** Joueur sans deck, en attente de sa soumission. */
@@ -15,6 +17,7 @@ export function createPlayerState(entry: SeatEntry): PlayerGameState {
   return {
     userId: entry.userId,
     username: entry.username,
+    title: entry.title ?? null,
     socketId: entry.socketId,
     primes: 0,
     primeDeck: [],

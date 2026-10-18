@@ -100,3 +100,11 @@
   background: linear-gradient(90deg, #eebc77, #f27aaa);
   transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
+
+.hero-card__title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #eebc77;
+  letter-spacing: 0.02em;
+}

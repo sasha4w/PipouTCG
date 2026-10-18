@@ -134,15 +134,31 @@
 .quest-item__claim-btn {
   align-self: flex-end;
 }
-.quest-item__timer {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.35);
-  letter-spacing: 0.2px;
-}
-
 .quest-item__claimed {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.35);
   align-self: flex-end;
+}
+
+.quests-panel__reset {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.quest-item__reroll {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px dashed rgba(238, 188, 119, 0.45);
+  background: transparent;
+  color: #eebc77;
+  cursor: pointer;
+}
+.quest-item__reroll:disabled {
+  opacity: 0.4;
+  cursor: default;
 }

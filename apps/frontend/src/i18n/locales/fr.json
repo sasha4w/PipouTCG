@@ -104,7 +104,7 @@
   "quests": {
     "title": "Missions",
     "daily": "Daily",
-    "weekly": "Weekly",
+    "weekly": "Hebdo",
     "monthly": "Monthly",
     "achievement": "Achievements",
     "event": "Événements",
@@ -114,11 +114,42 @@
     "claim_all": "Tout réclamer",
     "permanent": "Permanent",
     "expired": "Expiré",
-    "remaining_days": "{{d}}j {{h}}h restantes",
-    "remaining_hours": "{{h}}h {{m}}min restantes",
-    "remaining_mins": "{{m}}min {{s}}s restantes",
-    "remaining_secs": "{{s}}s restantes",
-    "see_all": "Voir toutes les quêtes"
+    "duration_days": "{{d}}j {{h}}h",
+    "duration_hours": "{{h}}h {{m}}min",
+    "duration_mins": "{{m}}min {{s}}s",
+    "duration_secs": "{{s}}s",
+    "see_all": "Voir toutes les quêtes",
+    "reset_in": "Reset dans {{time}}",
+    "reroll": "Changer cette quête",
+    "reroll_hint": "1 relance par jour",
+    "loading": "Chargement…",
+    "pool": {
+      "d_open_1": "Ouvre 1 booster",
+      "d_open_2": "Ouvre 2 boosters",
+      "d_open_3": "Ouvre 3 boosters",
+      "d_play_1": "Joue 1 duel",
+      "d_play_2": "Joue 2 duels",
+      "d_play_3": "Joue 3 duels",
+      "d_win_1": "Gagne 1 duel",
+      "d_win_2": "Gagne 2 duels",
+      "d_buy_card_1": "Achète 1 carte au marché",
+      "d_sell_card_1": "Vends 1 carte au marché",
+      "d_list_card_1": "Mets 1 carte en vente",
+      "d_buy_booster_1": "Achète 1 booster",
+      "d_obtain_10": "Obtiens 10 cartes",
+      "d_obtain_rare": "Obtiens 1 carte rare ou mieux",
+      "d_daily_reward": "Réclame ta récompense quotidienne",
+      "w_open_15": "Ouvre 15 boosters",
+      "w_play_15": "Joue 15 duels",
+      "w_win_10": "Gagne 10 duels",
+      "w_buy_card_10": "Achète 10 cartes au marché",
+      "w_sell_card_10": "Vends 10 cartes au marché",
+      "w_earn_1000": "Gagne 1 000 or au marché",
+      "w_obtain_100": "Obtiens 100 cartes",
+      "w_obtain_epic_3": "Obtiens 3 cartes épiques ou mieux",
+      "w_daily_reward_5": "Réclame ta récompense quotidienne 5 fois",
+      "w_quests_10": "Termine 10 quêtes quotidiennes"
+    }
   },
   "inbox": {
     "label": "Boîte de réception",
@@ -503,8 +534,18 @@
     "filter": {
       "name": "nom contenant « {{name}} »"
     },
-    "stage": { "egg": "Œuf", "baby": "Bébé", "young": "Jeune", "adult": "Adulte" },
-    "element": { "earth": "Terre", "fire": "Feu", "wind": "Vent", "water": "Eau" },
+    "stage": {
+      "egg": "Œuf",
+      "baby": "Bébé",
+      "young": "Jeune",
+      "adult": "Adulte"
+    },
+    "element": {
+      "earth": "Terre",
+      "fire": "Feu",
+      "wind": "Vent",
+      "water": "Eau"
+    },
     "archetype": {
       "pipou": "Pipou",
       "dragon": "Drakon",
@@ -596,5 +637,66 @@
   "fight": {
     "evolveHint": "Touche un de tes monstres pour évoluer",
     "summonPick": "Invoquer"
+  },
+  "achievements": {
+    "tab": "Succès",
+    "error": "Impossible de charger les succès.",
+    "loading": "Chargement des succès…",
+    "unlocked": "{{count}} / {{total}} paliers",
+    "title_label": "Titre",
+    "no_title": "Aucun titre",
+    "claim": "Réclamer",
+    "claimed": "Réclamé",
+    "locked": "À atteindre",
+    "all_done": "Tous les paliers sont réclamés",
+    "unlocks_title": "Débloque le titre « {{title}} »",
+    "close": "Fermer",
+    "tiers": {
+      "BRONZE": "Bronze",
+      "SILVER": "Argent",
+      "GOLD": "Or"
+    },
+    "families": {
+      "BOOSTERS_OPENED": "Ouvreur",
+      "CARDS_BOUGHT": "Acheteur",
+      "CARDS_SOLD": "Vendeur",
+      "SETS_COMPLETED": "Sets complets",
+      "DUELS_WON": "Victoires",
+      "DUELS_PLAYED": "Duels joués",
+      "LEVEL": "Niveau",
+      "UNIQUE_CARDS": "Collection",
+      "HIGH_RARITY": "Raretés",
+      "LOGIN_STREAK": "Assiduité",
+      "GOLD_EARNED": "Fortune",
+      "QUESTS_DONE": "Quêtes"
+    },
+    "goals": {
+      "BOOSTERS_OPENED": "Ouvre {{n}} boosters",
+      "CARDS_BOUGHT": "Achète {{n}} cartes au marché",
+      "CARDS_SOLD": "Vends {{n}} cartes au marché",
+      "SETS_COMPLETED": "Complète {{n}} sets",
+      "DUELS_WON": "Gagne {{n}} duels",
+      "DUELS_PLAYED": "Joue {{n}} duels",
+      "LEVEL": "Atteins le niveau {{n}}",
+      "UNIQUE_CARDS": "Possède {{n}} cartes différentes",
+      "HIGH_RARITY": "Possède {{n}} cartes épiques ou mieux",
+      "LOGIN_STREAK": "Connecte-toi {{n}} jours d'affilée",
+      "GOLD_EARNED": "Gagne {{n}} or au marché",
+      "QUESTS_DONE": "Termine {{n}} quêtes"
+    },
+    "titles": {
+      "BOOSTERS_OPENED": "Maître Ouvreur",
+      "CARDS_BOUGHT": "Chineur",
+      "CARDS_SOLD": "Marchand",
+      "SETS_COMPLETED": "Archiviste",
+      "DUELS_WON": "Champion",
+      "DUELS_PLAYED": "Vétéran",
+      "LEVEL": "Légende",
+      "UNIQUE_CARDS": "Collectionneur",
+      "HIGH_RARITY": "Chasseur de Reliques",
+      "LOGIN_STREAK": "Fidèle",
+      "GOLD_EARNED": "Magnat",
+      "QUESTS_DONE": "Aventurier"
+    }
   }
 }

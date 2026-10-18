@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Match } from '../entities/match.entity';
@@ -13,6 +14,7 @@ export class GameEndService {
   constructor(
     @InjectRepository(Match) private matchRepo: Repository<Match>,
     @InjectRepository(PlayerStats) private statsRepo: Repository<PlayerStats>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   /** Enregistre le résultat d'une partie terminée (statut, gagnant, stats, ELO). */
@@ -43,6 +45,11 @@ export class GameEndService {
     }
     [s1.elo, s2.elo] = calcElo(s1.elo, s2.elo, score1);
     await this.statsRepo.save([s1, s2]);
+    this.eventEmitter.emit('fight.finished', {
+      player1Id: game.player1.userId,
+      player2Id: game.player2.userId,
+      winnerId,
+    });
   }
 
   // ── REST endpoints ──────────────────────────────────────────────────────────
