@@ -25,9 +25,12 @@ import { TurnTimeoutService } from './services/turn-timeout.service';
 import { GameEngine } from './engine/game-engine';
 import {
   addLog,
+  currentChoice,
+  freshCandidates,
   getPlayerState,
   getOpponentState,
   seatOf,
+  seatPlayer,
 } from './helpers/game-state.helper';
 import { finishGame } from './helpers/game-end.helper';
 import { emitGameState } from './helpers/client-state.builder';
@@ -468,35 +471,84 @@ export class FightsService {
       }
       const seat = seatOf(game, info.aiUserId)!;
 
-      let error: string | undefined;
+      let progressed = false;
       if (info.aiActionsThisTurn >= AI_MAX_ACTIONS_PER_TURN) {
-        error = `plafond de ${AI_MAX_ACTIONS_PER_TURN} coups atteint`;
+        this.logger.warn(
+          `Match ${matchId} : plafond de ${AI_MAX_ACTIONS_PER_TURN} coups IA atteint`,
+        );
       } else {
         info.aiActionsThisTurn += 1;
         const action = this.ai.chooseAction(game, seat, info.profile);
-        error = this.engine.dispatch(game, seat, action).error;
-        if (error)
-          this.logger.warn(
-            `Match ${matchId} : coup IA ${JSON.stringify(action)} refusé — ${error}`,
-          );
+        progressed = this.tryAiAction(game, seat, action);
       }
-      if (error) this.forceAiProgress(game, seat);
+      if (!progressed) this.forceAiProgress(game, seat, info.aiUserId);
       await this.afterChange(game, server);
     });
   }
 
-  /** Filet de sécurité : l'IA ne doit jamais bloquer la partie. */
-  private forceAiProgress(game: GameState, seat: Seat): void {
-    const fallback: GameAction =
-      game.phase === 'mulligan'
-        ? { type: 'mulligan', redraw: false }
-        : { type: 'end_phase' };
-    const result = this.engine.dispatch(game, seat, fallback);
-    if (!result.error) return;
-    this.logger.warn(
-      `Match ${game.matchId} : repli IA ${fallback.type} refusé — ${result.error} ; timeout forcé`,
+  /** Joue un coup de l'IA ; false (journalisé) s'il est refusé ou lève. */
+  private tryAiAction(
+    game: GameState,
+    seat: Seat,
+    action: GameAction,
+  ): boolean {
+    try {
+      const { error } = this.engine.dispatch(game, seat, action);
+      if (!error) return true;
+      this.logger.warn(
+        `Match ${game.matchId} : coup IA ${JSON.stringify(action)} refusé — ${error}`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Match ${game.matchId} : coup IA ${JSON.stringify(action)} en exception`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+    return false;
+  }
+
+  /**
+   * Filet de sécurité : l'IA ne doit jamais bloquer la partie. Coup minimal
+   * pour elle seule (garder sa main, prendre les premiers candidats, finir
+   * sa phase) ; `engine.timeout` seulement pendant son propre tour, car il
+   * agit aussi sur le joueur humain. Si rien ne passe, l'IA est en panne :
+   * le joueur gagne.
+   */
+  private forceAiProgress(game: GameState, seat: Seat, aiUserId: number): void {
+    const choice = currentChoice(game);
+    let fallback: GameAction | undefined;
+    if (choice) {
+      if (choice.forUserId === aiUserId)
+        fallback = {
+          type: 'pick_cards',
+          instanceIds: freshCandidates(game, choice)
+            .slice(0, choice.count)
+            .map((c) => c.instanceId),
+        };
+    } else if (game.phase === 'mulligan') {
+      if (!seatPlayer(game, seat).mulliganDone)
+        fallback = { type: 'mulligan', redraw: false };
+    } else if (game.currentTurnUserId === aiUserId) {
+      fallback = { type: 'end_phase' };
+    }
+    if (fallback && this.tryAiAction(game, seat, fallback)) return;
+
+    if (game.phase !== 'mulligan' && game.currentTurnUserId === aiUserId) {
+      try {
+        this.engine.timeout(game);
+        return;
+      } catch (err) {
+        this.logger.error(
+          `Match ${game.matchId} : timeout forcé de l'IA en exception`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    }
+
+    this.logger.error(
+      `Match ${game.matchId} : l'IA ne peut plus jouer, victoire du joueur`,
     );
-    this.engine.timeout(game);
+    finishGame(game, getOpponentState(game, aiUserId).userId, 'disconnect');
   }
 
   private async finish(game: GameState, server: FightServer): Promise<void> {

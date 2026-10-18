@@ -4,7 +4,7 @@ import type {
   ClientGameState,
   GameAction,
 } from '@pipou/shared';
-import { FightsService } from './fights.service';
+import { FightsService, RECONNECT_GRACE_MS } from './fights.service';
 import { DeckSubmissionService } from './services/deck-submission.service';
 import { TurnTimeoutService } from './services/turn-timeout.service';
 import type { MatchmakingService } from './services/matchmaking.service';
@@ -386,6 +386,76 @@ describe('FightsService — parties PvE', () => {
 
     const over = emitted.find((e) => e.event === 'fight:game_over')!;
     expect(over.payload).toEqual({ winner: AI, endReason: 'surrender' });
+  });
+
+  it("l'IA garde sa main si son coup de mulligan est refusé, sans toucher au joueur", async () => {
+    const { begin, emitted } = setup();
+    jest
+      .spyOn(AiPlayer.prototype, 'chooseAction')
+      .mockReturnValue({ type: 'discard', handIndex: 99 });
+    await begin();
+
+    await jest.advanceTimersByTimeAsync(AI_ACTION_DELAY_MS);
+
+    const state = humanState(emitted);
+    expect(state.phase).toBe('mulligan');
+    expect(state.opponent.mulliganDone).toBe(true);
+    expect(state.me.mulliganDone).toBe(false);
+  });
+
+  it('moteur qui lève pour l’IA pendant son tour : timeout forcé, la main revient', async () => {
+    const ctx = setup();
+    await toAiTurn(ctx);
+    const dispatch = ctx.engine.dispatch.bind(ctx.engine);
+    jest
+      .spyOn(ctx.engine, 'dispatch')
+      .mockImplementation((game, seat, action) => {
+        if (seat === 'p2') throw new Error('moteur en panne');
+        return dispatch(game, seat, action);
+      });
+
+    await advanceUntil(() => humanState(ctx.emitted).isMyTurn, 30_000);
+
+    expect(humanState(ctx.emitted).isMyTurn).toBe(true);
+    expect(ctx.recorded).toHaveLength(0);
+  });
+
+  it('moteur qui lève toujours pour l’IA : le joueur gagne, aucun timer ne reste', async () => {
+    const ctx = setup();
+    jest.spyOn(ctx.engine, 'dispatch').mockImplementation(() => {
+      throw new Error('moteur en panne');
+    });
+    jest.spyOn(ctx.engine, 'timeout').mockImplementation(() => {
+      throw new Error('moteur en panne');
+    });
+    await ctx.begin();
+
+    await jest.advanceTimersByTimeAsync(10 * AI_ACTION_DELAY_MS);
+
+    expect(ctx.hooks.recordResult).toHaveBeenCalledTimes(1);
+    expect(ctx.recorded[0].winner).toBe(HUMAN);
+    expect(ctx.recorded[0].endReason).toBe('disconnect');
+    expect(ctx.timer.has(MATCH)).toBe(false);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it('déconnexion sans retour : défaite par déconnexion, plus aucun coup IA', async () => {
+    const { begin, act, service, server, engine, recorded, hooks } = setup();
+    await begin();
+    await act({ type: 'mulligan', redraw: false });
+    service.handleDisconnect(HUMAN, HUMAN_SOCKET, server);
+    const dispatch = jest.spyOn(engine, 'dispatch');
+
+    await jest.advanceTimersByTimeAsync(RECONNECT_GRACE_MS);
+
+    expect(hooks.recordResult).toHaveBeenCalledTimes(1);
+    expect(recorded[0].winner).toBe(AI);
+    expect(recorded[0].endReason).toBe('disconnect');
+    expect(jest.getTimerCount()).toBe(0);
+    const calls = dispatch.mock.calls.length;
+    await jest.advanceTimersByTimeAsync(5 * TURN_MS);
+    expect(dispatch.mock.calls.length).toBe(calls);
+    expect(hooks.recordResult).toHaveBeenCalledTimes(1);
   });
 
   it('reconnexion : renvoie adventureOpponentId', async () => {
