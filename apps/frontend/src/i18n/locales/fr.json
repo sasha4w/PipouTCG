@@ -668,7 +668,10 @@
       "HIGH_RARITY": "Raretés",
       "LOGIN_STREAK": "Assiduité",
       "GOLD_EARNED": "Fortune",
-      "QUESTS_DONE": "Quêtes"
+      "QUESTS_DONE": "Quêtes",
+      "ADVENTURE_WORLDS": "Mondes d'aventure",
+      "PVE_WON": "Victoires PvE",
+      "PVE_PLAYED": "Combats PvE"
     },
     "goals": {
       "BOOSTERS_OPENED": "Ouvre {{n}} boosters",
@@ -682,7 +685,10 @@
       "HIGH_RARITY": "Possède {{n}} cartes épiques ou mieux",
       "LOGIN_STREAK": "Connecte-toi {{n}} jours d'affilée",
       "GOLD_EARNED": "Gagne {{n}} or au marché",
-      "QUESTS_DONE": "Termine {{n}} quêtes"
+      "QUESTS_DONE": "Termine {{n}} quêtes",
+      "ADVENTURE_WORLDS": "Termine {{n}} mondes d'aventure",
+      "PVE_WON": "Gagne {{n}} combats d'aventure",
+      "PVE_PLAYED": "Joue {{n}} combats d'aventure"
     },
     "titles": {
       "BOOSTERS_OPENED": "Maître Ouvreur",
@@ -696,7 +702,10 @@
       "HIGH_RARITY": "Chasseur de Reliques",
       "LOGIN_STREAK": "Fidèle",
       "GOLD_EARNED": "Magnat",
-      "QUESTS_DONE": "Aventurier"
+      "QUESTS_DONE": "Aventurier",
+      "ADVENTURE_WORLDS": "Explorateur",
+      "PVE_WON": "Vainqueur d'aventure",
+      "PVE_PLAYED": "Aventurier PvE"
     }
   }
 }

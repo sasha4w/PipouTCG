@@ -1,4 +1,5 @@
 import type { CombatMode } from "../game/instance";
+import type { AdventureResultPayload } from "../api/adventure";
 import type { ClientGameState, GameEndReason } from "../game/state";
 
 /** Namespace Socket.io du combat (FightsGateway). */
@@ -74,9 +75,15 @@ export interface PickCardsPayload {
   instanceIds: string[];
 }
 
+export interface AdventureStartPayload {
+  opponentId: number;
+  deckId: number;
+}
+
 export interface ClientToServerEvents {
   "fight:queue": (payload?: EmptyPayload) => void;
   "fight:dequeue": (payload?: EmptyPayload) => void;
+  "adventure:start": (payload: AdventureStartPayload) => void;
   "fight:submit_deck": (payload: SubmitDeckPayload) => void;
   "fight:mulligan": (payload: MulliganPayload) => void;
   "fight:end_phase": (payload: MatchPayload) => void;
@@ -100,12 +107,16 @@ export interface MessagePayload {
 export interface MatchFoundPayload {
   matchId: number;
   opponentName: string;
+  /** Présent pour un combat d'aventure (PvE). */
+  adventureOpponentId?: number;
 }
 
 export interface GameOverPayload {
   /** null = match nul. */
   winner: number | null;
   endReason: GameEndReason;
+  /** Résultat d'aventure (combat PvE uniquement). */
+  adventure?: AdventureResultPayload;
 }
 
 export interface ServerToClientEvents {

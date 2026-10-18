@@ -619,7 +619,10 @@
       "HIGH_RARITY": "희귀 카드",
       "LOGIN_STREAK": "출석",
       "GOLD_EARNED": "재산",
-      "QUESTS_DONE": "퀘스트"
+      "QUESTS_DONE": "퀘스트",
+      "ADVENTURE_WORLDS": "모험 월드",
+      "PVE_WON": "PvE 승리",
+      "PVE_PLAYED": "PvE 전투"
     },
     "goals": {
       "BOOSTERS_OPENED": "부스터 {{n}}개 개봉",
@@ -633,7 +636,10 @@
       "HIGH_RARITY": "에픽 이상 카드 {{n}}장 보유",
       "LOGIN_STREAK": "{{n}}일 연속 접속",
       "GOLD_EARNED": "마켓에서 골드 {{n}} 획득",
-      "QUESTS_DONE": "퀘스트 {{n}}개 완료"
+      "QUESTS_DONE": "퀘스트 {{n}}개 완료",
+      "ADVENTURE_WORLDS": "모험 월드 {{n}}개 완료",
+      "PVE_WON": "모험 전투 {{n}}회 승리",
+      "PVE_PLAYED": "모험 전투 {{n}}회 플레이"
     },
     "titles": {
       "BOOSTERS_OPENED": "개봉의 달인",
@@ -647,7 +653,10 @@
       "HIGH_RARITY": "유물 사냥꾼",
       "LOGIN_STREAK": "충실한 자",
       "GOLD_EARNED": "거물",
-      "QUESTS_DONE": "모험가"
+      "QUESTS_DONE": "모험가",
+      "ADVENTURE_WORLDS": "탐험가",
+      "PVE_WON": "모험의 승자",
+      "PVE_PLAYED": "PvE 모험가"
     }
   }
 }

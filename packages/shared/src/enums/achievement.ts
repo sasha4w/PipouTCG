@@ -12,6 +12,9 @@ export const AchievementFamily = {
   LOGIN_STREAK: "LOGIN_STREAK",
   GOLD_EARNED: "GOLD_EARNED",
   QUESTS_DONE: "QUESTS_DONE",
+  ADVENTURE_WORLDS: "ADVENTURE_WORLDS",
+  PVE_WON: "PVE_WON",
+  PVE_PLAYED: "PVE_PLAYED",
 } as const;
 export type AchievementFamily =
   (typeof AchievementFamily)[keyof typeof AchievementFamily];

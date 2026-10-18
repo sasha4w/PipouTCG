@@ -43,5 +43,9 @@ export function toAchievementValues(
     [AchievementFamily.LOGIN_STREAK]: src.longestStreak ?? 0,
     [AchievementFamily.GOLD_EARNED]: Number(src.user.moneyEarned),
     [AchievementFamily.QUESTS_DONE]: src.user.questsCompleted,
+    // TODO(adventure Task 9): valeurs réelles (mondes terminés, victoires/parties PvE)
+    [AchievementFamily.ADVENTURE_WORLDS]: 0,
+    [AchievementFamily.PVE_WON]: 0,
+    [AchievementFamily.PVE_PLAYED]: 0,
   };
 }

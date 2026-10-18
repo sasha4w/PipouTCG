@@ -36,6 +36,10 @@ export const QuestConditionType = {
   LIST_CARD: "LIST_CARD",
   EARN_GOLD: "EARN_GOLD",
   COMPLETE_QUEST: "COMPLETE_QUEST",
+  WIN_PVP_FIGHT: "WIN_PVP_FIGHT",
+  WIN_PVE_FIGHT: "WIN_PVE_FIGHT",
+  PLAY_PVP_FIGHT: "PLAY_PVP_FIGHT",
+  PLAY_PVE_FIGHT: "PLAY_PVE_FIGHT",
 } as const;
 export type QuestConditionType =
   (typeof QuestConditionType)[keyof typeof QuestConditionType];

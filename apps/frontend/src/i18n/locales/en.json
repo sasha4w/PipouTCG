@@ -666,7 +666,10 @@
       "HIGH_RARITY": "Rarities",
       "LOGIN_STREAK": "Dedication",
       "GOLD_EARNED": "Fortune",
-      "QUESTS_DONE": "Quests"
+      "QUESTS_DONE": "Quests",
+      "ADVENTURE_WORLDS": "Adventure worlds",
+      "PVE_WON": "PvE wins",
+      "PVE_PLAYED": "PvE fights"
     },
     "goals": {
       "BOOSTERS_OPENED": "Open {{n}} boosters",
@@ -680,7 +683,10 @@
       "HIGH_RARITY": "Own {{n}} epic cards or better",
       "LOGIN_STREAK": "Log in {{n}} days in a row",
       "GOLD_EARNED": "Earn {{n}} gold on the market",
-      "QUESTS_DONE": "Complete {{n}} quests"
+      "QUESTS_DONE": "Complete {{n}} quests",
+      "ADVENTURE_WORLDS": "Complete {{n}} adventure worlds",
+      "PVE_WON": "Win {{n}} adventure fights",
+      "PVE_PLAYED": "Play {{n}} adventure fights"
     },
     "titles": {
       "BOOSTERS_OPENED": "Master Opener",
@@ -694,7 +700,10 @@
       "HIGH_RARITY": "Relic Hunter",
       "LOGIN_STREAK": "Faithful",
       "GOLD_EARNED": "Tycoon",
-      "QUESTS_DONE": "Adventurer"
+      "QUESTS_DONE": "Adventurer",
+      "ADVENTURE_WORLDS": "Explorer",
+      "PVE_WON": "Adventure Victor",
+      "PVE_PLAYED": "PvE Adventurer"
     }
   }
 }
