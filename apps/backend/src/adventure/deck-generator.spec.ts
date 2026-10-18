@@ -222,6 +222,22 @@ describe('identité de chaque monde', () => {
   });
 });
 
+describe('petits sets', () => {
+  it('atteint 30 cartes avec 10 cartes distinctes (3 exemplaires)', () => {
+    const small = setOf('pipou').slice(0, 10);
+    const sig = { archetype: 'pipou', cardName: small[0].name } as Signature;
+    const deck = generateDeck(small, 1, sig, rng(1));
+    expect(total(deck)).toBeGreaterThanOrEqual(30);
+    expect(deck.every((e) => e.quantity <= 3)).toBe(true);
+  });
+
+  it('lève une erreur si le set est trop petit (5 cartes)', () => {
+    const small = setOf('pipou').slice(0, 5);
+    const sig = { archetype: 'pipou', cardName: small[0].name } as Signature;
+    expect(() => generateDeck(small, 1, sig, rng(1))).toThrow(/trop petit/);
+  });
+});
+
 describe('robustesse', () => {
   it('échoue clairement si la carte signature est absente du set', () => {
     const sig: Signature = { archetype: 'pipou', cardName: 'Inconnu' };

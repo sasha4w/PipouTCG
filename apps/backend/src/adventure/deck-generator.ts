@@ -59,6 +59,8 @@ interface Plan {
   forced: { card: Card; quantity: number }[];
   /** Poids de base d'une carte pour le tirage ; 0 = exclue. */
   baseWeight(card: Card, counts: ReadonlyMap<number, number>): number;
+  /** Jouable selon les règles du moteur (repli pour atteindre le minimum). */
+  playable?(card: Card, counts: ReadonlyMap<number, number>): boolean;
   /** Plafonds en nombre de cartes, relâchés si le set est trop petit. */
   maxMonsters?: number;
   maxSupports?: number;
@@ -77,8 +79,7 @@ function findByName(cards: Card[], name: string): Card | undefined {
 }
 
 /** Pipou, « l'union fait la force » : un maximum de monstres + boosts d'équipe. */
-function pipouPlan(set: Card[], sig: Card, random: () => number): Plan {
-  void random;
+function pipouPlan(set: Card[], sig: Card): Plan {
   const forced = [{ card: sig, quantity: isHighRarity(sig) ? 2 : 3 }];
   for (const name of ["Clairon de l'Union", 'Tactique Gang Gang']) {
     const c = findByName(set, name);
@@ -157,20 +158,24 @@ function dragonPlan(
   if (!forced.some((f) => f.card.id === sig.id))
     forced.push({ card: sig, quantity: 2 });
 
+  const hasBaby = (c: Card, counts: ReadonlyMap<number, number>) =>
+    set.some(
+      (b) =>
+        b.stage === 'baby' &&
+        b.lineage === c.lineage &&
+        (counts.get(b.id) ?? 0) > 0,
+    );
+
   return {
     forced,
+    playable: (c, counts) =>
+      (c.stage !== 'young' && c.stage !== 'adult') || hasBaby(c, counts),
     baseWeight: (c, counts) => {
       if (c.stage === 'egg') return 1.5;
       if (c.stage === 'baby') return 0.5;
       if (c.stage === 'young' || c.stage === 'adult') {
         // Seulement si le bébé de la lignée est déjà dans le deck.
-        const hasBaby = set.some(
-          (b) =>
-            b.stage === 'baby' &&
-            b.lineage === c.lineage &&
-            (counts.get(b.id) ?? 0) > 0,
-        );
-        return hasBaby ? 0.8 : 0;
+        return hasBaby(c, counts) ? 0.8 : 0;
       }
       return 1;
     },
@@ -204,7 +209,7 @@ export function generateDeck(
 
   const plan =
     signature.archetype === 'pipou'
-      ? pipouPlan(setCards, sig, random)
+      ? pipouPlan(setCards, sig)
       : signature.archetype === 'pixelman'
         ? pixelmanPlan(setCards, sig, random)
         : dragonPlan(setCards, sig, signature, level, random);
@@ -233,13 +238,17 @@ export function generateDeck(
   while (size < TARGET_SIZE) {
     let candidates: Card[] = [];
     let w: number[] = [];
-    for (const strict of [true, false]) {
+    for (const pass of [0, 1, 2] as const) {
+      if (pass === 2 && size >= DECK_RULES.MIN_CARDS) break;
+      const strict = pass === 0;
       candidates = [];
       w = [];
       for (const c of setCards) {
         if ((counts.get(c.id) ?? 0) >= DECK_RULES.MAX_COPIES) continue;
         if (capped(c, strict)) continue;
-        const base = plan.baseWeight(c, counts);
+        let base = plan.baseWeight(c, counts);
+        // Repli : n'importe quelle carte jouable pour atteindre le minimum.
+        if (pass === 2 && plan.playable?.(c, counts) !== false) base = 1;
         if (base <= 0) continue;
         candidates.push(c);
         w.push(base * RARITY_WEIGHTS[level][c.rarity] * costMultiplier(c));
@@ -249,6 +258,15 @@ export function generateDeck(
     if (candidates.length === 0) break;
     add(pickWeighted(candidates, w, random), 1);
   }
+
+  if (size < DECK_RULES.MIN_CARDS)
+    throw new Error(
+      `Set trop petit pour un deck de ${DECK_RULES.MIN_CARDS} cartes (${size} possibles)`,
+    );
+  if (size > DECK_RULES.MAX_CARDS)
+    throw new Error(
+      `Deck de ${size} cartes : maximum ${DECK_RULES.MAX_CARDS} dépassé`,
+    );
 
   return [...counts.entries()]
     .map(([cardId, quantity]) => ({ cardId, quantity }))
