@@ -1,4 +1,6 @@
+import { Logger } from '@nestjs/common';
 import { HAND_LIMIT } from '@pipou/shared';
+import type { GameEngine } from '../engine/game-engine';
 import { createEngine } from '../testing/engine';
 import { equipmentCard, monsterCard } from '../testing/cards';
 import { realCard } from '../testing/real-cards';
@@ -155,6 +157,103 @@ describe('AiPlayer', () => {
       type: 'play_support',
       handIndex: 0,
       targetInstanceId: monsterNamed(game, 'p2', 'Noyau Alpha').instanceId,
+    });
+  });
+
+  it('Pipou : protège le monstre qui booste ses alliés', () => {
+    // Un seul attaquant adverse : il détruira l'un des deux monstres en mode ATK.
+    // Le booster (+100 ATK au voisin) doit passer en Garde, pas le voisin.
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p1: { monsters: [monsterCard('Ogre', { atk: 700, hp: 3000 })] },
+      p2: {
+        hand: [],
+        monsters: [
+          monsterCard('Soldat', { atk: 200, hp: 600 }),
+          realCard('Caporal Gazouille'),
+        ],
+      },
+    });
+    engine.settle(game);
+
+    expect(ai.chooseAction(game, 'p2', profile)).toEqual({
+      type: 'change_mode',
+      instanceId: monsterNamed(game, 'p2', 'Caporal Gazouille').instanceId,
+      mode: 'guard',
+    });
+  });
+
+  it('niveau 1 : une erreur volontaire reste un coup accepté', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p1: { monsters: [monsterCard('Cible', { atk: 300, hp: 400 })] },
+      p2: {
+        hand: [monsterCard('Recrue', { cost: 1 }), monsterCard('Soldat')],
+        monsters: [monsterCard('Garde')],
+      },
+    });
+    const clumsy = new AiPlayer(engine, () => 0);
+
+    const action = clumsy.chooseAction(game, 'p2', {
+      archetype: 'pipou',
+      level: 1,
+    });
+
+    expect(engine.dispatch(game, 'p2', action).error).toBeUndefined();
+  });
+
+  describe('pannes du moteur', () => {
+    let warn: jest.SpyInstance;
+    beforeEach(() => {
+      warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    });
+    afterEach(() => warn.mockRestore());
+
+    it('simulations qui lèvent : un seul avertissement, repli end_phase', () => {
+      const broken = {
+        dispatch: () => {
+          throw new Error('boom');
+        },
+      } as unknown as GameEngine;
+      const game = scenario({
+        turn: 'p2',
+        phase: 'main',
+        p2: { hand: [monsterCard('A'), monsterCard('B')] },
+      });
+
+      const action = new AiPlayer(broken, () => 0.99).chooseAction(
+        game,
+        'p2',
+        profile,
+      );
+
+      expect(action).toEqual({ type: 'end_phase' });
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('boom'));
+    });
+
+    it('décision qui lève : avertissement et repli', () => {
+      const game = scenario({ turn: 'p2', phase: 'main' });
+      // Choix pour un joueur absent : la lecture de l'état lève
+      game.pendingChoices.push({
+        forUserId: 999,
+        candidates: [],
+        count: 1,
+        prompt: '',
+      });
+
+      expect(ai.chooseAction(game, 'p2', profile)).toEqual({
+        type: 'end_phase',
+      });
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('un simple refus du moteur ne logge rien', () => {
+      const game = scenario({ turn: 'p2', phase: 'battle' });
+      ai.chooseAction(game, 'p2', profile);
+      expect(warn).not.toHaveBeenCalled();
     });
   });
 

@@ -1,4 +1,10 @@
-import { CardType, DrakonStage } from '@pipou/shared';
+import {
+  ActionType,
+  CardType,
+  DrakonStage,
+  EffectTarget,
+  EffectTrigger,
+} from '@pipou/shared';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
 import type {
@@ -87,6 +93,12 @@ function hasAttacksLeft(m: MonsterOnBoard): number {
   );
 }
 
+/**
+ * Un bonus d'équipe compte double pour l'attaquant : il profite à chaque
+ * tour et à chaque nouvel allié, pas seulement aux stats du moment.
+ */
+const BOOST_TARGET_FACTOR = 2;
+
 interface Raid {
   primes: number;
   destroyed: MonsterOnBoard[];
@@ -95,14 +107,19 @@ interface Raid {
 /**
  * Estimation gloutonne d'une phase de combat : chaque attaquant, du plus fort
  * au plus faible, attaque en direct si le terrain est vide, sinon détruit une
- * cible qu'il bat sans mourir à la riposte (Prime si elle est en mode ATK).
+ * cible qu'il bat sans mourir à la riposte : d'abord celles qui rapportent
+ * une Prime (mode ATK), la plus précieuse en premier (stats + bonus d'équipe).
  */
 function raid(
   attackers: { m: MonsterOnBoard; attacks: number }[],
-  defenders: MonsterOnBoard[],
+  defenderZones: readonly (MonsterOnBoard | null)[],
   directAllowed: boolean,
 ): Raid {
-  const alive = [...defenders];
+  const worth = (d: MonsterOnBoard) =>
+    monsterValue(d) + BOOST_TARGET_FACTOR * teamBoost(d, defenderZones);
+  const alive = defenderZones
+    .filter((d) => d !== null)
+    .sort((a, b) => worth(b) - worth(a));
   const out: Raid = { primes: 0, destroyed: [] };
   const sorted = [...attackers].sort(
     (a, b) => effectiveAtk(b.m) - effectiveAtk(a.m),
@@ -130,13 +147,62 @@ function raid(
   return out;
 }
 
+const BOOST_ACTIONS = new Set<string>([
+  ActionType.BUFF_ATK,
+  ActionType.BUFF_HP,
+  ActionType.BUFF_ATK_TEMP,
+  ActionType.HEAL,
+]);
+const BOOST_TRIGGERS = new Set<string>([
+  EffectTrigger.PASSIVE,
+  EffectTrigger.ON_BATTLE_PHASE_START,
+  EffectTrigger.ON_TURN_START,
+]);
+const TEAM_TARGETS = new Set<string>([
+  EffectTarget.ALL_ALLIES,
+  EffectTarget.ALLIES_EXCEPT_SELF,
+  EffectTarget.ARCHETYPE_ALLIES,
+  EffectTarget.ADJACENT_ALLIES,
+]);
+
+/**
+ * Bonus que `m` donne à ses alliés (ATK, PV, soin) : somme des valeurs de ses
+ * effets d'équipe, multipliée par le nombre d'alliés qu'ils touchent.
+ */
+export function teamBoost(
+  m: MonsterOnBoard,
+  zones: readonly (MonsterOnBoard | null)[],
+): number {
+  const zone = zones.indexOf(m);
+  const others = zones.filter((z) => z && z !== m).length;
+  const adjacent = [zone - 1, zone + 1].filter((i) => zones[i]).length;
+  let boost = 0;
+  for (const effect of m.card.baseCard.effects ?? []) {
+    if (!BOOST_TRIGGERS.has(effect.trigger)) continue;
+    for (const a of effect.actions) {
+      if (!BOOST_ACTIONS.has(a.type) || !TEAM_TARGETS.has(a.target)) continue;
+      const reach =
+        a.target === EffectTarget.ADJACENT_ALLIES ? adjacent : others;
+      boost += (a.value ?? 0) * reach;
+    }
+  }
+  return boost;
+}
+
+/** Bonus d'équipe qui vaut un poids « à protéger » de 1. */
+const BOOST_PER_PROTECT = 200;
+
 /** Poids d'un monstre à protéger selon l'archétype. */
 function protectWeight(
   m: MonsterOnBoard,
+  zones: readonly (MonsterOnBoard | null)[],
   archetype: AdventureArchetype,
 ): number {
   if (archetype === 'pixelman') return m.equipments.length;
   if (archetype === 'dragon' && isGrowing(m)) return 1;
+  // Pipou : garder en vie ceux qui boostent les autres
+  if (archetype === 'pipou')
+    return Math.min(2, teamBoost(m, zones) / BOOST_PER_PROTECT);
   return 0;
 }
 
@@ -189,13 +255,14 @@ export function evaluate(
     theirs
       .filter((m) => !isEgg(m) && !blocked(m) && !m.guardLocked)
       .map((m) => ({ m, attacks: m.attacksPerTurn })),
-    mine,
+    me.monsterZones,
     true,
   );
   score -= THREAT_PRIME * threat.primes;
   for (const d of threat.destroyed)
     score -=
-      monsterValue(d) / 2 + PROTECT_PENALTY * protectWeight(d, archetype);
+      monsterValue(d) / 2 +
+      PROTECT_PENALTY * protectWeight(d, me.monsterZones, archetype);
 
   // Mon tour, avant le combat : Primes encore à prendre
   if (game.currentTurnUserId === me.userId && game.phase === 'main') {
@@ -203,7 +270,7 @@ export function evaluate(
       mine
         .map((m) => ({ m, attacks: hasAttacksLeft(m) }))
         .filter((a) => a.attacks > 0),
-      theirs,
+      opp.monsterZones,
       game.turnNumber > 1,
     );
     score += POTENTIAL_PRIME * potential.primes;

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { CardType, HAND_LIMIT, canSummonFromHand } from '@pipou/shared';
 import type { AdventureArchetype, GameAction, Seat } from '@pipou/shared';
 import type { GameEngine } from '../engine/game-engine';
@@ -57,6 +58,8 @@ interface Scored {
  * avec le vrai moteur, puis garde celui qui maximise `evaluate`.
  */
 export class AiPlayer {
+  private readonly logger = new Logger(AiPlayer.name);
+
   constructor(
     private readonly engine: GameEngine,
     private readonly random: () => number,
@@ -64,10 +67,23 @@ export class AiPlayer {
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
   chooseAction(game: GameState, seat: Seat, profile: AiProfile): GameAction {
+    const crashes: SimulationCrash[] = [];
     try {
-      return this.decide(game, seat, profile) ?? fallbackAction(game, seat);
-    } catch {
-      return safeFallback(game, seat);
+      return (
+        this.decide(game, seat, profile, crashes) ?? fallbackAction(game, seat)
+      );
+    } catch (err) {
+      const fallback = safeFallback(game, seat);
+      this.logger.warn(
+        `Match ${game.matchId} (${seat}) : décision IA en échec, repli ${JSON.stringify(fallback)} — ${describe(err)}`,
+      );
+      return fallback;
+    } finally {
+      // Un seul message par décision, même si plusieurs simulations ont planté
+      if (crashes.length > 0)
+        this.logger.warn(
+          `Match ${game.matchId} (${seat}) : ${crashes.length} simulation(s) du moteur ont levé une exception, ex. ${JSON.stringify(crashes[0].action)} — ${describe(crashes[0].error)}`,
+        );
     }
   }
 
@@ -75,13 +91,15 @@ export class AiPlayer {
     game: GameState,
     seat: Seat,
     profile: AiProfile,
+    crashes: SimulationCrash[],
   ): GameAction | null {
     const valid: Scored[] = [];
     for (const action of listCandidates(game, seat)) {
       const clone = cloneForSimulation(game);
       try {
         if (this.engine.dispatch(clone, seat, action).error) continue;
-      } catch {
+      } catch (error) {
+        crashes.push({ action, error });
         continue;
       }
       valid.push({
@@ -93,6 +111,7 @@ export class AiPlayer {
             seat,
             arrivalZone(game, seat, action),
             profile,
+            crashes,
           ),
         ),
       });
@@ -126,24 +145,35 @@ export class AiPlayer {
     seat: Seat,
     zone: number | null,
     profile: AiProfile,
+    crashes: SimulationCrash[],
   ): number {
     if (zone === null || after.phase !== 'main') return -Infinity;
     const monster = seatPlayer(after, seat).monsterZones[zone];
     if (!monster || monster.mode === 'guard') return -Infinity;
-    const instanceId = monster.instanceId;
+    const action: GameAction = {
+      type: 'change_mode',
+      instanceId: monster.instanceId,
+      mode: 'guard',
+    };
     const clone = cloneForSimulation(after);
     try {
-      const result = this.engine.dispatch(clone, seat, {
-        type: 'change_mode',
-        instanceId,
-        mode: 'guard',
-      });
-      if (result.error) return -Infinity;
-    } catch {
+      if (this.engine.dispatch(clone, seat, action).error) return -Infinity;
+    } catch (error) {
+      crashes.push({ action, error });
       return -Infinity;
     }
     return evaluate(clone, seat, profile.archetype);
   }
+}
+
+/** Exception levée par le moteur pendant une simulation (bug moteur). */
+interface SimulationCrash {
+  action: GameAction;
+  error: unknown;
+}
+
+function describe(err: unknown): string {
+  return err instanceof Error ? (err.stack ?? err.message) : String(err);
 }
 
 /** Zone de mon terrain où l'action fait arriver un monstre (invocation, évolution). */
