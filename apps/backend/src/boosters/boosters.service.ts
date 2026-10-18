@@ -288,6 +288,7 @@ export class BoostersService {
       setId: booster.cardSet.id,
       amount: 1,
       cards: dropped,
+      rarities: drawnCards.map((card) => card.rarity),
     });
     return {
       historyId: historyId!,

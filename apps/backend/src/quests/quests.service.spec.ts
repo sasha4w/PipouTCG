@@ -12,6 +12,7 @@ import {
   QuestRewardType as RewardType,
   ConditionOperator,
   QuestConditionType as ConditionType,
+  ProductType,
 } from '@pipou/shared';
 import type { CreateQuestDto } from './dto/create-quest.dto';
 
@@ -699,6 +700,93 @@ describe('QuestService', () => {
       await expect(service.rerollQuest(1, 1)).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('nouvelles conditions', () => {
+    const uqWith = (
+      condition: Record<string, unknown>,
+      resetType: QuestResetType = QuestResetType.DAILY,
+    ) => ({
+      ...fakeUserQuest,
+      id: 5,
+      quest: { ...fakeQuest, resetType },
+      progress: {
+        operator: ConditionOperator.AND,
+        conditions: [{ current: 0, completed: false, ...condition }],
+        globalCompleted: false,
+      },
+    });
+
+    it('OBTAIN_CARD + minRarity ne compte que les cartes assez rares', async () => {
+      const uq = uqWith({
+        type: ConditionType.OBTAIN_CARD,
+        target: 2,
+        minRarity: 'rare',
+      });
+      mockUserQuestRepo.find.mockResolvedValue([uq]);
+      jest.spyOn(service, 'checkSetCompletion').mockResolvedValue(undefined);
+      await service.handleBoosterOpened({
+        userId: 1,
+        boosterId: 1,
+        setId: 1,
+        amount: 1,
+        rarities: ['common', 'common', 'epic'],
+      });
+      expect(uq.progress.conditions[0].current).toBe(1);
+    });
+
+    it('fight.finished : PLAY_FIGHT pour les deux, WIN_FIGHT pour le gagnant', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleFightFinished({
+        player1Id: 1,
+        player2Id: 2,
+        winnerId: 2,
+      });
+      expect(track).toHaveBeenCalledWith(1, ConditionType.PLAY_FIGHT);
+      expect(track).toHaveBeenCalledWith(2, ConditionType.PLAY_FIGHT);
+      expect(track).toHaveBeenCalledWith(2, ConditionType.WIN_FIGHT);
+      expect(track).not.toHaveBeenCalledWith(1, ConditionType.WIN_FIGHT);
+    });
+
+    it('listing.sold : EARN_GOLD du montant pour le vendeur', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleListingSold({ sellerId: 3, totalPrice: 450 });
+      expect(track).toHaveBeenCalledWith(3, ConditionType.EARN_GOLD, {
+        amount: 450,
+      });
+    });
+
+    it('listing.created : LIST_CARD seulement pour une carte', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleListingCreated({
+        sellerId: 3,
+        productType: ProductType.BOOSTER,
+      });
+      expect(track).not.toHaveBeenCalled();
+      await service.handleListingCreated({
+        sellerId: 3,
+        productType: ProductType.CARD,
+      });
+      expect(track).toHaveBeenCalledWith(3, ConditionType.LIST_CARD);
+    });
+
+    it('une daily terminée incrémente questsCompleted et alimente COMPLETE_QUEST', async () => {
+      const daily = uqWith({ type: ConditionType.OPEN_BOOSTER, target: 1 });
+      const weekly = uqWith(
+        { type: ConditionType.COMPLETE_QUEST, target: 10 },
+        QuestResetType.WEEKLY,
+      );
+      mockUserQuestRepo.find
+        .mockResolvedValueOnce([daily])
+        .mockResolvedValueOnce([weekly]);
+      await service.track(1, ConditionType.OPEN_BOOSTER, { amount: 1 });
+      expect(mockUserRepo.increment).toHaveBeenCalledWith(
+        { id: 1 },
+        'questsCompleted',
+        1,
+      );
+      expect(weekly.progress.conditions[0].current).toBe(1);
     });
   });
 });

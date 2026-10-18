@@ -19,6 +19,9 @@ import {
   QuestRewardType as RewardType,
   ConditionOperator,
   QuestConditionType as ConditionType,
+  Rarity,
+  rarityAtLeast,
+  ProductType,
 } from '@pipou/shared';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/user.entity';
@@ -39,7 +42,7 @@ export interface AutoClaimedReward {
 /** Détails d'un événement de jeu, comparés aux filtres des conditions de quête. */
 export interface QuestEventMeta {
   amount?: number;
-  rarity?: string;
+  rarity?: Rarity;
   setId?: number;
   boosterId?: number;
   level?: number;
@@ -415,22 +418,37 @@ export class QuestService {
       relations: { quest: true },
     });
 
+    let completed = 0;
+    let dailyCompleted = 0;
     for (const uq of userQuests) {
       const updated = this.updateProgress(uq, eventType, meta);
-      if (updated) {
-        await this.userQuestRepository.save(uq);
-        // track() ne charge que des quêtes non terminées : terminée ici = vient de l'être
-        if (uq.isCompleted) {
-          this.eventEmitter.emit('quest.completed', {
-            userId,
-            userQuestId: uq.id,
-            title: uq.quest.title,
-            rewardType: uq.quest.rewardType,
-            rewardAmount: Number(uq.quest.rewardAmount),
-          });
-        }
+      if (!updated) continue;
+      await this.userQuestRepository.save(uq);
+      // track() ne charge que des quêtes non terminées : terminée ici = vient de l'être
+      if (uq.isCompleted) {
+        completed++;
+        if (uq.quest.resetType === QuestResetType.DAILY) dailyCompleted++;
+        this.eventEmitter.emit('quest.completed', {
+          userId,
+          userQuestId: uq.id,
+          title: uq.quest.title,
+          rewardType: uq.quest.rewardType,
+          rewardAmount: Number(uq.quest.rewardAmount),
+        });
       }
     }
+
+    if (completed > 0)
+      await this.userRepository.increment(
+        { id: userId },
+        'questsCompleted',
+        completed,
+      );
+    // COMPLETE_QUEST n'existe que dans des quêtes WEEKLY : la récursion s'arrête au 2e appel
+    if (dailyCompleted > 0)
+      await this.track(userId, ConditionType.COMPLETE_QUEST, {
+        amount: dailyCompleted,
+      });
   }
 
   /* ===================== EVENT HANDLERS ===================== */
@@ -441,12 +459,24 @@ export class QuestService {
     boosterId: number;
     setId: number;
     amount: number;
+    rarities?: Rarity[];
   }) {
     await this.track(payload.userId, ConditionType.OPEN_BOOSTER, {
       boosterId: payload.boosterId,
       setId: payload.setId,
       amount: payload.amount,
     });
+
+    const byRarity = new Map<Rarity, number>();
+    for (const r of payload.rarities ?? [])
+      byRarity.set(r, (byRarity.get(r) ?? 0) + 1);
+    for (const [rarity, amount] of byRarity) {
+      await this.track(payload.userId, ConditionType.OBTAIN_CARD, {
+        rarity,
+        amount,
+        setId: payload.setId,
+      });
+    }
 
     await this.checkSetCompletion(payload.userId, payload.setId);
   }
@@ -500,6 +530,40 @@ export class QuestService {
     await this.checkSetCompletion(payload.userId, payload.setId);
   }
 
+  @OnEvent('fight.finished')
+  async handleFightFinished(payload: {
+    player1Id: number;
+    player2Id: number;
+    winnerId: number | null;
+  }) {
+    for (const id of [payload.player1Id, payload.player2Id]) {
+      await this.track(id, ConditionType.PLAY_FIGHT);
+    }
+    if (payload.winnerId !== null)
+      await this.track(payload.winnerId, ConditionType.WIN_FIGHT);
+  }
+
+  @OnEvent('listing.sold')
+  async handleListingSold(payload: { sellerId: number; totalPrice: number }) {
+    await this.track(payload.sellerId, ConditionType.EARN_GOLD, {
+      amount: Number(payload.totalPrice),
+    });
+  }
+
+  @OnEvent('listing.created')
+  async handleListingCreated(payload: {
+    sellerId: number;
+    productType: string;
+  }) {
+    if (payload.productType !== ProductType.CARD) return;
+    await this.track(payload.sellerId, ConditionType.LIST_CARD);
+  }
+
+  @OnEvent('daily-reward.claimed')
+  async handleDailyRewardClaimed(payload: { userId: number }) {
+    await this.track(payload.userId, ConditionType.CLAIM_DAILY_REWARD);
+  }
+
   /* ===================== HELPERS PUBLICS ===================== */
 
   // ✅ Vérifie si le user possède toutes les cartes d'un set
@@ -540,6 +604,7 @@ export class QuestService {
         target: c.amount ?? 1,
         completed: false,
         rarity: c.rarity,
+        minRarity: c.minRarity,
         setId: c.setId,
         boosterId: c.boosterId,
       }),
@@ -563,6 +628,11 @@ export class QuestService {
       if (condition.completed) continue;
       if (condition.type !== eventType) continue;
       if (condition.rarity && meta.rarity !== condition.rarity) continue;
+      if (
+        condition.minRarity &&
+        (!meta.rarity || !rarityAtLeast(meta.rarity, condition.minRarity))
+      )
+        continue;
       if (condition.setId && meta.setId !== condition.setId) continue;
       if (condition.boosterId && meta.boosterId !== condition.boosterId)
         continue;
