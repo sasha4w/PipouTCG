@@ -50,6 +50,7 @@ export function buildClientState(
     me: {
       userId: me.userId,
       username: me.username,
+      title: me.title ?? null,
       primes: me.primes,
       hand: me.hand,
       deckCount: me.deck.length,
@@ -64,6 +65,7 @@ export function buildClientState(
     opponent: {
       userId: opp.userId,
       username: opp.username,
+      title: opp.title ?? null,
       primes: opp.primes,
       handCount: opp.hand.length,
       deckCount: opp.deck.length,

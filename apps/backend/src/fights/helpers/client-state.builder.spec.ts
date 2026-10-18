@@ -1,3 +1,4 @@
+import { AchievementFamily } from '@pipou/shared';
 import type { ClientGameState, FightEvent } from '@pipou/shared';
 import { buildClientState, emitGameState } from './client-state.builder';
 import { fakeServer } from '../testing/fake-server';
@@ -125,5 +126,15 @@ describe('buildClientState / emitGameState — événements', () => {
     const events = emitted.map((e) => (e.payload as ClientGameState).events);
     expect(events).toEqual([[ev], [ev], [], []]);
     expect(game.pendingEvents).toEqual([]);
+  });
+});
+
+describe('buildClientState — titres', () => {
+  it('expose le titre équipé des deux joueurs', () => {
+    const game = scenario();
+    game.player2.title = AchievementFamily.LEVEL;
+    const view = buildClientState(game, game.player1.userId);
+    expect(view.opponent.title).toBe(AchievementFamily.LEVEL);
+    expect(view.me.title).toBeNull();
   });
 });

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { User } from '../../users/user.entity';
 import { Match } from '../entities/match.entity';
-import { MatchStatus } from '@pipou/shared';
+import { AchievementFamily, MatchStatus } from '@pipou/shared';
 import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
 import { createGameState, createPlayerState } from '../helpers/game-factory';
 
@@ -10,6 +11,7 @@ export interface QueueEntry {
   userId: number;
   username: string;
   socketId: string;
+  title?: AchievementFamily | null;
 }
 
 export interface MatchFoundInfo {
@@ -46,7 +48,18 @@ export class MatchmakingService {
       }),
     );
 
-    return { matchId: match.id, p1, p2 };
+    const titles = await this.matchRepo.manager.getRepository(User).find({
+      where: { id: In([p1.userId, p2.userId]) },
+      select: ['id', 'equippedTitle'],
+    });
+    const titleOf = (id: number) =>
+      titles.find((u) => u.id === id)?.equippedTitle ?? null;
+
+    return {
+      matchId: match.id,
+      p1: { ...p1, title: titleOf(p1.userId) },
+      p2: { ...p2, title: titleOf(p2.userId) },
+    };
   }
 
   leaveQueue(userId: number): void {
