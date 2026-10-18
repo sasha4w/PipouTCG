@@ -55,7 +55,7 @@ export class AdventureOpponent {
   })
   portraitCardId!: number | null;
 
-  @Column({ type: 'varchar', length: 32 })
+  @Column({ type: 'varchar', length: 255 })
   signature!: string;
 
   @Column({ name: 'first_win_gold', type: 'int', default: 0 })

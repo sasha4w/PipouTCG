@@ -49,3 +49,69 @@ export const LAUNCH_SIGNATURES: Record<AdventureArchetype, FiveSignatures> = {
     dragon('Œuf Céleste'),
   ],
 };
+
+export type Persona = { name: string; quote: string };
+
+/** Nom et réplique par défaut des 5 IA de chaque monde (modifiables en admin). */
+export const LAUNCH_PERSONAS: Record<
+  AdventureArchetype,
+  [Persona, Persona, Persona, Persona, Persona]
+> = {
+  pipou: [
+    {
+      name: 'Recrue Andouille',
+      quote: 'Première mission : te barrer le passage !',
+    },
+    {
+      name: 'Caporal Gazouille',
+      quote: 'Au rapport, sinon je gazouille plus fort.',
+    },
+    {
+      name: 'Capitaine Gribouille',
+      quote: 'Mon plan de bataille est un chef-d’œuvre... illisible.',
+    },
+    {
+      name: 'Commandant Quenouille',
+      quote: 'Ma brigade ne recule jamais, elle patauge.',
+    },
+    {
+      name: 'Général Chatouille',
+      quote: 'Rends-toi, ou je sors les plumes.',
+    },
+  ],
+  pixelman: [
+    { name: 'Noyau Alpha', quote: 'Initialisation du duel. Tu es en retard.' },
+    {
+      name: 'Noyau Beta',
+      quote: 'Version de test : toujours meilleure que toi.',
+    },
+    {
+      name: 'Noyau Zeta',
+      quote: 'Chaque pixel de ton deck est déjà analysé.',
+    },
+    {
+      name: 'Noyau Delta',
+      quote: 'Erreur 404 : ta victoire est introuvable.',
+    },
+    {
+      name: 'Noyau Omega',
+      quote: 'Je suis le dernier processus. Pas de redémarrage possible.',
+    },
+  ],
+  dragon: [
+    {
+      name: 'Dompteur de Teros',
+      quote: 'La terre tremble quand mon dragon s’éveille.',
+    },
+    { name: 'Dompteuse de Feros', quote: 'Ça va chauffer, apprenti.' },
+    { name: 'Dompteur d’Ackos', quote: 'Laisse la marée t’emporter.' },
+    {
+      name: 'Dompteuse de Tempestu',
+      quote: 'Le vent a déjà choisi son vainqueur.',
+    },
+    {
+      name: 'Gardien de l’Œuf Céleste',
+      quote: 'Tous les éléments se rassemblent ici. Prouve ta valeur.',
+    },
+  ],
+};
