@@ -5,12 +5,12 @@ import {
   Rarity,
   type AdventureArchetype,
 } from '@pipou/shared';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Booster } from '../boosters/booster.entity';
 import { CardSet } from '../card-sets/card-set.entity';
 import { Card } from '../cards/card.entity';
 import { canActivateWorld } from './adventure-rules';
-import { generateDeck, type DeckEntry } from './deck-generator';
+import { findByName, generateDeck, type DeckEntry } from './deck-generator';
 import { AdventureOpponentCard } from './entities/adventure-opponent-card.entity';
 import { AdventureOpponent } from './entities/adventure-opponent.entity';
 import { AdventureWorld } from './entities/adventure-world.entity';
@@ -41,14 +41,11 @@ export class AdventureSeeder implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(AdventureWorld)
     private readonly worldRepo: Repository<AdventureWorld>,
-    @InjectRepository(AdventureOpponent)
-    private readonly opponentRepo: Repository<AdventureOpponent>,
-    @InjectRepository(AdventureOpponentCard)
-    private readonly oppCardRepo: Repository<AdventureOpponentCard>,
     @InjectRepository(Card) private readonly cardRepo: Repository<Card>,
     @InjectRepository(CardSet) private readonly setRepo: Repository<CardSet>,
     @InjectRepository(Booster)
     private readonly boosterRepo: Repository<Booster>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -73,7 +70,9 @@ export class AdventureSeeder implements OnApplicationBootstrap {
     });
     const boosterBySet = new Map<number, number>();
     for (const b of boosters) {
-      if (!boosterBySet.has(b.cardSet.id)) boosterBySet.set(b.cardSet.id, b.id);
+      const setId = b.cardSet?.id;
+      if (setId !== undefined && !boosterBySet.has(setId))
+        boosterBySet.set(setId, b.id);
     }
 
     for (const def of LAUNCH_WORLDS) {
@@ -111,7 +110,11 @@ export class AdventureSeeder implements OnApplicationBootstrap {
     // Tout est généré avant la 1re écriture : une erreur ne laisse pas de monde partiel.
     const plans = LEVELS.map((level) => {
       const signature = LAUNCH_SIGNATURES[def.archetype][level - 1];
-      const portrait = setCards.find((c) => c.name === signature.cardName);
+      const portrait = findByName(setCards, signature.cardName);
+      if (!portrait)
+        this.logger.warn(
+          `Portrait « ${signature.cardName} » introuvable dans le set ${set.id}`,
+        );
       const deck: DeckEntry[] = generateDeck(
         setCards,
         level,
@@ -121,38 +124,44 @@ export class AdventureSeeder implements OnApplicationBootstrap {
       return { level, signature, portrait, deck };
     });
 
-    const world = await this.worldRepo.save(
-      this.worldRepo.create({
-        name: set.name,
-        cardSetId: set.id,
-        boosterId,
-        order: def.order,
-        isActive: canActivateWorld({ boosterId, legendaryCount }).ok,
-      }),
-    );
-
-    for (const { level, signature, portrait, deck } of plans) {
-      const persona = LAUNCH_PERSONAS[def.archetype][level - 1];
-      const opponent = await this.opponentRepo.save(
-        this.opponentRepo.create({
-          worldId: world.id,
-          position: level,
-          name: persona.name,
-          quote: persona.quote,
-          portraitCardId: portrait?.id ?? null,
-          signature: JSON.stringify(signature),
-          ...ADVENTURE_LEVEL_DEFAULTS[level],
+    // Une transaction par monde : tout ou rien.
+    await this.dataSource.transaction(async (manager) => {
+      const world = await manager.save(
+        AdventureWorld,
+        manager.create(AdventureWorld, {
+          name: set.name,
+          cardSetId: set.id,
+          boosterId,
+          order: def.order,
+          isActive: canActivateWorld({ boosterId, legendaryCount }).ok,
         }),
       );
-      await this.oppCardRepo.save(
-        deck.map((d) =>
-          this.oppCardRepo.create({
-            opponentId: opponent.id,
-            cardId: d.cardId,
-            quantity: d.quantity,
+
+      for (const { level, signature, portrait, deck } of plans) {
+        const persona = LAUNCH_PERSONAS[def.archetype][level - 1];
+        const opponent = await manager.save(
+          AdventureOpponent,
+          manager.create(AdventureOpponent, {
+            worldId: world.id,
+            position: level,
+            name: persona.name,
+            quote: persona.quote,
+            portraitCardId: portrait?.id ?? null,
+            signature: JSON.stringify(signature),
+            ...ADVENTURE_LEVEL_DEFAULTS[level],
           }),
-        ),
-      );
-    }
+        );
+        await manager.save(
+          AdventureOpponentCard,
+          deck.map((d) =>
+            manager.create(AdventureOpponentCard, {
+              opponentId: opponent.id,
+              cardId: d.cardId,
+              quantity: d.quantity,
+            }),
+          ),
+        );
+      }
+    });
   }
 }

@@ -2,6 +2,9 @@ import { Rarity } from '@pipou/shared';
 import type { Card } from '../cards/card.entity';
 import { allRealCards } from '../fights/testing/real-cards';
 import { AdventureSeeder, LAUNCH_WORLDS } from './adventure.seeder';
+import { AdventureOpponentCard } from './entities/adventure-opponent-card.entity';
+import { AdventureOpponent } from './entities/adventure-opponent.entity';
+import { AdventureWorld } from './entities/adventure-world.entity';
 
 const ALL = allRealCards();
 const SETS: Record<number, string> = {
@@ -20,6 +23,7 @@ function setup(opts?: {
   missingSets?: number[];
   noLegendary?: number[];
   noBooster?: number[];
+  failOpponentSave?: number;
   existingWorldSetIds?: number[];
 }) {
   const worlds: Row[] = (opts?.existingWorldSetIds ?? []).map(
@@ -31,23 +35,36 @@ function setup(opts?: {
   const opponents: Row[] = [];
   const opponentCards: Row[] = [];
   let nextId = 1;
-  const saver = (store: Row[]) =>
-    jest.fn((entity: Row | Row[]) => {
-      const list = Array.isArray(entity) ? entity : [entity];
-      for (const e of list) {
-        if (e.id === undefined) e.id = nextId++;
-        store.push(e);
-      }
-      return Promise.resolve(entity);
-    });
-  const create = jest.fn((o: object): Row => ({ ...o }));
-  const worldRepo = {
-    find: jest.fn(() => Promise.resolve(worlds)),
-    create,
-    save: saver(worlds),
-  };
-  const opponentRepo = { create, save: saver(opponents) };
-  const oppCardRepo = { create, save: saver(opponentCards) };
+  const stores = new Map<unknown, Row[]>([
+    [AdventureWorld, worlds],
+    [AdventureOpponent, opponents],
+    [AdventureOpponentCard, opponentCards],
+  ]);
+  let opponentSaves = 0;
+  const transaction = jest.fn(
+    async (cb: (m: unknown) => Promise<void>): Promise<void> => {
+      const staged = new Map<unknown, Row[]>();
+      const manager = {
+        create: (_e: unknown, o: object): Row => ({ ...o }),
+        save: (entity: unknown, data: Row | Row[]) => {
+          if (entity === AdventureOpponent) {
+            opponentSaves++;
+            if (opts?.failOpponentSave === opponentSaves)
+              return Promise.reject(new Error('save KO'));
+          }
+          const list = Array.isArray(data) ? data : [data];
+          for (const e of list) {
+            if (e.id === undefined) e.id = nextId++;
+            staged.set(entity, [...(staged.get(entity) ?? []), e]);
+          }
+          return Promise.resolve(data);
+        },
+      };
+      await cb(manager);
+      for (const [k, rows] of staged) stores.get(k)!.push(...rows);
+    },
+  );
+  const worldRepo = { find: jest.fn(() => Promise.resolve(worlds)) };
   const cardRepo = {
     find: jest.fn(({ where }: { where: { cardSet: { id: number } } }) => {
       const id = where.cardSet.id;
@@ -77,22 +94,23 @@ function setup(opts?: {
             { id: 99, cardSet: { id: 1 } },
             { id: 98, cardSet: { id: 2 } },
           ])
-          .filter((b) => !opts?.noBooster?.includes(b.cardSet.id)),
+          .filter((b) => !opts?.noBooster?.includes(b.cardSet.id))
+          .concat([{ id: 1, cardSet: null as never }]),
       ),
     ),
   };
   const seeder = new AdventureSeeder(
     worldRepo as never,
-    opponentRepo as never,
-    oppCardRepo as never,
     cardRepo as never,
     setRepo as never,
     boosterRepo as never,
+    { transaction } as never,
   );
   let t = 0.123;
   seeder.random = () => (t = (t * 9301 + 0.49297) % 1);
   const log = jest.spyOn(seeder['logger'], 'warn').mockImplementation();
-  return { seeder, worlds, opponents, opponentCards, log };
+  const errLog = jest.spyOn(seeder['logger'], 'error').mockImplementation();
+  return { seeder, worlds, opponents, opponentCards, log, errLog };
 }
 
 describe('AdventureSeeder', () => {
@@ -195,6 +213,28 @@ describe('AdventureSeeder', () => {
     await seeder.seed();
     expect(worlds.map((w) => w.name)).toEqual(['Pipou', 'Drakon']);
     expect(log).toHaveBeenCalledWith(expect.stringContaining('2'));
+  });
+
+  it('échec en cours de monde : rien de persisté pour ce monde, les autres sont créés', async () => {
+    // 6e sauvegarde d'IA = 1re IA du 2e monde (pixelman) ... on échoue à la 8e
+    const { seeder, worlds, opponents, opponentCards, errLog } = setup({
+      failOpponentSave: 8,
+    });
+    await seeder.seed();
+    expect(worlds.map((w) => w.name)).toEqual(['Pipou', 'Drakon']);
+    expect(opponents).toHaveLength(10);
+    const ids = new Set(worlds.map((w) => w.id));
+    expect(opponents.every((o) => ids.has(o.worldId as number))).toBe(true);
+    expect(
+      opponentCards.every((c) => opponents.some((o) => o.id === c.opponentId)),
+    ).toBe(true);
+    expect(errLog).toHaveBeenCalledTimes(1);
+  });
+
+  it('booster sans set ignoré, sans crash', async () => {
+    const { seeder, worlds } = setup();
+    await seeder.seed();
+    expect(worlds).toHaveLength(3);
   });
 
   it('onApplicationBootstrap journalise sans propager', async () => {

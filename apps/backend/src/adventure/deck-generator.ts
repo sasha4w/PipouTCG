@@ -73,7 +73,7 @@ const isHighRarity = (c: Card) =>
   c.rarity === Rarity.LEGENDARY ||
   c.rarity === Rarity.SECRET;
 
-function findByName(cards: Card[], name: string): Card | undefined {
+export function findByName(cards: Card[], name: string): Card | undefined {
   const n = normalizeCardName(name);
   return cards.find((c) => normalizeCardName(c.name) === n);
 }
