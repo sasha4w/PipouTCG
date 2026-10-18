@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import type { QuestListKey, UserQuest } from "@pipou/shared";
+import { isAchievementClaimable, type QuestListKey, type UserQuest } from "@pipou/shared";
 import {
   useAchievements,
   useClaimReward,
@@ -116,7 +116,9 @@ export default function QuestsPanel() {
       : activeTab === "WEEKLY"
         ? (quests?.weeklyResetAt ?? null)
         : null;
-  const countdown = useCountdown(resetAt, t);
+  const countdown = useCountdown(resetAt, t, () =>
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests }),
+  );
 
   if (isLoading || !quests)
     return <div className="quests-panel__loading">{t("quests.loading")}</div>;
@@ -141,9 +143,9 @@ export default function QuestsPanel() {
     <div className="quests-panel">
       <div className="quests-panel__header">
         <h2 className="quests-panel__title">{t("quests.title")}</h2>
-        {resetAt && (
+        {resetAt && !countdown.expired && (
           <span className="quests-panel__reset">
-            {t("quests.reset")} {countdown}
+            {t("quests.reset_in", { time: countdown.label })}
           </span>
         )}
       </div>
@@ -171,6 +173,9 @@ export default function QuestsPanel() {
         >
           {t("achievements.tab")}
           {achievements && ` ${achievements.unlocked}/${achievements.total}`}
+          {achievements?.families.some(isAchievementClaimable) && (
+            <IconBell size={11} color="#eebc77" style={{ marginLeft: 5 }} />
+          )}
         </Button>
       </div>
 

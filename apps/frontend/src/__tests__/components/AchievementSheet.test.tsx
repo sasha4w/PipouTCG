@@ -30,6 +30,12 @@ describe("AchievementSheet", () => {
     expect(screen.getByText("Débloque le titre « Champion »")).toBeInTheDocument();
   });
 
+  it("plafonne la valeur affichée au seuil du prochain palier", () => {
+    render(<AchievementSheet progress={progress([true, false, false], [true, true, false])} claiming={false} onClaim={() => {}} onClose={() => {}} />);
+    expect(screen.getByText("25 / 25")).toBeInTheDocument();
+    expect(screen.queryByText("30 / 25")).not.toBeInTheDocument();
+  });
+
   it("réclame le prochain palier atteint", () => {
     const onClaim = vi.fn();
     render(<AchievementSheet progress={progress([true, false, false], [true, true, false])} claiming={false} onClaim={onClaim} onClose={() => {}} />);

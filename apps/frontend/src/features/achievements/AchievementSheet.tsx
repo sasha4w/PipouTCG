@@ -31,7 +31,7 @@ export default function AchievementSheet({ progress, claiming, onClaim, onClose 
             <div className="quest-item__bar-fill" style={{ width: `${pct}%` }} />
           </div>
           <span className="quest-item__progress-text">
-            {value.toLocaleString()} / {next.threshold.toLocaleString()}
+            {Math.min(value, next.threshold).toLocaleString()} / {next.threshold.toLocaleString()}
           </span>
         </div>
       )}

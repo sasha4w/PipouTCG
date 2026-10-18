@@ -31,11 +31,12 @@ function ProgressRing({ value, total }: { value: number; total: number }) {
 
 export default function AchievementsTab() {
   const { t } = useTranslation();
-  const { data, isLoading } = useAchievements();
+  const { data, isLoading, isError } = useAchievements();
   const claim = useClaimAchievement();
   const setTitle = useSetTitle();
   const [openFamily, setOpenFamily] = useState<AchievementFamily | null>(null);
 
+  if (isError) return <p className="quests-panel__empty">{t("achievements.error")}</p>;
   if (isLoading || !data) return <p className="quests-panel__empty">{t("achievements.loading")}</p>;
 
   const open = data.families.find((f) => f.family === openFamily) ?? null;

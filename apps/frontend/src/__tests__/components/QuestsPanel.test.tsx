@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeAll } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeAll, afterEach } from "vitest";
+import { render, screen, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { UserQuest, UserQuestsResponse } from "@pipou/shared";
+import type { AchievementProgress, AchievementsResponse, UserQuest, UserQuestsResponse } from "@pipou/shared";
 import i18n from "../../i18n";
 import QuestsPanel from "../../features/profile/QuestsPanel";
 
@@ -26,21 +26,36 @@ const quest = (id: number, extra: Partial<UserQuest> = {}): UserQuest => ({
 });
 
 let quests: UserQuestsResponse;
+let achievements: AchievementsResponse = { families: [], unlocked: 4, total: 36, equippedTitle: null };
 vi.mock("../../hooks/useGameData", () => ({
   useQuests: () => ({ data: quests, isLoading: false }),
   useClaimReward: () => ({ mutate: vi.fn(), isPending: false }),
   useRerollQuest: () => ({ mutate: vi.fn(), isPending: false }),
-  useAchievements: () => ({ data: { families: [], unlocked: 4, total: 36, equippedTitle: null }, isLoading: false }),
+  useAchievements: () => ({ data: achievements, isLoading: false, isError: false }),
   useClaimAchievement: () => ({ mutate: vi.fn(), isPending: false }),
   useSetTitle: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
+const queryClient = new QueryClient();
 const renderPanel = () =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <QuestsPanel />
     </QueryClientProvider>,
   );
+
+const claimableFamily = (): AchievementProgress => ({
+  family: "DUELS_WON",
+  value: 5,
+  claimedTier: null,
+  tiers: (["BRONZE", "SILVER", "GOLD"] as const).map((tier, i) => ({
+    tier,
+    threshold: [1, 25, 100][i],
+    reward: { type: "GOLD", amount: 100 },
+    claimed: false,
+    reached: i === 0,
+  })),
+});
 
 const base = (): UserQuestsResponse => ({
   DAILY: [quest(1), quest(2, { isCompleted: true })],
@@ -82,5 +97,42 @@ describe("QuestsPanel", () => {
     quests = { ...base(), rerollAvailable: false };
     renderPanel();
     expect(screen.queryByRole("button", { name: "Changer cette quête" })).not.toBeInTheDocument();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    achievements = { families: [], unlocked: 4, total: 36, equippedTitle: null };
+  });
+
+  it("affiche un compte à rebours sans doublon « restantes »", () => {
+    quests = base();
+    renderPanel();
+    const header = screen.getByText(/^Reset dans /);
+    expect(header.textContent).toMatch(/^Reset dans \d+(h \d+min|min \d+s)$/);
+    expect(header.textContent).not.toMatch(/restantes/);
+  });
+
+  it("invalide les quêtes une seule fois quand le compte à rebours atteint 0", () => {
+    vi.useFakeTimers();
+    quests = { ...base(), dailyResetAt: new Date(Date.now() + 2_000).toISOString() };
+    const spy = vi.spyOn(queryClient, "invalidateQueries");
+    renderPanel();
+    expect(spy).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(3_000);
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
+  });
+
+  it("montre la cloche sur l'onglet Succès quand un palier est réclamable", () => {
+    quests = base();
+    achievements = { families: [claimableFamily()], unlocked: 0, total: 36, equippedTitle: null };
+    renderPanel();
+    expect(screen.getByRole("button", { name: /Succès/ }).querySelector("svg")).not.toBeNull();
   });
 });
