@@ -190,22 +190,37 @@ Nouvel onglet « Aventure » dans [Admin.tsx](../../../apps/frontend/src/pages/A
 
 ## Écarts d'implémentation
 
-*Relevés pendant l'implémentation (ledger SDD) et la vérification finale du 2026-10-18 sur la base locale.*
+*Décisions prises pendant l'implémentation et constats de la vérification finale (2026-10-18, base locale).*
 
-**Décisions prises pendant l'implémentation**
+**Décisions**
 - **Seed d'un monde sans sa carte boss** : le seeder **ignore** le monde (avec un log) au lieu de le créer inactif. Sans la carte signature du boss, le monde ne peut pas avoir ses 5 IA. Le cas « inactif » de la spec reste appliqué à un set sans booster ou sans légendaire.
 - **Parties d'aventure orphelines** : une ligne `adventure_match` avec `won IS NULL` (par ex. deck d'IA refusé par le moteur après la préparation) est ignorée par tous les comptes : plafond, progression, succès, « parties jouées ». Aucun hook d'abandon ne la ferme.
 - **Câblage Nest** : `FightsService` reçoit les hooks PvE (`PVE_HOOKS`, fournis par `AdventureService`) en `@Optional()`. Sans eux, `adventure:start` répond « Mode Aventure indisponible ». `AdventureModule` n'importe pas `FightsModule`, ce qui évite un cycle.
 - **IA** : elle ne change le mode d'un monstre qu'en phase principale (règle du moteur). Si son choix de mulligan échoue, elle garde sa main (`redraw: false`). Elle regarde un seul coup en avance pour décider de passer en garde.
-- **Reconnexion côté front** : si `adventure:start` est refusé (« déjà en partie ») et qu'un `fight:resumed` arrive pour la même IA, l'écran reprend cette partie sans afficher de toast. Le démarrage en attente n'est effacé à la réception d'un état que s'il n'y a pas eu de reprise.
+- **Fin forcée par timeouts** : après 3 timeouts consécutifs du joueur, la partie se termine avec `endReason = 'surrender'`. `MatchEndReason` n'a pas de valeur `timeout`, et c'est un enum en BDD sur `match`.
 - **Prérequis** : si un monde prérequis est inactif, le monde qui en dépend reste verrouillé.
 - **Monde devenu injouable** : un monde dont le booster a été supprimé ou dont le set n'a plus de légendaire refuse le lancement d'un combat. La vue `GET /adventure` le montre quand même. Le joueur voit donc une IA « disponible » qui renvoie une erreur au lancement.
-- **Admin** : `PATCH` attend le corps complet (type partagé). Un monde créé dans l'admin reçoit des IA nommées « Set — IA n ». On peut désactiver un monde pendant qu'une partie s'y joue, et cette partie est quand même payée.
+- **Admin** :
+  - Le booster de récompense doit appartenir au set du monde. Sinon : 400 « Le booster doit appartenir au set du monde ».
+  - Le `cardSetId` d'un monde ne peut pas être modifié par `PATCH` (400), parce que les decks des IA sont tirés de ce set.
+  - `PATCH` attend le corps complet (type partagé).
+  - Un monde créé dans l'admin reçoit des IA nommées « Set — IA n ».
+  - On peut désactiver un monde pendant qu'une partie s'y joue. Cette partie est quand même payée.
 - **Succès `ADVENTURE_WORLDS`** : avec 3 mondes actifs, le palier argent (3) est égal au palier or (« tous les mondes »), comme pour `ALL_SETS`.
 - **Migration** `1791000000008-Adventure` modifiée sur place (`signature` varchar 32 → 255) : elle n'avait jamais quitté `dev`.
+- **Front** :
+  - Reprise : si `adventure:start` est refusé (« déjà en partie ») et qu'un `fight:resumed` arrive pour la même IA, l'écran reprend cette partie sans toast. Le démarrage en attente n'est effacé à la réception d'un état que s'il n'y a pas eu de reprise.
+  - Le combat PvE n'affiche pas le toast « Adversaire trouvé ».
+  - La fiche d'une IA utilise la `BottomSheet` sombre existante (la maquette était blanche).
+  - Le plateau de combat partagé (`FightArena`, `FightBoard`, mulligan, barre d'actions) affiche encore des emoji en aventure. C'est hors périmètre et reste à faire.
 
-**Constaté à la vérification finale**
-- **Or d'aventure et `GOLD_EARNED`** : l'or passe par `UsersService.addGold`, comme pour les quêtes et la récompense de connexion. `money_earned` n'est incrémenté que par les ventes du marché. L'or d'aventure ne compte donc pas pour `GOLD_EARNED`, de la même manière que l'or des quêtes. C'est cohérent avec « suivre le chemin des quêtes », mais pas avec l'intention de cohérence `moneyEarned` / `GOLD_EARNED` écrite plus haut.
-- **Horodatage** : `started_at` est rempli par MySQL (`CURRENT_TIMESTAMP`, fuseau du serveur), `ended_at` par l'application (heure locale de Node). En local (MySQL en UTC, Node en Europe/Paris), les deux colonnes ont 2 h d'écart. Le plafond journalier ne lit que `ended_at` face à une heure calculée par Node, donc il reste juste. En prod, Render et Aiven sont tous deux en UTC.
+**Constats de la vérification finale**
+- **À trancher : or d'aventure et `GOLD_EARNED`.** L'or passe par `UsersService.addGold`, comme pour les quêtes et la récompense de connexion. `money_earned` n'est incrémenté que par les ventes du marché. L'or d'aventure ne compte donc pas pour `GOLD_EARNED`, de la même manière que l'or des quêtes. C'est cohérent avec « suivre le chemin des quêtes », mais pas avec l'intention de cohérence `moneyEarned` / `GOLD_EARNED` écrite plus haut.
+- **Horodatage** : `started_at` est rempli par MySQL (`CURRENT_TIMESTAMP`, fuseau du serveur), `ended_at` par l'application (heure locale de Node). En local (MySQL en UTC, Node en Europe/Paris), les deux colonnes ont 2 h d'écart. Le plafond journalier ne lit que `ended_at` face à une heure calculée par Node, donc il reste juste. Fuseaux de Render et d'Aiven : **à vérifier en prod**.
 - **Logs du seeder** : il n'écrit rien quand les mondes existent déjà ou quand il les crée. Il ne logue que les avertissements et les erreurs.
 - **Decks seedés** : les 15 IA ont 35 cartes, au plus 3 exemplaires, toutes du set de leur monde. Aucun prérequis entre les 3 mondes de départ.
+- **Partie PvE** vérifiée par un client socket.io scripté, contre une MySQL locale réelle : défaite, abandon, 1re victoire, victoire de farm. Butin, progression et succès sont corrects. Aucune ligne dans `match` ni `player_stats`.
+
+**À vérifier par l'utilisateur**
+- [ ] Une partie dans le navigateur : Arène → Aventure → combat → écran de résultat (butin) → retour au chemin.
+- [ ] Un `pnpm build` propre à la racine, une fois les `nest start --watch` arrêtés (ils partagent `apps/backend/dist` avec `nest build`).
