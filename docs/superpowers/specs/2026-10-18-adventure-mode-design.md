@@ -187,3 +187,25 @@ Nouvel onglet « Aventure » dans [Admin.tsx](../../../apps/frontend/src/pages/A
 - La forme exacte des tables et des endpoints, et l'organisation des modules NestJS.
 - Le contenu exact des nouvelles quêtes du pool.
 - Les animations de l'écran de victoire, tant qu'elles restent dans le style de l'Arène.
+
+## Écarts d'implémentation
+
+*Relevés pendant l'implémentation (ledger SDD) et la vérification finale du 2026-10-18 sur la base locale.*
+
+**Décisions prises pendant l'implémentation**
+- **Seed d'un monde sans sa carte boss** : le seeder **ignore** le monde (avec un log) au lieu de le créer inactif. Sans la carte signature du boss, le monde ne peut pas avoir ses 5 IA. Le cas « inactif » de la spec reste appliqué à un set sans booster ou sans légendaire.
+- **Parties d'aventure orphelines** : une ligne `adventure_match` avec `won IS NULL` (par ex. deck d'IA refusé par le moteur après la préparation) est ignorée par tous les comptes : plafond, progression, succès, « parties jouées ». Aucun hook d'abandon ne la ferme.
+- **Câblage Nest** : `FightsService` reçoit les hooks PvE (`PVE_HOOKS`, fournis par `AdventureService`) en `@Optional()`. Sans eux, `adventure:start` répond « Mode Aventure indisponible ». `AdventureModule` n'importe pas `FightsModule`, ce qui évite un cycle.
+- **IA** : elle ne change le mode d'un monstre qu'en phase principale (règle du moteur). Si son choix de mulligan échoue, elle garde sa main (`redraw: false`). Elle regarde un seul coup en avance pour décider de passer en garde.
+- **Reconnexion côté front** : si `adventure:start` est refusé (« déjà en partie ») et qu'un `fight:resumed` arrive pour la même IA, l'écran reprend cette partie sans afficher de toast. Le démarrage en attente n'est effacé à la réception d'un état que s'il n'y a pas eu de reprise.
+- **Prérequis** : si un monde prérequis est inactif, le monde qui en dépend reste verrouillé.
+- **Monde devenu injouable** : un monde dont le booster a été supprimé ou dont le set n'a plus de légendaire refuse le lancement d'un combat. La vue `GET /adventure` le montre quand même. Le joueur voit donc une IA « disponible » qui renvoie une erreur au lancement.
+- **Admin** : `PATCH` attend le corps complet (type partagé). Un monde créé dans l'admin reçoit des IA nommées « Set — IA n ». On peut désactiver un monde pendant qu'une partie s'y joue, et cette partie est quand même payée.
+- **Succès `ADVENTURE_WORLDS`** : avec 3 mondes actifs, le palier argent (3) est égal au palier or (« tous les mondes »), comme pour `ALL_SETS`.
+- **Migration** `1791000000008-Adventure` modifiée sur place (`signature` varchar 32 → 255) : elle n'avait jamais quitté `dev`.
+
+**Constaté à la vérification finale**
+- **Or d'aventure et `GOLD_EARNED`** : l'or passe par `UsersService.addGold`, comme pour les quêtes et la récompense de connexion. `money_earned` n'est incrémenté que par les ventes du marché. L'or d'aventure ne compte donc pas pour `GOLD_EARNED`, de la même manière que l'or des quêtes. C'est cohérent avec « suivre le chemin des quêtes », mais pas avec l'intention de cohérence `moneyEarned` / `GOLD_EARNED` écrite plus haut.
+- **Horodatage** : `started_at` est rempli par MySQL (`CURRENT_TIMESTAMP`, fuseau du serveur), `ended_at` par l'application (heure locale de Node). En local (MySQL en UTC, Node en Europe/Paris), les deux colonnes ont 2 h d'écart. Le plafond journalier ne lit que `ended_at` face à une heure calculée par Node, donc il reste juste. En prod, Render et Aiven sont tous deux en UTC.
+- **Logs du seeder** : il n'écrit rien quand les mondes existent déjà ou quand il les crée. Il ne logue que les avertissements et les erreurs.
+- **Decks seedés** : les 15 IA ont 35 cartes, au plus 3 exemplaires, toutes du set de leur monde. Aucun prérequis entre les 3 mondes de départ.
