@@ -54,6 +54,15 @@ export function resumeTarget(
   return `/adventure/fight/${resumed.adventureOpponentId}`;
 }
 
+/**
+ * Où aller quand l'écran de duel JcJ retrouve une partie (`fight:resumed`) :
+ * une partie contre une IA s'affiche sur son écran d'aventure (null = rester).
+ */
+export function pvpResumeTarget(resumed: MatchFoundPayload): string | null {
+  if (resumed.adventureOpponentId === undefined) return null;
+  return `/adventure/fight/${resumed.adventureOpponentId}`;
+}
+
 /** Thème de couleur (dégradé) d'une carte de monde, selon son rang : 0 à 3. */
 export function worldTheme(index: number): number {
   return index % 4;

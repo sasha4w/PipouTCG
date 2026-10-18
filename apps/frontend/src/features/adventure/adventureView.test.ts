@@ -4,6 +4,7 @@ import {
   capReached,
   findOpponent,
   pathLayout,
+  pvpResumeTarget,
   resumeTarget,
   sortWorlds,
 } from "./adventureView";
@@ -84,5 +85,17 @@ describe("resumeTarget", () => {
 
   it("renvoie vers le duel JcJ pour une partie sans IA", () => {
     expect(resumeTarget({ matchId: 1, opponentName: "Bob" }, 4)).toBe("/fight");
+  });
+});
+
+describe("pvpResumeTarget", () => {
+  it("renvoie vers l'écran d'aventure pour une partie contre une IA", () => {
+    expect(
+      pvpResumeTarget({ matchId: -1, opponentName: "IA", adventureOpponentId: 7 }),
+    ).toBe("/adventure/fight/7");
+  });
+
+  it("reste sur le duel pour une partie JcJ", () => {
+    expect(pvpResumeTarget({ matchId: 1, opponentName: "Bob" })).toBeNull();
   });
 });

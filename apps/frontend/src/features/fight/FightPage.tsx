@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
@@ -16,6 +17,7 @@ import FightRules from "./FightRules";
 import FightArena from "./FightArena";
 import { useBoardControls } from "./useBoardControls";
 import { useFightConnection } from "./useFightConnection";
+import { pvpResumeTarget } from "../adventure/adventureView";
 import "./FightPage.css";
 
 export default function FightPage({
@@ -25,6 +27,7 @@ export default function FightPage({
   userId: number;
   username: string;
 }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("fight");
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
@@ -62,6 +65,11 @@ export default function FightPage({
   } = useFightConnection({
     userId,
     onState,
+    // Partie contre une IA retrouvée : elle se joue sur l'écran d'aventure.
+    onResumed: (payload) => {
+      const target = pvpResumeTarget(payload);
+      if (target) navigate(target, { replace: true });
+    },
     onGameOver: () => {
       setTimeout(() => refetchHistory(), 2000);
     },
