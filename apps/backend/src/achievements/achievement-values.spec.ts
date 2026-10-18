@@ -39,6 +39,10 @@ describe('toAchievementValues', () => {
       [AchievementFamily.LOGIN_STREAK]: 9,
       [AchievementFamily.GOLD_EARNED]: 2500,
       [AchievementFamily.QUESTS_DONE]: 7,
+      // TODO(adventure Task 9)
+      [AchievementFamily.ADVENTURE_WORLDS]: 0,
+      [AchievementFamily.PVE_WON]: 0,
+      [AchievementFamily.PVE_PLAYED]: 0,
     });
   });
 

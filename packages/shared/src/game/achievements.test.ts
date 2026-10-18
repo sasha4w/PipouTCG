@@ -3,6 +3,7 @@ import {
   ACHIEVEMENTS,
   ACHIEVEMENT_TOTAL,
   ALL_SETS,
+  ALL_WORLDS,
   isAchievementClaimable,
   nextAchievementTier,
 } from "./achievements";
@@ -39,6 +40,20 @@ describe("catalogue des succès", () => {
       a.tiers.filter((t) => t.threshold === ALL_SETS).map((t) => [a.family, t.tier]),
     );
     expect(uses).toEqual([[AchievementFamily.SETS_COMPLETED, AchievementTier.GOLD]]);
+  });
+
+  it("n'utilise ALL_WORLDS que pour l'or de ADVENTURE_WORLDS", () => {
+    const uses = ACHIEVEMENTS.flatMap((a) =>
+      a.tiers.filter((t) => t.threshold === ALL_WORLDS).map((t) => [a.family, t.tier]),
+    );
+    expect(uses).toEqual([[AchievementFamily.ADVENTURE_WORLDS, AchievementTier.GOLD]]);
+  });
+
+  it("définit les seuils PvE", () => {
+    const th = (f: string) => ACHIEVEMENTS.find((a) => a.family === f)!.tiers.map((t) => t.threshold);
+    expect(th(AchievementFamily.PVE_WON)).toEqual([5, 50, 200]);
+    expect(th(AchievementFamily.PVE_PLAYED)).toEqual([10, 100, 300]);
+    expect(th(AchievementFamily.ADVENTURE_WORLDS)).toEqual([1, 3, ALL_WORLDS]);
   });
 });
 
