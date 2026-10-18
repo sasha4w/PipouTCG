@@ -17,6 +17,7 @@ import {
   QuestRewardType as RewardType,
   QuestConditionType as ConditionType,
   ConditionOperator,
+  Rarity,
 } from '@pipou/shared';
 import type {
   CreateQuestRequest,
@@ -36,6 +37,10 @@ export class QuestConditionDto implements QuestCondition {
   @IsOptional()
   @IsString()
   rarity?: string;
+
+  @IsOptional()
+  @IsEnum(Rarity)
+  minRarity?: Rarity;
 
   @IsOptional()
   @IsNumber()
