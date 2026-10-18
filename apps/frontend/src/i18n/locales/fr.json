@@ -736,7 +736,6 @@
     },
     "sheet": {
       "level": "Niveau {{level}}",
-      "boss": "Boss",
       "wins": "Battue {{count}} fois",
       "first_win": "Première victoire",
       "farm": "Gains à chaque victoire",
@@ -753,13 +752,15 @@
       "replay": "Rejouer",
       "close": "Fermer",
       "portrait_alt": "Portrait de {{name}}",
-      "booster": "Booster"
+      "booster": "Booster",
+      "quote": "« {{quote}} »",
+      "level_boss": "Niveau {{level}} · Boss"
     },
     "fight": {
       "preparing": "Préparation du combat contre {{name}}…",
       "preparing_generic": "Préparation du combat…",
       "no_deck": "Choisis d'abord un deck sur la fiche de l'IA.",
-      "failed": "Le combat n'a pas pu démarrer",
+      "failed": "Le combat n'a pas pu démarrer : {{message}}",
       "back": "Retour au monde",
       "surrender_confirm": "Abandonner le combat ?"
     },
@@ -777,7 +778,8 @@
       "achievement": "Succès à réclamer",
       "unlocked": "{{name}} débloqué !",
       "replay": "Rejouer",
-      "back": "Retour au monde"
+      "back": "Retour au monde",
+      "unavailable": "Récompenses indisponibles"
     },
     "hub": {
       "title": "Aventure",

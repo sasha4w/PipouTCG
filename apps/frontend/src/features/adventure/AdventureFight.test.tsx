@@ -94,6 +94,24 @@ describe("AdventureFight", () => {
     expect(screen.queryByText(/déjà une partie/)).not.toBeInTheDocument();
   });
 
+  it("tait le refus qui suit l'état de la partie reprise", () => {
+    renderFight();
+    serverSends("fight:resumed", { matchId: 3, opponentName: "Capitaine Griffe", adventureOpponentId: 4 });
+    serverSends("fight:state", { isMyTurn: false, phase: "mulligan", me: { hand: [], mulliganDone: false }, opponent: { username: "Capitaine Griffe", mulliganDone: false } });
+    serverSends("fight:error", { message: "Tu as déjà une partie en cours" });
+    expect(screen.queryByText("Tu as déjà une partie en cours")).not.toBeInTheDocument();
+  });
+
+  it("montre une erreur de jeu après une reconnexion (pas de lancement en attente)", () => {
+    renderFight();
+    const state = { isMyTurn: false, phase: "mulligan", me: { hand: [], mulliganDone: false }, opponent: { username: "Capitaine Griffe", mulliganDone: false } };
+    serverSends("fight:resumed", { matchId: 3, opponentName: "Capitaine Griffe", adventureOpponentId: 4 });
+    serverSends("fight:state", state);
+    serverSends("fight:resumed", { matchId: 3, opponentName: "Capitaine Griffe", adventureOpponentId: 4 });
+    serverSends("fight:error", { message: "Action refusée" });
+    expect(screen.getByText("Action refusée")).toBeInTheDocument();
+  });
+
   it("affiche un refus de lancement sans partie reprise", () => {
     renderFight();
     serverSends("fight:error", { message: "Deck invalide" });
@@ -147,7 +165,7 @@ describe("AdventureFight", () => {
     );
     expect(screen.getByText("Drakon débloqué !")).toBeInTheDocument();
     expect(document.body.textContent ?? "").not.toMatch(/\p{Extended_Pictographic}/u);
-    for (const key of ["adventure", "profile", "inventory", "collection", "achievements", "quests"] as const)
+    for (const key of ["adventure", "profile", "myStats", "inventory", "collection", "achievements", "quests"] as const)
       expect(invalidate).toHaveBeenCalledWith({ queryKey: QUERY_KEYS[key] });
   });
 
@@ -168,6 +186,21 @@ describe("AdventureFight", () => {
     });
     expect(screen.getByText("Défaite")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rejouer" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retour au monde" })).toBeInTheDocument();
+  });
+
+  it("victoire sans résultat d'aventure : récompenses indisponibles", () => {
+    renderFight();
+    serverSends("fight:game_over", { winner: 1, endReason: "primes_depleted" });
+    expect(screen.getByText("VICTOIRE !")).toBeInTheDocument();
+    expect(screen.getByText("Récompenses indisponibles")).toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
+
+  it("sans deck, la fin de partie ne propose que le retour", () => {
+    renderFight("/adventure/fight/4");
+    serverSends("fight:game_over", { winner: 2, endReason: "primes_depleted" });
+    expect(screen.queryByRole("button", { name: "Rejouer" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Retour au monde" })).toBeInTheDocument();
   });
 

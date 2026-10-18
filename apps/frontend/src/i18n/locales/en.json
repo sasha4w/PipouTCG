@@ -734,7 +734,6 @@
     },
     "sheet": {
       "level": "Level {{level}}",
-      "boss": "Boss",
       "wins_one": "Beaten once",
       "wins_other": "Beaten {{count}} times",
       "first_win": "First victory",
@@ -752,13 +751,15 @@
       "replay": "Play again",
       "close": "Close",
       "portrait_alt": "Portrait of {{name}}",
-      "booster": "Booster"
+      "booster": "Booster",
+      "quote": "“{{quote}}”",
+      "level_boss": "Level {{level}} · Boss"
     },
     "fight": {
       "preparing": "Preparing the fight against {{name}}…",
       "preparing_generic": "Preparing the fight…",
       "no_deck": "Pick a deck on the AI sheet first.",
-      "failed": "The fight could not start",
+      "failed": "The fight could not start: {{message}}",
       "back": "Back to the world",
       "surrender_confirm": "Surrender the fight?"
     },
@@ -776,7 +777,8 @@
       "achievement": "Achievement to claim",
       "unlocked": "{{name}} unlocked!",
       "replay": "Play again",
-      "back": "Back to the world"
+      "back": "Back to the world",
+      "unavailable": "Rewards unavailable"
     },
     "hub": {
       "title": "Adventure",

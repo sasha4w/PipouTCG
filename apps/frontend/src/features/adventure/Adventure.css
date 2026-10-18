@@ -535,3 +535,13 @@
     animation: none;
   }
 }
+
+/* ── Focus clavier ────────────────────────────────────────────────────────── */
+
+.adv-world:focus-visible,
+.adv-node:focus-visible,
+.adv-back:focus-visible,
+.adv-loot__link:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 3px;
+}

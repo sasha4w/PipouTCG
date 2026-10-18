@@ -20,7 +20,8 @@ interface Props {
   worldOrder: number | null;
   /** Noms des mondes débloqués par cette victoire. */
   unlockedWorlds: string[];
-  onReplay: () => void;
+  /** Absent : pas de deck connu, on ne propose que le retour. */
+  onReplay?: () => void;
   onBack: () => void;
 }
 
@@ -55,7 +56,11 @@ export default function AdventureResult({
 
       {!won && !draw && <p className="adv-result__hint">{t("adventure.result.defeat_hint")}</p>}
 
-      {won && (
+      {won && !result && (
+        <p className="adv-result__hint">{t("adventure.result.unavailable")}</p>
+      )}
+
+      {won && result && (
         <ul className="adv-loot">
           {loot && loot.gold > 0 && (
             <li className="adv-loot__tile">
@@ -75,7 +80,7 @@ export default function AdventureResult({
               {t("adventure.result.booster", { name: b.name, qty: b.quantity })}
             </li>
           ))}
-          {result?.worldCompleted && (
+          {result.worldCompleted && (
             <li className="adv-loot__tile">
               <Link to="/profile?tab=achievements" className="adv-loot__link">
                 <IconTrophy size={26} />
@@ -111,9 +116,11 @@ export default function AdventureResult({
       ))}
 
       <div className="adv-result__actions">
-        <Button variant="ghost-bordeaux" onClick={onReplay}>
-          {t("adventure.result.replay")}
-        </Button>
+        {onReplay && (
+          <Button variant="ghost-bordeaux" onClick={onReplay}>
+            {t("adventure.result.replay")}
+          </Button>
+        )}
         <Button onClick={onBack}>{t("adventure.result.back")}</Button>
       </div>
     </div>

@@ -82,8 +82,9 @@ export default function OpponentSheet({
           <div className="adv-sheet__id">
             <span className="adv-sheet__level">
               {opponent.isBoss && <IconCrown size={13} />}
-              {t("adventure.sheet.level", { level: opponent.level })}
-              {opponent.isBoss && ` · ${t("adventure.sheet.boss")}`}
+              {t(opponent.isBoss ? "adventure.sheet.level_boss" : "adventure.sheet.level", {
+                level: opponent.level,
+              })}
             </span>
             {!neverBeaten && (
               <span className="adv-sheet__wins">
@@ -91,7 +92,9 @@ export default function OpponentSheet({
                 {t("adventure.sheet.wins", { count: opponent.wins })}
               </span>
             )}
-            <p className="adv-sheet__quote">« {opponent.quote} »</p>
+            <p className="adv-sheet__quote">
+              {t("adventure.sheet.quote", { quote: opponent.quote })}
+            </p>
           </div>
         </div>
 
