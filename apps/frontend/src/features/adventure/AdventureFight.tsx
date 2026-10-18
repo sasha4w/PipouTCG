@@ -34,13 +34,16 @@ interface Props {
   deckId: number | null;
 }
 
-function AdventureFight({ userId, opponentId, deckId }: Props) {
+function AdventureFight({ userId, opponentId, deckId: deckFromUrl }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: overview } = useAdventureOverview();
   const [gameOver, setGameOver] = useState<GameOverPayload | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
+  // Deck de l'URL figé au montage : il sert à Rejouer et au retour, même une
+  // fois `?deck` retiré de l'URL (voir dropDeckFromUrl).
+  const [deckId] = useState(deckFromUrl);
 
   // `adventure:start` émis et pas encore tranché par le serveur.
   const startPendingRef = useRef(false);
@@ -55,19 +58,29 @@ function AdventureFight({ userId, opponentId, deckId }: Props) {
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
   // (plateau) : on relie les deux par une ref.
   const clearSelectionRef = useRef<() => void>(() => {});
+  // Lancement accepté : on retire `?deck` de l'URL pour qu'un rechargement
+  // après la partie n'en relance pas une (pendant la partie, il la reprend).
+  const deckInUrlRef = useRef(deckFromUrl !== null);
+  const dropDeckFromUrl = useCallback(() => {
+    if (!deckInUrlRef.current) return;
+    deckInUrlRef.current = false;
+    navigate(`/adventure/fight/${opponentId}`, { replace: true });
+  }, [navigate, opponentId]);
   const onState = useCallback(() => {
     startedRef.current = true;
+    dropDeckFromUrl();
     // Sans reprise, un état répond à notre lancement ; après une reprise, le
     // refus du lancement arrive encore après l'état de la partie reprise.
     if (!resumedDuringStartRef.current) startPendingRef.current = false;
     clearSelectionRef.current();
-  }, []);
+  }, [dropDeckFromUrl]);
 
   const { status, gameState, matchId, timeLeft, toast, emit, send, reset } =
     useFightConnection({
       userId,
       silentMatch: true,
       onState,
+      onMatched: dropDeckFromUrl,
       onResumed: (payload) => {
         if (resumedDuringStartRef.current) {
           // Seconde reprise (reconnexion) : le lancement a déjà été tranché

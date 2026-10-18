@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
 import { act, render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { AdventureOverview, GameOverPayload } from "@pipou/shared";
 import i18n from "../../i18n";
@@ -45,6 +45,12 @@ const overview = {
   dailyCap: 20,
 } as unknown as AdventureOverview;
 
+/** URL courante, pour vérifier les remplacements d'historique. */
+function LocationDisplay() {
+  const location = useLocation();
+  return <output data-testid="location">{location.pathname + location.search}</output>;
+}
+
 function renderFight(url = "/adventure/fight/4?deck=8") {
   const client = new QueryClient({
     defaultOptions: { queries: { staleTime: Infinity, retry: false } },
@@ -58,7 +64,9 @@ function renderFight(url = "/adventure/fight/4?deck=8") {
         <Routes>
           <Route path="/adventure/fight/:opponentId" element={<AdventureFightRoute />} />
           <Route path="/fight" element={<p>écran JcJ</p>} />
+          <Route path="/adventure/:worldId" element={<p>écran monde</p>} />
         </Routes>
+        <LocationDisplay />
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -220,5 +228,49 @@ describe("AdventureFight", () => {
       },
     });
     expect(screen.getByText("Plus de récompenses aujourd'hui")).toBeInTheDocument();
+  });
+
+  describe("URL du lancement (?deck)", () => {
+    const state = { isMyTurn: false, phase: "mulligan", me: { hand: [], mulliganDone: false }, opponent: { username: "Capitaine Griffe", mulliganDone: false } };
+    const loss = { winner: 2, endReason: "primes_depleted", adventure: { opponentId: 4, worldId: 1, won: false, firstWin: false, worldCompleted: false, unlockedWorldIds: [], loot: null } };
+    const location = () => screen.getByTestId("location").textContent;
+
+    it("garde ?deck tant que le lancement n'est pas accepté", () => {
+      renderFight();
+      serverSends("fight:error", { message: "Deck invalide" });
+      expect(location()).toBe("/adventure/fight/4?deck=8");
+    });
+
+    it("retire ?deck dès le premier état de la partie lancée", () => {
+      renderFight();
+      serverSends("fight:state", state);
+      expect(location()).toBe("/adventure/fight/4");
+      expect(fake.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it("retire ?deck dès la mise en relation", () => {
+      renderFight();
+      serverSends("fight:matched", { matchId: -3, opponentName: "Capitaine Griffe", adventureOpponentId: 4 });
+      expect(location()).toBe("/adventure/fight/4");
+    });
+
+    it("après le retrait, Rejouer et Retour gardent le deck choisi", () => {
+      renderFight();
+      serverSends("fight:state", state);
+      serverSends("fight:game_over", loss);
+      act(() => screen.getByRole("button", { name: "Rejouer" }).click());
+      expect(fake.emit).toHaveBeenLastCalledWith("adventure:start", { opponentId: 4, deckId: 8 });
+      serverSends("fight:game_over", loss);
+      act(() => screen.getByRole("button", { name: "Retour au monde" }).click());
+      expect(location()).toBe("/adventure/1?deck=8");
+    });
+
+    it("recharger sans ?deck pendant la partie la reprend sans relancer", () => {
+      renderFight("/adventure/fight/4");
+      serverSends("fight:resumed", { matchId: -3, opponentName: "Capitaine Griffe", adventureOpponentId: 4 });
+      serverSends("fight:state", state);
+      expect(fake.emit).not.toHaveBeenCalledWith("adventure:start", expect.anything());
+      expect(screen.queryByText("Choisis d'abord un deck sur la fiche de l'IA.")).not.toBeInTheDocument();
+    });
   });
 });
