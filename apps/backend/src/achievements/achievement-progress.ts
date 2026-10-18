@@ -2,6 +2,7 @@ import {
   ACHIEVEMENTS,
   ACHIEVEMENT_TOTAL,
   ALL_SETS,
+  ALL_WORLDS,
   type AchievementFamily,
   type AchievementTier,
   type AchievementsResponse,
@@ -15,6 +16,7 @@ export interface ClaimedTier {
 export function buildAchievementsResponse(
   values: Record<AchievementFamily, number>,
   totalSets: number,
+  totalWorlds: number,
   claimed: ClaimedTier[],
   equippedTitle: AchievementFamily | null,
 ): AchievementsResponse {
@@ -24,7 +26,12 @@ export function buildAchievementsResponse(
   const families = ACHIEVEMENTS.map((def) => {
     const value = values[def.family];
     const tiers = def.tiers.map((t) => {
-      const threshold = t.threshold === ALL_SETS ? totalSets : t.threshold;
+      const threshold =
+        t.threshold === ALL_SETS
+          ? totalSets
+          : t.threshold === ALL_WORLDS
+            ? totalWorlds
+            : t.threshold;
       return {
         tier: t.tier,
         threshold,

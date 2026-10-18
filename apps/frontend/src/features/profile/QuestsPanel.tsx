@@ -100,14 +100,19 @@ function QuestItem({ quest, busy, claiming, canReroll, onClaim, onReroll }: Ques
   );
 }
 
-export default function QuestsPanel() {
+interface QuestsPanelProps {
+  /** Onglet ouvert à l'arrivée (ex. lien « Succès à réclamer » de l'aventure). */
+  initialTab?: "ACHIEVEMENTS";
+}
+
+export default function QuestsPanel({ initialTab }: QuestsPanelProps = {}) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: quests, isLoading } = useQuests();
   const { data: achievements } = useAchievements();
   const claimMutation = useClaimReward();
   const rerollMutation = useRerollQuest();
-  const [activeTab, setActiveTab] = useState<TabKey>("DAILY");
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab ?? "DAILY");
   const [isClaimingAll, setIsClaimingAll] = useState(false);
 
   const resetAt =

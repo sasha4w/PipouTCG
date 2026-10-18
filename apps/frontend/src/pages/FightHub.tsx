@@ -1,8 +1,11 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { IconMap } from "../components/Icons";
 import "./FightHub.css";
 
 export default function FightHub() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="fh-root">
@@ -65,6 +68,28 @@ export default function FightHub() {
             </div>
             <div className="fh-card__cta">
               Rejoindre l'arène <span className="fh-arrow">→</span>
+            </div>
+          </button>
+          {/* ── Aventure (PvE) ───────────────────────────────────────── */}
+          <button
+            className="fh-card fh-card--adventure"
+            onClick={() => navigate("/adventure")}
+          >
+            <div className="fh-card__glow" />
+            <div className="fh-card__icon">
+              <IconMap size={44} />
+            </div>
+            <div className="fh-card__body">
+              <h2 className="fh-card__title">{t("adventure.hub.title")}</h2>
+              <p className="fh-card__desc">{t("adventure.hub.desc")}</p>
+              <ul className="fh-card__features">
+                <li>✦ {t("adventure.hub.f1")}</li>
+                <li>✦ {t("adventure.hub.f2")}</li>
+                <li>✦ {t("adventure.hub.f3")}</li>
+              </ul>
+            </div>
+            <div className="fh-card__cta">
+              {t("adventure.hub.cta")} <span className="fh-arrow">→</span>
             </div>
           </button>
         </div>

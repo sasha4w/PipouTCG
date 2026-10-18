@@ -566,11 +566,13 @@ export class UsersService {
 
   /* ===================== STATS ===================== */
 
-  async addExperience(userId: number, amount: number) {
-    await this.userRepository.increment({ id: userId }, 'experience', amount);
+  async addExperience(userId: number, amount: number, manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(User) : this.userRepository;
+    await repo.increment({ id: userId }, 'experience', amount);
   }
-  async addGold(userId: number, amount: number) {
-    await this.userRepository.increment({ id: userId }, 'gold', amount);
+  async addGold(userId: number, amount: number, manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(User) : this.userRepository;
+    await repo.increment({ id: userId }, 'gold', amount);
   }
   async incrementBoostersOpened(userId: number) {
     await this.userRepository.increment({ id: userId }, 'boostersOpened', 1);

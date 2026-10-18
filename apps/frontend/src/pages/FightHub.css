@@ -188,6 +188,39 @@
   opacity: 0.8;
 }
 
+/* ── Adventure card skin ──────────────────────────────────────────────────── */
+
+.fh-card--adventure {
+  background: linear-gradient(145deg, #fff7e6 0%, #f3d29f 100%);
+  box-shadow:
+    0 4px 0 #d9a95c,
+    0 8px 32px rgba(238, 188, 119, 0.35);
+  border: 1.5px solid #eebc77;
+}
+
+.fh-card--adventure:hover {
+  box-shadow:
+    0 6px 0 #d9a95c,
+    0 16px 48px rgba(238, 188, 119, 0.5);
+}
+
+.fh-card--adventure .fh-card__glow {
+  background: radial-gradient(
+    ellipse at top left,
+    rgba(255, 255, 255, 0.5),
+    transparent 60%
+  );
+}
+
+.fh-card--adventure .fh-card__icon {
+  color: #7a1c3b;
+}
+
+.fh-card--adventure .fh-card__desc,
+.fh-card--adventure .fh-card__features li {
+  color: #6a4a30;
+}
+
 /* ── Glow overlay ─────────────────────────────────────────────────────────── */
 
 .fh-card__glow {

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { deckService } from "../../services/deck.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import Button from "../../components/Button";
+import { IconCards } from "../../components/Icons";
 import "./DeckWidget.css";
 
 interface DeckWidgetProps {
@@ -32,7 +33,9 @@ export default function DeckWidget({
         className="dw-trigger"
         title="Mes decks"
       >
-        <span className="dw-trigger-icon">🃏</span>
+        <span className="dw-trigger-icon">
+          <IconCards size={16} />
+        </span>
         <span className="dw-trigger-label">Decks</span>
         <span className={`dw-chevron${open ? " dw-chevron--open" : ""}`}>
           ▾
@@ -42,7 +45,7 @@ export default function DeckWidget({
       {open && (
         <div className="dw-panel">
           <div className="dw-panel-header">
-            <span className="dw-panel-title">🃏 Mes Decks</span>
+            <span className="dw-panel-title">Mes Decks</span>
             <Button
               variant="ghost-bordeaux"
               size="sm"

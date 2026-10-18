@@ -51,10 +51,15 @@ export const QUERY_KEYS = {
   fightStats: ["fight", "stats"] as const,
   leaderboard: ["fight", "leaderboard"] as const,
 
+  // ── Aventure (PvE) ────────────────────────────────────────────────────────
+  adventure: ["adventure"] as const,
+  adminAdventure: ["admin", "adventure"] as const,
+
   // ── Catalogue (listes d'options des formulaires) ──────────────────────────
   cardSetOptions: ["card-sets", "options"] as const,
   boosterOptions: ["boosters", "options"] as const,
   cardOptions: ["cards", "options"] as const,
+  setCardOptions: (setId: number) => ["cards", "options", "set", setId] as const,
   imageOptions: ["images", "options"] as const,
   shopCatalog: ["shop", "catalog"] as const,
   cardGlossary: ["cards", "glossary"] as const,

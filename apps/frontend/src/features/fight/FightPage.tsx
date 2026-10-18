@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { io } from "socket.io-client";
-import { FIGHT_NAMESPACE, type ClientToServerEvents } from "@pipou/shared";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
@@ -9,18 +8,16 @@ import {
   type PlayerStats,
 } from "../../services/fight.service";
 import Leaderboard from "./Leaderboard";
-import type { Tab, GameState, FightClientSocket } from "./fight.types";
+import type { Tab } from "./fight.types";
 
 import FightTabBar from "./FightTabBar";
 import FightLobby from "./FightLobby";
 import MatchHistory from "./MatchHistory";
 import FightRules from "./FightRules";
-import FightBoard from "./FightBoard";
-import CardPickModal from "./CardPickModal";
-import MulliganPanel from "./MulliganPanel";
-import type { GameAction } from "@pipou/shared";
-import { emitGameAction } from "./emitGameAction";
+import FightArena from "./FightArena";
 import { useBoardControls } from "./useBoardControls";
+import { useFightConnection } from "./useFightConnection";
+import { pvpResumeTarget } from "../adventure/adventureView";
 import "./FightPage.css";
 
 export default function FightPage({
@@ -30,31 +27,13 @@ export default function FightPage({
   userId: number;
   username: string;
 }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("fight");
-  const [gameState, setGameState] = useState<GameState | null>(null);
-  const [status, setStatus] = useState<
-    "idle" | "queued" | "selecting" | "playing" | "finished"
-  >("idle");
-  const [matchId, setMatchId] = useState<number | null>(null);
-  const [opponentName, setOpponentName] = useState("");
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
-  const [toast, setToast] = useState<{
-    msg: string;
-    type: "err" | "ok";
-  } | null>(null);
-  const [timeLeft, setTimeLeft] = useState(90);
-  const socketRef = useRef<FightClientSocket | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const send = useCallback(
-    (action: GameAction) => {
-      if (socketRef.current && matchId)
-        emitGameAction(socketRef.current, matchId, action);
-    },
-    [matchId],
-  );
-  const controls = useBoardControls(gameState, send);
-  const { clearSelection } = controls;
+  // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
+  // (plateau) : on relie les deux par une ref.
+  const clearSelectionRef = useRef<() => void>(() => {});
+  const onState = useCallback(() => clearSelectionRef.current(), []);
 
   // ── Queries ───────────────────────────────────────────────────────────────
 
@@ -71,115 +50,42 @@ export default function FightPage({
     queryFn: () => fightService.getMyStats(),
   });
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Connexion et plateau ──────────────────────────────────────────────────
 
-  const showToast = useCallback((msg: string, type: "err" | "ok" = "ok") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
-
-  const startCountdown = useCallback(() => {
-    setTimeLeft(90);
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-  }, []);
-
-  // ── Socket setup ──────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    const socket: FightClientSocket = io(
-      `${import.meta.env.VITE_API_URL}${FIGHT_NAMESPACE}`,
-      {
-        withCredentials: true,
-        transports: ["websocket"],
-      },
-    );
-    socketRef.current = socket;
-
-    socket.on("fight:queued", () => setStatus("queued"));
-    socket.on("fight:dequeued", () => setStatus("idle"));
-    socket.on(
-      "fight:matched",
-      ({
-        matchId: mid,
-        opponentName: oName,
-      }: {
-        matchId: number;
-        opponentName: string;
-      }) => {
-        setMatchId(mid);
-        setOpponentName(oName);
-        setStatus("selecting");
-        showToast(`⚔️ Adversaire trouvé : ${oName} !`, "ok");
-      },
-    );
-    socket.on("fight:resumed", ({ matchId: mid, opponentName: oName }) => {
-      setMatchId(mid);
-      setOpponentName(oName);
-      // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
-      setStatus((s) => (s === "playing" ? s : "selecting"));
-      showToast("🔌 Partie en cours retrouvée", "ok");
-    });
-    socket.on("fight:deck_accepted", () =>
-      showToast("Deck accepté — en attente de l'adversaire…"),
-    );
-    socket.on("fight:state", (state: GameState) => {
-      setGameState(state);
-      setStatus("playing");
-      clearSelection();
-      if (state.isMyTurn) startCountdown();
-    });
-    socket.on("fight:game_over", ({ winner, endReason }) => {
-      setStatus("finished");
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (winner === null) {
-        showToast(`🤝 Match nul (${endReason})`, "ok");
-      } else {
-        showToast(
-          winner === userId
-            ? `🎉 Victoire ! (${endReason})`
-            : `💀 Défaite… (${endReason})`,
-          winner === userId ? "ok" : "err",
-        );
-      }
-      setTimeout(() => refetchHistory(), 2000);
-    });
-    socket.on("fight:error", ({ message }: { message: string }) =>
-      showToast(message, "err"),
-    );
-
-    return () => {
-      socket.disconnect();
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [userId, showToast, startCountdown, refetchHistory, clearSelection]);
-
-  // ── Emit helper ───────────────────────────────────────────────────────────
-
-  const emit = useCallback(
-    <E extends keyof ClientToServerEvents>(
-      event: E,
-      ...args: Parameters<ClientToServerEvents[E]>
-    ) => {
-      socketRef.current?.emit(event, ...args);
+  const {
+    status,
+    gameState,
+    matchId,
+    opponentName,
+    timeLeft,
+    toast,
+    emit,
+    send,
+    reset,
+  } = useFightConnection({
+    userId,
+    onState,
+    // Partie contre une IA retrouvée : elle se joue sur l'écran d'aventure.
+    onResumed: (payload) => {
+      const target = pvpResumeTarget(payload);
+      if (target) navigate(target, { replace: true });
     },
-    [],
-  );
+    onGameOver: () => {
+      setTimeout(() => refetchHistory(), 2000);
+    },
+  });
+  const controls = useBoardControls(gameState, send);
+  const { clearSelection } = controls;
+  useEffect(() => {
+    clearSelectionRef.current = clearSelection;
+  }, [clearSelection]);
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
   const joinQueue = () => emit("fight:queue", {});
   const leaveQueue = () => {
     emit("fight:dequeue", {});
-    setStatus("idle");
+    reset();
   };
 
   const submitDeck = () => {
@@ -190,12 +96,6 @@ export default function FightPage({
   const surrender = () => {
     if (!matchId || !window.confirm("Abandonner ?")) return;
     emit("fight:surrender", { matchId });
-  };
-
-  const handleReplay = () => {
-    setStatus("idle");
-    setGameState(null);
-    setMatchId(null);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -245,44 +145,18 @@ export default function FightPage({
               onJoinQueue={joinQueue}
               onLeaveQueue={leaveQueue}
               onSubmitDeck={submitDeck}
-              onReplay={handleReplay}
+              onReplay={reset}
             />
           )}
 
-          {status === "playing" && gameState?.phase === "mulligan" && (
-            <MulliganPanel
-              hand={gameState.me.hand}
-              decided={gameState.me.mulliganDone}
-              opponentDecided={gameState.opponent.mulliganDone}
-              opponentName={gameState.opponent.username}
-              onDecide={controls.decideMulligan}
+          {status === "playing" && gameState && (
+            <FightArena
+              gameState={gameState}
+              timeLeft={timeLeft}
+              controls={controls}
+              onSurrender={surrender}
             />
           )}
-
-          {status === "playing" &&
-            gameState &&
-            gameState.phase !== "mulligan" && (
-              <>
-                {gameState.opponentChoosing && (
-                  <div className="fp-waiting-choice">
-                    ⏳ {gameState.opponent.username} fait un choix…
-                  </div>
-                )}
-                <FightBoard
-                  gs={gameState}
-                  {...controls.board}
-                  timeLeft={timeLeft}
-                  onSurrender={surrender}
-                />
-
-                {gameState.pendingChoice && (
-                  <CardPickModal
-                    choice={gameState.pendingChoice}
-                    onConfirm={controls.pickCards}
-                  />
-                )}
-              </>
-            )}
         </div>
       )}
     </div>

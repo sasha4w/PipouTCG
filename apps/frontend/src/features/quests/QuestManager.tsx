@@ -55,6 +55,10 @@ const CONDITION_LABELS: Record<ConditionType, string> = {
   LIST_CARD: "Mettre en vente",
   EARN_GOLD: "Gagner de l'or",
   COMPLETE_QUEST: "Terminer quête",
+  WIN_PVP_FIGHT: "Gagner combat PvP",
+  WIN_PVE_FIGHT: "Gagner combat PvE",
+  PLAY_PVP_FIGHT: "Jouer un combat PvP",
+  PLAY_PVE_FIGHT: "Jouer un combat PvE",
 };
 
 const STEPS = [

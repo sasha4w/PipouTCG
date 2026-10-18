@@ -75,6 +75,10 @@ export class MatchmakingService {
     this.queue.delete(userId);
   }
 
+  isQueued(userId: number): boolean {
+    return this.queue.has(userId);
+  }
+
   createEmptyPlayerState(entry: QueueEntry): PlayerGameState {
     return createPlayerState(entry);
   }

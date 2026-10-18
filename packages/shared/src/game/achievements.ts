@@ -4,7 +4,9 @@ import type { AchievementProgress, AchievementTierProgress } from "../api/achiev
 
 /** Seuil égal au nombre de sets existants, résolu par le back. */
 export const ALL_SETS = "ALL_SETS" as const;
-export type AchievementThreshold = number | typeof ALL_SETS;
+/** Seuil égal au nombre de mondes d'aventure actifs, résolu par le back. */
+export const ALL_WORLDS = "ALL_WORLDS" as const;
+export type AchievementThreshold = number | typeof ALL_SETS | typeof ALL_WORLDS;
 
 export interface AchievementReward {
   type: QuestRewardType;
@@ -58,6 +60,9 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   { family: AchievementFamily.LOGIN_STREAK, tiers: tiers(7, 30, 100) },
   { family: AchievementFamily.GOLD_EARNED, tiers: tiers(1_000, 10_000, 100_000) },
   { family: AchievementFamily.QUESTS_DONE, tiers: tiers(10, 50, 200) },
+  { family: AchievementFamily.ADVENTURE_WORLDS, tiers: tiers(1, 3, ALL_WORLDS) },
+  { family: AchievementFamily.PVE_WON, tiers: tiers(5, 50, 200) },
+  { family: AchievementFamily.PVE_PLAYED, tiers: tiers(10, 100, 300) },
 ];
 
 export const ACHIEVEMENT_TOTAL = ACHIEVEMENTS.length * 3;

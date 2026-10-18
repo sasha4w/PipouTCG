@@ -24,9 +24,9 @@ describe("AchievementSheet", () => {
 
   it("liste les 3 paliers et le titre débloqué", () => {
     render(<AchievementSheet progress={progress([true, false, false], [true, true, false])} claiming={false} onClaim={() => {}} onClose={() => {}} />);
-    expect(screen.getByText("Gagne 1 duels")).toBeInTheDocument();
-    expect(screen.getByText("Gagne 25 duels")).toBeInTheDocument();
-    expect(screen.getByText("Gagne 100 duels")).toBeInTheDocument();
+    expect(screen.getByText("Gagne 1 duels JcJ")).toBeInTheDocument();
+    expect(screen.getByText("Gagne 25 duels JcJ")).toBeInTheDocument();
+    expect(screen.getByText("Gagne 100 duels JcJ")).toBeInTheDocument();
     expect(screen.getByText("Débloque le titre « Champion »")).toBeInTheDocument();
   });
 

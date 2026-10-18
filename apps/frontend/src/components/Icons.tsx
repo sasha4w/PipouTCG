@@ -40,7 +40,7 @@ export function IconArrowLeft({
   style,
 }: IconProps) {
   return (
-    <svg
+    <svg aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
@@ -166,7 +166,7 @@ export function IconGold({
   className,
 }: IconProps) {
   return (
-    <svg
+    <svg aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
@@ -229,7 +229,7 @@ export function IconBooster({
   className,
 }: IconProps) {
   return (
-    <svg
+    <svg aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
@@ -286,7 +286,7 @@ export function IconCards({
   className,
 }: IconProps) {
   return (
-    <svg
+    <svg aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
@@ -407,7 +407,7 @@ export function IconCheck({
   className,
 }: IconProps) {
   return (
-    <svg
+    <svg aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
@@ -636,7 +636,7 @@ export function IconTrophy({
   className,
 }: IconProps) {
   return (
-    <svg
+    <svg aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
@@ -1172,7 +1172,7 @@ export function IconJoker({
 
 export function IconSwords({ size = 24, color = "currentColor", className, style }: IconProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
       <path d="M14.5 17.5L3 6V3h3l11.5 11.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M13 19l6-6M16 16l4 4M19 21l2-2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M14.5 6.5L18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -1186,5 +1186,69 @@ export function IconGem({ size = 24, color = "currentColor", className, style }:
       <path d="M6 3h12l4 6-10 12L2 9l4-6z" stroke={color} strokeWidth="2" strokeLinejoin="round" />
       <path d="M2 9h20M12 21L8 9l4-6 4 6-4 12" stroke={color} strokeWidth="2" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+export function IconMap({ size = 24, color = "currentColor", className, style }: IconProps) {
+  return (
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M9 4L3 6.5v13.5L9 17.5l6 2.5 6-2.5V4l-6 2.5L9 4z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 4v13.5M15 6.5V20" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconRobot({ size = 24, color = "currentColor", className, style }: IconProps) {
+  return (
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect x="4" y="8" width="16" height="12" rx="2" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 8V4M10 3h4M2 13v2M22 13v2M9 13v2M15 13v2M9 17.5h6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Icônes Aventure (trait, 24x24) ───────────────────────────────────────────
+export function IconLock(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </StrokeIcon>
+  );
+}
+
+export function IconUnlock(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+    </StrokeIcon>
+  );
+}
+
+export function IconGift(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <rect x="3" y="8" width="18" height="4" rx="1" />
+      <path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+      <path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5" />
+    </StrokeIcon>
+  );
+}
+
+export function IconSparkles(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 3l1.9 5.8L20 10l-6.1 1.2L12 17l-1.9-5.8L4 10l6.1-1.2z" />
+      <path d="M19 17v4M17 19h4" />
+    </StrokeIcon>
+  );
+}
+
+export function IconStar(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
+    </StrokeIcon>
   );
 }

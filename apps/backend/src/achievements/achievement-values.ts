@@ -22,6 +22,7 @@ export interface AchievementSources {
   uniqueCards: number;
   highRarity: number;
   sets: { total: number; owned: number }[];
+  adventure: { worldsCompleted: number; won: number; played: number };
 }
 
 export function toAchievementValues(
@@ -43,5 +44,8 @@ export function toAchievementValues(
     [AchievementFamily.LOGIN_STREAK]: src.longestStreak ?? 0,
     [AchievementFamily.GOLD_EARNED]: Number(src.user.moneyEarned),
     [AchievementFamily.QUESTS_DONE]: src.user.questsCompleted,
+    [AchievementFamily.ADVENTURE_WORLDS]: src.adventure.worldsCompleted,
+    [AchievementFamily.PVE_WON]: src.adventure.won,
+    [AchievementFamily.PVE_PLAYED]: src.adventure.played,
   };
 }

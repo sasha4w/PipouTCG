@@ -813,7 +813,7 @@ describe('QuestService', () => {
       expect(uq.progress.conditions[0].current).toBe(1);
     });
 
-    it('fight.finished : PLAY_FIGHT pour les deux, WIN_FIGHT pour le gagnant', async () => {
+    it('fight.finished : PLAY_FIGHT + PLAY_PVP_FIGHT pour les deux, WIN_* pour le gagnant, rien en PvE', async () => {
       const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
       await service.handleFightFinished({
         player1Id: 1,
@@ -822,8 +822,35 @@ describe('QuestService', () => {
       });
       expect(track).toHaveBeenCalledWith(1, ConditionType.PLAY_FIGHT);
       expect(track).toHaveBeenCalledWith(2, ConditionType.PLAY_FIGHT);
+      expect(track).toHaveBeenCalledWith(1, ConditionType.PLAY_PVP_FIGHT);
+      expect(track).toHaveBeenCalledWith(2, ConditionType.PLAY_PVP_FIGHT);
       expect(track).toHaveBeenCalledWith(2, ConditionType.WIN_FIGHT);
+      expect(track).toHaveBeenCalledWith(2, ConditionType.WIN_PVP_FIGHT);
       expect(track).not.toHaveBeenCalledWith(1, ConditionType.WIN_FIGHT);
+      expect(track).not.toHaveBeenCalledWith(1, ConditionType.WIN_PVP_FIGHT);
+      const types = track.mock.calls.map((c) => c[1]);
+      expect(types).not.toContain(ConditionType.PLAY_PVE_FIGHT);
+      expect(types).not.toContain(ConditionType.WIN_PVE_FIGHT);
+    });
+
+    it('adventure.finished gagné : PLAY_FIGHT, PLAY_PVE_FIGHT, WIN_FIGHT, WIN_PVE_FIGHT', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleAdventureFinished({ userId: 5, won: true });
+      expect(track.mock.calls.map((c) => [c[0], c[1]])).toEqual([
+        [5, ConditionType.PLAY_FIGHT],
+        [5, ConditionType.PLAY_PVE_FIGHT],
+        [5, ConditionType.WIN_FIGHT],
+        [5, ConditionType.WIN_PVE_FIGHT],
+      ]);
+    });
+
+    it('adventure.finished perdu : pas de WIN_*, aucune condition PvP', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleAdventureFinished({ userId: 5, won: false });
+      expect(track.mock.calls.map((c) => c[1])).toEqual([
+        ConditionType.PLAY_FIGHT,
+        ConditionType.PLAY_PVE_FIGHT,
+      ]);
     });
 
     it('listing.sold : EARN_GOLD du montant pour le vendeur', async () => {

@@ -40,17 +40,19 @@ export class AchievementsService {
   ) {}
 
   async getAchievements(userId: number): Promise<AchievementsResponse> {
-    const [{ values, totalSets }, claimed, user] = await Promise.all([
-      this.stats.getValues(userId),
-      this.repo.find({ where: { userId }, select: ['family', 'tier'] }),
-      this.userRepo.findOne({
-        where: { id: userId },
-        select: ['id', 'equippedTitle'],
-      }),
-    ]);
+    const [{ values, totalSets, totalWorlds }, claimed, user] =
+      await Promise.all([
+        this.stats.getValues(userId),
+        this.repo.find({ where: { userId }, select: ['family', 'tier'] }),
+        this.userRepo.findOne({
+          where: { id: userId },
+          select: ['id', 'equippedTitle'],
+        }),
+      ]);
     return buildAchievementsResponse(
       values,
       totalSets,
+      totalWorlds,
       claimed,
       user?.equippedTitle ?? null,
     );

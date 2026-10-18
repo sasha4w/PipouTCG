@@ -34,6 +34,9 @@ import { QUERY_KEYS } from "./utils/querykeys";
 import FightHub from "./pages/FightHub";
 import DeckBuilder from "./features/deck/DeckBuilder";
 import FightPage from "./features/fight/FightPage";
+import AdventureWorlds from "./features/adventure/AdventureWorlds";
+import AdventurePath from "./features/adventure/AdventurePath";
+import AdventureFightRoute from "./features/adventure/AdventureFight";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "./services/user.service";
 function AppLayout() {
@@ -105,6 +108,12 @@ function App() {
                 <Route path="/arena" element={<FightHub />} />
                 <Route path="/decks" element={<DeckBuilder />} />
                 <Route path="/fight" element={<FightPageWrapper />} />
+                <Route path="/adventure" element={<AdventureWorlds />} />
+                <Route path="/adventure/:worldId" element={<AdventurePath />} />
+                <Route
+                  path="/adventure/fight/:opponentId"
+                  element={<AdventureFightRoute />}
+                />
               </Route>
               <Route
                 path="/admin/sandbox"

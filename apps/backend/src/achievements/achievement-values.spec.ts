@@ -17,6 +17,7 @@ const base: AchievementSources = {
   longestStreak: 9,
   uniqueCards: 40,
   highRarity: 2,
+  adventure: { worldsCompleted: 2, won: 5, played: 8 },
   sets: [
     { total: 10, owned: 10 },
     { total: 8, owned: 7 },
@@ -39,6 +40,9 @@ describe('toAchievementValues', () => {
       [AchievementFamily.LOGIN_STREAK]: 9,
       [AchievementFamily.GOLD_EARNED]: 2500,
       [AchievementFamily.QUESTS_DONE]: 7,
+      [AchievementFamily.ADVENTURE_WORLDS]: 2,
+      [AchievementFamily.PVE_WON]: 5,
+      [AchievementFamily.PVE_PLAYED]: 8,
     });
   });
 
