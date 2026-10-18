@@ -6,7 +6,7 @@ import type {
 } from './interfaces/game-state.interface';
 
 /** Pause entre deux coups de l'IA, pour laisser voir animations et log. */
-export const AI_ACTION_DELAY_MS = 700;
+export const AI_ACTION_DELAY_MS = 2000;
 /** Timeouts humains consécutifs avant la défaite. */
 export const PVE_MAX_TIMEOUTS = 3;
 /** Coups IA par tour au-delà desquels elle ne fait plus que finir ses phases. */
