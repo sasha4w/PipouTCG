@@ -148,8 +148,13 @@
 }
 
 .hud-title {
-  margin-left: 0.35rem;
-  font-size: 0.68em;
+  max-width: 80px;
+  flex-shrink: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
   font-weight: 700;
   color: #eebc77;
   opacity: 0.85;

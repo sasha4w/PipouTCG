@@ -44,12 +44,10 @@ export default function FightHUD({
     <div className="hud">
       {/* ── Ligne adversaire ── */}
       <div className="hud-row hud-row--opp">
-        <span className="hud-name hud-name--opp">
-          {opponent.username}
-          {opponent.title && (
-            <span className="hud-title">{t(`achievements.titles.${opponent.title}`)}</span>
-          )}
-        </span>
+        <span className="hud-name hud-name--opp">{opponent.username}</span>
+        {opponent.title && (
+          <span className="hud-title">{t(`achievements.titles.${opponent.title}`)}</span>
+        )}
         <PrimesRow primes={opponent.primes} />
         <span
           className="hud-stat"
@@ -83,12 +81,10 @@ export default function FightHUD({
 
       {/* ── Ligne moi ── */}
       <div className="hud-row hud-row--me">
-        <span className="hud-name hud-name--me">
-          {me.username}
-          {me.title && (
-            <span className="hud-title">{t(`achievements.titles.${me.title}`)}</span>
-          )}
-        </span>
+        <span className="hud-name hud-name--me">{me.username}</span>
+        {me.title && (
+          <span className="hud-title">{t(`achievements.titles.${me.title}`)}</span>
+        )}
         <PrimesRow primes={me.primes} />
         <span
           className="hud-stat"
