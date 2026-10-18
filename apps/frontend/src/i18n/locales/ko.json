@@ -662,5 +662,81 @@
       "PVE_WON": "AI 사냥꾼",
       "PVE_PLAYED": "지치지 않는 자"
     }
+  },
+  "adventure": {
+    "title": "모험",
+    "back_arena": "아레나",
+    "back_worlds": "월드",
+    "loading": "모험 불러오는 중…",
+    "error": "모험을 불러올 수 없습니다.",
+    "empty": "아직 이용 가능한 월드가 없습니다.",
+    "rewards_today": "오늘의 파밍 보상",
+    "world_label": "월드 {{order}} · {{name}}",
+    "world_short": "월드 {{order}}",
+    "beaten": "AI {{count}}/{{total}} 격파",
+    "completed": "{{count}}/{{total}} · 완료",
+    "requires": "{{worlds}} 완료 필요",
+    "locked": "잠김",
+    "not_found": "월드를 찾을 수 없습니다.",
+    "path_hint": "원을 눌러 AI를 확인하세요",
+    "node_label": "{{name}}, 레벨 {{level}} ({{state}})",
+    "state": {
+      "beaten": "격파",
+      "available": "도전 가능",
+      "locked": "잠김"
+    },
+    "sheet": {
+      "level": "레벨 {{level}}",
+      "boss": "보스",
+      "wins": "{{count}}회 격파",
+      "first_win": "첫 승리",
+      "farm": "승리할 때마다",
+      "drops": "드롭 확률",
+      "gold": "골드",
+      "xp": "XP",
+      "legendary": "세트 전설 카드",
+      "pct": "{{pct}}%",
+      "today": "오늘의 보상: {{count}} / {{cap}}",
+      "capped": "오늘은 더 이상 보상이 없습니다",
+      "deck": "내 덱:",
+      "no_deck": "전투할 덱을 선택하세요",
+      "fight": "전투",
+      "replay": "다시 하기",
+      "close": "닫기",
+      "portrait_alt": "{{name}}의 초상",
+      "booster": "부스터"
+    },
+    "fight": {
+      "preparing": "{{name}}와의 전투 준비 중…",
+      "preparing_generic": "전투 준비 중…",
+      "no_deck": "먼저 AI 정보에서 덱을 선택하세요.",
+      "failed": "전투를 시작할 수 없습니다",
+      "back": "월드로 돌아가기",
+      "surrender_confirm": "전투를 포기할까요?"
+    },
+    "result": {
+      "victory": "승리!",
+      "defeat": "패배",
+      "draw": "무승부",
+      "defeat_hint": "이번에는 AI가 이겼습니다. 덱을 조정하고 다시 도전하세요.",
+      "world_completed": "월드 {{order}} 완료",
+      "gold": "+{{n}} 골드",
+      "xp": "+{{n}} XP",
+      "booster": "{{name}} ×{{qty}}",
+      "legendary": "전설: {{name}}",
+      "capped": "오늘은 더 이상 보상이 없습니다",
+      "achievement": "수령 가능한 업적",
+      "unlocked": "{{name}} 잠금 해제!",
+      "replay": "다시 하기",
+      "back": "월드로 돌아가기"
+    },
+    "hub": {
+      "title": "모험",
+      "desc": "월드마다 AI와 대결하고 보스를 쓰러뜨려 부스터와 전설 카드를 획득하세요.",
+      "f1": "월드당 AI 5명, 보스 포함",
+      "f2": "첫 승리마다 부스터 1개",
+      "f3": "매일 파밍 보상",
+      "cta": "모험 떠나기"
+    }
   }
 }

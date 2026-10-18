@@ -73,4 +73,54 @@ describe("useFightConnection", () => {
     rerender();
     expect(fake.io).toHaveBeenCalledTimes(1);
   });
+
+  it("affiche un toast sur fight:matched en JcJ", () => {
+    const { result } = renderHook(() => useFightConnection({ userId: 1 }));
+    serverSends("fight:matched", { matchId: 7, opponentName: "Bob" });
+    expect(result.current.toast?.msg).toContain("Bob");
+  });
+
+  it("silentMatch : pas de toast de mise en relation, de reprise ni de fin", () => {
+    const { result } = renderHook(() =>
+      useFightConnection({ userId: 1, silentMatch: true }),
+    );
+    serverSends("fight:matched", { matchId: 7, opponentName: "IA" });
+    expect(result.current.toast).toBeNull();
+    serverSends("fight:resumed", { matchId: 7, opponentName: "IA" });
+    expect(result.current.toast).toBeNull();
+    serverSends("fight:game_over", { winner: 1, endReason: "primes_depleted" });
+    expect(result.current.toast).toBeNull();
+  });
+
+  it("reprend la partie sur fight:resumed et notifie", () => {
+    const onResumed = vi.fn();
+    const { result } = renderHook(() =>
+      useFightConnection({ userId: 1, onResumed }),
+    );
+    const payload = { matchId: 9, opponentName: "IA", adventureOpponentId: 3 };
+    serverSends("fight:resumed", payload);
+    expect(result.current.status).toBe("selecting");
+    expect(result.current.matchId).toBe(9);
+    expect(result.current.opponentName).toBe("IA");
+    expect(onResumed).toHaveBeenCalledWith(payload);
+  });
+
+  it("garde le statut playing si fight:state est déjà arrivé avant fight:resumed", () => {
+    const { result } = renderHook(() => useFightConnection({ userId: 1 }));
+    serverSends("fight:state", { isMyTurn: false } as GameState);
+    serverSends("fight:resumed", { matchId: 9, opponentName: "IA" });
+    expect(result.current.status).toBe("playing");
+  });
+
+  it("onError peut prendre en charge une erreur (pas de toast)", () => {
+    const onError = vi.fn((message: string) => message === "déjà");
+    const { result } = renderHook(() =>
+      useFightConnection({ userId: 1, onError }),
+    );
+    serverSends("fight:error", { message: "déjà" });
+    expect(onError).toHaveBeenCalledWith("déjà");
+    expect(result.current.toast).toBeNull();
+    serverSends("fight:error", { message: "autre" });
+    expect(result.current.toast).toEqual({ msg: "autre", type: "err" });
+  });
 });

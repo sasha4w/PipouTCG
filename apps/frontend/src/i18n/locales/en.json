@@ -709,5 +709,82 @@
       "PVE_WON": "AI Hunter",
       "PVE_PLAYED": "Tireless"
     }
+  },
+  "adventure": {
+    "title": "Adventure",
+    "back_arena": "Arena",
+    "back_worlds": "Worlds",
+    "loading": "Loading adventure…",
+    "error": "Could not load the adventure.",
+    "empty": "No world available yet.",
+    "rewards_today": "Today's farm rewards",
+    "world_label": "World {{order}} · {{name}}",
+    "world_short": "World {{order}}",
+    "beaten": "{{count}}/{{total}} AIs beaten",
+    "completed": "{{count}}/{{total}} · completed",
+    "requires": "Complete {{worlds}}",
+    "locked": "Locked",
+    "not_found": "This world could not be found.",
+    "path_hint": "Tap a circle to see the AI",
+    "node_label": "{{name}}, level {{level}} ({{state}})",
+    "state": {
+      "beaten": "beaten",
+      "available": "to beat",
+      "locked": "locked"
+    },
+    "sheet": {
+      "level": "Level {{level}}",
+      "boss": "Boss",
+      "wins_one": "Beaten once",
+      "wins_other": "Beaten {{count}} times",
+      "first_win": "First victory",
+      "farm": "Rewards per victory",
+      "drops": "Drop chances",
+      "gold": "Gold",
+      "xp": "XP",
+      "legendary": "Set legendary",
+      "pct": "{{pct}}%",
+      "today": "Today's rewards: {{count}} / {{cap}}",
+      "capped": "No more rewards today",
+      "deck": "Your deck:",
+      "no_deck": "Pick a deck to fight",
+      "fight": "Fight",
+      "replay": "Play again",
+      "close": "Close",
+      "portrait_alt": "Portrait of {{name}}",
+      "booster": "Booster"
+    },
+    "fight": {
+      "preparing": "Preparing the fight against {{name}}…",
+      "preparing_generic": "Preparing the fight…",
+      "no_deck": "Pick a deck on the AI sheet first.",
+      "failed": "The fight could not start",
+      "back": "Back to the world",
+      "surrender_confirm": "Surrender the fight?"
+    },
+    "result": {
+      "victory": "VICTORY!",
+      "defeat": "Defeat",
+      "draw": "Draw",
+      "defeat_hint": "The AI won this time. Tweak your deck and try again.",
+      "world_completed": "World {{order}} completed",
+      "gold": "+{{n}} gold",
+      "xp": "+{{n}} XP",
+      "booster": "{{name}} ×{{qty}}",
+      "legendary": "Legendary: {{name}}",
+      "capped": "No more rewards today",
+      "achievement": "Achievement to claim",
+      "unlocked": "{{name}} unlocked!",
+      "replay": "Play again",
+      "back": "Back to the world"
+    },
+    "hub": {
+      "title": "Adventure",
+      "desc": "Face AIs world after world, beat the bosses and win boosters and legendaries.",
+      "f1": "5 AIs per world, including a boss",
+      "f2": "A booster for every first victory",
+      "f3": "Farm rewards every day",
+      "cta": "Start the adventure"
+    }
   }
 }

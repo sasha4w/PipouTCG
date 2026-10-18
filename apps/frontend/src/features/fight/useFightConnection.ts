@@ -29,6 +29,16 @@ interface FightConnectionOptions {
   onGameOver?: (payload: GameOverPayload) => void;
   /** Appelé à chaque `fight:state` (ex. vider les sélections du plateau). */
   onState?: (state: GameState) => void;
+  /**
+   * Erreur du serveur : renvoyer true pour la prendre en charge (pas de toast).
+   * Ex. le refus de `adventure:start` quand une partie a été reprise.
+   */
+  onError?: (message: string) => boolean;
+  /**
+   * Combat d'aventure : pas de toast de mise en relation, de reprise ni de fin
+   * de partie (l'écran d'aventure affiche lui-même l'adversaire et le résultat).
+   */
+  silentMatch?: boolean;
 }
 
 /**
@@ -42,6 +52,8 @@ export function useFightConnection({
   onResumed,
   onGameOver,
   onState,
+  onError,
+  silentMatch = false,
 }: FightConnectionOptions) {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [status, setStatus] = useState<FightStatus>("idle");
@@ -52,9 +64,23 @@ export function useFightConnection({
   const socketRef = useRef<FightClientSocket | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const callbacksRef = useRef({ onMatched, onResumed, onGameOver, onState });
+  const callbacksRef = useRef({
+    onMatched,
+    onResumed,
+    onGameOver,
+    onState,
+    onError,
+    silentMatch,
+  });
   useEffect(() => {
-    callbacksRef.current = { onMatched, onResumed, onGameOver, onState };
+    callbacksRef.current = {
+      onMatched,
+      onResumed,
+      onGameOver,
+      onState,
+      onError,
+      silentMatch,
+    };
   });
 
   const showToast = useCallback((msg: string, type: "err" | "ok" = "ok") => {
@@ -92,7 +118,8 @@ export function useFightConnection({
       setMatchId(payload.matchId);
       setOpponentName(payload.opponentName);
       setStatus("selecting");
-      showToast(`⚔️ Adversaire trouvé : ${payload.opponentName} !`, "ok");
+      if (!callbacksRef.current.silentMatch)
+        showToast(`⚔️ Adversaire trouvé : ${payload.opponentName} !`, "ok");
       callbacksRef.current.onMatched?.(payload);
     });
     socket.on("fight:resumed", (payload) => {
@@ -100,7 +127,8 @@ export function useFightConnection({
       setOpponentName(payload.opponentName);
       // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
       setStatus((s) => (s === "playing" ? s : "selecting"));
-      showToast("🔌 Partie en cours retrouvée", "ok");
+      if (!callbacksRef.current.silentMatch)
+        showToast("🔌 Partie en cours retrouvée", "ok");
       callbacksRef.current.onResumed?.(payload);
     });
     socket.on("fight:deck_accepted", () =>
@@ -116,6 +144,8 @@ export function useFightConnection({
       const { winner, endReason } = payload;
       setStatus("finished");
       if (timerRef.current) clearInterval(timerRef.current);
+      callbacksRef.current.onGameOver?.(payload);
+      if (callbacksRef.current.silentMatch) return;
       if (winner === null) {
         showToast(`🤝 Match nul (${endReason})`, "ok");
       } else {
@@ -126,9 +156,11 @@ export function useFightConnection({
           winner === userId ? "ok" : "err",
         );
       }
-      callbacksRef.current.onGameOver?.(payload);
     });
-    socket.on("fight:error", ({ message }) => showToast(message, "err"));
+    socket.on("fight:error", ({ message }) => {
+      if (callbacksRef.current.onError?.(message)) return;
+      showToast(message, "err");
+    });
 
     return () => {
       socket.disconnect();

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { questService } from "../services/quest.service";
@@ -25,6 +26,7 @@ export default function Profile() {
     null,
   );
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const {
@@ -118,7 +120,11 @@ export default function Profile() {
 
       {tab === "stats" && <StatsPanel stats={profile.stats} />}
 
-      <QuestsPanel />
+      <QuestsPanel
+        initialTab={
+          searchParams.get("tab") === "achievements" ? "ACHIEVEMENTS" : undefined
+        }
+      />
 
       {openingTarget && (
         <OpeningModal

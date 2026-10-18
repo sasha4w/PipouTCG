@@ -711,5 +711,81 @@
       "PVE_WON": "Chasseur d'IA",
       "PVE_PLAYED": "Infatigable"
     }
+  },
+  "adventure": {
+    "title": "Aventure",
+    "back_arena": "Arène",
+    "back_worlds": "Mondes",
+    "loading": "Chargement de l'aventure…",
+    "error": "Impossible de charger l'aventure.",
+    "empty": "Aucun monde disponible pour le moment.",
+    "rewards_today": "Récompenses de farm du jour",
+    "world_label": "Monde {{order}} · {{name}}",
+    "world_short": "Monde {{order}}",
+    "beaten": "{{count}}/{{total}} IA battues",
+    "completed": "{{count}}/{{total}} · terminé",
+    "requires": "Termine {{worlds}}",
+    "locked": "Verrouillé",
+    "not_found": "Ce monde est introuvable.",
+    "path_hint": "Touche un rond pour voir l'IA",
+    "node_label": "{{name}}, niveau {{level}} ({{state}})",
+    "state": {
+      "beaten": "battue",
+      "available": "à battre",
+      "locked": "verrouillée"
+    },
+    "sheet": {
+      "level": "Niveau {{level}}",
+      "boss": "Boss",
+      "wins": "Battue {{count}} fois",
+      "first_win": "Première victoire",
+      "farm": "Gains à chaque victoire",
+      "drops": "Chances de drop",
+      "gold": "Or",
+      "xp": "XP",
+      "legendary": "Légendaire du set",
+      "pct": "{{pct}} %",
+      "today": "Récompenses du jour : {{count}} / {{cap}}",
+      "capped": "Plus de récompenses aujourd'hui",
+      "deck": "Ton deck :",
+      "no_deck": "Choisis un deck pour combattre",
+      "fight": "Combattre",
+      "replay": "Rejouer",
+      "close": "Fermer",
+      "portrait_alt": "Portrait de {{name}}",
+      "booster": "Booster"
+    },
+    "fight": {
+      "preparing": "Préparation du combat contre {{name}}…",
+      "preparing_generic": "Préparation du combat…",
+      "no_deck": "Choisis d'abord un deck sur la fiche de l'IA.",
+      "failed": "Le combat n'a pas pu démarrer",
+      "back": "Retour au monde",
+      "surrender_confirm": "Abandonner le combat ?"
+    },
+    "result": {
+      "victory": "VICTOIRE !",
+      "defeat": "Défaite",
+      "draw": "Match nul",
+      "defeat_hint": "L'IA a gagné cette fois. Ajuste ton deck et retente ta chance.",
+      "world_completed": "Monde {{order}} terminé",
+      "gold": "+{{n}} or",
+      "xp": "+{{n}} XP",
+      "booster": "{{name}} ×{{qty}}",
+      "legendary": "Légendaire : {{name}}",
+      "capped": "Plus de récompenses aujourd'hui",
+      "achievement": "Succès à réclamer",
+      "unlocked": "{{name}} débloqué !",
+      "replay": "Rejouer",
+      "back": "Retour au monde"
+    },
+    "hub": {
+      "title": "Aventure",
+      "desc": "Affronte des IA monde après monde, bats les boss et remporte boosters et légendaires.",
+      "f1": "5 IA par monde, dont un boss",
+      "f2": "Un booster à chaque première victoire",
+      "f3": "Des récompenses à farmer chaque jour",
+      "cta": "Partir à l'aventure"
+    }
   }
 }
