@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import type {
   AdventureResultPayload,
+  AdventureStartPayload,
   ClientGameState,
   GameAction,
 } from '@pipou/shared';
@@ -233,6 +234,31 @@ describe('FightsService — parties PvE', () => {
       ),
     ).resolves.toEqual({ error: 'Mode Aventure indisponible' });
   });
+
+  it.each<[string, unknown]>([
+    ['vide', {}],
+    ['chaînes', { opponentId: '11', deckId: '3' }],
+    ['nul', null],
+    ['décimal', { opponentId: 1.5, deckId: 3 }],
+    ['négatif', { opponentId: 11, deckId: -3 }],
+    ['zéro', { opponentId: 0, deckId: 3 }],
+  ])(
+    'payload adventure:start invalide (%s) : refusé sans rien préparer',
+    async (_label, payload) => {
+      const ctx = setup();
+      await expect(
+        ctx.service.startAdventure(
+          HUMAN,
+          'Alice',
+          HUMAN_SOCKET,
+          payload as AdventureStartPayload,
+          ctx.server,
+        ),
+      ).resolves.toEqual({ error: 'Demande de combat invalide' });
+      expect(ctx.decks.loadDeckForMatch).not.toHaveBeenCalled();
+      expect(ctx.hooks.prepareStart).not.toHaveBeenCalled();
+    },
+  );
 
   it('deck humain invalide : erreur, aucun combat préparé', async () => {
     const ctx = setup();

@@ -51,6 +51,9 @@ const NOT_IN_MATCH = 'Tu ne participes pas à ce match';
 /** Délai laissé à un joueur déconnecté pour revenir avant de perdre. */
 export const RECONNECT_GRACE_MS = 60_000;
 
+const isPositiveInt = (v: unknown): v is number =>
+  typeof v === 'number' && Number.isInteger(v) && v > 0;
+
 /** Partie contre l'IA : infos de persistance et pilotage de l'IA. */
 interface PveSession {
   info: PveInfo;
@@ -134,6 +137,12 @@ export class FightsService {
   ): Promise<{ error?: string }> {
     const hooks = this.pveHooks;
     if (!hooks) return { error: 'Mode Aventure indisponible' };
+    // Corps socket non validé par Nest : on vérifie les identifiants ici.
+    const { opponentId, deckId } = (payload ?? {}) as Partial<
+      Record<keyof AdventureStartPayload, unknown>
+    >;
+    if (!isPositiveInt(opponentId) || !isPositiveInt(deckId))
+      return { error: 'Demande de combat invalide' };
     if (
       this.userToMatch.has(userId) ||
       this.startingAdventure.has(userId) ||
