@@ -1,5 +1,6 @@
+/* Ancré sur #root (position: relative, overflow: hidden) : reste dans le cadre. */
 .bsheet {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 1100;
   display: flex;
@@ -10,8 +11,8 @@
 
 .bsheet__panel {
   width: 100%;
-  max-width: 430px;
-  max-height: 80vh;
+  max-height: 85%;
+  box-sizing: border-box;
   overflow-y: auto;
   background: #3d1020;
   color: #fff;

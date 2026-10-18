@@ -10,7 +10,10 @@ interface Props {
   children: ReactNode;
 }
 
-/** Panneau ancré en bas de l'écran, fermé par le fond, la croix ou Échap. */
+/**
+ * Panneau ancré en bas du cadre de l'app (#root, qui porte les coins arrondis
+ * et le zoom grand écran), fermé par le fond, la croix ou Échap.
+ */
 export default function BottomSheet({ title, closeLabel, onClose, children }: Props) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -38,6 +41,6 @@ export default function BottomSheet({ title, closeLabel, onClose, children }: Pr
         {children}
       </div>
     </div>,
-    document.body,
+    document.getElementById("root") ?? document.body,
   );
 }
