@@ -8,6 +8,8 @@ import { AdventureSettings } from './entities/adventure-settings.entity';
 import { AdventureSeeder } from './adventure.seeder';
 import { AdventureService } from './adventure.service';
 import { AdventureController } from './adventure.controller';
+import { AdventureAdminController } from './adventure-admin.controller';
+import { AdventureAdminService } from './adventure-admin.service';
 import { Card } from '../cards/card.entity';
 import { CardSet } from '../card-sets/card-set.entity';
 import { Booster } from '../boosters/booster.entity';
@@ -32,10 +34,11 @@ import { PVE_HOOKS } from '../fights/pve';
     ]),
     UsersModule,
   ],
-  controllers: [AdventureController],
+  controllers: [AdventureController, AdventureAdminController],
   providers: [
     AdventureSeeder,
     AdventureService,
+    AdventureAdminService,
     { provide: PVE_HOOKS, useExisting: AdventureService },
   ],
   exports: [AdventureService, PVE_HOOKS],

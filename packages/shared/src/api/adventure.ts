@@ -1,5 +1,5 @@
 import type { Rarity } from "../enums/card";
-import type { AdventureRewardConfig } from "../game/adventure";
+import type { AdventureArchetype, AdventureRewardConfig } from "../game/adventure";
 
 export type AdventureOpponentState = "beaten" | "available" | "locked";
 
@@ -77,5 +77,40 @@ export interface AdminAdventureDeckBody {
 }
 
 export interface AdminAdventureSettingsBody {
+  dailyCap: number;
+}
+
+// ─── Vue admin ────────────────────────────────────────────────────────────────
+
+export interface AdminAdventureOpponent extends AdventureRewardConfig {
+  id: number;
+  position: number;
+  name: string;
+  quote: string;
+  portraitCardId: number | null;
+  /** Archétype de la signature (null si la signature est illisible). */
+  archetype: AdventureArchetype | null;
+  deck: { cardId: number; name: string; rarity: Rarity; quantity: number }[];
+  deckSize: number;
+  /** Raison pour laquelle le deck ne peut pas être joué (null si valide). */
+  deckError: string | null;
+}
+
+export interface AdminAdventureWorld {
+  id: number;
+  name: string;
+  cardSetId: number;
+  cardSetName: string;
+  boosterId: number | null;
+  order: number;
+  isActive: boolean;
+  prerequisiteIds: number[];
+  /** Raison pour laquelle le monde ne peut pas être (ou rester) actif. */
+  inactiveReason: string | null;
+  opponents: AdminAdventureOpponent[];
+}
+
+export interface AdminAdventureOverview {
+  worlds: AdminAdventureWorld[];
   dailyCap: number;
 }

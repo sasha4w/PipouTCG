@@ -1,20 +1,14 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  ADVENTURE_LEVEL_DEFAULTS,
-  Rarity,
-  type AdventureArchetype,
-} from '@pipou/shared';
+import { Rarity, type AdventureArchetype } from '@pipou/shared';
 import { DataSource, Repository } from 'typeorm';
 import { Booster } from '../boosters/booster.entity';
 import { CardSet } from '../card-sets/card-set.entity';
 import { Card } from '../cards/card.entity';
 import { canActivateWorld } from './adventure-rules';
-import { findByName, generateDeck, type DeckEntry } from './deck-generator';
-import { AdventureOpponentCard } from './entities/adventure-opponent-card.entity';
-import { AdventureOpponent } from './entities/adventure-opponent.entity';
 import { AdventureWorld } from './entities/adventure-world.entity';
 import { LAUNCH_PERSONAS, LAUNCH_SIGNATURES } from './signatures';
+import { persistWorld, planOpponents } from './world-factory';
 
 export const LAUNCH_WORLDS: {
   cardSetId: number;
@@ -25,8 +19,6 @@ export const LAUNCH_WORLDS: {
   { cardSetId: 2, archetype: 'pixelman', order: 2 },
   { cardSetId: 3, archetype: 'dragon', order: 3 },
 ];
-
-const LEVELS = [1, 2, 3, 4, 5] as const;
 
 /**
  * Crée au démarrage les mondes de lancement manquants (jamais de mise à jour :
@@ -108,60 +100,30 @@ export class AdventureSeeder implements OnApplicationBootstrap {
     ).length;
 
     // Tout est généré avant la 1re écriture : une erreur ne laisse pas de monde partiel.
-    const plans = LEVELS.map((level) => {
-      const signature = LAUNCH_SIGNATURES[def.archetype][level - 1];
-      const portrait = findByName(setCards, signature.cardName);
-      if (!portrait)
+    const plans = planOpponents(
+      setCards,
+      LAUNCH_SIGNATURES[def.archetype],
+      this.random,
+      (signature) =>
         this.logger.warn(
           `Portrait « ${signature.cardName} » introuvable dans le set ${set.id}`,
-        );
-      const deck: DeckEntry[] = generateDeck(
-        setCards,
-        level,
-        signature,
-        this.random,
-      );
-      return { level, signature, portrait, deck };
-    });
+        ),
+    );
 
     // Une transaction par monde : tout ou rien.
-    await this.dataSource.transaction(async (manager) => {
-      const world = await manager.save(
-        AdventureWorld,
-        manager.create(AdventureWorld, {
+    await this.dataSource.transaction((manager) =>
+      persistWorld(
+        manager,
+        {
           name: set.name,
           cardSetId: set.id,
           boosterId,
           order: def.order,
           isActive: canActivateWorld({ boosterId, legendaryCount }).ok,
-        }),
-      );
-
-      for (const { level, signature, portrait, deck } of plans) {
-        const persona = LAUNCH_PERSONAS[def.archetype][level - 1];
-        const opponent = await manager.save(
-          AdventureOpponent,
-          manager.create(AdventureOpponent, {
-            worldId: world.id,
-            position: level,
-            name: persona.name,
-            quote: persona.quote,
-            portraitCardId: portrait?.id ?? null,
-            signature: JSON.stringify(signature),
-            ...ADVENTURE_LEVEL_DEFAULTS[level],
-          }),
-        );
-        await manager.save(
-          AdventureOpponentCard,
-          deck.map((d) =>
-            manager.create(AdventureOpponentCard, {
-              opponentId: opponent.id,
-              cardId: d.cardId,
-              quantity: d.quantity,
-            }),
-          ),
-        );
-      }
-    });
+        },
+        plans,
+        LAUNCH_PERSONAS[def.archetype],
+      ),
+    );
   }
 }
