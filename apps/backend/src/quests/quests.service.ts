@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan, In } from 'typeorm';
+import { Repository, LessThan, In, Not } from 'typeorm';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Quest } from './quest.entity';
 import {
@@ -21,6 +21,14 @@ import {
   QuestConditionType as ConditionType,
 } from '@pipou/shared';
 import { UsersService } from '../users/users.service';
+import { User } from '../users/user.entity';
+import {
+  POOL_DRAW_SIZE,
+  drawDistinct,
+  isRerollAvailable,
+  nextDailyReset,
+  nextWeeklyReset,
+} from './quest-schedule';
 
 export interface AutoClaimedReward {
   title: string;
@@ -37,14 +45,25 @@ export interface QuestEventMeta {
   level?: number;
 }
 
+/** Types tirés dans un pool ; les autres sont assignés à tous. */
+const POOL_TYPES: QuestResetType[] = [
+  QuestResetType.DAILY,
+  QuestResetType.WEEKLY,
+];
+
 @Injectable()
 export class QuestService {
+  private syncing = new Map<number, Promise<AutoClaimedReward[]>>();
+
   constructor(
     @InjectRepository(Quest)
     private questRepository: Repository<Quest>,
 
     @InjectRepository(UserQuest)
     private userQuestRepository: Repository<UserQuest>,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
 
     private usersService: UsersService,
 
@@ -90,11 +109,81 @@ export class QuestService {
 
   /* ===================== USER - QUÊTES ===================== */
 
-  async syncUserQuests(userId: number): Promise<AutoClaimedReward[]> {
-    const autoClaimedRewards = await this.resetExpiredQuests(userId);
+  /** Un seul sync à la fois par joueur : deux GET simultanés ne doivent pas tirer deux fois. */
+  syncUserQuests(userId: number): Promise<AutoClaimedReward[]> {
+    const running = this.syncing.get(userId);
+    if (running) return running;
+    const job = this.doSync(userId).finally(() => this.syncing.delete(userId));
+    this.syncing.set(userId, job);
+    return job;
+  }
+
+  private async doSync(userId: number): Promise<AutoClaimedReward[]> {
+    const claimed: AutoClaimedReward[] = [];
+    for (const type of POOL_TYPES)
+      claimed.push(...(await this.redrawPool(userId, type)));
+    claimed.push(...(await this.resetExpiredQuests(userId)));
     await this.removeInactiveUserQuests(userId);
     await this.assignMissingQuests(userId);
-    return autoClaimedRewards;
+    return claimed;
+  }
+
+  /** Nouveau tirage du pool `type` quand plus aucune quête de ce type n'est en cours. */
+  private async redrawPool(
+    userId: number,
+    type: QuestResetType,
+  ): Promise<AutoClaimedReward[]> {
+    const now = new Date();
+    const held = await this.userQuestRepository.find({
+      where: { user: { id: userId }, quest: { resetType: type } },
+      relations: { quest: true },
+    });
+    if (held.some((uq) => uq.resetAt && uq.resetAt > now)) return [];
+
+    const claimed = await this.autoClaim(userId, held);
+    if (held.length > 0) await this.userQuestRepository.remove(held);
+
+    const pool = await this.questRepository.find({
+      where: { resetType: type, isActive: true },
+    });
+    const drawn = drawDistinct(pool, POOL_DRAW_SIZE);
+    if (drawn.length > 0) {
+      await this.userQuestRepository.save(
+        drawn.map((quest) =>
+          this.userQuestRepository.create({
+            user: { id: userId },
+            quest,
+            progress: this.initProgress(quest),
+            isCompleted: false,
+            rewardClaimed: false,
+            resetAt: this.computeNextReset(quest),
+          }),
+        ),
+      );
+    }
+    return claimed;
+  }
+
+  /** Distribue les récompenses terminées mais non réclamées (avant reset ou suppression). */
+  private async autoClaim(
+    userId: number,
+    userQuests: UserQuest[],
+  ): Promise<AutoClaimedReward[]> {
+    const claimed: AutoClaimedReward[] = [];
+    for (const uq of userQuests) {
+      if (!uq.isCompleted || uq.rewardClaimed) continue;
+      await this.distributeReward(userId, uq.quest);
+      claimed.push({
+        title: uq.quest.title,
+        rewardType: uq.quest.rewardType,
+        rewardAmount: Number(uq.quest.rewardAmount),
+      });
+      this.eventEmitter.emit('quest.claimed', {
+        userId,
+        userQuestIds: [uq.id],
+      });
+    }
+    return claimed;
   }
 
   private async removeInactiveUserQuests(userId: number): Promise<void> {
@@ -127,23 +216,16 @@ export class QuestService {
     const claimed: AutoClaimedReward[] = [];
 
     const expired = await this.userQuestRepository.find({
-      where: { user: { id: userId }, resetAt: LessThan(now) },
+      where: {
+        user: { id: userId },
+        resetAt: LessThan(now),
+        quest: { resetType: Not(In(POOL_TYPES)) },
+      },
       relations: { quest: true },
     });
 
     for (const uq of expired) {
-      if (uq.isCompleted && !uq.rewardClaimed) {
-        await this.distributeReward(userId, uq.quest);
-        claimed.push({
-          title: uq.quest.title,
-          rewardType: uq.quest.rewardType,
-          rewardAmount: Number(uq.quest.rewardAmount),
-        });
-        this.eventEmitter.emit('quest.claimed', {
-          userId,
-          userQuestIds: [uq.id],
-        });
-      }
+      claimed.push(...(await this.autoClaim(userId, [uq])));
 
       uq.progress = this.initProgress(uq.quest);
       uq.isCompleted = false;
@@ -158,7 +240,7 @@ export class QuestService {
 
   private async assignMissingQuests(userId: number) {
     const allQuests = await this.questRepository.find({
-      where: { isActive: true },
+      where: { isActive: true, resetType: Not(In(POOL_TYPES)) },
     });
 
     const existing = await this.userQuestRepository.find({
@@ -192,33 +274,44 @@ export class QuestService {
   }
 
   async getUserQuests(userId: number) {
-    const userQuests = await this.userQuestRepository.find({
-      where: { user: { id: userId } },
-      relations: { quest: true },
-      order: { assignedAt: 'DESC' },
-    });
+    const now = new Date();
+    const [userQuests, user] = await Promise.all([
+      this.userQuestRepository.find({
+        where: { user: { id: userId } },
+        relations: { quest: true },
+        order: { assignedAt: 'DESC' },
+      }),
+      this.userRepository.findOne({
+        where: { id: userId },
+        select: ['id', 'lastQuestRerollAt'],
+      }),
+    ]);
 
     const mapped = userQuests.map((uq) => ({
       id: uq.id,
       questId: uq.quest.id,
       title: uq.quest.title,
-      description: uq.quest.description,
+      description: uq.quest.description ?? null,
       resetType: uq.quest.resetType,
       rewardType: uq.quest.rewardType,
-      rewardAmount: uq.quest.rewardAmount,
-      rewardItemId: uq.quest.rewardItemId,
+      rewardAmount: Number(uq.quest.rewardAmount),
+      rewardItemId: uq.quest.rewardItemId ?? null,
       progress: uq.progress,
       isCompleted: uq.isCompleted,
       rewardClaimed: uq.rewardClaimed,
       resetAt: uq.resetAt,
     }));
+    const of = (type: QuestResetType) =>
+      mapped.filter((q) => q.resetType === type);
 
     return {
-      DAILY: mapped.filter((q) => q.resetType === QuestResetType.DAILY),
-      WEEKLY: mapped.filter((q) => q.resetType === QuestResetType.WEEKLY),
-      MONTHLY: mapped.filter((q) => q.resetType === QuestResetType.MONTHLY),
-      EVENT: mapped.filter((q) => q.resetType === QuestResetType.EVENT),
-      ACHIEVEMENT: mapped.filter((q) => q.resetType === QuestResetType.NONE),
+      DAILY: of(QuestResetType.DAILY),
+      WEEKLY: of(QuestResetType.WEEKLY),
+      MONTHLY: of(QuestResetType.MONTHLY),
+      EVENT: of(QuestResetType.EVENT),
+      rerollAvailable: isRerollAvailable(user?.lastQuestRerollAt ?? null, now),
+      dailyResetAt: nextDailyReset(now),
+      weeklyResetAt: nextWeeklyReset(now),
     };
   }
 
@@ -265,6 +358,49 @@ export class QuestService {
     });
 
     return { count: claimableQuests.length };
+  }
+
+  /** Remplace une quête daily/hebdo non terminée ; une relance par journée de jeu. */
+  async rerollQuest(userId: number, userQuestId: number) {
+    const uq = await this.userQuestRepository.findOne({
+      where: { id: userQuestId, user: { id: userId } },
+      relations: { quest: true },
+    });
+    if (!uq) throw new NotFoundException('Quest not found');
+    if (uq.isCompleted) throw new BadRequestException('Quête déjà terminée.');
+    if (!POOL_TYPES.includes(uq.quest.resetType))
+      throw new BadRequestException('Cette quête ne peut pas être changée.');
+
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'lastQuestRerollAt'],
+    });
+    if (!isRerollAvailable(user?.lastQuestRerollAt ?? null, new Date()))
+      throw new BadRequestException('Relance du jour déjà utilisée.');
+
+    const held = await this.userQuestRepository.find({
+      where: { user: { id: userId } },
+      relations: { quest: true },
+    });
+    const heldIds = new Set(held.map((h) => h.quest.id));
+    const candidates = (
+      await this.questRepository.find({
+        where: { resetType: uq.quest.resetType, isActive: true },
+      })
+    ).filter((q) => !heldIds.has(q.id));
+    const [replacement] = drawDistinct(candidates, 1);
+    if (!replacement)
+      throw new BadRequestException('Aucune autre quête disponible.');
+
+    uq.quest = replacement;
+    uq.progress = this.initProgress(replacement);
+    uq.rewardClaimed = false;
+    uq.completedAt = null;
+    const saved = await this.userQuestRepository.save(uq);
+    await this.userRepository.update(userId, {
+      lastQuestRerollAt: new Date(),
+    });
+    return saved;
   }
 
   /* ===================== TRACKING ===================== */
@@ -467,19 +603,10 @@ export class QuestService {
 
     switch (quest.resetType) {
       case QuestResetType.DAILY:
-        next.setDate(next.getDate() + 1);
-        next.setHours(resetHour, 0, 0, 0);
-        break;
+        return nextDailyReset(now);
 
-      case QuestResetType.WEEKLY: {
-        const targetDay = quest.resetDayOfWeek ?? 1;
-        const currentDay = now.getDay();
-        let daysUntil = targetDay - currentDay;
-        if (daysUntil <= 0) daysUntil += 7;
-        next.setDate(next.getDate() + daysUntil);
-        next.setHours(resetHour, 0, 0, 0);
-        break;
-      }
+      case QuestResetType.WEEKLY:
+        return nextWeeklyReset(now);
 
       case QuestResetType.MONTHLY:
         next.setMonth(next.getMonth() + 1, 1);
