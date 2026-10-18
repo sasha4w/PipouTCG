@@ -22,6 +22,7 @@ describe('buildAchievementsResponse', () => {
     const res = buildAchievementsResponse(
       values,
       4,
+      3,
       [{ family: AchievementFamily.LEVEL, tier: AchievementTier.BRONZE }],
       AchievementFamily.LEVEL,
     );
@@ -46,6 +47,24 @@ describe('buildAchievementsResponse', () => {
       total: 45,
       equippedTitle: AchievementFamily.LEVEL,
     });
+  });
+});
+
+describe('buildAchievementsResponse ALL_WORLDS', () => {
+  it('résout ALL_WORLDS en nombre de mondes actifs', () => {
+    const res = buildAchievementsResponse(
+      { ...zeroValues(), [AchievementFamily.ADVENTURE_WORLDS]: 3 },
+      4,
+      3,
+      [],
+      null,
+    );
+    const worlds = res.families.find(
+      (f) => f.family === AchievementFamily.ADVENTURE_WORLDS,
+    )!;
+    const gold = worlds.tiers.at(-1)!;
+    expect(gold.threshold).toBe(3);
+    expect(gold.reached).toBe(true);
   });
 });
 
@@ -80,6 +99,7 @@ describe('AchievementsService', () => {
     stats.getValues.mockResolvedValue({
       values: { ...zeroValues(), [family]: value },
       totalSets: 3,
+      totalWorlds: 3,
     });
 
   it('réclame le bronze atteint et distribue l’or', async () => {

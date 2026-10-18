@@ -546,9 +546,22 @@ export class QuestService {
   }) {
     for (const id of [payload.player1Id, payload.player2Id]) {
       await this.track(id, ConditionType.PLAY_FIGHT);
+      await this.track(id, ConditionType.PLAY_PVP_FIGHT);
     }
-    if (payload.winnerId !== null)
+    if (payload.winnerId !== null) {
       await this.track(payload.winnerId, ConditionType.WIN_FIGHT);
+      await this.track(payload.winnerId, ConditionType.WIN_PVP_FIGHT);
+    }
+  }
+
+  @OnEvent('adventure.finished')
+  async handleAdventureFinished(payload: { userId: number; won: boolean }) {
+    await this.track(payload.userId, ConditionType.PLAY_FIGHT);
+    await this.track(payload.userId, ConditionType.PLAY_PVE_FIGHT);
+    if (payload.won) {
+      await this.track(payload.userId, ConditionType.WIN_FIGHT);
+      await this.track(payload.userId, ConditionType.WIN_PVE_FIGHT);
+    }
   }
 
   @OnEvent('listing.sold')

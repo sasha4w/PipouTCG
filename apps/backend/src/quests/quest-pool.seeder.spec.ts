@@ -46,4 +46,22 @@ describe('QuestPoolSeeder', () => {
       isActive: false,
     });
   });
+
+  it('crée les 4 quêtes PvP/PvE', async () => {
+    repo.find.mockResolvedValue([]);
+    await seeder.seed();
+    const saved = repo.save.mock.calls[0][0];
+    expect(saved.map((q) => q.poolKey)).toEqual(
+      expect.arrayContaining([
+        'd_pve_win_2',
+        'd_pvp_play_1',
+        'w_pve_win_15',
+        'w_pvp_win_5',
+      ]),
+    );
+    expect(saved.find((q) => q.poolKey === 'd_pve_win_2')).toMatchObject({
+      title: 'quests.pool.d_pve_win_2',
+      rewardAmount: 150,
+    });
+  });
 });

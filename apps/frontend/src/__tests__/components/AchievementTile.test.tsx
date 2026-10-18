@@ -24,7 +24,7 @@ describe("AchievementTile", () => {
 
   it("affiche le nom et une pastille allumée par palier réclamé", () => {
     render(<AchievementTile progress={progress([true, false, false], [true, true, false])} onOpen={() => {}} />);
-    expect(screen.getByText("Victoires")).toBeInTheDocument();
+    expect(screen.getByText("Victoires JcJ")).toBeInTheDocument();
     expect(document.querySelectorAll(".ach-pip--on")).toHaveLength(1);
   });
 

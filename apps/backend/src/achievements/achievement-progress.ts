@@ -16,6 +16,7 @@ export interface ClaimedTier {
 export function buildAchievementsResponse(
   values: Record<AchievementFamily, number>,
   totalSets: number,
+  totalWorlds: number,
   claimed: ClaimedTier[],
   equippedTitle: AchievementFamily | null,
 ): AchievementsResponse {
@@ -25,12 +26,11 @@ export function buildAchievementsResponse(
   const families = ACHIEVEMENTS.map((def) => {
     const value = values[def.family];
     const tiers = def.tiers.map((t) => {
-      // TODO(adventure Task 9): ALL_WORLDS = nombre de mondes actifs (provisoire : inatteignable)
       const threshold =
         t.threshold === ALL_SETS
           ? totalSets
           : t.threshold === ALL_WORLDS
-            ? Number.MAX_SAFE_INTEGER
+            ? totalWorlds
             : t.threshold;
       return {
         tier: t.tier,

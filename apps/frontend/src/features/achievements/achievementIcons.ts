@@ -9,7 +9,9 @@ import {
   IconFire,
   IconGem,
   IconGold,
+  IconMap,
   IconQuest,
+  IconRobot,
   IconSwords,
   IconTag,
   IconTrophy,
@@ -30,8 +32,7 @@ export const FAMILY_ICON: Record<AchievementFamily, FamilyIcon> = {
   [AchievementFamily.LOGIN_STREAK]: IconFire,
   [AchievementFamily.GOLD_EARNED]: IconGold,
   [AchievementFamily.QUESTS_DONE]: IconQuest,
-  // TODO(adventure Task 9): icônes dédiées
-  [AchievementFamily.ADVENTURE_WORLDS]: IconTrophy,
-  [AchievementFamily.PVE_WON]: IconTrophy,
-  [AchievementFamily.PVE_PLAYED]: IconTrophy,
+  [AchievementFamily.ADVENTURE_WORLDS]: IconMap,
+  [AchievementFamily.PVE_WON]: IconSwords,
+  [AchievementFamily.PVE_PLAYED]: IconRobot,
 };
