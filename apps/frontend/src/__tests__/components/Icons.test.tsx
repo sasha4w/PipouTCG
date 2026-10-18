@@ -8,6 +8,8 @@ import {
   IconMinus,
   IconPause,
   IconPlay,
+  IconSwords,
+  IconGem,
 } from "../../components/Icons";
 
 const ICONS = {
@@ -18,6 +20,8 @@ const ICONS = {
   IconMinus,
   IconPause,
   IconPlay,
+  IconSwords,
+  IconGem,
 };
 
 describe("nouvelles icônes", () => {

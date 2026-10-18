@@ -1,0 +1,54 @@
+.bsheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(20, 5, 10, 0.55);
+}
+
+.bsheet__panel {
+  width: 100%;
+  max-width: 430px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #3d1020;
+  color: #fff;
+  border-radius: 18px 18px 0 0;
+  padding: 1rem 1.1rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: bsheetUp 0.22s ease-out;
+}
+
+@keyframes bsheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bsheet__panel { animation: none; }
+}
+
+.bsheet__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bsheet__title {
+  margin: 0;
+  font-family: "Lilita One", cursive;
+  font-size: 1.05rem;
+  color: #eebc77;
+}
+
+.bsheet__close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+}

@@ -639,6 +639,63 @@
     "summonPick": "Invoquer"
   },
   "achievements": {
-    "tab": "Succès"
+    "tab": "Succès",
+    "loading": "Chargement des succès…",
+    "unlocked": "{{count}} / {{total}} paliers",
+    "title_label": "Titre",
+    "no_title": "Aucun titre",
+    "claim": "Réclamer",
+    "claimed": "Réclamé",
+    "locked": "À atteindre",
+    "all_done": "Tous les paliers sont réclamés",
+    "unlocks_title": "Débloque le titre « {{title}} »",
+    "close": "Fermer",
+    "tiers": {
+      "BRONZE": "Bronze",
+      "SILVER": "Argent",
+      "GOLD": "Or"
+    },
+    "families": {
+      "BOOSTERS_OPENED": "Ouvreur",
+      "CARDS_BOUGHT": "Acheteur",
+      "CARDS_SOLD": "Vendeur",
+      "SETS_COMPLETED": "Sets complets",
+      "DUELS_WON": "Victoires",
+      "DUELS_PLAYED": "Duels joués",
+      "LEVEL": "Niveau",
+      "UNIQUE_CARDS": "Collection",
+      "HIGH_RARITY": "Raretés",
+      "LOGIN_STREAK": "Assiduité",
+      "GOLD_EARNED": "Fortune",
+      "QUESTS_DONE": "Quêtes"
+    },
+    "goals": {
+      "BOOSTERS_OPENED": "Ouvre {{n}} boosters",
+      "CARDS_BOUGHT": "Achète {{n}} cartes au marché",
+      "CARDS_SOLD": "Vends {{n}} cartes au marché",
+      "SETS_COMPLETED": "Complète {{n}} sets",
+      "DUELS_WON": "Gagne {{n}} duels",
+      "DUELS_PLAYED": "Joue {{n}} duels",
+      "LEVEL": "Atteins le niveau {{n}}",
+      "UNIQUE_CARDS": "Possède {{n}} cartes différentes",
+      "HIGH_RARITY": "Possède {{n}} cartes épiques ou mieux",
+      "LOGIN_STREAK": "Connecte-toi {{n}} jours d'affilée",
+      "GOLD_EARNED": "Gagne {{n}} or au marché",
+      "QUESTS_DONE": "Termine {{n}} quêtes"
+    },
+    "titles": {
+      "BOOSTERS_OPENED": "Maître Ouvreur",
+      "CARDS_BOUGHT": "Chineur",
+      "CARDS_SOLD": "Marchand",
+      "SETS_COMPLETED": "Archiviste",
+      "DUELS_WON": "Champion",
+      "DUELS_PLAYED": "Vétéran",
+      "LEVEL": "Légende",
+      "UNIQUE_CARDS": "Collectionneur",
+      "HIGH_RARITY": "Chasseur de Reliques",
+      "LOGIN_STREAK": "Fidèle",
+      "GOLD_EARNED": "Magnat",
+      "QUESTS_DONE": "Aventurier"
+    }
   }
 }

@@ -637,6 +637,63 @@
     "summonPick": "Summon"
   },
   "achievements": {
-    "tab": "Achievements"
+    "tab": "Achievements",
+    "loading": "Loading achievements…",
+    "unlocked": "{{count}} / {{total}} tiers",
+    "title_label": "Title",
+    "no_title": "No title",
+    "claim": "Claim",
+    "claimed": "Claimed",
+    "locked": "To reach",
+    "all_done": "All tiers claimed",
+    "unlocks_title": "Unlocks the title “{{title}}”",
+    "close": "Close",
+    "tiers": {
+      "BRONZE": "Bronze",
+      "SILVER": "Silver",
+      "GOLD": "Gold"
+    },
+    "families": {
+      "BOOSTERS_OPENED": "Opener",
+      "CARDS_BOUGHT": "Buyer",
+      "CARDS_SOLD": "Seller",
+      "SETS_COMPLETED": "Full Sets",
+      "DUELS_WON": "Victories",
+      "DUELS_PLAYED": "Duels Played",
+      "LEVEL": "Level",
+      "UNIQUE_CARDS": "Collection",
+      "HIGH_RARITY": "Rarities",
+      "LOGIN_STREAK": "Dedication",
+      "GOLD_EARNED": "Fortune",
+      "QUESTS_DONE": "Quests"
+    },
+    "goals": {
+      "BOOSTERS_OPENED": "Open {{n}} boosters",
+      "CARDS_BOUGHT": "Buy {{n}} cards on the market",
+      "CARDS_SOLD": "Sell {{n}} cards on the market",
+      "SETS_COMPLETED": "Complete {{n}} sets",
+      "DUELS_WON": "Win {{n}} duels",
+      "DUELS_PLAYED": "Play {{n}} duels",
+      "LEVEL": "Reach level {{n}}",
+      "UNIQUE_CARDS": "Own {{n}} different cards",
+      "HIGH_RARITY": "Own {{n}} epic cards or better",
+      "LOGIN_STREAK": "Log in {{n}} days in a row",
+      "GOLD_EARNED": "Earn {{n}} gold on the market",
+      "QUESTS_DONE": "Complete {{n}} quests"
+    },
+    "titles": {
+      "BOOSTERS_OPENED": "Master Opener",
+      "CARDS_BOUGHT": "Bargain Hunter",
+      "CARDS_SOLD": "Merchant",
+      "SETS_COMPLETED": "Archivist",
+      "DUELS_WON": "Champion",
+      "DUELS_PLAYED": "Veteran",
+      "LEVEL": "Legend",
+      "UNIQUE_CARDS": "Collector",
+      "HIGH_RARITY": "Relic Hunter",
+      "LOGIN_STREAK": "Faithful",
+      "GOLD_EARNED": "Tycoon",
+      "QUESTS_DONE": "Adventurer"
+    }
   }
 }
