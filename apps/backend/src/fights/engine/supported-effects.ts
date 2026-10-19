@@ -62,6 +62,7 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.CANNOT_ATTACK_ON_SUMMON_TURN,
   ActionType.SUMMONABLE_ON_ENEMY_SIDE,
   ActionType.SET_COMBAT_IMMUNITY,
+  ActionType.SET_DISINFECT_IMMUNITY,
   ActionType.SET_SUPPORT_DESTROY_IMMUNITY,
   ActionType.IGNORE_TAUNT,
   ActionType.SET_HATCH_COUNTER,

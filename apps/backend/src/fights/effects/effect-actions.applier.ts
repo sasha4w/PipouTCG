@@ -219,6 +219,15 @@ export function applyActions(
         }
         break;
 
+      case ActionType.SET_DISINFECT_IMMUNITY:
+        for (const m of targets.monsters) {
+          m.disinfectImmune = true;
+          ctx.log.push(
+            `🛡️ ${m.card.baseCard.name} est protégé de la désinfection jusqu'au prochain tour de son poseur`,
+          );
+        }
+        break;
+
       case ActionType.SET_DAMAGE_REDUCTION:
         for (const m of targets.monsters) {
           const v = action.value ?? 2;

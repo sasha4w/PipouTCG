@@ -9,7 +9,11 @@ import {
 import type { EffectContext } from './effects/effect-context.interface';
 import { checkCondition } from './effects/effect-conditions';
 import { applyActions } from './effects/effect-actions.applier';
-import { drawCard, sendToGraveyard } from './helpers/game-state.helper';
+import {
+  drawCard,
+  getPlayerState,
+  sendToGraveyard,
+} from './helpers/game-state.helper';
 
 export type { EffectContext };
 
@@ -113,7 +117,20 @@ export class EffectsResolverService {
       (m) => m?.instanceId === instanceId,
     );
     if (idx !== -1) host.monsterZones[idx] = null;
-    sendToGraveyard(host, ...monster.equipments, monster.card);
+    // Monstre implanté : la carte rejoint le cimetière de son poseur, et chaque
+    // équipement celui de son propriétaire (le poseur à défaut)
+    const poserId = monster.ownerUserId ?? host.userId;
+    if (poserId === host.userId) {
+      sendToGraveyard(host, ...monster.equipments, monster.card);
+    } else {
+      const poser = getPlayerState(game, poserId);
+      sendToGraveyard(poser, monster.card);
+      for (const equipment of monster.equipments)
+        sendToGraveyard(
+          equipment.ownerId === host.userId ? host : poser,
+          equipment,
+        );
+    }
     if (opts.draw) drawCard(game, host.userId);
     return monster;
   }

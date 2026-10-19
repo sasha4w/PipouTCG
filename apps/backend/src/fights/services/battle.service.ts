@@ -81,8 +81,29 @@ export class BattleService {
         error: `${attacker.card.baseCard.name} ne peut pas attaquer (bloqué encore ${attacker.blockAttackTurns} tour(s))`,
       };
 
+    // Désinfection : cible implantée chez soi par l'adversaire
+    const infected =
+      !direct && targetInstanceId
+        ? player.monsterZones.find(
+            (m) => m?.instanceId === targetInstanceId && isImplanted(m, userId),
+          )
+        : undefined;
+    if (infected?.disinfectImmune)
+      return {
+        error: `${infected.card.baseCard.name} est protégé jusqu'au prochain tour de son poseur`,
+      };
+    if (
+      !direct &&
+      opponent.monsterZones.some(
+        (m) => m?.instanceId === targetInstanceId && isPlantedBy(m, userId),
+      )
+    )
+      return { error: 'Tu ne peux pas attaquer ton propre Zeta' };
+
     // ── Validations spécifiques au mode ─────────────────────────────────────
-    if (direct) {
+    if (infected) {
+      // Ni Provocation ni cible adverse à vérifier : le Zeta est déjà chez soi
+    } else if (direct) {
       if (game.turnNumber === 1)
         return { error: 'Attaque directe interdite au premier tour' };
       // Un monstre que j'ai moi-même implanté ne protège pas l'adversaire
@@ -128,6 +149,33 @@ export class BattleService {
       log,
     });
     flush();
+
+    // ── Désinfection : pas de riposte, ni Prime ni pioche ────────────────────
+    if (infected) {
+      combatDamage(infected, effectiveAtk(attacker), {
+        ignoreReduction: attacker.hasPiercing,
+      });
+      if (infected.currentHp <= 0) {
+        addLog(
+          game,
+          `🧹 ${attacker.card.baseCard.name} désinfecte ${infected.card.baseCard.name}`,
+        );
+        this.effectsResolver.destroyMonster(
+          game,
+          player,
+          infected.instanceId,
+          log,
+          { draw: false, cause: DestroyCause.COMBAT },
+        );
+      } else {
+        addLog(
+          game,
+          `🧹 ${attacker.card.baseCard.name} attaque ${infected.card.baseCard.name} (${infected.currentHp}HP)`,
+        );
+      }
+      flush();
+      return {};
+    }
 
     // ── Attaque directe ──────────────────────────────────────────────────────
     if (direct) {

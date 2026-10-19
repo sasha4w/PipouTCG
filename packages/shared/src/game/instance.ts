@@ -59,6 +59,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   guardLocked?: boolean;
   /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
   combatImmune?: boolean;
+  /** Zeta implanté : à l'abri de la désinfection jusqu'au prochain tour de son poseur. */
+  disinfectImmune?: boolean;
   /** Une destruction directe venant d'une carte Support n'a pas d'effet (passif). */
   supportDestroyImmune?: boolean;
   /** Peut attaquer n'importe quel monstre malgré une Provocation (passif). */

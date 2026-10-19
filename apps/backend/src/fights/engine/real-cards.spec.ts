@@ -79,7 +79,7 @@ describe('vraies cartes — combos', () => {
     for (let i = 0; i < 6; i++) passTurn(engine, game);
 
     expect(game.player1.primes).toBe(5);
-    expect(graveyardNames(game, 'p2')).toContain('Noyau Zeta');
+    expect(graveyardNames(game, 'p1')).toContain('Noyau Zeta');
   });
 
   it("Clairon de l'Union : +2 énergie en jeu, une pioche s'il est recyclé", () => {

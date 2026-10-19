@@ -85,6 +85,14 @@ export class PhaseService {
     const log: string[] = [];
     // L'immunité au combat dure jusqu'au début du tour de son propriétaire
     for (const m of player.monsterZones) if (m) m.combatImmune = false;
+    // La protection d'un Zeta implanté tombe au début du tour de son poseur
+    for (const host of [player, getOpponentState(game, player.userId)])
+      for (const m of host.monsterZones)
+        if (
+          m?.disinfectImmune &&
+          (m.ownerUserId ?? host.userId) === player.userId
+        )
+          m.disinfectImmune = false;
     // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
     // pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);

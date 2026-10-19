@@ -194,7 +194,7 @@ describe('GameEngine — destruction', () => {
     engine.dispatch(game, 'p2', { type: 'end_phase' });
 
     expect(game.player1.primes).toBe(5);
-    expect(graveyardNames(game, 'p2')).toEqual(['Virus']);
+    expect(graveyardNames(game, 'p1')).toEqual(['Virus']);
     expect(handNames(game, 'p2')).toEqual([]);
   });
 });
