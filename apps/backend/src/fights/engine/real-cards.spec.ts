@@ -421,7 +421,7 @@ describe('vraies cartes — combos', () => {
       expect(monsterNamed(game, 'p1', 'Porteur').hpBuff).toBe(400);
     });
 
-    it('Noyau Zeta réel : 1200 PV, virus de 300 ATK, explosion de 500 à l’autodestruction', () => {
+    it('Noyau Zeta réel : 1200 PV, virus de 300 ATK, explosion de 800 à l’autodestruction', () => {
       expect(realCard('Noyau Zeta').hp).toBe(1200);
       const game = scenario({
         p1: { hand: [realCard('Noyau Zeta')], recycleEnergy: 2 },
@@ -439,7 +439,7 @@ describe('vraies cartes — combos', () => {
 
       for (let i = 0; i < 6; i++) passTurn(engine, game);
 
-      expect(monsterNamed(game, 'p2', 'Hôte').currentHp).toBe(1500);
+      expect(monsterNamed(game, 'p2', 'Hôte').currentHp).toBe(1200);
       expect(effectiveAtk(monsterNamed(game, 'p2', 'Hôte'))).toBe(1000);
     });
   });
