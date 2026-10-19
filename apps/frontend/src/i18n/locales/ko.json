@@ -409,7 +409,7 @@
       "PASSIVE_terrain": "이 필드 카드가 있는 동안",
       "ON_RECYCLE": "이 카드를 재활용할 때",
       "ON_BATTLE_PHASE_START": "내 배틀 페이즈 시작 시",
-      "ON_SELF_DESTRUCT": "이 카드가 자폭할 때",
+      "ON_SELF_DESTRUCT": "자폭할 때",
       "unknown": "특수 발동 ({{type}})"
     },
     "condition": {
@@ -482,6 +482,11 @@
       "GAIN_RECYCLE_ENERGY_you_other": "재활용 에너지 {{count}} 획득.",
       "SET_FREE_SUMMON": "이 카드는 비용 없이 소환할 수 있습니다.",
       "SUMMONABLE_ON_ENEMY_SIDE": "이 카드는 상대 필드에 소환할 수 있습니다.",
+      "DUPLICATE_MONSTER_other": "{{target}}을(를) 첫 번째 빈 칸에 복사. 복사본은 {{count}}턴 동안 공격 불가.",
+      "VIRUS_ATK_DEBUFF": "상대 몬스터의 ATK {{value}} 감소.",
+      "RESET_TURN_COUNTER": "내 Zeta의 카운터를 {{value}}(으)로 되돌림.",
+      "RESET_TURN_COUNTER_you": "내 Zeta의 카운터를 {{value}}(으)로 되돌림.",
+      "SET_DISINFECT_IMMUNITY": "{{target}}은(는) 설치한 플레이어의 다음 턴까지 소독될 수 없음.",
       "SET_HATCH_COUNTER_other": "{{target}}: {{count}}턴 후 덱의 카드{{filter}}(으)로 부화.",
       "ADVANCE_HATCH_other": "{{target}}의 부화가 {{count}}턴 빨라짐.",
       "SUMMON_FROM_DECK": "{{target}}: 덱에서 카드{{filter}} 1장을 무료 소환.",

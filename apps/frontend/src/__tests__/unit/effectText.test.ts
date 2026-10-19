@@ -90,7 +90,11 @@ describe("describeCardEffects (fr)", () => {
       ]),
       t,
     );
-    expect(text.keywords).toEqual(["combatImmunity", "supportShield", "ignoreTaunt"]);
+    expect(text.keywords).toEqual([
+      "combatImmunity",
+      "supportShield",
+      "ignoreTaunt",
+    ]);
   });
 
   let t: TFunction;
@@ -247,7 +251,121 @@ describe("describeCardEffects (fr)", () => {
     expect(text.rules[0].lines[0].text).toBe(
       "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
     );
-    expect(describeCardEffects({ ...monster([], "dragon"), stage: "baby" }, t).rules).toEqual([]);
+    expect(
+      describeCardEffects({ ...monster([], "dragon"), stage: "baby" }, t).rules,
+    ).toEqual([]);
+  });
+
+  describe("équilibrage Zeta / Pixelman", () => {
+    const all = (card: EffectSourceCard) =>
+      describeCardEffects(card, t).rules.flatMap((r) => [
+        r.trigger,
+        ...r.lines.map((l) => l.text),
+      ]);
+
+    it("Noyau Zeta : explosion et virus", () => {
+      const { rules } = describeCardEffects(
+        monster(
+          [
+            {
+              trigger: "PASSIVE",
+              actions: [
+                { type: "VIRUS_ATK_DEBUFF", target: "SELF", value: 300 },
+              ],
+            },
+            {
+              trigger: "ON_SELF_DESTRUCT",
+              actions: [
+                { type: "DEAL_DAMAGE", target: "ALL_ENEMIES", value: 500 },
+              ],
+            },
+          ],
+          "pixelman",
+        ),
+        t,
+      );
+      expect(rules[0].lines[0]).toEqual({
+        text: "Les monstres adverses perdent 300 ATK.",
+        tone: "debuff",
+      });
+      expect(rules[1].trigger).toBe("À son autodestruction");
+      expect(rules[1].lines[0].text).toBe(
+        "Tous les monstres adverses subissent 500 dégâts.",
+      );
+    });
+
+    it("DuplicateX : copie sans attaque pendant 2 tours", () => {
+      const texts = all(
+        support("EPHEMERAL", [
+          {
+            trigger: "ON_PLAY",
+            actions: [
+              { type: "DUPLICATE_MONSTER", target: "TARGET_ALLY", value: 2 },
+            ],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe(
+        "Le monstre allié ciblé est copié sur ta première zone libre ; la copie ne peut pas attaquer pendant 2 tours.",
+      );
+    });
+
+    it("Mise à jour .patch : remet le compteur du Zeta", () => {
+      const texts = all(
+        support("EPHEMERAL", [
+          {
+            trigger: "ON_PLAY",
+            actions: [
+              { type: "RESET_TURN_COUNTER", target: "PLAYER", value: 3 },
+            ],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe("Remet le compteur de ton Zeta à 3.");
+    });
+
+    it("Firewall de Surcharge sur Zeta : protection contre la désinfection", () => {
+      const texts = all(
+        support("EQUIPMENT", [
+          {
+            trigger: "ON_PLAY",
+            condition: { type: "EQUIPPED_ON", value: "Noyau Zeta" },
+            actions: [{ type: "SET_DISINFECT_IMMUNITY", target: "SELF" }],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe(
+        "Le monstre équipé ne peut pas être désinfecté jusqu'au prochain tour de son poseur.",
+      );
+    });
+
+    it("Module Bluetooth .v2 sur Zeta : virus d'équipement", () => {
+      const texts = all(
+        support("EQUIPMENT", [
+          {
+            trigger: "PASSIVE",
+            actions: [{ type: "VIRUS_ATK_DEBUFF", target: "SELF", value: 600 }],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe("Les monstres adverses perdent 600 ATK.");
+    });
+
+    it("aucune ligne inconnue", () => {
+      for (const type of [
+        ActionType.DUPLICATE_MONSTER,
+        ActionType.VIRUS_ATK_DEBUFF,
+        ActionType.RESET_TURN_COUNTER,
+        ActionType.SET_DISINFECT_IMMUNITY,
+      ])
+        expect(
+          all(
+            support("EPHEMERAL", [
+              { trigger: "ON_PLAY", actions: [{ type, target: "SELF" }] },
+            ]),
+          ).join(),
+        ).not.toContain("Effet spécial");
+    });
   });
 
   it("effectPlainText retire les marqueurs de mots-clés", () => {

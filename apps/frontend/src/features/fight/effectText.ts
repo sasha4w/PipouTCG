@@ -220,6 +220,16 @@ const ACTIONS: Record<string, ActionSpec> = {
     defaultValue: 0,
     plural: true,
   },
+  DUPLICATE_MONSTER: {
+    tone: "buff",
+    subject: "monster",
+    defaultValue: 2,
+    plural: true,
+  },
+  // Le virus pèse sur les monstres de l'hôte : la cible (SELF) n'est pas citée.
+  VIRUS_ATK_DEBUFF: { tone: "debuff", subject: "card", defaultValue: 0 },
+  RESET_TURN_COUNTER: { tone: "buff", subject: "player", defaultValue: 3 },
+  SET_DISINFECT_IMMUNITY: { tone: "buff", subject: "monster" },
   SET_FREE_SUMMON: { tone: "buff", subject: "card" },
   SUMMONABLE_ON_ENEMY_SIDE: { tone: "neutral", subject: "card" },
 };
