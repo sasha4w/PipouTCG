@@ -47,6 +47,22 @@ export function canSummonOnEnemySide(
   );
 }
 
+/** Monstre posé chez `hostUserId` par l'adversaire (Zeta). */
+export function isImplanted(
+  m: { ownerUserId?: number },
+  hostUserId: number,
+): boolean {
+  return m.ownerUserId !== undefined && m.ownerUserId !== hostUserId;
+}
+
+/** Le poseur peut-il implanter un monstre sur ce terrain ? (un seul à la fois) */
+export function canImplantOn(
+  hostZones: readonly ({ ownerUserId?: number } | null)[],
+  posterUserId: number,
+): boolean {
+  return !hostZones.some((m) => !!m && m.ownerUserId === posterUserId);
+}
+
 /** Un effet adverse peut-il viser ce monstre ? (Maître Magouille : non.) */
 export function isTargetableByEnemyEffects(monster: {
   isImmuneToDebuffs: boolean;

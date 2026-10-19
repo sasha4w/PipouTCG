@@ -10,6 +10,7 @@ import {
   EffectTrigger,
   ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
+  isImplanted,
   isTargetableByEphemeral,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
@@ -53,11 +54,18 @@ export class SupportService {
 
       const side = ephemeralTargetSide(card.baseCard.effects);
       if (side) {
+        // Un monstre implanté n'est jamais « allié » de son hôte, ni « ennemi » de son poseur
         const pool = (
           side === 'ally'
             ? player.monsterZones
             : getOpponentState(game, userId).monsterZones
-        ).filter((m): m is MonsterOnBoard => m !== null);
+        ).filter(
+          (m): m is MonsterOnBoard =>
+            m !== null &&
+            (side === 'ally'
+              ? !isImplanted(m, userId)
+              : m.ownerUserId !== userId),
+        );
         const targetable = pool.filter((m) =>
           isTargetableByEphemeral(m, side, card.baseCard.effects),
         );
@@ -106,9 +114,13 @@ export class SupportService {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Cible requise pour un Équipement' };
         }
-        const target = player.monsterZones.find(
-          (m) => m?.instanceId === targetInstanceId,
-        );
+        // Mes monstres (hors implantés chez moi) ou ceux que j'ai implantés chez l'adversaire
+        const target = [
+          ...player.monsterZones.filter((m) => m && !isImplanted(m, userId)),
+          ...getOpponentState(game, userId).monsterZones.filter(
+            (m) => m && m.ownerUserId === userId,
+          ),
+        ].find((m) => m?.instanceId === targetInstanceId);
         if (!target) {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Monstre cible introuvable' };
@@ -215,6 +227,8 @@ export class SupportService {
       (m) => m?.instanceId === instanceId,
     );
     if (!monster) return { error: 'Monstre introuvable' };
+    if (isImplanted(monster, userId))
+      return { error: `${monster.card.baseCard.name} appartient à ton adversaire` };
 
     if (monster.forcedAttackMode && mode === 'guard')
       return { error: 'Ce monstre ne peut pas passer en mode Garde' };

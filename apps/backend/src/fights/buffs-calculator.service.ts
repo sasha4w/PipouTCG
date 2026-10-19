@@ -4,6 +4,7 @@ import {
   EffectTarget,
   EffectTrigger,
   SupportType,
+  isImplanted,
 } from '@pipou/shared';
 import type { CardEffect, EffectAction } from '@pipou/shared';
 import {
@@ -59,6 +60,9 @@ export class BuffsCalculatorService {
       m.instantEvolution = false;
     }
 
+    // Un monstre implanté (Zeta) ne reçoit aucun bonus d'allié de son hôte
+    const allies = monsters.filter((m) => !isImplanted(m, player.userId));
+
     // 2. Terrains : uniquement les monstres de leur propriétaire
     for (const terrain of player.supportZones) {
       if (!terrain || terrain.baseCard.supportType !== SupportType.TERRAIN)
@@ -66,7 +70,7 @@ export class BuffsCalculatorService {
       for (const eff of passiveEffects(terrain)) {
         if (!checkCondition(eff, ctx(terrain))) continue;
         for (const action of eff.actions) {
-          for (const m of terrainTargets(action, terrain, monsters))
+          for (const m of terrainTargets(action, terrain, allies))
             applyPassive(m, action);
         }
       }
@@ -90,16 +94,23 @@ export class BuffsCalculatorService {
       for (const eff of passiveEffects(source.card)) {
         if (!checkCondition(eff, ctx(source.card, source))) continue;
         for (const action of eff.actions) {
+          // Le Zeta implanté n'a pas d'alliés chez son hôte : seuls ses effets sur lui-même comptent
+          if (
+            isImplanted(source, player.userId) &&
+            action.target !== EffectTarget.SELF
+          )
+            continue;
           if (action.type === ActionType.BUFF_HP_PER_ADJACENT_ALLY) {
             const adjacent = [
               player.monsterZones[idx - 1],
               player.monsterZones[idx + 1],
-            ].filter(Boolean).length;
+            ].filter((m) => m && !isImplanted(m, player.userId)).length;
             source.hpBuff += (action.value ?? 0) * adjacent;
             continue;
           }
           for (const m of monsterTargets(action, source, player.monsterZones))
-            applyPassive(m, action);
+            if (m === source || !isImplanted(m, player.userId))
+              applyPassive(m, action);
         }
       }
     });

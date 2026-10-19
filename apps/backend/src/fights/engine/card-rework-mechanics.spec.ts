@@ -1,4 +1,9 @@
-import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
+import {
+  ActionType,
+  DrakonStage,
+  EffectTarget,
+  EffectTrigger,
+} from '@pipou/shared';
 import { createEngine } from '../testing/engine';
 import {
   act,
@@ -6,14 +11,18 @@ import {
   ephemeralCard,
   equipmentCard,
   monsterCard,
+  terrainCard,
 } from '../testing/cards';
 import {
   attackWith,
   graveyardNames,
   monsterNamed,
+  P1_ID,
   passTurn,
   scenario,
 } from '../testing/scenario';
+import type { ScenarioSpec } from '../testing/scenario';
+import type { GameState } from '../interfaces/game-state.interface';
 
 describe('mécaniques du retravail des cartes', () => {
   const engine = createEngine();
@@ -299,6 +308,209 @@ describe('mécaniques du retravail des cartes', () => {
       engine.dispatch(game, 'p1', { type: 'end_phase' });
       expect(attackWith(engine, game, 'p1', 'Delta', 'Cible')).toEqual({});
       expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(2500);
+    });
+  });
+
+  describe('Zeta implanté (SUMMONABLE_ON_ENEMY_SIDE)', () => {
+    const SELF_ZETA = effect(EffectTrigger.PASSIVE, [
+      act(ActionType.SUMMONABLE_ON_ENEMY_SIDE, EffectTarget.SELF),
+    ]);
+    const zeta = (name = 'Zeta') =>
+      monsterCard(name, { effects: [SELF_ZETA] });
+    /** Zeta de p1 implanté chez p2, à côté d'un monstre ordinaire. */
+    const hostWithZeta = (extra: ScenarioSpec = {}) =>
+      scenario({
+        ...extra,
+        p2: {
+          ...extra.p2,
+          monsters: [
+            { card: zeta(), patch: { ownerUserId: P1_ID } },
+            monsterCard('Hôte'),
+          ],
+        },
+      });
+    const zetaId = (game: GameState) =>
+      monsterNamed(game, 'p2', 'Zeta').instanceId;
+    const ephemeral = (target: EffectTarget, type: ActionType = ActionType.BUFF_ATK) =>
+      ephemeralCard('Éphémère', [
+        effect(EffectTrigger.ON_PLAY, [act(type, target, { value: 100 })]),
+      ]);
+
+    it('p1 ne peut pas poser un second Zeta chez p2', () => {
+      const game = hostWithZeta({ p1: { hand: [zeta('Zeta bis')] } });
+      expect(
+        engine.dispatch(game, 'p1', {
+          type: 'summon',
+          handIndex: 0,
+          zoneIndex: 2,
+          paymentHandIndices: [],
+          onOpponentSide: true,
+        }),
+      ).toEqual({ error: "Un seul Zeta à la fois chez l'adversaire" });
+    });
+
+    it("p1 peut en poser un chez p2 quand il n'y en a pas", () => {
+      const game = scenario({ p1: { hand: [zeta()] } });
+      expect(
+        engine.dispatch(game, 'p1', {
+          type: 'summon',
+          handIndex: 0,
+          zoneIndex: 0,
+          paymentHandIndices: [],
+          onOpponentSide: true,
+        }),
+      ).toEqual({});
+      expect(game.player2.monsterZones[0]!.ownerUserId).toBe(P1_ID);
+    });
+
+    it("l'hôte ne peut pas attaquer avec", () => {
+      const game = hostWithZeta({
+        turn: 'p2',
+        phase: 'battle',
+        p1: { monsters: [monsterCard('Cible')] },
+      });
+      expect(attackWith(engine, game, 'p2', 'Zeta').error).toBeDefined();
+      expect(attackWith(engine, game, 'p2', 'Zeta', 'Cible').error).toBeDefined();
+      expect(monsterNamed(game, 'p2', 'Zeta').attacksUsedThisTurn).toBe(0);
+    });
+
+    it("l'hôte ne peut pas changer son mode", () => {
+      const game = hostWithZeta({ turn: 'p2' });
+      const before = monsterNamed(game, 'p2', 'Zeta').mode;
+      const result = engine.dispatch(game, 'p2', {
+        type: 'change_mode',
+        instanceId: zetaId(game),
+        mode: before === 'attack' ? 'guard' : 'attack',
+      });
+      expect(result.error).toBeDefined();
+      expect(monsterNamed(game, 'p2', 'Zeta').mode).toBe(before);
+    });
+
+    it("l'hôte ne peut pas l'équiper", () => {
+      const game = hostWithZeta({
+        turn: 'p2',
+        p2: { hand: [equipmentCard('Casque', [])] },
+      });
+      const result = engine.dispatch(game, 'p2', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: zetaId(game),
+      });
+      expect(result.error).toBeDefined();
+      expect(monsterNamed(game, 'p2', 'Zeta').equipments).toHaveLength(0);
+    });
+
+    it("l'hôte ne peut pas le viser avec un éphémère « allié »", () => {
+      const game = hostWithZeta({
+        turn: 'p2',
+        p2: { hand: [ephemeral(EffectTarget.ALLY_MONSTER)] },
+      });
+      const result = engine.dispatch(game, 'p2', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: zetaId(game),
+      });
+      expect(result.error).toBeDefined();
+      expect(monsterNamed(game, 'p2', 'Zeta').perm.atk).toBe(0);
+    });
+
+    it("l'hôte ne peut pas faire évoluer dessus", () => {
+      const game = scenario({
+        turn: 'p2',
+        p2: {
+          hand: [
+            monsterCard('Jeune', { stage: DrakonStage.YOUNG, lineage: 'L' }),
+          ],
+          monsters: [
+            {
+              card: monsterCard('Bébé', {
+                stage: DrakonStage.BABY,
+                lineage: 'L',
+              }),
+              patch: { ownerUserId: P1_ID },
+            },
+          ],
+        },
+      });
+      const result = engine.dispatch(game, 'p2', {
+        type: 'evolve',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p2', 'Bébé').instanceId,
+        paymentHandIndices: [],
+      });
+      expect(result.error).toBeDefined();
+      expect(game.player2.hand).toHaveLength(1);
+    });
+
+    it('un effet ALL_ENEMIES de p1 ne touche pas son propre Zeta', () => {
+      const game = hostWithZeta({
+        p1: {
+          hand: [ephemeral(EffectTarget.ALL_ENEMIES, ActionType.DEAL_DAMAGE)],
+        },
+      });
+      expect(
+        engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 }),
+      ).toEqual({});
+      expect(monsterNamed(game, 'p2', 'Hôte').currentHp).toBe(400);
+      expect(monsterNamed(game, 'p2', 'Zeta').currentHp).toBe(500);
+    });
+
+    it('un effet ALL_ALLIES de p2 ne compte pas le Zeta', () => {
+      const game = hostWithZeta({
+        turn: 'p2',
+        p2: { hand: [ephemeral(EffectTarget.ALL_ALLIES)] },
+      });
+      expect(
+        engine.dispatch(game, 'p2', { type: 'play_support', handIndex: 0 }),
+      ).toEqual({});
+      expect(monsterNamed(game, 'p2', 'Hôte').perm.atk).toBe(100);
+      expect(monsterNamed(game, 'p2', 'Zeta').perm.atk).toBe(0);
+    });
+
+    it("un terrain de l'hôte ne buffe pas le Zeta implanté", () => {
+      const game = hostWithZeta({
+        p2: {
+          supports: [
+            terrainCard('Arène', [
+              effect(EffectTrigger.PASSIVE, [
+                act(ActionType.BUFF_ATK, EffectTarget.ALL_ALLIES, {
+                  value: 100,
+                }),
+              ]),
+            ]),
+          ],
+        },
+      });
+      engine.dispatch(game, 'p1', { type: 'end_phase' });
+      expect(monsterNamed(game, 'p2', 'Hôte').atkBuff).toBe(100);
+      expect(monsterNamed(game, 'p2', 'Zeta').atkBuff).toBe(0);
+    });
+
+    it('p1 peut équiper son Zeta posé chez p2', () => {
+      const game = hostWithZeta({
+        p1: { hand: [equipmentCard('Casque', [])] },
+      });
+      expect(
+        engine.dispatch(game, 'p1', {
+          type: 'play_support',
+          handIndex: 0,
+          targetInstanceId: zetaId(game),
+        }),
+      ).toEqual({});
+      expect(monsterNamed(game, 'p2', 'Zeta').equipments).toHaveLength(1);
+    });
+
+    it('p1 ne peut pas équiper un monstre ordinaire de p2', () => {
+      const game = hostWithZeta({
+        p1: { hand: [equipmentCard('Casque', [])] },
+      });
+      expect(
+        engine.dispatch(game, 'p1', {
+          type: 'play_support',
+          handIndex: 0,
+          targetInstanceId: monsterNamed(game, 'p2', 'Hôte').instanceId,
+        }).error,
+      ).toBe('Monstre cible introuvable');
     });
   });
 });

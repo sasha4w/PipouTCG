@@ -1,4 +1,8 @@
-import { EffectTarget, isTargetableByEnemyEffects } from '@pipou/shared';
+import {
+  EffectTarget,
+  isImplanted,
+  isTargetableByEnemyEffects,
+} from '@pipou/shared';
 import {
   PlayerGameState,
   MonsterOnBoard,
@@ -26,12 +30,17 @@ export function resolveTargets(
       ? ctx.game.player2
       : ctx.game.player1;
 
+  // Un monstre implanté (Zeta) n'est l'allié que de son poseur, jamais de son hôte
   const allies = owner.monsterZones.filter(
-    (m): m is MonsterOnBoard => m !== null,
+    (m): m is MonsterOnBoard => m !== null && !isImplanted(m, owner.userId),
   );
-  // Les monstres insensibles aux effets adverses ne sont jamais visés
+  // Les monstres insensibles aux effets adverses ne sont jamais visés,
+  // ni le monstre que le lanceur a lui-même implanté chez l'adversaire
   const enemies = opponent.monsterZones.filter(
-    (m): m is MonsterOnBoard => m !== null && isTargetableByEnemyEffects(m),
+    (m): m is MonsterOnBoard =>
+      m !== null &&
+      isTargetableByEnemyEffects(m) &&
+      m.ownerUserId !== owner.userId,
   );
 
   const map = new Map<string, PlayerGameState>();

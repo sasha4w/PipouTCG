@@ -9,6 +9,7 @@ import {
   CardType,
   EffectTrigger,
   canSummonFromHand,
+  canImplantOn,
   canSummonOnEnemySide,
 } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
@@ -39,6 +40,10 @@ export class SummonService {
         return {
           error: `${card.baseCard.name} ne peut pas être invoqué sur le terrain adverse`,
         };
+      if (
+        !canImplantOn(getOpponentState(game, userId).monsterZones, userId)
+      )
+        return { error: "Un seul Zeta à la fois chez l'adversaire" };
     }
     return this.doSummon(
       game,

@@ -4,7 +4,9 @@ import {
   canEvolveNow,
   canEvolveOnto,
   evolutionCost,
+  canImplantOn,
   canSummonOnEnemySide,
+  isImplanted,
   ephemeralTargetSide,
   isTargetableByEphemeral,
 } from "./rules";
@@ -60,6 +62,23 @@ describe("canSummonOnEnemySide", () => {
       ]),
     ).toBe(true);
     expect(canSummonOnEnemySide(null)).toBe(false);
+  });
+});
+
+describe("isImplanted", () => {
+  it("vrai si le poseur n'est pas l'hôte", () => {
+    expect(isImplanted({ ownerUserId: 1 }, 2)).toBe(true);
+    expect(isImplanted({}, 2)).toBe(false);
+    expect(isImplanted({ ownerUserId: 2 }, 2)).toBe(false);
+  });
+});
+
+describe("canImplantOn", () => {
+  it("un seul monstre implanté par poseur sur un terrain", () => {
+    expect(canImplantOn([null, { ownerUserId: 1 }, null], 1)).toBe(false);
+    expect(canImplantOn([null, null, null], 1)).toBe(true);
+    expect(canImplantOn([null, { ownerUserId: 1 }, null], 2)).toBe(true);
+    expect(canImplantOn([{}, null, null], 1)).toBe(true);
   });
 });
 
