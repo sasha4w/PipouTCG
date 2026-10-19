@@ -321,13 +321,35 @@ describe('vraies cartes — combos', () => {
       engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 });
 
       expect(game.pendingChoices[0].count).toBe(2);
-      // La carte jouée est déjà au cimetière : elle compte parmi les candidats Drakon.
+      // La carte jouée est déjà au cimetière mais ne se propose pas elle-même.
       expect(candidateNames(game)).toEqual([
         'Bébé Teros',
         'Jeune Feros',
         'Adulte Teros',
-        'Appel des ancêtres',
       ]);
+    });
+
+    it('Mise à jour Système seule au cimetière : injouable, elle ne se récupère pas', () => {
+      const game = scenario({
+        p1: { hand: [realCard('Mise à jour Système')] },
+      });
+      const res = engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+      });
+      expect(res.error).toBe("Cette carte n'aurait aucun effet pour l'instant");
+      expect(game.pendingChoices).toEqual([]);
+    });
+
+    it('Mise à jour Système ne se propose pas elle-même mais propose un autre support Pixelman', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Mise à jour Système')],
+          graveyard: [realCard('Firewall .sys')],
+        },
+      });
+      engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 });
+      expect(candidateNames(game)).toEqual(['Firewall .sys']);
     });
 
     it('Force Delta : injouable sans Noyau Delta, jouable avec', () => {

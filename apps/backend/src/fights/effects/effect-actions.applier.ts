@@ -290,7 +290,7 @@ export function applyActions(
 
       case ActionType.SUMMON_FROM_DECK:
         for (const p of targets.players) {
-          const candidates = pickCandidates(action, p);
+          const candidates = pickCandidates(action, p, ctx.sourceCard);
           if (candidates.length === 0) continue;
           const zone = ctx.sourceMonster
             ? p.monsterZones.indexOf(ctx.sourceMonster)
@@ -324,7 +324,7 @@ export function applyActions(
           action.type === ActionType.RETURN_FROM_GRAVEYARD;
         const count = fromGraveyardOnly ? (action.value ?? 1) : 1;
         for (const p of targets.players) {
-          const candidates = pickCandidates(action, p);
+          const candidates = pickCandidates(action, p, ctx.sourceCard);
           if (candidates.length === 0) {
             ctx.log.push(
               `📥 ${card.baseCard.name} — aucune carte récupérable pour ${p.username}`,

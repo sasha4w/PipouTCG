@@ -39,7 +39,9 @@ export function canResolveAction(
 
   const targets = resolveTargets(action.target, ctx, action.archetype);
   if (PICK_ACTIONS.has(action.type))
-    return targets.players.some((p) => pickCandidates(action, p).length > 0);
+    return targets.players.some(
+      (p) => pickCandidates(action, p, ctx.sourceCard).length > 0,
+    );
 
   switch (action.type) {
     case ActionType.DRAW:
