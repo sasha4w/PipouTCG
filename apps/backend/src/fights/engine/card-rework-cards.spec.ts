@@ -182,7 +182,10 @@ describe('cartes retravaillées', () => {
   describe('Maître Magouille', () => {
     const magouilleSeule = (hand: ReturnType<typeof realCard>[]) =>
       scenario({
-        p1: { hand, monsters: [realCard('Noyau Beta')] },
+        p1: {
+          hand,
+          monsters: [realCard('Noyau Beta'), realCard('Noyau Delta')],
+        },
         p2: {
           monsters: [
             {
@@ -282,7 +285,10 @@ describe('cartes retravaillées', () => {
 
     it('Force Delta ne peut pas viser un Beta ennemi protégé', () => {
       const game = scenario({
-        p1: { hand: [realCard('Force Delta')] },
+        p1: {
+          hand: [realCard('Force Delta')],
+          monsters: [realCard('Noyau Delta')],
+        },
         p2: {
           monsters: [
             {

@@ -47,8 +47,8 @@ describe('LAUNCH_SIGNATURES', () => {
 describe('snapshot', () => {
   it('a la taille attendue des sets', () => {
     expect(setOf('pipou')).toHaveLength(27);
-    expect(setOf('pixelman')).toHaveLength(23);
-    expect(setOf('dragon')).toHaveLength(21);
+    expect(setOf('pixelman')).toHaveLength(26);
+    expect(setOf('dragon')).toHaveLength(23);
   });
 });
 

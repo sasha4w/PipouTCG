@@ -4,6 +4,10 @@ import type { Card } from '../../cards/card.entity';
 import { CARD_EFFECT_PATCHES } from '../../database/card-effect-patches';
 import { CARD_REWORK_PATCHES } from '../../database/card-rework-patches';
 import {
+  BALANCE_NEW_CARDS,
+  BALANCE_PATCHES,
+} from '../../database/balance-2026-10-patches';
+import {
   DRAKON_NEW_CARDS,
   DRAKON_PATCHES,
 } from '../../database/drakon-set-patches';
@@ -34,8 +38,8 @@ export function allRealCardsBeforeRework(): Card[] {
   });
 }
 
-/** Cartes avec les effets attendus après toutes les migrations de cartes. */
-export function allRealCards(): Card[] {
+/** Cartes après le set Drakon, avant le rééquilibrage 2026-10. */
+export function allRealCardsBeforeBalance(): Card[] {
   const cards = allRealCardsBeforeRework()
     .map((c) => {
       const patch = CARD_REWORK_PATCHES.find((p) => p.before.name === c.name);
@@ -83,6 +87,46 @@ export function allRealCards(): Card[] {
         stage: 'egg',
         image: null,
         cardSet: drakonSet,
+      }) as Card,
+  );
+  return [...cards, ...created];
+}
+
+/** Cartes avec les effets attendus après toutes les migrations de cartes. */
+export function allRealCards(): Card[] {
+  const cards = allRealCardsBeforeBalance().map((c) => {
+    const patch = BALANCE_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          name: patch.after.name,
+          description: patch.after.description,
+          atk: patch.after.atk,
+          hp: patch.after.hp,
+          cost: patch.after.cost,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
+  const created = BALANCE_NEW_CARDS.map(
+    (c, i) =>
+      ({
+        id: 91_001 + i,
+        name: c.name,
+        rarity: c.rarity,
+        type: c.type,
+        atk: c.atk,
+        hp: c.hp,
+        cost: c.cost,
+        supportType: c.supportType,
+        archetype: c.archetype,
+        effects: c.effects,
+        description: c.description,
+        element: null,
+        lineage: null,
+        stage: null,
+        image: null,
+        cardSet: cards.find((x) => x.name === c.setOf)?.cardSet,
       }) as Card,
   );
   return [...cards, ...created];
