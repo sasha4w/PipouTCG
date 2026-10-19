@@ -11,6 +11,7 @@ import CardFace from "../../cards/CardFace";
 import CardInspect from "../CardInspect";
 import { isMonsterZone, type BoardZone } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
+import { IconLock, IconVirus } from "../../../components/Icons";
 import { useAnimationPrefs } from "../../../contexts/useAnimationPrefs";
 import type { ZoneFxMap } from "../fightEvents";
 
@@ -28,6 +29,12 @@ interface Props {
   /** Surligne uniquement les cartes en jeu dont l'instanceId est listé. */
   highlightInstanceIds?: ReadonlySet<string>;
   highlightOpponentEmpty?: boolean;
+  /** Monstres ciblables par l'attaque en cours (ex. Zeta à désinfecter). */
+  attackTargetIds?: ReadonlySet<string>;
+  /** Monstres inertes : instanceId -> raison affichée (ex. Zeta protégé). */
+  lockedInstances?: ReadonlyMap<string, string>;
+  /** Monstres dont le mode de combat ne se change pas (Zeta implanté). */
+  noModeChangeIds?: ReadonlySet<string>;
   onSupportRecycle?: (idx: number) => void;
   selectedZone?: number | null;
   recycleEnergy?: number;
@@ -47,6 +54,9 @@ export default function ZoneRow({
   highlightFilled = false,
   highlightInstanceIds,
   highlightOpponentEmpty = false,
+  attackTargetIds,
+  lockedInstances,
+  noModeChangeIds,
   onZoneClick,
   onMonsterClick,
   onModeChange,
@@ -87,6 +97,11 @@ export default function ZoneRow({
           const dyingData = dying?.zone;
           const summonTier = zone ? summoningZones.get(idx) : undefined;
           const isZetaTarget = highlightOpponentEmpty && !zone && !isShattering;
+          const lockedReason = zone
+            ? lockedInstances?.get(zone.instanceId)
+            : undefined;
+          const isAttackTarget =
+            !!zone && !!attackTargetIds?.has(zone.instanceId);
           const rarityColor =
             getRarityBorderColor(zone) ?? getRarityBorderColor(dyingData);
 
@@ -108,6 +123,8 @@ export default function ZoneRow({
               ? "zr-zone--pulse-equipment"
               : "",
             isZetaTarget ? "zr-zone--pulse-target zr-zone--zeta-target" : "",
+            isAttackTarget ? "zr-zone--attack-target" : "",
+            lockedReason ? "zr-zone--locked" : "",
             summonTier ? `zr-zone--summon-in zr-zone--summon-t${summonTier}` : "",
             dying ? `zr-zone--destroy-${dying.cause.replace(/_/g, "-")}` : "",
             flippingZones.has(idx) ? "zr-zone--mode-flip" : "",
@@ -121,6 +138,8 @@ export default function ZoneRow({
             <div
               key={idx}
               className={zoneClasses}
+              aria-disabled={lockedReason ? true : undefined}
+              title={lockedReason}
               style={
                 rarityColor
                   ? ({
@@ -141,12 +160,21 @@ export default function ZoneRow({
               {summonTier && summonTier >= 3 && (
                 <span className="zr-summon-beam" aria-hidden />
               )}
+              {lockedReason && (
+                <span className="zr-locked-note">
+                  <IconLock size={11} /> {lockedReason}
+                </span>
+              )}
               {zone ? (
                 isMonsterZone(zone) ? (
                   <MonsterZoneContent
                     zone={zone}
                     isOpponent={isOpponent}
-                    onModeChange={onModeChange}
+                    onModeChange={
+                      noModeChangeIds?.has(zone.instanceId)
+                        ? undefined
+                        : onModeChange
+                    }
                     onInspect={() => setInspectId(zone.instanceId)}
                     onInspectEnd={() => setInspectId(null)}
                   />
@@ -177,7 +205,9 @@ export default function ZoneRow({
                   </div>
                 </div>
               ) : isZetaTarget ? (
-                <span className="zr-zeta-hint">🦠 Poser Zeta</span>
+                <span className="zr-zeta-hint">
+                  <IconVirus size={12} /> Poser Zeta
+                </span>
               ) : (
                 <span className="zr-empty-plus">+</span>
               )}

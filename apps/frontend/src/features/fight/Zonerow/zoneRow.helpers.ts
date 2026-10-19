@@ -34,7 +34,7 @@ export function buildStatRecap(
   const hpBuff: number = zone.hpBuff ?? 0;
   const tempAtk: number = zone.tempAtkBuff ?? 0;
 
-  const totalAtk = baseAtk + atkBuff + tempAtk;
+  const totalAtk = Math.max(0, baseAtk + atkBuff + tempAtk);
   const totalHp = baseHp + hpBuff;
 
   const atkParts = [`${baseAtk} base`];
@@ -58,7 +58,7 @@ export function buildStatRecap(
 /** Stats affichées sur la carte d'un monstre en jeu, avec leur tendance. */
 export function monsterFaceStats(zone: MonsterOnBoard): CardFaceStats {
   const base = zone.card.baseCard;
-  const atk = base.atk + zone.atkBuff + (zone.tempAtkBuff ?? 0);
+  const atk = Math.max(0, base.atk + zone.atkBuff + (zone.tempAtkBuff ?? 0));
   const maxHp = base.hp + zone.hpBuff;
   return {
     atk,

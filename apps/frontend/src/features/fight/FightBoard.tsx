@@ -14,6 +14,7 @@ import { pickActiveTerrain, terrainWaveZone } from "./terrainSelection";
 import { useAnimationPrefs } from "../../contexts/useAnimationPrefs";
 import ZoneRow from "./Zonerow/ZoneRow";
 import FightHand from "./FightHand";
+import { IconVirus } from "../../components/Icons";
 import { toHandCard, type HandCard } from "./handCard";
 import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
@@ -25,10 +26,13 @@ import {
   HAND_LIMIT,
   canEvolveNow,
   canEvolveOnto,
+  canImplantOn,
   canSummonFromHand,
   canSummonOnEnemySide,
   evolutionCost,
   ephemeralTargetSide,
+  isImplanted,
+  isPlantedBy,
   isTargetableByEphemeral,
   type CardEffect,
   type CombatMode,
@@ -205,6 +209,44 @@ export default function FightBoard({
     selectedCard !== null &&
     canSummonOnEnemySide(gs.me.hand[selectedCard]?.baseCard.effects);
 
+  // Un seul Zeta implanté par poseur chez l'adversaire
+  const myId = gs.me.userId;
+  const canImplant = canImplantOn(gs.opponent.monsterZones, myId);
+
+  // Zeta adverse implanté sur mon terrain : inutilisable par moi, désinfectable
+  const implantedIds = new Set(
+    gs.me.monsterZones
+      .filter((m): m is MonsterOnBoard => !!m && isImplanted(m, myId))
+      .map((m) => m.instanceId),
+  );
+  // Mon Zeta implanté chez l'adversaire : équipable, jamais attaquable par moi
+  const plantedByMeIds = new Set(
+    gs.opponent.monsterZones
+      .filter((m): m is MonsterOnBoard => !!m && isPlantedBy(m, myId))
+      .map((m) => m.instanceId),
+  );
+  const isMyBattle = gs.isMyTurn && phase === "battle";
+  const isMyMain = gs.isMyTurn && phase === "main";
+  const attackerSelected = isMyBattle && selectedZone !== null;
+  const disinfectableIds = new Set<string>();
+  const lockedZetas = new Map<string, string>();
+  if (attackerSelected) {
+    for (const m of gs.me.monsterZones) {
+      if (!m || !implantedIds.has(m.instanceId)) continue;
+      if (m.disinfectImmune)
+        lockedZetas.set(m.instanceId, "Protégé jusqu'au prochain tour adverse");
+      else disinfectableIds.add(m.instanceId);
+    }
+  }
+  // Cibles d'un équipement : mes monstres (hors Zeta implanté) ou mon Zeta implanté
+  const equippableIds = new Set(
+    isEquipment && isMyMain
+      ? gs.me.monsterZones
+          .filter((m): m is MonsterOnBoard => !!m && !implantedIds.has(m.instanceId))
+          .map((m) => m.instanceId)
+      : [],
+  );
+
   // Valable seulement tant que la même carte Zeta reste sélectionnée
   const selectedOppZone =
     isZeta && oppZoneChoice?.card === selectedCard ? oppZoneChoice.zone : null;
@@ -227,6 +269,7 @@ export default function FightBoard({
         )
       : [];
   const evolvableIds = new Set(evolvableTargets.map((m) => m.instanceId));
+  const myHighlightIds = new Set([...evolvableIds, ...equippableIds]);
   const evolveTarget =
     evolveTargetId !== null
       ? gs.me.monsterZones.find((m) => m?.instanceId === evolveTargetId)
@@ -323,6 +366,7 @@ export default function FightBoard({
       if (selectedCard !== null) {
         if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
         const occupant = gs.me.monsterZones[idx];
+        if (occupant && implantedIds.has(occupant.instanceId)) return; // Zeta adverse : intouchable
         if (occupant && evolvableIds.has(occupant.instanceId) && selectedInstance) {
           const cost = evolutionCost(selectedInstance.baseCard, occupant);
           if (Math.max(0, cost - gs.me.recycleEnergy) > 0) {
@@ -360,13 +404,22 @@ export default function FightBoard({
         } else {
           onSetSelectedZone(idx);
         }
-      } else if (gs.me.monsterZones[idx]) {
+      } else if (
+        gs.me.monsterZones[idx] &&
+        !implantedIds.has(gs.me.monsterZones[idx].instanceId)
+      ) {
         onSetSelectedZone(idx);
       }
     } else if (phase === "battle") {
       const m = gs.me.monsterZones[idx];
-      if (m && m.mode === "attack" && !m.hasAttackedThisTurn)
-        onSetSelectedZone(idx);
+      if (!m) return;
+      if (implantedIds.has(m.instanceId)) {
+        // Désinfecter : l'attaquant choisi frappe le Zeta posé chez moi
+        if (selectedZone !== null && disinfectableIds.has(m.instanceId))
+          handleAttackMonster(m.instanceId);
+        return;
+      }
+      if (m.mode === "attack" && !m.hasAttackedThisTurn) onSetSelectedZone(idx);
     }
   };
 
@@ -374,8 +427,24 @@ export default function FightBoard({
   const handleOpponentZoneClick = (idx: number) => {
     if (!gs.isMyTurn || phase !== "main") return;
 
-    // Zeta : placement sur zone adverse vide
-    if (isZeta && selectedCard !== null && !gs.opponent.monsterZones[idx]) {
+    // Équipement sur mon Zeta implanté chez l'adversaire
+    const occupant = gs.opponent.monsterZones[idx];
+    if (isEquipment && selectedCard !== null) {
+      if (!occupant || !plantedByMeIds.has(occupant.instanceId)) return;
+      onPlaySupport(selectedCard, undefined, occupant.instanceId);
+      onSetSelectedCard(null);
+      onSetSelectedZone(null);
+      onSetPayIndices([]);
+      return;
+    }
+
+    // Zeta : placement sur zone adverse vide (un seul implanté à la fois)
+    if (
+      isZeta &&
+      canImplant &&
+      selectedCard !== null &&
+      !gs.opponent.monsterZones[idx]
+    ) {
       setSelectedOppZone(idx);
       const card = mappedHand[selectedCard];
       const isFreeCard = gs.me.freeSummonInstanceIds.includes(card.instanceId);
@@ -440,6 +509,12 @@ export default function FightBoard({
   const handleAttackMonster = (targetInstanceId: string) => {
     if (selectedZone !== null) triggerAttackAnim(selectedZone);
     onAttackMonster(targetInstanceId);
+  };
+
+  // Mon propre Zeta, implanté chez l'adversaire, n'est pas une cible
+  const handleAttackOpponent = (targetInstanceId: string) => {
+    if (plantedByMeIds.has(targetInstanceId)) return;
+    handleAttackMonster(targetInstanceId);
   };
 
   const handleDirectAttack = () => {
@@ -512,17 +587,16 @@ export default function FightBoard({
             fx={fx.opponent.monsters}
             isOpponent
             damagedZones={damagedOppZones}
-            highlightOpponentEmpty={gs.isMyTurn && phase === "main" && isZeta}
+            highlightOpponentEmpty={isMyMain && isZeta && canImplant}
+            highlightInstanceIds={
+              isEquipment && isMyMain ? plantedByMeIds : undefined
+            }
             onZoneClick={
-              gs.isMyTurn && phase === "main" && isZeta
+              isMyMain && (isZeta || isEquipment)
                 ? handleOpponentZoneClick
                 : undefined
             }
-            onMonsterClick={
-              phase === "battle" && gs.isMyTurn && selectedZone !== null
-                ? handleAttackMonster
-                : undefined
-            }
+            onMonsterClick={attackerSelected ? handleAttackOpponent : undefined}
           />
         </div>
       </div>
@@ -535,10 +609,19 @@ export default function FightBoard({
         </div>
       )}
 
-      {isZeta && gs.isMyTurn && phase === "main" && (
+      {isZeta && isMyMain && (
         <div className="fb-zeta-hint">
-          🦠 Sélectionne une zone adverse vide pour implanter{" "}
-          {selectedHandCard?.name}
+          <IconVirus size={14} />{" "}
+          {canImplant
+            ? `Sélectionne une zone adverse vide pour implanter ${selectedHandCard?.name}`
+            : "Un Zeta est déjà implanté chez l'adversaire"}
+        </div>
+      )}
+
+      {attackerSelected && disinfectableIds.size > 0 && (
+        <div className="fb-zeta-hint">
+          <IconVirus size={14} /> Attaque le Zeta implanté chez toi pour le
+          désinfecter
         </div>
       )}
 
@@ -568,8 +651,10 @@ export default function FightBoard({
               !isZeta &&
               !evolvesOnly
             }
-            highlightFilled={gs.isMyTurn && phase === "main" && isEquipment}
-            highlightInstanceIds={evolvableIds}
+            highlightInstanceIds={myHighlightIds}
+            attackTargetIds={disinfectableIds}
+            lockedInstances={lockedZetas}
+            noModeChangeIds={implantedIds}
           />
 
           <ZoneRow

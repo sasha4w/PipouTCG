@@ -150,3 +150,190 @@ describe("FightBoard — évolution", () => {
     expect(onEvolve).not.toHaveBeenCalled();
   });
 });
+
+// ─── Noyau Zeta : implantation, désinfection, équipement ─────────────────────
+
+const zetaCard = (): CardInstance["baseCard"] => ({
+  ...monster().card.baseCard,
+  id: 99,
+  name: "Noyau Zeta",
+  cost: 0,
+  effects: [
+    {
+      trigger: "PASSIVE",
+      actions: [{ type: "SUMMONABLE_ON_ENEMY_SIDE" }],
+    },
+  ] as unknown as CardInstance["baseCard"]["effects"],
+});
+
+const equipmentCard = (): CardInstance["baseCard"] => ({
+  ...monster().card.baseCard,
+  id: 50,
+  name: "Épée",
+  type: "support",
+  supportType: "EQUIPMENT",
+  atk: 0,
+  hp: 0,
+});
+
+const PROTECTED = "Protégé jusqu'au prochain tour adverse";
+
+/** Mon terrain héberge un Zeta posé par l'adversaire (userId 2). */
+function zetaState(opts: {
+  phase?: GameState["phase"];
+  immune?: boolean;
+  hand?: CardInstance["baseCard"][];
+  mineOnOpp?: boolean;
+}): GameState {
+  const gs = state(0);
+  gs.phase = opts.phase ?? "battle";
+  gs.me.hand = (opts.hand ?? []).map((b, i) => ({
+    instanceId: `h${i}`,
+    ownerId: 1,
+    baseCard: b,
+  }));
+  gs.me.monsterZones = [
+    monster({ instanceId: "atk" }),
+    monster({
+      instanceId: "zeta",
+      ownerUserId: 2,
+      disinfectImmune: opts.immune ?? false,
+    }),
+    null,
+  ];
+  if (opts.mineOnOpp) {
+    gs.opponent.monsterZones = [
+      monster({ instanceId: "monZeta", ownerUserId: 1 }),
+      null,
+      null,
+    ];
+  }
+  return gs;
+}
+
+function renderZeta(
+  gs: GameState,
+  over: Partial<ComponentProps<typeof FightBoard>> = {},
+) {
+  const props: ComponentProps<typeof FightBoard> = {
+    gs,
+    selectedCard: null,
+    selectedZone: null,
+    payIndices: [],
+    timeLeft: null,
+    onSetSelectedCard: vi.fn(),
+    onSetSelectedZone: vi.fn(),
+    onSetPayIndices: vi.fn(),
+    onAttackMonster: vi.fn(),
+    onDirectAttack: vi.fn(),
+    onSummon: vi.fn(),
+    onSummonZeta: vi.fn(),
+    onEvolve: vi.fn(),
+    onPlaySupport: vi.fn(),
+    onChangeMode: vi.fn(),
+    onRecycleSupport: vi.fn(),
+    onDiscardCard: vi.fn(),
+    onEndPhase: vi.fn(),
+    ...over,
+  };
+  render(<FightBoard {...props} />);
+  const mine = screen
+    .getByText("Mes Monstres")
+    .closest(".zr-wrap")!
+    .querySelectorAll(".zr-zone");
+  const theirs = screen
+    .getByText("Adversaire — Monstres")
+    .closest(".zr-wrap")!
+    .querySelectorAll(".zr-zone");
+  return { props, mine, theirs };
+}
+
+describe("FightBoard — Noyau Zeta", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("désinfecter : le Zeta implanté chez moi est une cible d'attaque", () => {
+    const { props, mine } = renderZeta(zetaState({}), { selectedZone: 0 });
+    expect(mine[1]).toHaveClass("zr-zone--attack-target");
+    fireEvent.click(mine[1]);
+    expect(props.onAttackMonster).toHaveBeenCalledWith("zeta");
+  });
+
+  it("désinfection refusée tant que le Zeta est protégé", () => {
+    const { props, mine } = renderZeta(zetaState({ immune: true }), {
+      selectedZone: 0,
+    });
+    expect(mine[1]).not.toHaveClass("zr-zone--attack-target");
+    expect(mine[1]).toHaveAttribute("aria-disabled", "true");
+    expect(mine[1]).toHaveAttribute("title", PROTECTED);
+    expect(screen.getByText(PROTECTED)).toBeInTheDocument();
+    fireEvent.click(mine[1]);
+    expect(props.onAttackMonster).not.toHaveBeenCalled();
+  });
+
+  it("sans attaquant sélectionné, le Zeta n'est pas une cible", () => {
+    const { mine } = renderZeta(zetaState({}));
+    expect(mine[1]).not.toHaveClass("zr-zone--attack-target");
+  });
+
+  it("le Zeta implanté chez moi ne peut pas être choisi comme attaquant", () => {
+    const { props, mine } = renderZeta(zetaState({}));
+    fireEvent.click(mine[1]);
+    expect(props.onSetSelectedZone).not.toHaveBeenCalled();
+    fireEvent.click(mine[0]);
+    expect(props.onSetSelectedZone).toHaveBeenCalledWith(0);
+  });
+
+  it("le Zeta implanté chez moi n'a pas de changement de mode", () => {
+    const { mine } = renderZeta(zetaState({ phase: "main" }));
+    expect(mine[0].querySelector(".zr-mode-btns")).not.toBeNull();
+    expect(mine[1].querySelector(".zr-mode-btns")).toBeNull();
+  });
+
+  it("avec un équipement, mon Zeta chez l'adversaire est une cible", () => {
+    const { props, mine, theirs } = renderZeta(
+      zetaState({ phase: "main", hand: [equipmentCard()], mineOnOpp: true }),
+      { selectedCard: 0 },
+    );
+    expect(theirs[0]).toHaveClass("zr-zone--pulse-equipment");
+    expect(theirs[1]).not.toHaveClass("zr-zone--pulse-equipment");
+    fireEvent.click(theirs[0]);
+    expect(props.onPlaySupport).toHaveBeenCalledWith(0, undefined, "monZeta");
+    // le Zeta implanté chez moi ne s'équipe pas
+    expect(mine[1]).not.toHaveClass("zr-zone--pulse-equipment");
+    fireEvent.click(mine[1]);
+    expect(props.onPlaySupport).toHaveBeenCalledTimes(1);
+  });
+
+  it("je n'attaque pas mon propre Zeta chez l'adversaire", () => {
+    const { props, theirs } = renderZeta(zetaState({ mineOnOpp: true }), {
+      selectedZone: 0,
+    });
+    fireEvent.click(theirs[0]);
+    expect(props.onAttackMonster).not.toHaveBeenCalled();
+  });
+
+  it("poser Zeta : zones adverses vides ciblables", () => {
+    const { props, theirs } = renderZeta(
+      zetaState({ phase: "main", hand: [zetaCard()] }),
+      { selectedCard: 0 },
+    );
+    expect(theirs[0]).toHaveClass("zr-zone--zeta-target");
+    fireEvent.click(theirs[0]);
+    expect(props.onSummonZeta).toHaveBeenCalledWith(0);
+  });
+
+  it("poser Zeta désactivé s'il y en a déjà un chez l'adversaire", () => {
+    const { props, theirs } = renderZeta(
+      zetaState({ phase: "main", hand: [zetaCard()], mineOnOpp: true }),
+      { selectedCard: 0 },
+    );
+    expect(theirs[1]).not.toHaveClass("zr-zone--zeta-target");
+    fireEvent.click(theirs[1]);
+    expect(props.onSummonZeta).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Un Zeta est déjà implanté chez l'adversaire/),
+    ).toBeInTheDocument();
+  });
+});

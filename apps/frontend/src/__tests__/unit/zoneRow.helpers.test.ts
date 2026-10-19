@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildStatRecap,
   hasSpentAttacks,
   monsterFaceStats,
 } from "../../features/fight/Zonerow/zoneRow.helpers";
@@ -63,5 +64,18 @@ describe("hasSpentAttacks", () => {
         }),
       ),
     ).toBe(false);
+  });
+});
+
+describe("ATK affichée : plancher à 0 (virus)", () => {
+  it("monsterFaceStats ne descend pas sous 0", () => {
+    const stats = monsterFaceStats(monster({ atkBuff: -300 }));
+    expect(stats.atk).toBe(0);
+    expect(stats.atkState).toBe("down");
+  });
+
+  it("buildStatRecap borne le total à 0 et garde le détail", () => {
+    const recap = buildStatRecap(monster({ atkBuff: -300 }))!;
+    expect(recap.atkLine).toBe("100 base -300 buff = 0 ⚔");
   });
 });
