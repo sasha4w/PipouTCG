@@ -41,7 +41,9 @@ export class EvolutionService {
     const base = player.monsterZones[zoneIndex];
     if (!base) return { error: 'Monstre à faire évoluer introuvable' };
     if (isImplanted(base, userId))
-      return { error: `${base.card.baseCard.name} appartient à ton adversaire` };
+      return {
+        error: `${base.card.baseCard.name} appartient à ton adversaire`,
+      };
     if (!canEvolveOnto(card.baseCard, base))
       return {
         error: `${card.baseCard.name} ne peut pas évoluer depuis ${base.card.baseCard.name}`,

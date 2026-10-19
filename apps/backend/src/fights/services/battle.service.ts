@@ -56,7 +56,9 @@ export class BattleService {
     );
     if (!attacker) return { error: 'Attaquant introuvable' };
     if (isImplanted(attacker, userId))
-      return { error: `${attacker.card.baseCard.name} appartient à ton adversaire` };
+      return {
+        error: `${attacker.card.baseCard.name} appartient à ton adversaire`,
+      };
     if (attacker.card.baseCard.stage === DrakonStage.EGG)
       return { error: 'Un Œuf ne peut pas attaquer' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };

@@ -228,7 +228,9 @@ export class SupportService {
     );
     if (!monster) return { error: 'Monstre introuvable' };
     if (isImplanted(monster, userId))
-      return { error: `${monster.card.baseCard.name} appartient à ton adversaire` };
+      return {
+        error: `${monster.card.baseCard.name} appartient à ton adversaire`,
+      };
 
     if (monster.forcedAttackMode && mode === 'guard')
       return { error: 'Ce monstre ne peut pas passer en mode Garde' };

@@ -315,8 +315,7 @@ describe('mécaniques du retravail des cartes', () => {
     const SELF_ZETA = effect(EffectTrigger.PASSIVE, [
       act(ActionType.SUMMONABLE_ON_ENEMY_SIDE, EffectTarget.SELF),
     ]);
-    const zeta = (name = 'Zeta') =>
-      monsterCard(name, { effects: [SELF_ZETA] });
+    const zeta = (name = 'Zeta') => monsterCard(name, { effects: [SELF_ZETA] });
     /** Zeta de p1 implanté chez p2, à côté d'un monstre ordinaire. */
     const hostWithZeta = (extra: ScenarioSpec = {}) =>
       scenario({
@@ -331,7 +330,10 @@ describe('mécaniques du retravail des cartes', () => {
       });
     const zetaId = (game: GameState) =>
       monsterNamed(game, 'p2', 'Zeta').instanceId;
-    const ephemeral = (target: EffectTarget, type: ActionType = ActionType.BUFF_ATK) =>
+    const ephemeral = (
+      target: EffectTarget,
+      type: ActionType = ActionType.BUFF_ATK,
+    ) =>
       ephemeralCard('Éphémère', [
         effect(EffectTrigger.ON_PLAY, [act(type, target, { value: 100 })]),
       ]);
@@ -370,7 +372,9 @@ describe('mécaniques du retravail des cartes', () => {
         p1: { monsters: [monsterCard('Cible')] },
       });
       expect(attackWith(engine, game, 'p2', 'Zeta').error).toBeDefined();
-      expect(attackWith(engine, game, 'p2', 'Zeta', 'Cible').error).toBeDefined();
+      expect(
+        attackWith(engine, game, 'p2', 'Zeta', 'Cible').error,
+      ).toBeDefined();
       expect(monsterNamed(game, 'p2', 'Zeta').attacksUsedThisTurn).toBe(0);
     });
 
