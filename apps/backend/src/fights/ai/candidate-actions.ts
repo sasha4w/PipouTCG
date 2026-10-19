@@ -5,15 +5,19 @@ import {
   SupportType,
   canEvolveNow,
   canEvolveOnto,
+  canImplantOn,
   canSummonFromHand,
   canSummonOnEnemySide,
   ephemeralTargetSide,
   evolutionCost,
+  isImplanted,
+  isPlantedBy,
 } from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
 import type {
   CardInstance,
   GameState,
+  MonsterOnBoard,
   PendingChoice,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
@@ -143,7 +147,15 @@ function mainCandidates(
   opp: PlayerGameState,
 ): GameAction[] {
   const out: GameAction[] = [];
-  const myMonsters = me.monsterZones.filter((m) => m !== null);
+  // Un Zeta implanté chez moi appartient à l'adversaire : ni mode, ni équipement, ni cible alliée
+  const myMonsters = me.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && !isImplanted(m, me.userId),
+  );
+  // Mon propre Zeta, chez l'adversaire : je peux l'équiper
+  const myPlanted = opp.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && isPlantedBy(m, me.userId),
+  );
+  const canPlant = canImplantOn(opp.monsterZones, me.userId);
 
   for (const handIndex of distinctHandIndices(me.hand)) {
     const card = me.hand[handIndex].baseCard;
@@ -163,7 +175,7 @@ function mainCandidates(
               zoneIndex,
               paymentHandIndices: payment,
             });
-          if (canSummonOnEnemySide(card.effects))
+          if (canSummonOnEnemySide(card.effects) && canPlant)
             for (const zoneIndex of freeZones(opp.monsterZones))
               out.push({
                 type: 'summon',
@@ -194,7 +206,7 @@ function mainCandidates(
 
     if (card.type === CardType.SUPPORT) {
       if (card.supportType === SupportType.EQUIPMENT)
-        for (const m of myMonsters)
+        for (const m of [...myMonsters, ...myPlanted])
           out.push({
             type: 'play_support',
             handIndex,
@@ -207,7 +219,7 @@ function mainCandidates(
         const side = ephemeralTargetSide(card.effects);
         if (!side) out.push({ type: 'play_support', handIndex });
         else
-          for (const m of (side === 'ally' ? me : opp).monsterZones)
+          for (const m of side === 'ally' ? myMonsters : opp.monsterZones)
             if (m)
               out.push({
                 type: 'play_support',
@@ -234,10 +246,23 @@ function attackCandidates(
   opp: PlayerGameState,
 ): GameAction[] {
   const out: GameAction[] = [];
-  const targets = opp.monsterZones.filter((m) => m !== null);
+  // Mon Zeta chez l'adversaire n'est pas une cible et ne bloque pas l'attaque directe
+  const targets = opp.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && !isPlantedBy(m, me.userId),
+  );
+  // Désinfection : un Zeta implanté chez moi se frappe sans riposte
+  const infected = me.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && isImplanted(m, me.userId),
+  );
   for (const m of me.monsterZones) {
-    if (!m || m.mode !== 'attack') continue;
+    if (!m || m.mode !== 'attack' || isImplanted(m, me.userId)) continue;
     if (m.card.baseCard.stage === DrakonStage.EGG) continue;
+    for (const z of infected)
+      out.push({
+        type: 'attack',
+        attackerInstanceId: m.instanceId,
+        targetInstanceId: z.instanceId,
+      });
     for (const t of targets)
       out.push({
         type: 'attack',

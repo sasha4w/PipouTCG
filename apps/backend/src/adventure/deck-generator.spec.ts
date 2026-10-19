@@ -222,6 +222,70 @@ describe('identité de chaque monde', () => {
   });
 });
 
+describe('cartes clés du rééquilibrage', () => {
+  const qty = (set: Card[], deck: Entry[], name: string) => {
+    const c = set.find((x) => x.name === name);
+    if (!c) throw new Error(`Carte ${name} absente du set`);
+    return deck.find((e) => e.cardId === c.id)?.quantity ?? 0;
+  };
+  const deckOf = (a: AdventureArchetype, level: 1 | 2 | 3 | 4 | 5, s: number) =>
+    generateDeck(setOf(a), level, LAUNCH_SIGNATURES[a][level - 1], rng(s));
+
+  it('Drakon niveau 3-4 : 1 Mont Drakon et 1 Appel des ancêtres au moins', () => {
+    const set = setOf('dragon');
+    for (const seed of SEEDS)
+      for (const level of [3, 4] as const) {
+        const deck = deckOf('dragon', level, seed);
+        expect(qty(set, deck, 'Mont Drakon')).toBeGreaterThanOrEqual(1);
+        expect(qty(set, deck, 'Appel des ancêtres')).toBeGreaterThanOrEqual(1);
+      }
+  });
+
+  it('Drakon niveau 5 : 2 Mont Drakon et 2 Appel des ancêtres au moins', () => {
+    const set = setOf('dragon');
+    for (const seed of SEEDS) {
+      const deck = deckOf('dragon', 5, seed);
+      expect(qty(set, deck, 'Mont Drakon')).toBeGreaterThanOrEqual(2);
+      expect(qty(set, deck, 'Appel des ancêtres')).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('Drakon niveaux 1-2 : rien de forcé (le tirage seul les amène parfois)', () => {
+    const set = setOf('dragon');
+    const without = SEEDS.filter((seed) => {
+      const deck = deckOf('dragon', 1, seed);
+      return (
+        qty(set, deck, 'Mont Drakon') === 0 &&
+        qty(set, deck, 'Appel des ancêtres') === 0
+      );
+    });
+    expect(without.length).toBeGreaterThan(0);
+  });
+
+  it('Pixelman Noyau Zeta : 2 Mise à jour .patch, Firewall de Surcharge, Module Bluetooth', () => {
+    const set = setOf('pixelman');
+    for (const seed of SEEDS) {
+      const deck = deckOf('pixelman', 3, seed);
+      expect(qty(set, deck, 'Mise à jour .patch')).toBeGreaterThanOrEqual(2);
+      expect(
+        qty(set, deck, 'Firewall de Surcharge .sys'),
+      ).toBeGreaterThanOrEqual(1);
+      expect(qty(set, deck, 'Module Bluetooth .v2')).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('Pixelman niveaux 4-5 : 2 Restauration .bak ; niveau 5 : DuplicateX', () => {
+    const set = setOf('pixelman');
+    for (const seed of SEEDS)
+      for (const level of [4, 5] as const) {
+        const deck = deckOf('pixelman', level, seed);
+        expect(qty(set, deck, 'Restauration .bak')).toBeGreaterThanOrEqual(2);
+        if (level === 5)
+          expect(qty(set, deck, 'DuplicateX')).toBeGreaterThanOrEqual(1);
+      }
+  });
+});
+
 describe('petits sets', () => {
   it('atteint 30 cartes avec 10 cartes distinctes (3 exemplaires)', () => {
     const small = setOf('pipou').slice(0, 10);

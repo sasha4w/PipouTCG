@@ -4,6 +4,7 @@ import {
   DrakonStage,
   EffectTarget,
   EffectTrigger,
+  isImplanted,
 } from '@pipou/shared';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
@@ -235,6 +236,18 @@ export function evaluate(
   const mine = me.monsterZones.filter((m) => m !== null);
   const theirs = opp.monsterZones.filter((m) => m !== null);
 
+  // Un Zeta implanté appartient à son poseur : il ne compte pas dans le plateau
+  // de l'hôte, ne l'attaque pas, ne protège pas et ne se frappe pas en combat
+  // normal (sa Prime est portée par le compteur de tour ; son virus par effectiveAtk).
+  const ownZones = (host: typeof me) =>
+    host.monsterZones.map((m) =>
+      m && !isImplanted(m, host.userId) ? m : null,
+    );
+  const myZones = ownZones(me);
+  const oppZones = ownZones(opp);
+  const myBoard = myZones.filter((m) => m !== null);
+  const oppBoard = oppZones.filter((m) => m !== null);
+
   // Compteurs de tour : la Prime va à celui qui a posé le monstre
   for (const [host, list] of [
     [me, mine],
@@ -247,36 +260,36 @@ export function evaluate(
             ? COUNTER_PRIME
             : -COUNTER_PRIME;
 
-  for (const m of mine) score += monsterValue(m);
-  for (const m of theirs) score -= monsterValue(m);
+  for (const m of myBoard) score += monsterValue(m);
+  for (const m of oppBoard) score -= monsterValue(m);
 
   // Tour adverse : il peut repasser ses monstres en mode ATK
   const threat = raid(
-    theirs
+    oppBoard
       .filter((m) => !isEgg(m) && !blocked(m) && !m.guardLocked)
       .map((m) => ({ m, attacks: m.attacksPerTurn })),
-    me.monsterZones,
+    myZones,
     true,
   );
   score -= THREAT_PRIME * threat.primes;
   for (const d of threat.destroyed)
     score -=
       monsterValue(d) / 2 +
-      PROTECT_PENALTY * protectWeight(d, me.monsterZones, archetype);
+      PROTECT_PENALTY * protectWeight(d, myZones, archetype);
 
   // Mon tour, avant le combat : Primes encore à prendre
   if (game.currentTurnUserId === me.userId && game.phase === 'main') {
     const potential = raid(
-      mine
+      myBoard
         .map((m) => ({ m, attacks: hasAttacksLeft(m) }))
         .filter((a) => a.attacks > 0),
-      opp.monsterZones,
+      oppZones,
       game.turnNumber > 1,
     );
     score += POTENTIAL_PRIME * potential.primes;
   }
 
-  return score + archetypeBonus(mine, archetype);
+  return score + archetypeBonus(myBoard, archetype);
 }
 
 /**

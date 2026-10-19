@@ -92,13 +92,40 @@ function pipouPlan(set: Card[], sig: Card): Plan {
   };
 }
 
-/** Pixelman : un noyau (2-3 ex.), tous les équipements, majorité de supports. */
-function pixelmanPlan(set: Card[], sig: Card, random: () => number): Plan {
+/** Impose au moins `quantity` exemplaires de la carte nommée, si le set la contient. */
+function forceByName(
+  forced: Plan['forced'],
+  set: Card[],
+  name: string,
+  quantity: number,
+): void {
+  const c = findByName(set, name);
+  if (!c) return;
+  const existing = forced.find((f) => f.card.id === c.id);
+  if (existing) existing.quantity = Math.max(existing.quantity, quantity);
+  else forced.push({ card: c, quantity });
+}
+
+/**
+ * Pixelman : un noyau (2-3 ex.), tous les équipements, majorité de supports.
+ * Cartes clés : Mise à jour .patch avec le Zeta, Restauration .bak dès le niveau 4,
+ * DuplicateX au niveau 5.
+ */
+function pixelmanPlan(
+  set: Card[],
+  sig: Card,
+  level: Level,
+  random: () => number,
+): Plan {
   const isNoyau = (c: Card) => isMonster(c) && c.name.startsWith('Noyau');
   const forced = [{ card: sig, quantity: 2 + (random() < 0.5 ? 1 : 0) }];
   for (const c of set)
     if (c.supportType === SupportType.EQUIPMENT && c.id !== sig.id)
       forced.push({ card: c, quantity: 1 });
+  if (normalizeCardName(sig.name) === normalizeCardName('Noyau Zeta'))
+    forceByName(forced, set, 'Mise à jour .patch', 2);
+  if (level >= 4) forceByName(forced, set, 'Restauration .bak', 2);
+  if (level === 5) forceByName(forced, set, 'DuplicateX', 1);
   return {
     forced,
     baseWeight: (c) => {
@@ -157,6 +184,11 @@ function dragonPlan(
   if (egg) forced.push({ card: egg, quantity: 2 });
   if (!forced.some((f) => f.card.id === sig.id))
     forced.push({ card: sig, quantity: 2 });
+  // Mont Drakon et Appel des ancêtres à partir du niveau 3 (2 de chaque au boss)
+  if (level >= 3) {
+    forceByName(forced, set, 'Mont Drakon', level === 5 ? 2 : 1);
+    forceByName(forced, set, 'Appel des ancêtres', level === 5 ? 2 : 1);
+  }
 
   const hasBaby = (c: Card, counts: ReadonlyMap<number, number>) =>
     set.some(
@@ -211,7 +243,7 @@ export function generateDeck(
     signature.archetype === 'pipou'
       ? pipouPlan(setCards, sig)
       : signature.archetype === 'pixelman'
-        ? pixelmanPlan(setCards, sig, random)
+        ? pixelmanPlan(setCards, sig, level, random)
         : dragonPlan(setCards, sig, signature, level, random);
 
   const counts = new Map<number, number>();

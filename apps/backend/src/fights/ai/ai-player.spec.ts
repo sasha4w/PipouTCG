@@ -1,5 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { HAND_LIMIT } from '@pipou/shared';
+import type { GameAction } from '@pipou/shared';
 import type { GameEngine } from '../engine/game-engine';
 import { createEngine } from '../testing/engine';
 import { equipmentCard, monsterCard } from '../testing/cards';
@@ -12,6 +13,8 @@ import {
   seatState,
 } from '../testing/scenario';
 import { AiPlayer, MISTAKE_RATE, aiMustAct } from './ai-player';
+import { listCandidates } from './candidate-actions';
+import { evaluate } from './evaluate';
 import type { AiProfile } from './ai-player';
 
 const engine = createEngine();
@@ -269,5 +272,181 @@ describe('AiPlayer', () => {
     expect(aiMustAct(game, P2_ID)).toBe(false);
     game.phase = 'finished';
     expect(aiMustAct(game, P2_ID)).toBe(false);
+  });
+});
+
+describe('IA et Zeta implanté', () => {
+  const zeta = () => realCard('Noyau Zeta');
+  /** Zeta de p1 implanté chez p2. */
+  const implanted = () => ({
+    card: zeta(),
+    patch: { ownerUserId: P1_ID, turnCounter: 3 },
+  });
+  const attacks = (actions: GameAction[]) =>
+    actions.filter((a) => a.type === 'attack');
+
+  it('hôte : désinfecte le Zeta, sans jamais jouer avec', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: { monsters: [monsterCard('Cible')] },
+      p2: { monsters: [implanted(), monsterCard('Hôte', { atk: 400 })] },
+    });
+    const zetaId = monsterNamed(game, 'p2', 'Noyau Zeta').instanceId;
+    const hostId = monsterNamed(game, 'p2', 'Hôte').instanceId;
+
+    const list = attacks(listCandidates(game, 'p2'));
+
+    expect(list).toContainEqual({
+      type: 'attack',
+      attackerInstanceId: hostId,
+      targetInstanceId: zetaId,
+    });
+    expect(
+      list.some((a) => a.type === 'attack' && a.attackerInstanceId === zetaId),
+    ).toBe(false);
+  });
+
+  it('hôte : ni changement de mode ni équipement sur le Zeta', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p2: {
+        hand: [
+          realCard('Firewall .sys'),
+          realCard('Processeur de Calcul .bin'),
+        ],
+        monsters: [implanted(), monsterCard('Hôte')],
+      },
+    });
+    const zetaId = monsterNamed(game, 'p2', 'Noyau Zeta').instanceId;
+
+    for (const a of listCandidates(game, 'p2')) {
+      if (a.type === 'change_mode') expect(a.instanceId).not.toBe(zetaId);
+      if (a.type === 'play_support')
+        expect(a.targetInstanceId).not.toBe(zetaId);
+    }
+  });
+
+  it('poseur : équipe son Zeta chez l’adversaire, sans l’attaquer', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { hand: [realCard('Firewall .sys')], monsters: [monsterCard('A')] },
+      p2: { monsters: [implanted(), monsterCard('Hôte')] },
+    });
+    const zetaId = monsterNamed(game, 'p2', 'Noyau Zeta').instanceId;
+
+    expect(listCandidates(game, 'p1')).toContainEqual({
+      type: 'play_support',
+      handIndex: 0,
+      targetInstanceId: zetaId,
+    });
+
+    game.phase = 'battle';
+    expect(
+      attacks(listCandidates(game, 'p1')).some(
+        (a) => a.type === 'attack' && a.targetInstanceId === zetaId,
+      ),
+    ).toBe(false);
+  });
+
+  it('poseur : le Zeta ne bloque pas l’attaque directe', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'battle',
+      p1: { monsters: [monsterCard('A')] },
+      p2: { monsters: [implanted()] },
+    });
+
+    expect(attacks(listCandidates(game, 'p1'))).toEqual([
+      {
+        type: 'attack',
+        attackerInstanceId: monsterNamed(game, 'p1', 'A').instanceId,
+        direct: true,
+      },
+    ]);
+  });
+
+  it('poseur : pas de second Zeta chez l’adversaire', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { hand: [zeta()] },
+      p2: { monsters: [implanted()] },
+    });
+    const isEnemySide = (a: GameAction) =>
+      a.type === 'summon' && a.onOpponentSide;
+    expect(listCandidates(game, 'p1').filter(isEnemySide)).toEqual([]);
+
+    const libre = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { hand: [zeta()], recycleEnergy: 5 },
+    });
+    expect(listCandidates(libre, 'p1').some(isEnemySide)).toBe(true);
+  });
+
+  it('evaluate : le Zeta implanté ne compte pas dans le plateau de l’hôte', () => {
+    const seul = scenario({
+      turn: 'p2',
+      p2: { monsters: [monsterCard('Hôte')] },
+    });
+    const avecZeta = scenario({
+      turn: 'p2',
+      p2: { monsters: [monsterCard('Hôte'), implanted()] },
+    });
+    // Le Zeta ne rapporte rien à l'hôte (au mieux il lui coûte la Prime promise)
+    expect(evaluate(avecZeta, 'p2', 'pipou')).toBeLessThan(
+      evaluate(seul, 'p2', 'pipou'),
+    );
+  });
+
+  it('evaluate : l’hôte préfère le Zeta désinfecté au Zeta qui sévit', () => {
+    const hosts = () => [
+      monsterCard('Hôte A', { atk: 600 }),
+      monsterCard('Hôte B', { atk: 600 }),
+    ];
+    const virus = scenario({
+      turn: 'p2',
+      p2: { monsters: [implanted(), ...hosts()] },
+    });
+    const propre = scenario({ turn: 'p2', p2: { monsters: hosts() } });
+
+    expect(evaluate(propre, 'p2', 'pixelman')).toBeGreaterThan(
+      evaluate(virus, 'p2', 'pixelman'),
+    );
+    // Et pour le poseur, c'est l'inverse
+    expect(evaluate(virus, 'p1', 'pixelman')).toBeGreaterThan(
+      evaluate(propre, 'p1', 'pixelman'),
+    );
+  });
+});
+
+describe('IA Drakon : évolution immédiate', () => {
+  it('Bébé éclos + Jeune en main + coût payable : évolue ce tour', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p2: {
+        hand: [realCard('Jeune Feros')],
+        recycleEnergy: 5,
+        monsters: [
+          {
+            card: realCard('Bébé Feros'),
+            summonedThisTurn: true,
+            patch: { canEvolveThisTurn: true },
+          },
+        ],
+      },
+    });
+
+    const action = ai.chooseAction(game, 'p2', {
+      archetype: 'dragon',
+      level: 3,
+    });
+
+    expect(action.type).toBe('evolve');
+    expect(engine.dispatch(game, 'p2', action).error).toBeUndefined();
   });
 });
