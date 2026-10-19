@@ -318,6 +318,21 @@ describe('GameEngine — DuplicateX (DUPLICATE_MONSTER)', () => {
     expect(game.player1.monsterZones[0]!.equipments[0].token).toBeUndefined();
   });
 
+  it("la copie n'hérite pas du ownerUserId (poseur) de l'original", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [
+          { card: monsterCard('Implanté'), patch: { ownerUserId: 2 } },
+        ],
+      },
+    });
+
+    play(game, monsterNamed(game, 'p1', 'Implanté'));
+
+    expect(game.player1.monsterZones[1]!.ownerUserId).toBeUndefined();
+  });
+
   it('déclenche le ON_SUMMON de la copie', () => {
     const game = scenario({
       p1: {

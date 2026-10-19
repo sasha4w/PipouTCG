@@ -389,15 +389,13 @@ function duplicateMonster(
   const zone = owner.monsterZones.findIndex((z) => z === null);
   if (zone === -1) return null;
 
-  const copy = createMonsterOnBoard(
-    {
-      instanceId: uuidv4(),
-      baseCard: source.card.baseCard,
-      ownerId: owner.userId,
-      token: true,
-    },
-    { ownerUserId: source.ownerUserId },
-  );
+  // Sans ownerUserId : la copie n'est jamais un monstre « implanté »
+  const copy = createMonsterOnBoard({
+    instanceId: uuidv4(),
+    baseCard: source.card.baseCard,
+    ownerId: owner.userId,
+    token: true,
+  });
   copy.perm = { ...source.perm };
   copy.atkBuff = source.atkBuff;
   copy.hpBuff = source.hpBuff;
