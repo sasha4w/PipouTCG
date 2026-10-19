@@ -115,6 +115,29 @@ export class BuffsCalculatorService {
       }
     });
 
+    // 4 bis. Aura de virus : un monstre implanté retire de l'ATK à tous les autres
+    // monstres de son hôte (le plus fort virus l'emporte, sans cumul), sauf immunisés
+    let virus = 0;
+    for (const source of monsters) {
+      if (!isImplanted(source, player.userId)) continue;
+      const cards = [source.card, ...source.equipments];
+      for (const card of cards) {
+        for (const eff of passiveEffects(card)) {
+          if (!checkCondition(eff, ctx(card, source))) continue;
+          for (const action of eff.actions) {
+            if (action.type === ActionType.VIRUS_ATK_DEBUFF)
+              virus = Math.max(virus, action.value ?? 0);
+          }
+        }
+      }
+    }
+    if (virus > 0) {
+      for (const m of monsters) {
+        if (!isImplanted(m, player.userId) && !m.isImmuneToDebuffs)
+          m.atkBuff -= virus;
+      }
+    }
+
     // 5. Les PV courants suivent la variation des PV max, sans les dépasser
     for (const m of monsters) {
       const after = maxHp(m);

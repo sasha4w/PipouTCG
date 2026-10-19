@@ -65,6 +65,7 @@ export const ActionType = {
   DUPLICATE_MONSTER: "DUPLICATE_MONSTER",
   INSTANT_EVOLUTION: "INSTANT_EVOLUTION",
   ALLOW_EVOLUTION_THIS_TURN: "ALLOW_EVOLUTION_THIS_TURN",
+  VIRUS_ATK_DEBUFF: "VIRUS_ATK_DEBUFF",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

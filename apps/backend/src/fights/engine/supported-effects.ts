@@ -65,6 +65,7 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.SET_DISINFECT_IMMUNITY,
   ActionType.SET_SUPPORT_DESTROY_IMMUNITY,
   ActionType.IGNORE_TAUNT,
+  ActionType.VIRUS_ATK_DEBUFF,
   ActionType.SET_HATCH_COUNTER,
   ActionType.ADVANCE_HATCH,
   ActionType.SUMMON_FROM_DECK,
