@@ -1,6 +1,7 @@
 import {
   EffectTarget,
   isImplanted,
+  isPlantedBy,
   isTargetableByEnemyEffects,
 } from '@pipou/shared';
 import {
@@ -40,7 +41,7 @@ export function resolveTargets(
     (m): m is MonsterOnBoard =>
       m !== null &&
       isTargetableByEnemyEffects(m) &&
-      m.ownerUserId !== owner.userId,
+      !isPlantedBy(m, owner.userId),
   );
 
   const map = new Map<string, PlayerGameState>();
@@ -124,7 +125,9 @@ export function resolveTargets(
         monsters = [
           owner.monsterZones[idx - 1],
           owner.monsterZones[idx + 1],
-        ].filter((m): m is MonsterOnBoard => !!m);
+        ].filter(
+          (m): m is MonsterOnBoard => !!m && !isImplanted(m, owner.userId),
+        );
         register(monsters, owner);
       }
       break;

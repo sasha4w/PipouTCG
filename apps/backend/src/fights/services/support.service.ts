@@ -11,6 +11,7 @@ import {
   ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
   isImplanted,
+  isPlantedBy,
   isTargetableByEphemeral,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
@@ -64,7 +65,7 @@ export class SupportService {
             m !== null &&
             (side === 'ally'
               ? !isImplanted(m, userId)
-              : m.ownerUserId !== userId),
+              : !isPlantedBy(m, userId)),
         );
         const targetable = pool.filter((m) =>
           isTargetableByEphemeral(m, side, card.baseCard.effects),
@@ -118,7 +119,7 @@ export class SupportService {
         const target = [
           ...player.monsterZones.filter((m) => m && !isImplanted(m, userId)),
           ...getOpponentState(game, userId).monsterZones.filter(
-            (m) => m && m.ownerUserId === userId,
+            (m) => m && isPlantedBy(m, userId),
           ),
         ].find((m) => m?.instanceId === targetInstanceId);
         if (!target) {

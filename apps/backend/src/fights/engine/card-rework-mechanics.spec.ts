@@ -4,6 +4,7 @@ import {
   EffectTarget,
   EffectTrigger,
 } from '@pipou/shared';
+import { conditionMet } from '../effects/effect-conditions';
 import { createEngine } from '../testing/engine';
 import {
   act,
@@ -371,10 +372,9 @@ describe('mécaniques du retravail des cartes', () => {
         phase: 'battle',
         p1: { monsters: [monsterCard('Cible')] },
       });
-      expect(attackWith(engine, game, 'p2', 'Zeta').error).toBeDefined();
-      expect(
-        attackWith(engine, game, 'p2', 'Zeta', 'Cible').error,
-      ).toBeDefined();
+      const MINE = 'Zeta appartient à ton adversaire';
+      expect(attackWith(engine, game, 'p2', 'Zeta').error).toBe(MINE);
+      expect(attackWith(engine, game, 'p2', 'Zeta', 'Cible').error).toBe(MINE);
       expect(monsterNamed(game, 'p2', 'Zeta').attacksUsedThisTurn).toBe(0);
     });
 
@@ -386,7 +386,7 @@ describe('mécaniques du retravail des cartes', () => {
         instanceId: zetaId(game),
         mode: before === 'attack' ? 'guard' : 'attack',
       });
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe('Zeta appartient à ton adversaire');
       expect(monsterNamed(game, 'p2', 'Zeta').mode).toBe(before);
     });
 
@@ -400,7 +400,7 @@ describe('mécaniques du retravail des cartes', () => {
         handIndex: 0,
         targetInstanceId: zetaId(game),
       });
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe('Monstre cible introuvable');
       expect(monsterNamed(game, 'p2', 'Zeta').equipments).toHaveLength(0);
     });
 
@@ -414,7 +414,7 @@ describe('mécaniques du retravail des cartes', () => {
         handIndex: 0,
         targetInstanceId: zetaId(game),
       });
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe('Choisis un de tes monstres comme cible');
       expect(monsterNamed(game, 'p2', 'Zeta').perm.atk).toBe(0);
     });
 
@@ -442,7 +442,7 @@ describe('mécaniques du retravail des cartes', () => {
         targetInstanceId: monsterNamed(game, 'p2', 'Bébé').instanceId,
         paymentHandIndices: [],
       });
-      expect(result.error).toBeDefined();
+      expect(result.error).toBe('Bébé appartient à ton adversaire');
       expect(game.player2.hand).toHaveLength(1);
     });
 
@@ -488,6 +488,119 @@ describe('mécaniques du retravail des cartes', () => {
       engine.dispatch(game, 'p1', { type: 'end_phase' });
       expect(monsterNamed(game, 'p2', 'Hôte').atkBuff).toBe(100);
       expect(monsterNamed(game, 'p2', 'Zeta').atkBuff).toBe(0);
+    });
+
+    it("ADJACENT_ALLIES de l'hôte ne touche pas le Zeta voisin", () => {
+      const game = scenario({
+        turn: 'p2',
+        p2: {
+          hand: [
+            equipmentCard('Aura', [
+              effect(EffectTrigger.ON_PLAY, [
+                act(ActionType.BUFF_ATK, EffectTarget.ADJACENT_ALLIES, {
+                  value: 100,
+                }),
+              ]),
+            ]),
+          ],
+          monsters: [
+            { card: zeta(), patch: { ownerUserId: P1_ID } },
+            monsterCard('Hôte'),
+            monsterCard('Voisin'),
+          ],
+        },
+      });
+      expect(
+        engine.dispatch(game, 'p2', {
+          type: 'play_support',
+          handIndex: 0,
+          targetInstanceId: monsterNamed(game, 'p2', 'Hôte').instanceId,
+        }),
+      ).toEqual({});
+      expect(monsterNamed(game, 'p2', 'Voisin').perm.atk).toBe(100);
+      expect(monsterNamed(game, 'p2', 'Zeta').perm.atk).toBe(0);
+    });
+
+    describe('conditions de terrain', () => {
+      const ctxOf = (game: GameState, userId: number) => ({
+        game,
+        ownerUserId: userId,
+        log: [],
+      });
+      const pixel = (name: string) =>
+        monsterCard(name, { archetype: 'pixelman' });
+
+      it("l'hôte ne compte pas le Zeta implanté sur son terrain", () => {
+        const game = scenario({
+          p2: {
+            monsters: [
+              {
+                card: pixel('Zeta Pixel'),
+                patch: { ownerUserId: P1_ID },
+              },
+            ],
+          },
+        });
+        const on = (type: string, value: string) =>
+          conditionMet(
+            { type, value, match: 'contains' } as never,
+            ctxOf(game, 2),
+          );
+        expect(on('ARCHETYPE_ON_BOARD', 'pixelman')).toBe(false);
+        expect(on('SPECIFIC_CARD_ON_BOARD', 'Zeta')).toBe(false);
+        expect(on('DRAKON_ON_BOARD', '')).toBe(false);
+        // Son poseur, lui, ne le compte pas non plus : il est sur le terrain adverse
+        expect(
+          conditionMet(
+            { type: 'ARCHETYPE_ON_BOARD', value: 'pixelman' } as never,
+            ctxOf(game, 1),
+          ),
+        ).toBe(false);
+      });
+
+      it("un monstre ordinaire de l'hôte est compté", () => {
+        const game = scenario({ p2: { monsters: [pixel('Normal')] } });
+        expect(
+          conditionMet(
+            { type: 'ARCHETYPE_ON_BOARD', value: 'pixelman' } as never,
+            ctxOf(game, 2),
+          ),
+        ).toBe(true);
+      });
+
+      it('OPPONENT_HAS_NO_MONSTERS ignore les monstres implantés par le lanceur', () => {
+        const only = scenario({
+          p2: { monsters: [{ card: zeta(), patch: { ownerUserId: P1_ID } }] },
+        });
+        const cond = { type: 'OPPONENT_HAS_NO_MONSTERS' } as never;
+        expect(conditionMet(cond, ctxOf(only, 1))).toBe(true);
+        expect(conditionMet(cond, ctxOf(hostWithZeta(), 1))).toBe(false);
+      });
+    });
+
+    it("l'attaque directe n'est pas bloquée par le Zeta du poseur", () => {
+      const game = scenario({
+        turn: 'p1',
+        turnNumber: 2,
+        phase: 'battle',
+        p1: { monsters: [monsterCard('Frappeur')] },
+        p2: {
+          monsters: [{ card: zeta(), patch: { ownerUserId: P1_ID } }],
+        },
+      });
+      expect(attackWith(engine, game, 'p1', 'Frappeur')).toEqual({});
+    });
+
+    it("l'attaque directe reste bloquée par un monstre ordinaire", () => {
+      const game = hostWithZeta({
+        turn: 'p1',
+        turnNumber: 2,
+        phase: 'battle',
+        p1: { monsters: [monsterCard('Frappeur')] },
+      });
+      expect(attackWith(engine, game, 'p1', 'Frappeur').error).toBe(
+        "Attaque directe impossible : détruisez d'abord les monstres adverses",
+      );
     });
 
     it('p1 peut équiper son Zeta posé chez p2', () => {

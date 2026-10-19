@@ -2,7 +2,10 @@ import {
   CardEffect,
   EffectConditionType as ConditionType,
   SupportType,
+  isImplanted,
+  isPlantedBy,
 } from '@pipou/shared';
+import type { MonsterOnBoard } from '../interfaces/game-state.interface';
 import type { EffectAction, EffectCondition } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 import { cardNameMatches } from './card-name';
@@ -29,12 +32,16 @@ export function conditionMet(
   const opponent =
     owner === ctx.game.player1 ? ctx.game.player2 : ctx.game.player1;
   const expectedName = String(condition.value ?? '');
+  // Un monstre implanté chez le lanceur ne compte pas comme étant sur son terrain
+  const board = owner.monsterZones.filter(
+    (m): m is MonsterOnBoard => !!m && !isImplanted(m, owner.userId),
+  );
 
   switch (condition.type) {
     case ConditionType.ARCHETYPE_ON_BOARD: {
       const arch = expectedName.toLowerCase();
-      return owner.monsterZones.some(
-        (m) => m?.card.baseCard.archetype?.toLowerCase() === arch,
+      return board.some(
+        (m) => m.card.baseCard.archetype?.toLowerCase() === arch,
       );
     }
 
@@ -48,23 +55,24 @@ export function conditionMet(
       return owner.hand.length >= Number(condition.value);
 
     case ConditionType.OPPONENT_HAS_NO_MONSTERS:
-      return opponent.monsterZones.every((z) => z === null);
+      // Hors monstres que le lanceur a lui-même implantés
+      return opponent.monsterZones.every(
+        (z) => z === null || isPlantedBy(z, owner.userId),
+      );
 
     case ConditionType.SPECIFIC_CARD_ON_BOARD: {
       const matches = (name: string) =>
         cardNameMatches(name, expectedName, condition.match);
-      return owner.monsterZones.some(
+      return board.some(
         (m) =>
-          !!m &&
-          (matches(m.card.baseCard.name) ||
-            m.equipments.some((e) => matches(e.baseCard.name))),
+          matches(m.card.baseCard.name) ||
+          m.equipments.some((e) => matches(e.baseCard.name)),
       );
     }
 
     case ConditionType.DRAKON_ON_BOARD:
-      return owner.monsterZones.some(
+      return board.some(
         (m) =>
-          !!m &&
           // Sans élément ni stade : n'importe quel Drakon (carte à stade)
           (condition.element ||
             condition.stage ||

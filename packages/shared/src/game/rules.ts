@@ -55,6 +55,14 @@ export function isImplanted(
   return m.ownerUserId !== undefined && m.ownerUserId !== hostUserId;
 }
 
+/** Monstre implanté par `posterUserId` (chez son adversaire). */
+export function isPlantedBy(
+  m: { ownerUserId?: number },
+  posterUserId: number,
+): boolean {
+  return m.ownerUserId === posterUserId;
+}
+
 /** Le poseur peut-il implanter un monstre sur ce terrain ? (un seul à la fois) */
 export function canImplantOn(
   hostZones: readonly ({ ownerUserId?: number } | null)[],

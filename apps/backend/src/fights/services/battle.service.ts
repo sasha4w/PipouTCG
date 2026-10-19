@@ -9,6 +9,7 @@ import {
   DrakonStage,
   EffectTrigger,
   isImplanted,
+  isPlantedBy,
 } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
@@ -84,7 +85,8 @@ export class BattleService {
     if (direct) {
       if (game.turnNumber === 1)
         return { error: 'Attaque directe interdite au premier tour' };
-      if (opponent.monsterZones.some((z) => z !== null))
+      // Un monstre que j'ai moi-même implanté ne protège pas l'adversaire
+      if (opponent.monsterZones.some((z) => z && !isPlantedBy(z, userId)))
         return {
           error:
             "Attaque directe impossible : détruisez d'abord les monstres adverses",
