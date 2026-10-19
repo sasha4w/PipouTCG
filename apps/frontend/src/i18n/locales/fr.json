@@ -410,6 +410,7 @@
       "PASSIVE_terrain": "Tant que ce terrain est en jeu",
       "ON_RECYCLE": "Quand tu recycles cette carte",
       "ON_BATTLE_PHASE_START": "Au début de ta phase de combat",
+      "ON_SELF_DESTRUCT": "Quand cette carte s'autodétruit",
       "unknown": "Déclencheur spécial ({{type}})"
     },
     "condition": {

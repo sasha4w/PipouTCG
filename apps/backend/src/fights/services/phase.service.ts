@@ -216,6 +216,18 @@ export class PhaseService {
           draw: false,
           cause: DestroyCause.SELF_DESTRUCT,
         });
+        // Zeta est déjà parti : ses dégâts ne le touchent pas, et ses cibles
+        // (ALL_ENEMIES) sont les monstres de l'hôte, du point de vue du poseur.
+        this.effectsResolver.resolve(
+          zone.card,
+          EffectTrigger.ON_SELF_DESTRUCT,
+          {
+            game,
+            ownerUserId: poser,
+            sourceMonster: zone,
+            log,
+          },
+        );
       }
     }
   }

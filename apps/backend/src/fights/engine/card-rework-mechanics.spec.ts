@@ -630,4 +630,101 @@ describe('mécaniques du retravail des cartes', () => {
       ).toBe('Monstre cible introuvable');
     });
   });
+
+  describe('Zeta implanté : explosion et remise du compteur', () => {
+    const SELF_ZETA = effect(EffectTrigger.PASSIVE, [
+      act(ActionType.SUMMONABLE_ON_ENEMY_SIDE, EffectTarget.SELF),
+    ]);
+    const zeta = () =>
+      monsterCard('Zeta', {
+        effects: [
+          SELF_ZETA,
+          effect(EffectTrigger.ON_SELF_DESTRUCT, [
+            act(ActionType.DEAL_DAMAGE, EffectTarget.ALL_ENEMIES, {
+              value: 500,
+            }),
+          ]),
+        ],
+      });
+    const implanted = (counter: number) => ({
+      card: zeta(),
+      patch: { ownerUserId: P1_ID, turnCounter: counter },
+    });
+
+    it("explose au début du tour du poseur : Prime, pas de pioche, dégâts à l'hôte", () => {
+      const game = scenario({
+        p2: {
+          hand: [],
+          monsters: [
+            implanted(1),
+            monsterCard('Costaud', { hp: 600 }),
+            monsterCard('Fragile', {
+              hp: 400,
+              effects: [
+                effect(EffectTrigger.ON_DEATH, [
+                  act(ActionType.DRAW, EffectTarget.PLAYER, { value: 1 }),
+                ]),
+              ],
+            }),
+          ],
+        },
+      });
+      const primesBefore = game.player1.primes;
+      passTurn(engine, game); // fin du tour de p1 : début du tour de p2
+      const p2HandBefore = game.player2.hand.length; // pioche du tour de p2 incluse
+      expect(monsterNamed(game, 'p2', 'Zeta').turnCounter).toBe(1);
+      passTurn(engine, game); // fin du tour de p2 : début du tour de p1
+
+      expect(game.player1.primes).toBe(primesBefore - 1);
+      expect(
+        game.player2.monsterZones.some((z) => z?.card.baseCard.name === 'Zeta'),
+      ).toBe(false);
+      expect(graveyardNames(game, 'p1')).toContain('Zeta');
+      expect(monsterNamed(game, 'p2', 'Costaud').currentHp).toBe(100);
+      expect(
+        game.player2.monsterZones.some(
+          (z) => z?.card.baseCard.name === 'Fragile',
+        ),
+      ).toBe(false);
+      // Fragile : pioche de son ON_DEATH + pioche de l'hôte pour sa destruction ;
+      // la destruction de Zeta, elle, ne fait rien piocher
+      expect(game.player2.hand.length).toBe(p2HandBefore + 2);
+      expect(game.log.join('\n')).not.toMatch(/Zeta.*dégât|dégât.*Zeta/i);
+    });
+
+    describe('RESET_TURN_COUNTER', () => {
+      const reset = () =>
+        ephemeralCard('Rechargeur', [
+          effect(EffectTrigger.ON_PLAY, [
+            act(ActionType.RESET_TURN_COUNTER, EffectTarget.PLAYER, {
+              value: 3,
+            }),
+          ]),
+        ]);
+
+      it('remet le compteur du Zeta implanté du joueur', () => {
+        const game = scenario({
+          p1: { hand: [reset()] },
+          p2: { monsters: [implanted(1)] },
+        });
+        expect(
+          engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 }),
+        ).toEqual({});
+        expect(monsterNamed(game, 'p2', 'Zeta').turnCounter).toBe(3);
+      });
+
+      it('injouable sans Zeta implanté', () => {
+        const game = scenario({
+          p1: { hand: [reset()] },
+          p2: { monsters: [monsterCard('Hôte')] },
+        });
+        const result = engine.dispatch(game, 'p1', {
+          type: 'play_support',
+          handIndex: 0,
+        });
+        expect(result.error).toBeDefined();
+        expect(game.player1.hand).toHaveLength(1);
+      });
+    });
+  });
 });

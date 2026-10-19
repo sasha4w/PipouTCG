@@ -20,6 +20,7 @@ export const SUPPORTED_TRIGGERS: ReadonlySet<EffectTrigger> = new Set([
   EffectTrigger.PASSIVE,
   EffectTrigger.ON_RECYCLE,
   EffectTrigger.ON_BATTLE_PHASE_START,
+  EffectTrigger.ON_SELF_DESTRUCT,
 ]);
 
 export const SUPPORTED_CONDITIONS: ReadonlySet<EffectConditionType> = new Set([
@@ -56,6 +57,7 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.SET_DAMAGE_REDUCTION,
   ActionType.BUFF_HP_PER_ADJACENT_ALLY,
   ActionType.SET_TURN_COUNTER,
+  ActionType.RESET_TURN_COUNTER,
   ActionType.FORCE_ATTACK_MODE_ENEMY,
   ActionType.BLOCK_ATTACK,
   ActionType.FORCE_GUARD_LOCK_ENEMY,

@@ -409,6 +409,7 @@
       "PASSIVE_terrain": "이 필드 카드가 있는 동안",
       "ON_RECYCLE": "이 카드를 재활용할 때",
       "ON_BATTLE_PHASE_START": "내 배틀 페이즈 시작 시",
+      "ON_SELF_DESTRUCT": "이 카드가 자폭할 때",
       "unknown": "특수 발동 ({{type}})"
     },
     "condition": {

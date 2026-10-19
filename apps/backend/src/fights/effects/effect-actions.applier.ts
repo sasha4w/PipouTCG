@@ -1,4 +1,4 @@
-import { CardEffect, ActionType } from '@pipou/shared';
+import { CardEffect, ActionType, isPlantedBy } from '@pipou/shared';
 import {
   CardInstance,
   MonsterOnBoard,
@@ -7,7 +7,11 @@ import {
 import { EffectContext } from './effect-context.interface';
 import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
-import { drawCard, queueChoice } from '../helpers/game-state.helper';
+import {
+  drawCard,
+  getOpponentState,
+  queueChoice,
+} from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
 import { hatchEgg } from '../helpers/hatching';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
@@ -138,6 +142,20 @@ export function applyActions(
           );
         }
         break;
+
+      // Remet le compteur des monstres que le joueur a implantés chez l'adversaire.
+      case ActionType.RESET_TURN_COUNTER: {
+        const opponent = getOpponentState(ctx.game, ctx.ownerUserId);
+        for (const m of opponent.monsterZones) {
+          if (!m || m.turnCounter === undefined) continue;
+          if (!isPlantedBy(m, ctx.ownerUserId)) continue;
+          m.turnCounter = action.value ?? 3;
+          ctx.log.push(
+            `⏳ ${m.card.baseCard.name} repart pour ${m.turnCounter} tour(s)`,
+          );
+        }
+        break;
+      }
 
       case ActionType.FORCE_ATTACK_MODE_ENEMY:
         for (const m of targets.monsters) {

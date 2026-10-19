@@ -410,6 +410,7 @@
       "PASSIVE_terrain": "While this Terrain is in play",
       "ON_RECYCLE": "When you recycle this card",
       "ON_BATTLE_PHASE_START": "At the start of your battle phase",
+      "ON_SELF_DESTRUCT": "When this card self-destructs",
       "unknown": "Special trigger ({{type}})"
     },
     "condition": {
