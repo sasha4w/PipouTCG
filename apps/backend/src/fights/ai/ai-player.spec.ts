@@ -446,7 +446,79 @@ describe('IA Drakon : évolution immédiate', () => {
       level: 3,
     });
 
-    expect(action.type).toBe('evolve');
+    expect(action).toMatchObject({
+      type: 'evolve',
+      targetInstanceId: monsterNamed(game, 'p2', 'Bébé Feros').instanceId,
+    });
     expect(engine.dispatch(game, 'p2', action).error).toBeUndefined();
+  });
+});
+
+describe('IA : choisit les nouvelles cartes', () => {
+  const lvl3 = (archetype: 'dragon' | 'pixelman'): AiProfile => ({
+    archetype,
+    level: 3,
+  });
+
+  it('Drakon : pose Mont Drakon sur une zone terrain libre', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p2: {
+        hand: [realCard('Mont Drakon')],
+        graveyard: [realCard('Bébé Feros')],
+        monsters: [realCard('Bébé Teros')],
+      },
+    });
+
+    expect(ai.chooseAction(game, 'p2', lvl3('dragon'))).toEqual({
+      type: 'play_support',
+      handIndex: 0,
+      zoneIndex: 0,
+    });
+  });
+
+  it('Pixelman : Mise à jour .patch quand le compteur du Zeta tombe à 1', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p1: {
+        monsters: [
+          {
+            card: realCard('Noyau Zeta'),
+            patch: { ownerUserId: P2_ID, turnCounter: 1 },
+          },
+        ],
+      },
+      p2: {
+        hand: [realCard('Mise à jour .patch')],
+        monsters: [monsterCard('Garde')],
+      },
+    });
+
+    expect(ai.chooseAction(game, 'p2', lvl3('pixelman'))).toEqual({
+      type: 'play_support',
+      handIndex: 0,
+    });
+  });
+
+  it('Pixelman : DuplicateX sur son allié le plus fort avec une zone libre', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p2: {
+        hand: [realCard('DuplicateX')],
+        monsters: [
+          monsterCard('Faible', { atk: 100, hp: 200 }),
+          monsterCard('Fort', { atk: 900, hp: 1500 }),
+        ],
+      },
+    });
+
+    expect(ai.chooseAction(game, 'p2', lvl3('pixelman'))).toEqual({
+      type: 'play_support',
+      handIndex: 0,
+      targetInstanceId: monsterNamed(game, 'p2', 'Fort').instanceId,
+    });
   });
 });

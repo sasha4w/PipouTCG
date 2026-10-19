@@ -250,17 +250,27 @@ describe('cartes clés du rééquilibrage', () => {
     }
   });
 
-  it('Drakon niveaux 1-2 : rien de forcé (le tirage seul les amène parfois)', () => {
-    const set = setOf('dragon');
-    const without = SEEDS.filter((seed) => {
-      const deck = deckOf('dragon', 1, seed);
-      return (
-        qty(set, deck, 'Mont Drakon') === 0 &&
-        qty(set, deck, 'Appel des ancêtres') === 0
-      );
-    });
-    expect(without.length).toBeGreaterThan(0);
-  });
+  // Rien de forcé : sur 20 graines, au moins un deck sans la carte (le tirage
+  // seul l'amène parfois), alors que les niveaux forcés l'ont toujours.
+  it.each([1, 2] as const)(
+    'Drakon niveau %i : Mont Drakon et Appel des ancêtres non forcés',
+    (level) => {
+      const set = setOf('dragon');
+      const decks = SEEDS.map((seed) => deckOf('dragon', level, seed));
+      for (const name of ['Mont Drakon', 'Appel des ancêtres'])
+        expect(decks.some((d) => qty(set, d, name) === 0)).toBe(true);
+    },
+  );
+
+  it.each([1, 2, 3] as const)(
+    'Pixelman niveau %i : Restauration .bak et DuplicateX non forcés',
+    (level) => {
+      const set = setOf('pixelman');
+      const decks = SEEDS.map((seed) => deckOf('pixelman', level, seed));
+      for (const name of ['Restauration .bak', 'DuplicateX'])
+        expect(decks.some((d) => qty(set, d, name) === 0)).toBe(true);
+    },
+  );
 
   it('Pixelman Noyau Zeta : 2 Mise à jour .patch, Firewall de Surcharge, Module Bluetooth', () => {
     const set = setOf('pixelman');

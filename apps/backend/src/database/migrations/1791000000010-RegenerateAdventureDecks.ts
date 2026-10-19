@@ -43,33 +43,36 @@ export class RegenerateAdventureDecks1791000000010 implements MigrationInterface
         setCache.set(setId, setCards);
       }
 
+      let deck;
       try {
-        const deck = generateDeck(
+        deck = generateDeck(
           setCards,
           opponent.position as 1 | 2 | 3 | 4 | 5,
           signature,
           Math.random,
         );
-        // Dans la transaction de la migration : jamais d'IA sans deck
-        await m.delete(AdventureOpponentCard, { opponentId: opponent.id });
-        await m.save(
-          AdventureOpponentCard,
-          deck.map((d) =>
-            m.create(AdventureOpponentCard, {
-              opponentId: opponent.id,
-              cardId: d.cardId,
-              quantity: d.quantity,
-            }),
-          ),
-        );
-        logger.log(
-          `Adversaire ${opponent.id} (${signature.cardName}, niveau ${opponent.position}) : deck régénéré`,
-        );
       } catch (err) {
+        // Génération impossible : on garde l'ancien deck de cet adversaire
         logger.warn(
           `Adversaire ${opponent.id} : deck conservé (${err instanceof Error ? err.message : String(err)})`,
         );
+        continue;
       }
+      // Une erreur d'écriture remonte : toute la migration est annulée
+      await m.delete(AdventureOpponentCard, { opponentId: opponent.id });
+      await m.save(
+        AdventureOpponentCard,
+        deck.map((d) =>
+          m.create(AdventureOpponentCard, {
+            opponentId: opponent.id,
+            cardId: d.cardId,
+            quantity: d.quantity,
+          }),
+        ),
+      );
+      logger.log(
+        `Adversaire ${opponent.id} (${signature.cardName}, niveau ${opponent.position}) : deck régénéré`,
+      );
     }
   }
 

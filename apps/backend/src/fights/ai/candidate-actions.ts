@@ -220,7 +220,7 @@ function mainCandidates(
         if (!side) out.push({ type: 'play_support', handIndex });
         else
           for (const m of side === 'ally' ? myMonsters : opp.monsterZones)
-            if (m)
+            if (m && (side === 'ally' || !isPlantedBy(m, me.userId)))
               out.push({
                 type: 'play_support',
                 handIndex,

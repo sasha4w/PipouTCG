@@ -28,6 +28,8 @@ const THREAT_PRIME = PRIME * 0.6;
 const POTENTIAL_PRIME = PRIME * 0.3;
 /** Prime promise par un compteur de tour (Noyau Zeta). */
 const COUNTER_PRIME = PRIME * 0.3;
+/** Un tour de plus de virus (Zeta implanté) avant l'explosion. */
+const VIRUS_TURN_VALUE = 150;
 /** Surcoût d'un monstre « à protéger » (noyau équipé, Drakon en croissance). */
 const PROTECT_PENALTY = PRIME * 0.3;
 
@@ -254,11 +256,11 @@ export function evaluate(
     [opp, theirs],
   ] as const)
     for (const m of list)
-      if (m.turnCounter !== undefined)
-        score +=
-          (m.ownerUserId ?? host.userId) === me.userId
-            ? COUNTER_PRIME
-            : -COUNTER_PRIME;
+      if (m.turnCounter !== undefined) {
+        // Chaque tour restant prolonge le virus pour le poseur
+        const value = COUNTER_PRIME + VIRUS_TURN_VALUE * m.turnCounter;
+        score += (m.ownerUserId ?? host.userId) === me.userId ? value : -value;
+      }
 
   for (const m of myBoard) score += monsterValue(m);
   for (const m of oppBoard) score -= monsterValue(m);
