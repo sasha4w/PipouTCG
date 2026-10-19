@@ -37,3 +37,6 @@ reports
 
 # maquettes du compagnon visuel (brainstorming)
 .superpowers
+
+# Worktrees git locales
+.claude/worktrees/
