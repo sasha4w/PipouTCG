@@ -47,6 +47,99 @@ describe('GameEngine — destruction', () => {
     expect(handNames(game, 'p2')).toEqual(['A', 'B']);
   });
 
+  describe('cartes token', () => {
+    const tokenise = (m: {
+      card: { token?: boolean };
+      equipments: { token?: boolean }[];
+    }) => {
+      m.card.token = true;
+      m.equipments.forEach((e) => (e.token = true));
+    };
+
+    it('détruit : ni le monstre ni ses équipements token ne vont au cimetière', () => {
+      const game = scenario({
+        phase: 'battle',
+        p1: { monsters: [monsterCard('Ogre', { atk: 600, hp: 900 })] },
+        p2: {
+          monsters: [
+            {
+              card: monsterCard('Copie', { atk: 0, hp: 300 }),
+              equipments: [equipmentCard('Casque', [])],
+            },
+          ],
+        },
+      });
+      tokenise(monsterNamed(game, 'p2', 'Copie'));
+
+      engine.dispatch(game, 'p1', {
+        type: 'attack',
+        attackerInstanceId: monsterNamed(game, 'p1', 'Ogre').instanceId,
+        targetInstanceId: monsterNamed(game, 'p2', 'Copie').instanceId,
+      });
+
+      expect(game.player2.monsterZones[0]).toBeNull();
+      expect(graveyardNames(game, 'p2')).toEqual([]);
+    });
+
+    it('renvoyé en main (éphémère) : la main ne change pas', () => {
+      const migration = ephemeralCard('Migration', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.RETURN_TO_HAND, EffectTarget.TARGET_ALLY),
+        ]),
+      ]);
+      const game = scenario({
+        p1: {
+          hand: [migration],
+          monsters: [
+            {
+              card: monsterCard('Copie'),
+              equipments: [equipmentCard('Casque', [])],
+            },
+          ],
+        },
+      });
+      const copie = monsterNamed(game, 'p1', 'Copie');
+      tokenise(copie);
+
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: copie.instanceId,
+      });
+
+      expect(game.player1.monsterZones[0]).toBeNull();
+      expect(handNames(game, 'p1')).toEqual([]);
+    });
+
+    it('sert de base à une évolution : cimetière sans le token', () => {
+      const dragon = (name: string, extra = {}) =>
+        monsterCard(name, {
+          archetype: 'dragon',
+          lineage: 'feros',
+          element: 'fire',
+          ...extra,
+        });
+      const game = scenario({
+        p1: {
+          hand: [dragon('Jeune Feros', { stage: 'young', cost: 0, hp: 900 })],
+          monsters: [dragon('Bébé Feros', { stage: 'baby', cost: 0 })],
+        },
+      });
+      tokenise(monsterNamed(game, 'p1', 'Bébé Feros'));
+
+      const res = engine.dispatch(game, 'p1', {
+        type: 'evolve',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Bébé Feros').instanceId,
+        paymentHandIndices: [],
+      });
+
+      expect(res).toEqual({});
+      expect(monsterNamed(game, 'p1', 'Jeune Feros')).toBeDefined();
+      expect(graveyardNames(game, 'p1')).toEqual([]);
+    });
+  });
+
   it("effet de l'adversaire : la victime pioche", () => {
     const meteore = ephemeralCard('Météore', [
       effect(EffectTrigger.ON_PLAY, [

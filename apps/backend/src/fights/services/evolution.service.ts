@@ -12,6 +12,7 @@ import {
   addLog,
   getPlayerState,
   isCurrentPlayer,
+  sendToGraveyard,
 } from '../helpers/game-state.helper';
 
 @Injectable()
@@ -79,7 +80,7 @@ export class EvolutionService {
     evolved.attacksUsedThisTurn = base.attacksUsedThisTurn;
     evolved.hasAttackedThisTurn = base.hasAttackedThisTurn;
 
-    player.graveyard.push(base.card);
+    sendToGraveyard(player, base.card);
     player.monsterZones[zoneIndex] = evolved;
     game.pendingEvents.push({
       kind: 'monster_summoned',

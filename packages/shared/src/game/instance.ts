@@ -12,6 +12,8 @@ export interface CardInstance<C = ClientCard> {
   status?: string[];
   /** Ordre de pose d'un terrain en zone Support (croissant sur la partie). */
   placedSeq?: number;
+  /** Copie créée en jeu : disparaît au lieu d'aller au cimetière ou en main. */
+  token?: boolean;
 }
 
 export type CombatMode = "attack" | "guard";

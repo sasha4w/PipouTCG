@@ -373,10 +373,11 @@ function returnMonsterToHand(
   );
   if (idx === -1) return;
 
-  for (const eq of monster.equipments) {
+  // Les copies token disparaissent au lieu de rejoindre la main
+  for (const eq of monster.equipments.filter((e) => !e.token)) {
     owner.hand.push(eq);
   }
-  owner.hand.push(monster.card);
+  if (!monster.card.token) owner.hand.push(monster.card);
   owner.monsterZones[idx] = null;
 
   ctx.log.push(

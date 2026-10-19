@@ -111,9 +111,9 @@ export function applyDamage(
   return reduced;
 }
 
-/** ATK effective : base + bonus (permanents et passifs) + bonus temporaire. */
+/** ATK effective : base + bonus (permanents et passifs) + bonus temporaire, jamais négative. */
 export function effectiveAtk(m: MonsterOnBoard): number {
-  return m.card.baseCard.atk + m.atkBuff + (m.tempAtkBuff ?? 0);
+  return Math.max(0, m.card.baseCard.atk + m.atkBuff + (m.tempAtkBuff ?? 0));
 }
 
 export function gainPrime(
@@ -150,4 +150,15 @@ export function checkWinCondition(
   if (p1Done) return { winnerUserId: game.player1.userId };
   if (p2Done) return { winnerUserId: game.player2.userId };
   return null;
+}
+
+/**
+ * Envoie des cartes au cimetière d'un joueur. Les cartes `token` (copies
+ * créées en jeu) disparaissent au lieu de l'atteindre.
+ */
+export function sendToGraveyard(
+  player: PlayerGameState,
+  ...cards: CardInstance[]
+): void {
+  player.graveyard.push(...cards.filter((c) => !c.token));
 }

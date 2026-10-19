@@ -9,7 +9,7 @@ import {
 import type { EffectContext } from './effects/effect-context.interface';
 import { checkCondition } from './effects/effect-conditions';
 import { applyActions } from './effects/effect-actions.applier';
-import { drawCard } from './helpers/game-state.helper';
+import { drawCard, sendToGraveyard } from './helpers/game-state.helper';
 
 export type { EffectContext };
 
@@ -99,7 +99,7 @@ export class EffectsResolverService {
       (m) => m?.instanceId === instanceId,
     );
     if (idx !== -1) host.monsterZones[idx] = null;
-    host.graveyard.push(...monster.equipments, monster.card);
+    sendToGraveyard(host, ...monster.equipments, monster.card);
     if (opts.draw) drawCard(game, host.userId);
     return monster;
   }

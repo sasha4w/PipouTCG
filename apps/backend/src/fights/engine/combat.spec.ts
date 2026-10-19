@@ -1,5 +1,6 @@
 import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
 import { createEngine } from '../testing/engine';
+import { effectiveAtk } from '../helpers/game-state.helper';
 import { act, effect, monsterCard } from '../testing/cards';
 import {
   attackWith,
@@ -16,6 +17,26 @@ describe('GameEngine — combat', () => {
     card: monsterCard('Rempart', { atk: 0, hp: 900 }),
     mode: 'guard' as const,
     patch: { damageReduction: 2 },
+  });
+
+  it('ATK effective jamais négative : un malus excessif plafonne à 0', () => {
+    const game = scenario({
+      phase: 'battle',
+      p1: {
+        monsters: [
+          {
+            card: monsterCard('Virusé', { atk: 100, hp: 500 }),
+            patch: { atkBuff: -300 },
+          },
+        ],
+      },
+      p2: { monsters: [monsterCard('Cible', { atk: 0, hp: 500 })] },
+    });
+
+    expect(effectiveAtk(monsterNamed(game, 'p1', 'Virusé'))).toBe(0);
+    attackWith(engine, game, 'p1', 'Virusé', 'Cible');
+
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(500);
   });
 
   it('Perçant ignore la réduction de dégâts et rapporte une Prime sur une Garde', () => {
