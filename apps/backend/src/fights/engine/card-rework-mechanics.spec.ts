@@ -669,6 +669,7 @@ describe('mécaniques du retravail des cartes', () => {
           ],
         },
       });
+      const zetaOnBoard = monsterNamed(game, 'p2', 'Zeta');
       const primesBefore = game.player1.primes;
       passTurn(engine, game); // fin du tour de p1 : début du tour de p2
       const p2HandBefore = game.player2.hand.length; // pioche du tour de p2 incluse
@@ -689,7 +690,51 @@ describe('mécaniques du retravail des cartes', () => {
       // Fragile : pioche de son ON_DEATH + pioche de l'hôte pour sa destruction ;
       // la destruction de Zeta, elle, ne fait rien piocher
       expect(game.player2.hand.length).toBe(p2HandBefore + 2);
-      expect(game.log.join('\n')).not.toMatch(/Zeta.*dégât|dégât.*Zeta/i);
+      // Zeta ne subit jamais ses propres 500 dégâts
+      expect(zetaOnBoard.currentHp).toBe(500);
+      expect(game.log.join('\n')).not.toMatch(/inflige \d+ à Zeta/);
+      expect(game.log.join('\n')).toMatch(/inflige 500 à Costaud/);
+    });
+
+    it("la mort en chaîne de l'hôte (pioche + invocation) se résout sans erreur", () => {
+      const game = scenario({
+        p2: {
+          hand: [],
+          deck: Array.from({ length: 8 }, (_, i) =>
+            monsterCard(`Réserve ${i}`),
+          ),
+          monsters: [
+            implanted(1),
+            monsterCard('Piocheur', {
+              hp: 300,
+              effects: [
+                effect(EffectTrigger.ON_DEATH, [
+                  act(ActionType.DRAW, EffectTarget.PLAYER, { value: 1 }),
+                ]),
+              ],
+            }),
+            monsterCard('Invocateur', {
+              hp: 300,
+              effects: [
+                effect(EffectTrigger.ON_DEATH, [
+                  act(ActionType.SUMMON_FROM_DECK, EffectTarget.PLAYER),
+                ]),
+              ],
+            }),
+          ],
+        },
+      });
+      passTurn(engine, game);
+      const handBefore = game.player2.hand.length;
+      expect(() => passTurn(engine, game)).not.toThrow();
+
+      const names = game.player2.monsterZones.map((z) => z?.card.baseCard.name);
+      expect(names).not.toContain('Zeta');
+      expect(names).not.toContain('Piocheur');
+      expect(names).not.toContain('Invocateur');
+      expect(game.player2.hand.length).toBeGreaterThan(handBefore);
+      expect(game.pendingChoices.some((c) => c.forUserId === 2)).toBe(true);
+      expect(graveyardNames(game, 'p1')).toContain('Zeta');
     });
 
     describe('RESET_TURN_COUNTER', () => {
@@ -711,6 +756,17 @@ describe('mécaniques du retravail des cartes', () => {
           engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 }),
         ).toEqual({});
         expect(monsterNamed(game, 'p2', 'Zeta').turnCounter).toBe(3);
+      });
+
+      it('remet le compteur de deux monstres implantés du poseur', () => {
+        const second = { ...implanted(2), card: monsterCard('Zeta bis') };
+        const game = scenario({
+          p1: { hand: [reset()] },
+          p2: { monsters: [implanted(1), second] },
+        });
+        engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 });
+        expect(monsterNamed(game, 'p2', 'Zeta').turnCounter).toBe(3);
+        expect(monsterNamed(game, 'p2', 'Zeta bis').turnCounter).toBe(3);
       });
 
       it('injouable sans Zeta implanté', () => {

@@ -95,7 +95,8 @@ export class BattleService {
     if (
       !direct &&
       opponent.monsterZones.some(
-        (m) => m?.instanceId === targetInstanceId && isPlantedBy(m, userId),
+        (m) =>
+          !!m && m.instanceId === targetInstanceId && isPlantedBy(m, userId),
       )
     )
       return { error: 'Tu ne peux pas attaquer ton propre Zeta' };
