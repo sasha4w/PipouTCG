@@ -68,6 +68,7 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.ADVANCE_HATCH,
   ActionType.SUMMON_FROM_DECK,
   ActionType.EVOLUTION_JOKER,
+  ActionType.DUPLICATE_MONSTER,
   ActionType.INSTANT_EVOLUTION,
   ActionType.ALLOW_EVOLUTION_THIS_TURN,
 ]);

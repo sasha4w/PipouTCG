@@ -10,6 +10,8 @@ import { resolveTargets } from './effect-targets.resolver';
 import { drawCard, queueChoice } from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
 import { hatchEgg } from '../helpers/hatching';
+import { createMonsterOnBoard } from '../helpers/monster.factory';
+import { v4 as uuidv4 } from 'uuid';
 
 export type DestroyKind = 'destroy' | 'damage';
 
@@ -22,6 +24,9 @@ export function applyActions(
     instanceId: string,
     kind: DestroyKind,
   ) => void,
+  /** Résout l'ON_SUMMON d'un monstre apparu en jeu (copie). */
+  summoned: (owner: PlayerGameState, monster: MonsterOnBoard) => void = () =>
+    undefined,
 ): void {
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
@@ -102,6 +107,14 @@ export function applyActions(
       case ActionType.DESTROY_MONSTER:
         for (const target of targets.monsters)
           destroy(targets.ownerOfMonster(target), target.instanceId, 'destroy');
+        break;
+
+      case ActionType.DUPLICATE_MONSTER:
+        for (const target of targets.monsters) {
+          const owner = targets.ownerOfMonster(target);
+          const copy = duplicateMonster(target, owner, action.value ?? 2, ctx);
+          if (copy) summoned(owner, copy);
+        }
         break;
 
       case ActionType.RETURN_TO_HAND:
@@ -361,6 +374,56 @@ export function applyActions(
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
+
+/**
+ * Copie un monstre (PV, bonus, mode, équipements) dans la première zone libre
+ * de son propriétaire. La copie et ses équipements sont des tokens, bloqués
+ * en attaque pendant `blockTurns` tours. Retourne null s'il n'y a pas de place.
+ */
+function duplicateMonster(
+  source: MonsterOnBoard,
+  owner: PlayerGameState,
+  blockTurns: number,
+  ctx: EffectContext,
+): MonsterOnBoard | null {
+  const zone = owner.monsterZones.findIndex((z) => z === null);
+  if (zone === -1) return null;
+
+  const copy = createMonsterOnBoard(
+    {
+      instanceId: uuidv4(),
+      baseCard: source.card.baseCard,
+      ownerId: owner.userId,
+      token: true,
+    },
+    { ownerUserId: source.ownerUserId },
+  );
+  copy.perm = { ...source.perm };
+  copy.atkBuff = source.atkBuff;
+  copy.hpBuff = source.hpBuff;
+  copy.currentHp = source.currentHp;
+  copy.mode = source.mode;
+  copy.hatchCounter = source.hatchCounter;
+  copy.hatchStage = source.hatchStage;
+  copy.equipments = source.equipments.map((eq) => ({
+    instanceId: uuidv4(),
+    baseCard: eq.baseCard,
+    ownerId: owner.userId,
+    token: true,
+  }));
+  copy.blockAttackTurns = blockTurns;
+  owner.monsterZones[zone] = copy;
+
+  ctx.game.pendingEvents.push({
+    kind: 'monster_summoned',
+    ownerId: owner.userId,
+    zoneIndex: zone,
+    instanceId: copy.instanceId,
+    rarity: copy.card.baseCard.rarity,
+  });
+  ctx.log.push(`🪞 ${source.card.baseCard.name} est copié`);
+  return copy;
+}
 
 function returnMonsterToHand(
   monster: MonsterOnBoard,

@@ -3,6 +3,7 @@ import type { EffectAction } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
 import { pickCandidates } from './pick-candidates';
+import { getPlayerState } from '../helpers/game-state.helper';
 
 /** Cibles choisies par le joueur : leur validité est contrôlée à part. */
 const CHOSEN_TARGETS = new Set<EffectTarget>([
@@ -23,6 +24,11 @@ export function canResolveAction(
   action: EffectAction,
   ctx: EffectContext,
 ): boolean {
+  // La copie apparaît chez le propriétaire de la cible (soi, pour un Éphémère)
+  if (action.type === ActionType.DUPLICATE_MONSTER)
+    return getPlayerState(ctx.game, ctx.ownerUserId).monsterZones.some(
+      (z) => z === null,
+    );
   if (CHOSEN_TARGETS.has(action.target)) return true;
 
   const targets = resolveTargets(action.target, ctx, action.archetype);
