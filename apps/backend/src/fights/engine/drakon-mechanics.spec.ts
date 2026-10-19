@@ -772,4 +772,93 @@ describe('mécaniques Drakon', () => {
       expect(summon(game)).toEqual({ error: 'Zone occupée' });
     });
   });
+
+  describe("ce qui sort d'un œuf évolue le tour même", () => {
+    const evolveOn = (game: ReturnType<typeof scenario>, target: string) =>
+      engine.dispatch(game, 'p1', {
+        type: 'evolve',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', target).instanceId,
+        paymentHandIndices: [],
+      });
+    const pickFirst = (game: ReturnType<typeof scenario>) =>
+      engine.dispatch(game, 'p1', {
+        type: 'pick_cards',
+        instanceIds: [game.pendingChoices[0].candidates[0].instanceId],
+      });
+    const tue = () =>
+      ephemeralCard('Tue', [
+        effect(EffectTrigger.ON_PLAY, [
+          act(ActionType.DESTROY_MONSTER, EffectTarget.TARGET_ALLY),
+        ]),
+      ]);
+    const invoqueJeune = effect(EffectTrigger.ON_DEATH, [
+      act(ActionType.SUMMON_FROM_DECK, EffectTarget.PLAYER, {
+        filter: { stage: 'young' },
+      }),
+    ]);
+    const tueEtInvoque = (stage: 'egg' | 'baby') => {
+      const game = scenario({
+        p1: {
+          hand: [
+            tue(),
+            dragon('Adulte D', { stage: 'adult', lineage: 'd', cost: 0 }),
+          ],
+          deck: [dragon('Jeune D', { stage: 'young', lineage: 'd', cost: 0 })],
+          monsters: [
+            dragon('Source', {
+              stage,
+              atk: 0,
+              hp: 300,
+              effects: [invoqueJeune],
+            }),
+          ],
+        },
+      });
+      engine.dispatch(game, 'p1', {
+        type: 'play_support',
+        handIndex: 0,
+        targetInstanceId: monsterNamed(game, 'p1', 'Source').instanceId,
+      });
+      expect(pickFirst(game)).toEqual({});
+      return game;
+    };
+
+    it('le Bébé éclos en début de tour peut évoluer aussitôt', () => {
+      const game = scenario({
+        p1: {
+          hand: [dragon('Jeune X', { stage: 'young', lineage: 'x', cost: 0 })],
+          deck: [
+            monsterCard('F1'),
+            monsterCard('F2'),
+            dragon('Bébé X', { stage: 'baby', lineage: 'x', cost: 0 }),
+          ],
+          monsters: [
+            {
+              card: dragon('Œuf X', { stage: 'egg', atk: 0, hp: 300 }),
+              patch: { hatchCounter: 1, hatchStage: 'baby' },
+            },
+          ],
+        },
+      });
+      passTurn(engine, game);
+      passTurn(engine, game);
+      expect(pickFirst(game)).toEqual({});
+      expect(evolveOn(game, 'Bébé X')).toEqual({});
+      expect(monsterNamed(game, 'p1', 'Jeune X')).toBeDefined();
+    });
+
+    it('le Jeune invoqué par la mort de la Dualité pendant mon tour peut évoluer', () => {
+      const game = tueEtInvoque('egg');
+      expect(evolveOn(game, 'Jeune D')).toEqual({});
+      expect(monsterNamed(game, 'p1', 'Adulte D')).toBeDefined();
+    });
+
+    it('un monstre invoqué depuis le deck par un non-œuf attend toujours', () => {
+      const game = tueEtInvoque('baby');
+      expect(evolveOn(game, 'Jeune D').error).toBe(
+        "Jeune D doit attendre un tour avant d'évoluer",
+      );
+    });
+  });
 });

@@ -65,6 +65,8 @@ export interface PendingChoice {
   count: number;
   prompt: string;
   resolution?: PendingChoiceResolution;
+  /** summon_to_zone : le monstre vient d'un œuf, il peut évoluer le tour même. */
+  fromEgg?: boolean;
   /** summon_to_zone : zone visée. */
   zoneIndex?: number;
 }

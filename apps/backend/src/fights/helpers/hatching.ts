@@ -42,6 +42,7 @@ export function hatchEgg(
     count: 1,
     prompt: 'Choisis le Drakon qui éclot',
     resolution: 'summon_to_zone',
+    fromEgg: true,
     zoneIndex,
   });
   log.push(`🥚 ${egg.card.baseCard.name} éclot !`);

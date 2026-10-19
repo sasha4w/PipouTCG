@@ -47,7 +47,11 @@ export class PickService {
         const idx = player.deck.findIndex((c) => c.instanceId === id);
         if (idx === -1) continue;
         const [card] = player.deck.splice(idx, 1);
-        if (!this.summon.summonFromDeck(game, player, card, choice.zoneIndex)) {
+        if (
+          !this.summon.summonFromDeck(game, player, card, choice.zoneIndex, {
+            fromEgg: choice.fromEgg,
+          })
+        ) {
           player.deck.push(card);
           addLog(
             game,

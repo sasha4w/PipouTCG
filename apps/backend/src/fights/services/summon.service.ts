@@ -56,6 +56,7 @@ export class SummonService {
     owner: PlayerGameState,
     card: CardInstance,
     preferredZone?: number,
+    opts: { fromEgg?: boolean } = {},
   ): boolean {
     const zone =
       preferredZone !== undefined && !owner.monsterZones[preferredZone]
@@ -65,6 +66,8 @@ export class SummonService {
     const monster = createMonsterOnBoard(card);
     // Apparu pendant le tour adverse : pourra évoluer dès le tour suivant
     monster.summonedThisTurn = game.currentTurnUserId === owner.userId;
+    // Sorti d'un œuf : peut évoluer le tour même
+    if (opts.fromEgg) monster.canEvolveThisTurn = true;
     owner.monsterZones[zone] = monster;
     game.pendingEvents.push({
       kind: 'monster_summoned',

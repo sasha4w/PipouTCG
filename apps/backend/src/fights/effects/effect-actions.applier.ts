@@ -262,6 +262,7 @@ export function applyActions(
             prompt: 'Choisis la carte à invoquer',
             resolution: 'summon_to_zone',
             zoneIndex: zone === -1 ? undefined : zone,
+            fromEgg: ctx.sourceMonster?.card.baseCard.stage === 'egg',
           });
         }
         break;
