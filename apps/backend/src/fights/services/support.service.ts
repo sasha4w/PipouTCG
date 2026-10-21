@@ -249,13 +249,11 @@ export class SupportService {
       pile: CardInstance[],
       source: 'graveyard' | 'deck',
     ): ChoiceCandidate[] =>
-      pile
-        .filter(isBaby)
-        .map((c) => ({
-          instanceId: c.instanceId,
-          baseCard: c.baseCard,
-          source,
-        }));
+      pile.filter(isBaby).map((c) => ({
+        instanceId: c.instanceId,
+        baseCard: c.baseCard,
+        source,
+      }));
     const candidates = [
       ...toCandidates(player.graveyard, 'graveyard'),
       ...toCandidates(player.deck, 'deck'),
