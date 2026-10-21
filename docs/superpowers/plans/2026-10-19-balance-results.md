@@ -191,3 +191,53 @@ Les decks d'IA ont été régénérés par la migration 010 (nouveau tirage alé
 Sonde (40 parties, Dompteur d'Ackos contre Capitaine Gribouille, niveau 3, mêmes decks) : 4 victoires Drakon avec « Transformer », 5 sans. L'IA transforme 2,2 fois par partie et évolue moins (34 évolutions contre 43). Plus aucune défaite par deck vide.
 
 Conclusion : la règle « Transformer » ne change presque rien tant que l'IA ne planifie pas ses évolutions ; l'écart avec « Après » vient surtout du nouveau tirage des decks d'IA. Prochain chantier : une IA qui planifie ses évolutions, et des decks d'IA à graine fixe pour pouvoir comparer les mesures.
+
+
+## Comparaison équitable (decks générés à graine fixe)
+
+Méthode : les 15 decks d'IA sont générés en code (sans base) par le générateur et les cartes de chaque version (AVANT = 2a3499f, APRÈS = branche), avec les mêmes graines de decks (1, 2, 3) des deux côtés ; 10 parties par paire, graine de parties 42 (`pnpm --filter @pipou/backend tournament:generated`).
+Les tableaux donnent le taux de victoire de la ligne contre la colonne (moyenne sur 3 graines, puis min–max entre graines) ; les duels d'un archétype contre lui-même valent 50 % par construction.
+
+### Archétype contre archétype
+
+| Ligne contre colonne | pipou AVANT | pipou APRÈS | pixelman AVANT | pixelman APRÈS | dragon AVANT | dragon APRÈS |
+|---|---|---|---|---|---|---|
+| pipou | 49.8 % (49.5–50.0) | 50.0 % (50.0–50.0) | 47.9 % (43.6–52.8) | 52.9 % (43.2–59.6) | 63.7 % (56.0–71.2) | 64.3 % (63.6–64.8) |
+| pixelman | 52.1 % (47.2–56.4) | 47.1 % (40.4–56.8) | 50.0 % (50.0–50.0) | 50.0 % (50.0–50.0) | 63.1 % (58.8–67.6) | 58.9 % (52.4–65.6) |
+| dragon | 36.3 % (28.8–44.0) | 35.6 % (35.2–36.0) | 36.9 % (32.4–41.2) | 41.1 % (34.4–47.6) | 50.0 % (50.0–50.0) | 50.0 % (50.0–50.0) |
+
+### Taux de victoire global par archétype (tous niveaux)
+
+| Archétype | AVANT (moy., min–max) | APRÈS |
+|---|---|---|
+| pipou | 54.1 % (51.1–58.4) | 56.1 % (52.4–58.7) |
+| pixelman | 55.4 % (53.6–58.6) | 52.1 % (47.4–58.0) |
+| dragon | 40.4 % (37.9–44.7) | 41.7 % (39.4–43.9) |
+
+### Taux de victoire par niveau (moyenne des 3 graines)
+
+| Deck | AVANT | APRÈS | Écart |
+|---|---|---|---|
+| pipou niveau 1 | 19.5 % | 25.2 % | +5.7 |
+| pipou niveau 2 | 30.5 % | 37.1 % | +6.7 |
+| pipou niveau 3 | 65.5 % | 59.0 % | -6.4 |
+| pipou niveau 4 | 64.8 % | 74.3 % | +9.5 |
+| pipou niveau 5 | 90.2 % | 85.0 % | -5.2 |
+| pixelman niveau 1 | 44.5 % | 37.1 % | -7.4 |
+| pixelman niveau 2 | 56.4 % | 65.7 % | +9.3 |
+| pixelman niveau 3 | 30.5 % | 22.6 % | -7.9 |
+| pixelman niveau 4 | 66.4 % | 49.8 % | -16.7 |
+| pixelman niveau 5 | 79.3 % | 85.5 % | +6.2 |
+| dragon niveau 1 | 14.0 % | 9.3 % | -4.8 |
+| dragon niveau 2 | 24.3 % | 36.9 % | +12.6 |
+| dragon niveau 3 | 42.9 % | 37.6 % | -5.2 |
+| dragon niveau 4 | 68.3 % | 64.3 % | -4.0 |
+| dragon niveau 5 | 52.6 % | 60.2 % | +7.6 |
+
+### Conclusion
+
+- Amélioré : Pixelman, trop fort avant, redescend (55,4 % → 52,1 % global ; 52,1 % → 47,1 % contre Pipou, 63,1 % → 58,9 % contre Dragon) ; Dragon progresse légèrement (40,4 % → 41,7 %, 36,9 % → 41,1 % contre Pixelman).
+- Pas amélioré : Dragon reste l'archétype le plus faible (~36 % contre Pipou, inchangé) et Pipou le bat toujours à ~64 %.
+- Les écarts d'archétype à archétype (0 à 5 points en moyenne) sont du même ordre que la dispersion entre graines de decks (souvent 10 à 20 points entre min et max) : aucun n'est clairement significatif avec 10 parties par paire.
+- Les écarts par niveau sont bruités (pixelman 4 : -16,7 ; dragon 2 : +12,6) et la difficulté n'est pas monotone (pipou 3 > pipou 2, pixelman 3 faible), défaut antérieur au rééquilibrage et toujours présent.
+- Verdict : neutre à légèrement positif sur la parité entre mondes ; il faudrait plus de parties ou de graines pour conclure sur les écarts restants.
