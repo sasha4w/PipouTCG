@@ -126,11 +126,11 @@ export default function FightActionBar({
                 disabled={transformUsed}
                 title={
                   transformUsed
-                    ? "Une seule transformation par tour"
-                    : "Défausse cette carte pour récupérer le Bébé de sa lignée"
+                    ? t("fight.transformOncePerTurn")
+                    : t("fight.transformTitle")
                 }
               >
-                <IconTransform size={14} /> Transformer
+                <IconTransform size={14} /> {t("fight.transform")}
               </button>
             )}
 

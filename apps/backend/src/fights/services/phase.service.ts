@@ -1,6 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { DestroyCause, EffectTrigger, HAND_LIMIT } from '@pipou/shared';
-import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
+import {
+  DestroyCause,
+  EffectTrigger,
+  HAND_LIMIT,
+  isImplanted,
+  isPlantedBy,
+} from '@pipou/shared';
+import {
+  GameState,
+  MonsterOnBoard,
+  PlayerGameState,
+} from '../interfaces/game-state.interface';
 import {
   addLog,
   drawCard,
@@ -153,22 +163,26 @@ export class PhaseService {
     log.forEach((l) => addLog(game, l));
   }
 
-  /** Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et les terrains. */
+  /**
+   * Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et
+   * les terrains. Un monstre implanté (et ses équipements) se résout pour son
+   * poseur, au tour du poseur, et jamais pour son hôte.
+   */
   private resolveForBoard(
     game: GameState,
     player: PlayerGameState,
     trigger: EffectTrigger,
     log: string[],
   ): void {
-    for (const zone of player.monsterZones) {
-      if (!zone) continue;
+    const opponent = getOpponentState(game, player.userId);
+    const resolveMonster = (host: PlayerGameState, zone: MonsterOnBoard) => {
       this.effectsResolver.resolve(zone.card, trigger, {
         game,
         ownerUserId: player.userId,
         sourceMonster: zone,
         log,
       });
-      if (!player.monsterZones.includes(zone)) continue;
+      if (!host.monsterZones.includes(zone)) return;
       for (const equipment of zone.equipments) {
         this.effectsResolver.resolve(equipment, trigger, {
           game,
@@ -177,6 +191,14 @@ export class PhaseService {
           log,
         });
       }
+    };
+    for (const zone of player.monsterZones) {
+      if (!zone || isImplanted(zone, player.userId)) continue;
+      resolveMonster(player, zone);
+    }
+    for (const zone of opponent.monsterZones) {
+      if (!zone || !isPlantedBy(zone, player.userId)) continue;
+      resolveMonster(opponent, zone);
     }
     for (const terrain of player.supportZones) {
       if (!terrain) continue;
@@ -212,7 +234,9 @@ export class PhaseService {
         if (zone.turnCounter > 0) continue;
 
         log.push(`💀 ${zone.card.baseCard.name} s'autodétruit !`);
-        gainPrime(game, player.userId, zone.card.baseCard.name);
+        // Une copie token (DuplicateX) n'apporte jamais de Prime
+        if (!zone.card.token)
+          gainPrime(game, player.userId, zone.card.baseCard.name);
         this.effectsResolver.destroyMonster(game, host, zone.instanceId, log, {
           draw: false,
           cause: DestroyCause.SELF_DESTRUCT,

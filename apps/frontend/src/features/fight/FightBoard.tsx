@@ -1,5 +1,6 @@
 import type React from "react";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import "./FightBoard.css";
 import {
   RARITY_COLOR,
@@ -91,6 +92,7 @@ export default function FightBoard({
   onEndPhase,
   onSurrender,
 }: Props) {
+  const { t } = useTranslation();
   const phase = gs.phase;
 
   const { reduced } = useAnimationPrefs();
@@ -236,7 +238,7 @@ export default function FightBoard({
     for (const m of gs.me.monsterZones) {
       if (!m || !implantedIds.has(m.instanceId)) continue;
       if (m.disinfectImmune)
-        lockedZetas.set(m.instanceId, "Protégé jusqu'au prochain tour adverse");
+        lockedZetas.set(m.instanceId, t("fight.zetaProtected"));
       else disinfectableIds.add(m.instanceId);
     }
   }
@@ -615,15 +617,14 @@ export default function FightBoard({
         <div className="fb-zeta-hint">
           <IconVirus size={14} />{" "}
           {canImplant
-            ? `Sélectionne une zone adverse vide pour implanter ${selectedHandCard?.name}`
-            : "Un Zeta est déjà implanté chez l'adversaire"}
+            ? t("fight.zetaImplantHint", { name: selectedHandCard?.name })
+            : t("fight.zetaAlreadyImplanted")}
         </div>
       )}
 
       {attackerSelected && disinfectableIds.size > 0 && (
         <div className="fb-zeta-hint">
-          <IconVirus size={14} /> Attaque le Zeta implanté chez toi pour le
-          désinfecter
+          <IconVirus size={14} /> {t("fight.zetaDisinfectHint")}
         </div>
       )}
 

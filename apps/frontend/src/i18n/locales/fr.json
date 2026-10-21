@@ -651,7 +651,14 @@
   },
   "fight": {
     "evolveHint": "Touche un de tes monstres pour évoluer",
-    "summonPick": "Invoquer"
+    "summonPick": "Invoquer",
+    "transform": "Transformer",
+    "transformTitle": "Défausse cette carte pour récupérer le Bébé de sa lignée",
+    "transformOncePerTurn": "Une seule transformation par tour",
+    "zetaProtected": "Protégé jusqu'au prochain tour adverse",
+    "zetaImplantHint": "Sélectionne une zone adverse vide pour implanter {{name}}",
+    "zetaAlreadyImplanted": "Un Zeta est déjà implanté chez l'adversaire",
+    "zetaDisinfectHint": "Attaque le Zeta implanté chez toi pour le désinfecter"
   },
   "achievements": {
     "tab": "Succès",

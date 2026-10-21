@@ -598,7 +598,14 @@
   },
   "fight": {
     "evolveHint": "진화시킬 내 몬스터를 터치하세요",
-    "summonPick": "소환"
+    "summonPick": "소환",
+    "transform": "변환",
+    "transformTitle": "이 카드를 버리고 같은 계열의 베이비를 가져옵니다",
+    "transformOncePerTurn": "턴당 한 번만 변환할 수 있습니다",
+    "zetaProtected": "상대의 다음 턴까지 보호됨",
+    "zetaImplantHint": "{{name}}을(를) 이식할 상대의 빈 구역을 선택하세요",
+    "zetaAlreadyImplanted": "상대 진영에 이미 제타가 이식되어 있습니다",
+    "zetaDisinfectHint": "내 진영에 이식된 제타를 공격해 제거하세요"
   },
   "achievements": {
     "tab": "업적",

@@ -737,6 +737,74 @@ describe('mécaniques du retravail des cartes', () => {
       expect(graveyardNames(game, 'p1')).toContain('Zeta');
     });
 
+    it("une copie token dont le compteur atteint 0 n'apporte pas de Prime, mais explose", () => {
+      const game = scenario({
+        p1: { monsters: [{ card: zeta(), patch: { turnCounter: 1 } }] },
+        p2: { monsters: [monsterCard('Cible', { hp: 900 })] },
+      });
+      monsterNamed(game, 'p1', 'Zeta').card.token = true;
+      const primesBefore = game.player1.primes;
+      passTurn(engine, game);
+      passTurn(engine, game); // début du tour de p1 : compteur à 0
+
+      expect(game.player1.primes).toBe(primesBefore);
+      expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(400);
+    });
+
+    describe('déclencheurs de tour du monstre implanté', () => {
+      it("l'équipement d'un Zeta implanté soigne au début du tour du poseur, pas de l'hôte", () => {
+        const heal = equipmentCard('Soigneur', [
+          effect(EffectTrigger.ON_TURN_START, [
+            act(ActionType.HEAL, EffectTarget.SELF, { value: 100 }),
+          ]),
+        ]);
+        const game = scenario({
+          p2: {
+            monsters: [
+              {
+                card: zeta(),
+                currentHp: 200,
+                equipments: [heal],
+                patch: { ownerUserId: P1_ID },
+              },
+            ],
+          },
+        });
+        passTurn(engine, game); // début du tour de l'hôte
+        expect(monsterNamed(game, 'p2', 'Zeta').currentHp).toBe(200);
+        passTurn(engine, game); // début du tour du poseur
+        expect(monsterNamed(game, 'p2', 'Zeta').currentHp).toBe(300);
+      });
+
+      it("ON_TURN_START ALL_ENEMIES d'un Zeta implanté frappe l'hôte au tour du poseur", () => {
+        const pulse = monsterCard('Zeta', {
+          effects: [
+            SELF_ZETA,
+            effect(EffectTrigger.ON_TURN_START, [
+              act(ActionType.DEAL_DAMAGE, EffectTarget.ALL_ENEMIES, {
+                value: 100,
+              }),
+            ]),
+          ],
+        });
+        const game = scenario({
+          p1: { monsters: [monsterCard('Allié', { hp: 1000 })] },
+          p2: {
+            monsters: [
+              { card: pulse, patch: { ownerUserId: P1_ID } },
+              monsterCard('Hôte', { hp: 1000 }),
+            ],
+          },
+        });
+        passTurn(engine, game); // tour de l'hôte : rien
+        expect(monsterNamed(game, 'p1', 'Allié').currentHp).toBe(1000);
+        expect(monsterNamed(game, 'p2', 'Hôte').currentHp).toBe(1000);
+        passTurn(engine, game); // tour du poseur
+        expect(monsterNamed(game, 'p2', 'Hôte').currentHp).toBe(900);
+        expect(monsterNamed(game, 'p1', 'Allié').currentHp).toBe(1000);
+      });
+    });
+
     describe('RESET_TURN_COUNTER', () => {
       const reset = () =>
         ephemeralCard('Rechargeur', [

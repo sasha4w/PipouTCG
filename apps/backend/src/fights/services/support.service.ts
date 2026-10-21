@@ -240,6 +240,9 @@ export class SupportService {
       return { error: 'Une seule transformation par tour' };
 
     const lineage = card.baseCard.lineage;
+    const lineageLabel = lineage
+      ? lineage.charAt(0).toUpperCase() + lineage.slice(1)
+      : '';
     const isBaby = (c: CardInstance) =>
       c.baseCard.stage === DrakonStage.BABY && c.baseCard.lineage === lineage;
     const toCandidates = (
@@ -258,20 +261,20 @@ export class SupportService {
       ...toCandidates(player.deck, 'deck'),
     ];
     if (candidates.length === 0)
-      return { error: `Aucun Bébé ${lineage} à récupérer` };
+      return { error: `Aucun Bébé ${lineageLabel} à récupérer` };
 
     player.hand.splice(handIndex, 1);
     player.graveyard.push(card);
     player.transformUsedThisTurn = true;
     addLog(
       game,
-      `🔁 ${player.username} défausse ${card.baseCard.name} pour récupérer un Bébé ${lineage}`,
+      `🔁 ${player.username} défausse ${card.baseCard.name} pour récupérer un Bébé ${lineageLabel}`,
     );
     queueChoice(game, {
       forUserId: userId,
       candidates,
       count: 1,
-      prompt: `Choisissez le Bébé ${lineage} à récupérer (cimetière ou deck)`,
+      prompt: `Choisissez le Bébé ${lineageLabel} à récupérer (cimetière ou deck)`,
       resolution: 'pick_to_hand',
     });
     return {};

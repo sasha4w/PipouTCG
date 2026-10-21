@@ -428,8 +428,6 @@ function duplicateMonster(
   copy.hpBuff = source.hpBuff;
   copy.currentHp = source.currentHp;
   copy.mode = source.mode;
-  copy.hatchCounter = source.hatchCounter;
-  copy.hatchStage = source.hatchStage;
   copy.equipments = source.equipments.map((eq) => ({
     instanceId: uuidv4(),
     baseCard: eq.baseCard,

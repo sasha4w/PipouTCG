@@ -969,7 +969,7 @@ describe('mécaniques Drakon', () => {
       expect(
         engine.dispatch(game, 'p1', { type: 'transform', handIndex: 0 }),
       ).toEqual({
-        error: 'Aucun Bébé feros à récupérer',
+        error: 'Aucun Bébé Feros à récupérer',
       });
       expect(handNames(game, 'p1')).toEqual(['Jeune Feros']);
       expect(game.pendingChoices).toHaveLength(0);

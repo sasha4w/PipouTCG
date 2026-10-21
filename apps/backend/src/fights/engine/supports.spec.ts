@@ -354,6 +354,21 @@ describe('GameEngine — DuplicateX (DUPLICATE_MONSTER)', () => {
     expect(original.hasTaunt).toBe(false);
   });
 
+  it("la copie d'un monstre avec Taunt garde le Taunt", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [monsterCard('Gardien')],
+      },
+    });
+    const original = monsterNamed(game, 'p1', 'Gardien');
+    original.perm.taunt = true;
+
+    play(game, original);
+
+    expect(game.player1.monsterZones[1]!.hasTaunt).toBe(true);
+  });
+
   it('la copie ne peut pas attaquer le tour de pose ni le tour suivant, puis le peut', () => {
     const game = scenario({
       p1: { hand: [duplicateX()], monsters: [monsterCard('Drakon')] },

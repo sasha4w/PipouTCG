@@ -649,7 +649,14 @@
   },
   "fight": {
     "evolveHint": "Tap one of your monsters to evolve",
-    "summonPick": "Summon"
+    "summonPick": "Summon",
+    "transform": "Transform",
+    "transformTitle": "Discard this card to fetch the Baby of its lineage",
+    "transformOncePerTurn": "Only one transformation per turn",
+    "zetaProtected": "Protected until the opponent's next turn",
+    "zetaImplantHint": "Select an empty opposing zone to implant {{name}}",
+    "zetaAlreadyImplanted": "A Zeta is already implanted on the opponent's side",
+    "zetaDisinfectHint": "Attack the Zeta implanted on your side to disinfect it"
   },
   "achievements": {
     "tab": "Achievements",

@@ -55,8 +55,8 @@ export class BalanceDrakonPixelman1791000000009 implements MigrationInterface {
       )) as { id: number }[];
       for (const { id } of rows) {
         const [{ used }] = (await queryRunner.query(
-          'SELECT (SELECT COUNT(*) FROM `user_card` WHERE `card_id` = ?) + (SELECT COUNT(*) FROM `booster_open_card` WHERE `card_id` = ?) + (SELECT COUNT(*) FROM `bundle_content` WHERE `card_id` = ?) AS used',
-          [id, id, id],
+          'SELECT (SELECT COUNT(*) FROM `user_card` WHERE `card_id` = ?) + (SELECT COUNT(*) FROM `booster_open_card` WHERE `card_id` = ?) + (SELECT COUNT(*) FROM `bundle_content` WHERE `card_id` = ?) + (SELECT COUNT(*) FROM `adventure_opponent_card` WHERE `card_id` = ?) AS used',
+          [id, id, id, id],
         )) as { used: number | string }[];
         if (Number(used) > 0) {
           logger.warn(`« ${c.name} » est référencée : non supprimée`);
