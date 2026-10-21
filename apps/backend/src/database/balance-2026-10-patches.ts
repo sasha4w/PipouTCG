@@ -115,7 +115,7 @@ export const BALANCE_PATCHES: BalancePatch[] = [
         fx('PASSIVE', [a('EVOLUTION_JOKER', 'SELF')]),
       ],
     },
-    { hp: 2500 },
+    { hp: 900 },
   ),
   tweak(
     {
@@ -137,7 +137,7 @@ export const BALANCE_PATCHES: BalancePatch[] = [
         ]),
       ],
     },
-    { hp: 2500 },
+    { hp: 900 },
   ),
   tweak(
     {
@@ -156,7 +156,7 @@ export const BALANCE_PATCHES: BalancePatch[] = [
         ]),
       ],
     },
-    { hp: 4000 },
+    { hp: 1500 },
   ),
   tweak(
     {
@@ -321,12 +321,12 @@ export const BALANCE_PATCHES: BalancePatch[] = [
     {
       hp: 1200,
       description:
-        "Virus à durée limitée. Bloque une zone adverse et retire 300 ATK aux monstres de l'hôte. Après 3 tours du poseur, il explose : 800 dégâts à tous les monstres adverses, et le poseur récupère une Prime.",
+        "Virus à durée limitée. Bloque une zone adverse et retire 300 ATK aux monstres de l'hôte. Après 3 tours du poseur, il explose : 500 dégâts à tous les monstres adverses, et le poseur récupère une Prime.",
       effects: [
         ...ZETA_BEFORE,
         fx('PASSIVE', [a('VIRUS_ATK_DEBUFF', 'SELF', { value: 300 })]),
         fx('ON_SELF_DESTRUCT', [
-          a('DEAL_DAMAGE', 'ALL_ENEMIES', { value: 800 }),
+          a('DEAL_DAMAGE', 'ALL_ENEMIES', { value: 500 }),
         ]),
       ],
     },
