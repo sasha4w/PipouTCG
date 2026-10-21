@@ -157,3 +157,37 @@ Progression par monde (réglage 3) :
 - SquareWorld : 27,1 / 75,0 / 20,7 / 60,7 / 70,7 %. Non monotone : Noyau Zeta (niveau 3) reste entre 11 % et 36 % quelles que soient ses PV et l'explosion, et Noyau Beta (niveau 2) est trop fort ; le boss n'est plus en tête (Omega 70,7 % derrière Beta 75,0 %).
 
 Verdict : critères non atteints. Les PV des œufs améliorent Drakon (progression du monde, dragon contre pixelman de 34,8 % à 39,6 %) mais pas contre les Pipou (72-79 % de victoires des Pipou contre les Drakons). Le deck Noyau Zeta ne réagit à aucune des valeurs autorisées (PV des œufs, PV de Zeta, virus, explosion). Réglage arrêté après 3 itérations.
+
+Décision du joueur : retour aux valeurs validées (œufs 900/900/1500, explosion 500) et ajout de la règle « Transformer ».
+
+## Final (valeurs validées + « Transformer », commit a721e43)
+
+Les decks d'IA ont été régénérés par la migration 010 (nouveau tirage aléatoire, différent des mesures précédentes).
+
+| Deck | Archétype | Niveau | Victoires | Parties | Taux |
+|---|---|---|---|---|---|
+| Général Chatouille | pipou | 5 | 126 | 140 | 90.0 % |
+| Noyau Omega | pixelman | 5 | 118 | 140 | 84.3 % |
+| Commandant Quenouille | pipou | 4 | 112 | 140 | 80.0 % |
+| Capitaine Gribouille | pipou | 3 | 99 | 140 | 70.7 % |
+| Noyau Delta | pixelman | 4 | 98 | 140 | 70.0 % |
+| Noyau Beta | pixelman | 2 | 93 | 140 | 66.4 % |
+| Recrue Andouille | pipou | 1 | 57 | 140 | 40.7 % |
+| Dompteuse de Tempestu | dragon | 4 | 53 | 140 | 37.9 % |
+| Caporal Gazouille | pipou | 2 | 52 | 140 | 37.1 % |
+| Dompteuse de Feros | dragon | 2 | 51 | 140 | 36.4 % |
+| Gardien de l'Œuf Céleste | dragon | 5 | 48 | 140 | 34.3 % |
+| Noyau Alpha | pixelman | 1 | 47 | 140 | 33.6 % |
+| Noyau Zeta | pixelman | 3 | 40 | 140 | 28.6 % |
+| Dompteur d'Ackos | dragon | 3 | 29 | 140 | 20.7 % |
+| Dompteur de Teros | dragon | 1 | 27 | 140 | 19.3 % |
+
+| Archétype (ligne) contre (colonne) | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 50.0 % | 57.6 % | 80.8 % |
+| pixelman | 42.4 % | 50.0 % | 76.0 % |
+| dragon | 19.2 % | 24.0 % | 50.0 % |
+
+Sonde (40 parties, Dompteur d'Ackos contre Capitaine Gribouille, niveau 3, mêmes decks) : 4 victoires Drakon avec « Transformer », 5 sans. L'IA transforme 2,2 fois par partie et évolue moins (34 évolutions contre 43). Plus aucune défaite par deck vide.
+
+Conclusion : la règle « Transformer » ne change presque rien tant que l'IA ne planifie pas ses évolutions ; l'écart avec « Après » vient surtout du nouveau tirage des decks d'IA. Prochain chantier : une IA qui planifie ses évolutions, et des decks d'IA à graine fixe pour pouvoir comparer les mesures.
