@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canSummonFromHand,
+  canTransform,
   canEvolveNow,
   canEvolveOnto,
   evolutionCost,
@@ -168,6 +169,21 @@ describe("invocation depuis la main", () => {
     expect(canSummonFromHand({ stage: "baby" })).toBe(true);
     expect(canSummonFromHand({ stage: "egg" })).toBe(true);
     expect(canSummonFromHand({ stage: null })).toBe(true);
+  });
+});
+
+describe("canTransform", () => {
+  it("vrai pour un Jeune ou un Adulte avec lignée", () => {
+    expect(canTransform({ stage: "young", lineage: "feros" })).toBe(true);
+    expect(canTransform({ stage: "adult", lineage: "feros" })).toBe(true);
+  });
+
+  it("faux pour Bébé, Œuf, monstre non-Drakon et Jeune sans lignée", () => {
+    expect(canTransform({ stage: "baby", lineage: "feros" })).toBe(false);
+    expect(canTransform({ stage: "egg", lineage: "feros" })).toBe(false);
+    expect(canTransform({ stage: null, lineage: null })).toBe(false);
+    expect(canTransform({ stage: null })).toBe(false);
+    expect(canTransform({ stage: "young", lineage: null })).toBe(false);
   });
 });
 

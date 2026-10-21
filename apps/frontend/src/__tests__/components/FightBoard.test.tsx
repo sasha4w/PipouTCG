@@ -47,6 +47,7 @@ function state(recycleEnergy: number, youngCost = 2): GameState {
       monsterZones: [base, monster({ instanceId: "gob" }), null],
       supportZones: [null, null, null],
       recycleEnergy,
+      transformUsedThisTurn: false,
       freeSummonInstanceIds: [],
       mulliganDone: true,
     },
@@ -86,6 +87,7 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     onPlaySupport: vi.fn(),
     onChangeMode: vi.fn(),
     onRecycleSupport: vi.fn(),
+    onTransform: vi.fn(),
     onDiscardCard: vi.fn(),
     onEndPhase: vi.fn(),
   };
@@ -95,6 +97,36 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     rerender(<FightBoard {...props} selectedCard={selectedCard} />);
   return { zones: row.querySelectorAll(".zr-zone"), onEvolve, select, props };
 }
+
+describe("FightBoard — transformation", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("carte Jeune sélectionnée : « Transformer » envoie la transformation", () => {
+    const { props } = renderBoard(state(0));
+    fireEvent.click(screen.getByRole("button", { name: /Transformer/ }));
+    expect(props.onTransform).toHaveBeenCalledWith(0);
+  });
+
+  it("grisé si la transformation est déjà utilisée ce tour", () => {
+    const gs = state(0);
+    gs.me.transformUsedThisTurn = true;
+    const { props } = renderBoard(gs);
+    const btn = screen.getByRole("button", { name: /Transformer/ });
+    expect(btn).toBeDisabled();
+    fireEvent.click(btn);
+    expect(props.onTransform).not.toHaveBeenCalled();
+  });
+
+  it("absent pour une carte non transformable", () => {
+    const { select } = renderBoard(state(0));
+    select(1);
+    expect(
+      screen.queryByRole("button", { name: /Transformer/ }),
+    ).not.toBeInTheDocument();
+  });
+});
 
 describe("FightBoard — évolution", () => {
   beforeAll(async () => {
@@ -232,6 +264,7 @@ function renderZeta(
     onPlaySupport: vi.fn(),
     onChangeMode: vi.fn(),
     onRecycleSupport: vi.fn(),
+    onTransform: vi.fn(),
     onDiscardCard: vi.fn(),
     onEndPhase: vi.fn(),
     ...over,

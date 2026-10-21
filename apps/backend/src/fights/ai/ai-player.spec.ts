@@ -521,4 +521,55 @@ describe('IA : choisit les nouvelles cartes', () => {
       targetInstanceId: monsterNamed(game, 'p2', 'Fort').instanceId,
     });
   });
+
+  it('Adulte coincé en main, Bébé au cimetière, zone libre : transforme', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [
+          monsterCard('Adulte Feros', {
+            stage: 'adult',
+            lineage: 'feros',
+            atk: 700,
+            hp: 900,
+          }),
+        ],
+        graveyard: [
+          monsterCard('Bébé Feros', {
+            stage: 'baby',
+            lineage: 'feros',
+            atk: 200,
+          }),
+        ],
+      },
+    });
+
+    const action = ai.chooseAction(game, 'p1', profile);
+
+    expect(action).toEqual({ type: 'transform', handIndex: 0 });
+    expect(engine.dispatch(game, 'p1', action).error).toBeUndefined();
+    const pick = ai.chooseAction(game, 'p1', profile);
+    expect(pick.type).toBe('pick_cards');
+    expect(engine.dispatch(game, 'p1', pick).error).toBeUndefined();
+  });
+
+  it('ne propose plus de transformation une fois celle du tour utilisée', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [
+          monsterCard('Adulte Feros', { stage: 'adult', lineage: 'feros' }),
+        ],
+        graveyard: [
+          monsterCard('Bébé Feros', { stage: 'baby', lineage: 'feros' }),
+        ],
+      },
+    });
+    seatState(game, 'p1').transformUsedThisTurn = true;
+    expect(listCandidates(game, 'p1').map((a) => a.type)).not.toContain(
+      'transform',
+    );
+  });
 });

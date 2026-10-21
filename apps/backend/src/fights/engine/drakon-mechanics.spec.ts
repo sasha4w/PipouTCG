@@ -861,4 +861,153 @@ describe('mécaniques Drakon', () => {
       );
     });
   });
+
+  describe("transformation d'un Jeune ou d'un Adulte coincé en main", () => {
+    const feros = (name: string, stage: 'baby' | 'young' | 'adult') =>
+      dragon(name, { stage, lineage: 'feros' });
+    const kind = (stage: 'baby' | 'young' | 'adult', name: string = stage) =>
+      feros(name, stage);
+
+    it('défausse le Jeune et propose les Bébés du deck et du cimetière', () => {
+      const game = scenario({
+        p1: {
+          hand: [kind('young', 'Jeune Feros')],
+          deck: [
+            kind('baby', 'Bébé Deck'),
+            dragon('Autre Lignée', { stage: 'baby', lineage: 'aqua' }),
+          ],
+          graveyard: [kind('baby', 'Bébé Cimetière')],
+        },
+      });
+      expect(
+        engine.dispatch(game, 'p1', { type: 'transform', handIndex: 0 }),
+      ).toEqual({});
+      expect(handNames(game, 'p1')).toEqual([]);
+      expect(graveyardNames(game, 'p1')).toContain('Jeune Feros');
+      expect(game.pendingChoices).toHaveLength(1);
+      expect(game.pendingChoices[0]).toMatchObject({
+        forUserId: P1_ID,
+        count: 1,
+        resolution: 'pick_to_hand',
+      });
+      expect(
+        game.pendingChoices[0].candidates.map((c) => [
+          c.baseCard.name,
+          c.source,
+        ]),
+      ).toEqual([
+        ['Bébé Cimetière', 'graveyard'],
+        ['Bébé Deck', 'deck'],
+      ]);
+    });
+
+    it('choisir le Bébé du cimetière le met en main, deck inchangé', () => {
+      const game = scenario({
+        p1: {
+          hand: [kind('adult', 'Adulte Feros')],
+          deck: [kind('baby', 'Bébé Deck')],
+          graveyard: [kind('baby', 'Bébé Cimetière')],
+        },
+      });
+      const deckBefore = game.player1.deck.map((c) => c.instanceId);
+      engine.dispatch(game, 'p1', { type: 'transform', handIndex: 0 });
+      const choice = game.pendingChoices[0];
+      const wanted = choice.candidates.find((c) => c.source === 'graveyard')!;
+      expect(
+        engine.dispatch(game, 'p1', {
+          type: 'pick_cards',
+          instanceIds: [wanted.instanceId],
+        }),
+      ).toEqual({});
+      expect(handNames(game, 'p1')).toEqual(['Bébé Cimetière']);
+      expect(game.player1.deck.map((c) => c.instanceId)).toEqual(deckBefore);
+    });
+
+    it('une seule transformation par tour, de nouveau permise au tour suivant', () => {
+      const game = scenario({
+        p1: {
+          hand: [kind('young', 'Jeune 1'), kind('young', 'Jeune 2')],
+          graveyard: [kind('baby', 'Bébé A'), kind('baby', 'Bébé B')],
+        },
+      });
+      engine.dispatch(game, 'p1', { type: 'transform', handIndex: 0 });
+      engine.dispatch(game, 'p1', {
+        type: 'pick_cards',
+        instanceIds: [game.pendingChoices[0].candidates[0].instanceId],
+      });
+      expect(game.player1.hand.map((c) => c.baseCard.name)).toContain(
+        'Jeune 2',
+      );
+      const handBefore = handNames(game, 'p1');
+      expect(
+        engine.dispatch(game, 'p1', {
+          type: 'transform',
+          handIndex: handBefore.indexOf('Jeune 2'),
+        }),
+      ).toEqual({
+        error: 'Une seule transformation par tour',
+      });
+      expect(handNames(game, 'p1')).toEqual(handBefore);
+
+      passTurn(engine, game);
+      passTurn(engine, game);
+      expect(game.currentTurnUserId).toBe(P1_ID);
+      const idx = handNames(game, 'p1').indexOf('Jeune 2');
+      expect(
+        engine.dispatch(game, 'p1', { type: 'transform', handIndex: idx }),
+      ).toEqual({});
+    });
+
+    it('sans Bébé de la lignée : refusé, la main ne change pas', () => {
+      const game = scenario({
+        p1: {
+          hand: [kind('young', 'Jeune Feros')],
+          deck: [dragon('Bébé Aqua', { stage: 'baby', lineage: 'aqua' })],
+          graveyard: [kind('adult', 'Adulte Feros')],
+        },
+      });
+      expect(
+        engine.dispatch(game, 'p1', { type: 'transform', handIndex: 0 }),
+      ).toEqual({
+        error: 'Aucun Bébé feros à récupérer',
+      });
+      expect(handNames(game, 'p1')).toEqual(['Jeune Feros']);
+      expect(game.pendingChoices).toHaveLength(0);
+      // l'échec ne consomme pas la transformation du tour
+      expect(game.player1.transformUsedThisTurn).toBe(false);
+    });
+
+    it('refusé hors phase principale, hors de son tour et sur un Bébé', () => {
+      const mk = (over: Parameters<typeof scenario>[0] = {}) =>
+        scenario({
+          p1: {
+            hand: [kind('young', 'Jeune Feros')],
+            graveyard: [kind('baby', 'Bébé Feros')],
+          },
+          ...over,
+        });
+      expect(
+        engine.dispatch(mk({ phase: 'battle' }), 'p1', {
+          type: 'transform',
+          handIndex: 0,
+        }).error,
+      ).toBe('Phase principale uniquement');
+      expect(
+        engine.dispatch(mk({ turn: 'p2' }), 'p1', {
+          type: 'transform',
+          handIndex: 0,
+        }).error,
+      ).toBe("Ce n'est pas ton tour");
+      const bebe = scenario({
+        p1: {
+          hand: [kind('baby', 'Bébé Feros')],
+          graveyard: [kind('baby', 'Autre Bébé')],
+        },
+      });
+      expect(
+        engine.dispatch(bebe, 'p1', { type: 'transform', handIndex: 0 }).error,
+      ).toBe('Seul un Jeune ou un Adulte peut se transformer');
+      expect(handNames(bebe, 'p1')).toEqual(['Bébé Feros']);
+    });
+  });
 });

@@ -62,6 +62,7 @@ interface Props {
   ) => void;
   onChangeMode: (instanceId: string, mode: CombatMode) => void;
   onRecycleSupport: (handIndex: number) => void;
+  onTransform: (handIndex: number) => void;
   onDiscardCard: (handIndex: number) => void;
   onEndPhase: () => void;
   /** Absent : pas de bouton d'abandon. */
@@ -85,6 +86,7 @@ export default function FightBoard({
   onPlaySupport,
   onChangeMode,
   onRecycleSupport,
+  onTransform,
   onDiscardCard,
   onEndPhase,
   onSurrender,
@@ -734,6 +736,12 @@ export default function FightBoard({
           onSetSelectedCard(null);
           onSetPayIndices([]);
         }}
+        onTransformFromHand={(idx) => {
+          onTransform(idx);
+          onSetSelectedCard(null);
+          onSetPayIndices([]);
+        }}
+        transformUsed={gs.me.transformUsedThisTurn}
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
         playBlockedReason={playBlockedReason}
         canEvolve={evolvableTargets.length > 0}

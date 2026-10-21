@@ -149,6 +149,7 @@ export class PhaseService {
       }
     }
     player.recycleEnergy = 0;
+    player.transformUsedThisTurn = false;
     log.forEach((l) => addLog(game, l));
   }
 

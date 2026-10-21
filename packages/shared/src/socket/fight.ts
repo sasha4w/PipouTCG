@@ -39,6 +39,11 @@ export interface RecycleSupportPayload {
   handIndex: number;
 }
 
+export interface TransformPayload {
+  matchId: number;
+  handIndex: number;
+}
+
 export interface ChangeModePayload {
   matchId: number;
   instanceId: string;
@@ -90,6 +95,7 @@ export interface ClientToServerEvents {
   "fight:summon": (payload: SummonPayload) => void;
   "fight:play_support": (payload: PlaySupportPayload) => void;
   "fight:recycle_support": (payload: RecycleSupportPayload) => void;
+  "fight:transform": (payload: TransformPayload) => void;
   "fight:change_mode": (payload: ChangeModePayload) => void;
   "fight:attack": (payload: AttackPayload) => void;
   "fight:evolve": (payload: EvolvePayload) => void;

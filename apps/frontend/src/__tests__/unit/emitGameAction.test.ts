@@ -48,6 +48,7 @@ describe("emitGameAction", () => {
       "fight:recycle_support",
       { handIndex: 3 },
     ],
+    [{ type: "transform", handIndex: 2 }, "fight:transform", { handIndex: 2 }],
     [
       { type: "change_mode", instanceId: "m1", mode: "guard" },
       "fight:change_mode",

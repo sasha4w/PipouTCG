@@ -47,6 +47,12 @@ export function emitGameAction(
         handIndex: action.handIndex,
       });
       return;
+    case "transform":
+      socket.emit("fight:transform", {
+        matchId,
+        handIndex: action.handIndex,
+      });
+      return;
     case "change_mode":
       socket.emit("fight:change_mode", {
         matchId,

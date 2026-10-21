@@ -62,6 +62,8 @@ export interface MyClientState {
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
+  /** Transformation d'un Jeune/Adulte de la main déjà utilisée ce tour. */
+  transformUsedThisTurn: boolean;
   /** Cartes de la main invocables gratuitement (instanceId). */
   freeSummonInstanceIds: string[];
   mulliganDone: boolean;

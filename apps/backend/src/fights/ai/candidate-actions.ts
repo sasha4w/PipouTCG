@@ -8,6 +8,7 @@ import {
   canImplantOn,
   canSummonFromHand,
   canSummonOnEnemySide,
+  canTransform,
   ephemeralTargetSide,
   evolutionCost,
   isImplanted,
@@ -228,6 +229,9 @@ function mainCandidates(
               });
       }
     }
+
+    if (!me.transformUsedThisTurn && canTransform(card))
+      out.push({ type: 'transform', handIndex });
 
     out.push({ type: 'recycle', handIndex });
   }

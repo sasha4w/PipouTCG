@@ -234,6 +234,8 @@ export class GameEngine {
         );
       case 'recycle':
         return this.support.recycleFromHand(game, userId, action.handIndex);
+      case 'transform':
+        return this.support.transformFromHand(game, userId, action.handIndex);
       case 'change_mode':
         return this.support.changeMode(
           game,

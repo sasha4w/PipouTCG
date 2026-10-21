@@ -98,6 +98,8 @@ export function useBoardControls(
         send({ type: "change_mode", instanceId, mode }),
       onRecycleSupport: (handIndex: number) =>
         send({ type: "recycle", handIndex }),
+      onTransform: (handIndex: number) =>
+        send({ type: "transform", handIndex }),
       onDiscardCard: (handIndex: number) =>
         send({ type: "discard", handIndex }),
       onEndPhase: () => send({ type: "end_phase" }),

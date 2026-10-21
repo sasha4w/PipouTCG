@@ -24,6 +24,7 @@ export type GameAction =
       paymentHandIndices: number[];
     }
   | { type: "recycle"; handIndex: number }
+  | { type: "transform"; handIndex: number }
   | { type: "change_mode"; instanceId: string; mode: CombatMode }
   | {
       type: "attack";

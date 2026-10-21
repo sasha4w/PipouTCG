@@ -25,6 +25,8 @@ export interface HandCard {
   archetype?: Archetype | null;
   /** Stade Drakon : Jeune / Adulte n'arrivent que par évolution. */
   stage?: DrakonStage | null;
+  /** Lignée Drakon : le Bébé récupéré par transformation. */
+  lineage?: string | null;
   description?: string | null;
 }
 
@@ -44,6 +46,7 @@ export function toHandCard(c: CardInstance): HandCard {
     effects: c.baseCard.effects ?? null,
     archetype: c.baseCard.archetype ?? null,
     stage: c.baseCard.stage ?? null,
+    lineage: c.baseCard.lineage ?? null,
     description: c.baseCard.description ?? null,
   };
 }

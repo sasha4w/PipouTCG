@@ -113,6 +113,9 @@ export class AiPlayer {
             profile,
             crashes,
           ),
+          action.type === 'transform'
+            ? this.transformScore(clone, seat, profile, crashes)
+            : -Infinity,
         ),
       });
     }
@@ -133,6 +136,42 @@ export class AiPlayer {
     return best.score > current + IMPROVEMENT_EPSILON
       ? best.action
       : endPhase.action;
+  }
+
+  /**
+   * Transformer ne vaut que par ce qu'on fait du Bébé récupéré : meilleur
+   * score après le choix du Bébé, puis son invocation éventuelle.
+   * -Infinity sans objet.
+   */
+  private transformScore(
+    after: GameState,
+    seat: Seat,
+    profile: AiProfile,
+    crashes: SimulationCrash[],
+  ): number {
+    const play = (state: GameState, action: GameAction): GameState | null => {
+      const clone = cloneForSimulation(state);
+      try {
+        return this.engine.dispatch(clone, seat, action).error ? null : clone;
+      } catch (error) {
+        crashes.push({ action, error });
+        return null;
+      }
+    };
+    let best = -Infinity;
+    for (const pick of listCandidates(after, seat)) {
+      if (pick.type !== 'pick_cards') continue;
+      const picked = play(after, pick);
+      if (!picked) continue;
+      best = Math.max(best, evaluate(picked, seat, profile.archetype));
+      for (const next of listCandidates(picked, seat)) {
+        if (next.type !== 'summon') continue;
+        const summoned = play(picked, next);
+        if (summoned)
+          best = Math.max(best, evaluate(summoned, seat, profile.archetype));
+      }
+    }
+    return best;
   }
 
   /**

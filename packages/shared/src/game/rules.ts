@@ -190,6 +190,17 @@ export function canSummonFromHand(card: { stage: DrakonStage | null }): boolean 
   return card.stage !== "young" && card.stage !== "adult";
 }
 
+/**
+ * Un Jeune ou un Adulte Drakon coincé en main peut être défaussé pour
+ * récupérer le Bébé de sa lignée (une fois par tour).
+ */
+export function canTransform(card: {
+  stage: DrakonStage | null;
+  lineage?: string | null;
+}): boolean {
+  return (card.stage === "young" || card.stage === "adult") && !!card.lineage;
+}
+
 /** Délai : une base posée ce tour n'évolue pas, sauf accélérateur. */
 export function canEvolveNow(base: {
   summonedThisTurn: boolean;

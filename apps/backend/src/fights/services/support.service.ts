@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import {
   GameState,
   CardInstance,
+  ChoiceCandidate,
   MonsterOnBoard,
 } from '../interfaces/game-state.interface';
 import {
   CardType,
+  DrakonStage,
   SupportType,
+  canTransform,
   EffectTrigger,
   ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
@@ -22,6 +25,7 @@ import {
   getPlayerState,
   getOpponentState,
   isCurrentPlayer,
+  queueChoice,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
 
@@ -209,6 +213,67 @@ export class SupportService {
       log,
     });
     log.forEach((l) => addLog(game, l));
+    return {};
+  }
+
+  /**
+   * Défausse un Jeune/Adulte coincé en main pour récupérer le Bébé de sa
+   * lignée (deck ou cimetière, au choix). Gratuit, une fois par tour.
+   */
+  transformFromHand(
+    game: GameState,
+    userId: number,
+    handIndex: number,
+  ): { error?: string } {
+    if (!isCurrentPlayer(game, userId))
+      return { error: "Ce n'est pas ton tour" };
+    if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
+
+    const player = getPlayerState(game, userId);
+    if (handIndex < 0 || handIndex >= player.hand.length)
+      return { error: 'Index main invalide' };
+
+    const card = player.hand[handIndex];
+    if (!canTransform(card.baseCard))
+      return { error: 'Seul un Jeune ou un Adulte peut se transformer' };
+    if (player.transformUsedThisTurn)
+      return { error: 'Une seule transformation par tour' };
+
+    const lineage = card.baseCard.lineage;
+    const isBaby = (c: CardInstance) =>
+      c.baseCard.stage === DrakonStage.BABY && c.baseCard.lineage === lineage;
+    const toCandidates = (
+      pile: CardInstance[],
+      source: 'graveyard' | 'deck',
+    ): ChoiceCandidate[] =>
+      pile
+        .filter(isBaby)
+        .map((c) => ({
+          instanceId: c.instanceId,
+          baseCard: c.baseCard,
+          source,
+        }));
+    const candidates = [
+      ...toCandidates(player.graveyard, 'graveyard'),
+      ...toCandidates(player.deck, 'deck'),
+    ];
+    if (candidates.length === 0)
+      return { error: `Aucun Bébé ${lineage} à récupérer` };
+
+    player.hand.splice(handIndex, 1);
+    player.graveyard.push(card);
+    player.transformUsedThisTurn = true;
+    addLog(
+      game,
+      `🔁 ${player.username} défausse ${card.baseCard.name} pour récupérer un Bébé ${lineage}`,
+    );
+    queueChoice(game, {
+      forUserId: userId,
+      candidates,
+      count: 1,
+      prompt: `Choisissez le Bébé ${lineage} à récupérer (cimetière ou deck)`,
+      resolution: 'pick_to_hand',
+    });
     return {};
   }
 
