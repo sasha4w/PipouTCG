@@ -37,7 +37,7 @@ export interface TournamentResult {
 const ARCHETYPES: AdventureArchetype[] = ['pipou', 'pixelman', 'dragon'];
 
 /** mulberry32 : générateur déterministe. */
-function seeded(seed: number): () => number {
+export function seeded(seed: number): () => number {
   let t = seed;
   return () => {
     t = (t + 0x6d2b79f5) | 0;
