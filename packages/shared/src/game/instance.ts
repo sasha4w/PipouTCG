@@ -59,6 +59,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   guardLocked?: boolean;
   /** Tours adverses tenus d'affilée en Garde (repasse en Attaque à GUARD_MAX_TURNS). */
   guardTurns?: number;
+  /** Vient de sortir de la Garde : pas de retour en Garde avant le prochain tour de son propriétaire. */
+  guardCooldown?: boolean;
   /** Part (en %) des dégâts de combat subis renvoyée à l'attaquant. */
   reflectPercent?: number;
   /** Drakon des Origines : la carte avant copie des effets, rendue à la sortie du terrain. */

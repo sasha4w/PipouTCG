@@ -318,6 +318,11 @@ export class SupportService {
       };
     }
 
+    // Le temps s'achète, il ne s'accumule pas : pas de retour en Garde le tour de la sortie
+    if (mode === 'guard' && monster.guardCooldown)
+      return {
+        error: `${monster.card.baseCard.name} vient de sortir de la Garde : retour possible au prochain tour`,
+      };
     // Sortir de la Garde : contre-offensive ; y entrer : le compteur repart de zéro
     if (mode === 'attack' && monster.mode === 'guard') leaveGuard(monster);
     else if (mode === 'guard') monster.guardTurns = 0;

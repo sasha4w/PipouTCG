@@ -167,6 +167,7 @@ export function applyActions(
         for (const m of targets.monsters) {
           m.forcedAttackMode = true;
           m.mode = 'attack';
+          m.guardTurns = 0;
           ctx.log.push(
             `🔒 ${card.baseCard.name} force ${m.card.baseCard.name} en mode Attaque`,
           );
@@ -219,6 +220,7 @@ export function applyActions(
         for (const m of targets.monsters) {
           m.forcedAttackMode = true;
           m.mode = 'attack';
+          m.guardTurns = 0;
           ctx.log.push(`⚔️ ${m.card.baseCard.name} est forcé en mode Attaque`);
         }
         break;
@@ -400,6 +402,7 @@ export function applyActions(
       case ActionType.FORCE_GUARD_LOCK_ENEMY:
         for (const m of targets.monsters) {
           m.guardLocked = true;
+          m.guardTurns = 0;
           m.mode = 'guard';
           ctx.log.push(
             `🔒 ${card.baseCard.name} verrouille ${m.card.baseCard.name} en mode Garde`,

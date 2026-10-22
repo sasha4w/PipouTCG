@@ -174,6 +174,7 @@ export function leaveGuard(m: MonsterOnBoard): void {
     COUNTER_OFFENSIVE_PER_TURN * Math.min(m.guardTurns ?? 0, GUARD_MAX_TURNS);
   m.guardTurns = 0;
   m.guardLocked = false;
+  m.guardCooldown = true;
   m.mode = 'attack';
 }
 

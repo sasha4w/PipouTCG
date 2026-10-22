@@ -81,6 +81,10 @@ export class EvolutionService {
     });
     evolved.equipments = base.equipments;
     evolved.mode = base.mode;
+    // La Garde continue : même compteur, même verrou, même délai de retour
+    evolved.guardTurns = base.guardTurns;
+    evolved.guardLocked = base.guardLocked;
+    evolved.guardCooldown = base.guardCooldown;
     // Compte comme posé ce tour : pas de réévolution immédiate (n'empêche pas d'attaquer)
     evolved.summonedThisTurn = true;
     evolved.attacksUsedThisTurn = base.attacksUsedThisTurn;
