@@ -2,11 +2,19 @@ import type { GameAction } from '@pipou/shared';
 import type { GameState } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
 import { monsterCard } from '../testing/cards';
-import { scenario } from '../testing/scenario';
+import { P1_ID, scenario } from '../testing/scenario';
 import { AiPlayer } from './ai-player';
 import type { AiProfile } from './ai-player';
 import { listCandidates } from './candidate-actions';
-import { STRONGEST, actionKey, countingEngine, planTurn } from './planner';
+import { evaluate } from './evaluate';
+import {
+  STRONGEST,
+  actionKey,
+  countingEngine,
+  inferArchetype,
+  planTurn,
+  riposte,
+} from './planner';
 import { seeded } from './tournament';
 
 const engine = createEngine();
@@ -123,6 +131,65 @@ describe('planTurn', () => {
         used: 0,
       })!.keys;
     expect(run()).toEqual(run());
+  });
+});
+
+describe('riposte', () => {
+  it('inferArchetype : majorité dragon', () => {
+    const card = (archetype: 'dragon' | 'pipou') =>
+      monsterCard(`Carte ${archetype}`, { archetype });
+    const game = scenario({
+      p2: {
+        hand: [card('dragon'), card('pipou')],
+        deck: [
+          ...Array.from({ length: 5 }, () => card('dragon')),
+          card('pipou'),
+        ],
+      },
+    });
+    expect(inferArchetype(game.player2)).toBe('dragon');
+  });
+
+  it('voit la Prime gagnante adverse', () => {
+    const leaf = scenario({
+      turn: 'p1',
+      phase: 'end',
+      p2: { primes: 1, monsters: [monsterCard('Brute', { atk: 500 })] },
+    });
+    expect(evaluate(leaf, 'p1', 'pipou')).toBeGreaterThan(-Infinity);
+    expect(
+      riposte(engine, leaf, 'p1', pipou, STRONGEST, seeded(1), { used: 0 }),
+    ).toBe(-Infinity);
+  });
+
+  it('partie finie : pas de simulation', () => {
+    const leaf = scenario({ phase: 'finished' });
+    leaf.winner = P1_ID;
+    const counter = { used: 0 };
+    expect(
+      riposte(engine, leaf, 'p1', pipou, STRONGEST, seeded(1), counter),
+    ).toBe(Infinity);
+    expect(counter.used).toBe(0);
+  });
+
+  it('le plan évite une fin de tour perdante', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { monsters: [monsterCard('Fragile', { atk: 100, hp: 300 })] },
+      p2: {
+        primes: 1,
+        monsters: [monsterCard('Brute', { atk: 500, hp: 900 })],
+      },
+    });
+    const plan = planTurn(engine, game, 'p1', pipou, STRONGEST, seeded(1), {
+      used: 0,
+    })!;
+    const fragile = game.player1.monsterZones[0]!;
+    const modes = plan.actions.filter(
+      (a) => a.type === 'change_mode' && a.instanceId === fragile.instanceId,
+    );
+    expect(modes.at(-1)).toMatchObject({ mode: 'guard' });
   });
 });
 

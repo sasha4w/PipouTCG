@@ -1,4 +1,4 @@
-import type { GameAction, Seat } from '@pipou/shared';
+import type { AdventureArchetype, GameAction, Seat } from '@pipou/shared';
 import type { GameEngine } from '../engine/game-engine';
 import type {
   GameState,
@@ -6,8 +6,8 @@ import type {
 } from '../interfaces/game-state.interface';
 import { seatPlayer } from '../helpers/game-state.helper';
 import type { AiProfile } from './ai-player';
-import { aiMustAct } from './ai-player';
-import { listCandidates } from './candidate-actions';
+import { AiPlayer, aiMustAct } from './ai-player';
+import { activeChoice, listCandidates } from './candidate-actions';
 import { determinize } from './determinize';
 import { evaluate } from './evaluate';
 
@@ -213,7 +213,23 @@ export function planTurn(
 
   const finalists = [...leaves.values()]
     .sort((a, b) => b.score - a.score)
-    .slice(0, thinking.beamWidth);
+    .slice(0, thinking.beamWidth)
+    .map((n) =>
+      thinking.ripostes > 0
+        ? {
+            ...n,
+            score: riposte(
+              engine,
+              n.state,
+              seat,
+              profile,
+              thinking,
+              random,
+              counter,
+            ),
+          }
+        : n,
+    );
   const best = finalists.reduce((a, b) => (b.score > a.score ? b : a));
   return {
     actions: best.actions,
@@ -221,4 +237,81 @@ export function planTurn(
     expected: best.expected,
     score: best.score,
   };
+}
+
+const ARCHETYPES: AdventureArchetype[] = ['pipou', 'pixelman', 'dragon'];
+
+/** Archétype le plus représenté parmi toutes les cartes du joueur. */
+export function inferArchetype(player: PlayerGameState): AdventureArchetype {
+  const cards = [
+    ...player.hand,
+    ...player.deck,
+    ...player.primeDeck,
+    ...player.graveyard,
+    ...player.supportZones.filter((c) => c !== null),
+    ...player.monsterZones.flatMap((m) => (m ? [m.card, ...m.equipments] : [])),
+  ];
+  const count = (a: AdventureArchetype) =>
+    cards.filter((c) => c.baseCard.archetype === a).length;
+  return ARCHETYPES.reduce((best, a) => (count(a) > count(best) ? a : best));
+}
+
+/** Coups au plus pour finir mon tour puis jouer celui de l'adversaire. */
+const RIPOSTE_MAX_ACTIONS = 80;
+
+/**
+ * Note d'une fin de tour après la riposte adverse : sur `thinking.ripostes`
+ * déterminisations, je finis mon tour, puis l'adversaire joue le sien avec
+ * le cerveau glouton. Moyenne des notes ; -Infinity si une copie perd.
+ */
+export function riposte(
+  engine: GameEngine,
+  leaf: GameState,
+  seat: Seat,
+  profile: AiProfile,
+  thinking: ThinkingProfile,
+  random: () => number,
+  counter: Counter,
+): number {
+  const base = evaluate(leaf, seat, profile.archetype);
+  if (leaf.phase === 'finished') return base;
+  const oppSeat: Seat = seat === 'p1' ? 'p2' : 'p1';
+  const meId = seatPlayer(leaf, seat).userId;
+  const oppId = seatPlayer(leaf, oppSeat).userId;
+  const counted = countingEngine(engine, counter);
+  const greedy = new AiPlayer(counted, random);
+  const mine: AiProfile = { archetype: profile.archetype, level: 3 };
+  const theirs: AiProfile = {
+    archetype: inferArchetype(seatPlayer(leaf, oppSeat)),
+    level: 3,
+  };
+
+  const scores: number[] = [];
+  for (let k = 0; k < thinking.ripostes; k++) {
+    if (counter.used >= thinking.budget) break;
+    const s = determinize(leaf, seat, random);
+    let passed = s.currentTurnUserId !== meId;
+    for (let n = 0; n < RIPOSTE_MAX_ACTIONS && s.phase !== 'finished'; n++) {
+      if (s.currentTurnUserId !== meId) passed = true;
+      // De nouveau mon tour : la riposte est jouée
+      else if (passed) break;
+      const choice = activeChoice(s);
+      if (
+        choice?.forUserId === meId ||
+        (!choice && s.currentTurnUserId === meId)
+      ) {
+        // Mon tour se termine ; mes choix sont résolus par le glouton
+        const action: GameAction = choice
+          ? greedy.chooseAction(s, seat, mine)
+          : { type: 'end_phase' };
+        counted.dispatch(s, seat, action);
+      } else if (aiMustAct(s, oppId))
+        counted.dispatch(s, oppSeat, greedy.chooseAction(s, oppSeat, theirs));
+      else break;
+    }
+    scores.push(evaluate(s, seat, profile.archetype));
+  }
+  if (scores.length === 0) return base;
+  if (scores.includes(-Infinity)) return -Infinity;
+  return scores.reduce((a, b) => a + b, 0) / scores.length;
 }
