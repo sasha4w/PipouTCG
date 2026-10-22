@@ -1,6 +1,6 @@
 # Patch « Garde, Relève et Drakons des Origines » — design
 
-Date : 2026-10-23. Conçu avec le joueur à partir du tournoi Standard du nouveau cerveau (`docs/superpowers/plans/2026-10-19-balance-results.md`, section « Nouveau cerveau »).
+Date : 2026-10-23. Validé par le joueur le 2026-10-23. Conçu avec le joueur à partir du tournoi Standard du nouveau cerveau (`docs/superpowers/plans/2026-10-19-balance-results.md`, section « Nouveau cerveau »).
 
 ## Pourquoi
 
@@ -114,7 +114,7 @@ Ce ne sont pas des règles générales, mais des pouvoirs de certaines cartes.
 
 ### Visuels
 
-Les nouvelles cartes ont besoin d'illustrations. *(Choix de Claude)* : le patch peut les livrer avec une image provisoire, et le joueur fournit les visuels.
+Les nouvelles cartes sont livrées **sans image** (`image` à null, aucune image provisoire), décision du joueur. Il fournira les visuels plus tard.
 
 ## 6. L'IA
 
