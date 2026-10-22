@@ -1,7 +1,13 @@
 import { allRealCards } from '../testing/real-cards';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames } from './tournament';
-import { SCALES, planJobs, runJob, runJobs } from './tournament-jobs';
+import {
+  SCALES,
+  planJobs,
+  planMirrorJobs,
+  runJob,
+  runJobs,
+} from './tournament-jobs';
 
 jest.setTimeout(120_000);
 
@@ -35,5 +41,15 @@ describe('tournoi par jobs', () => {
 
     const reversed = [...jobs].reverse().map(runJob).reverse();
     expect(reversed.reduce(mergeResults)).toEqual(one);
+  });
+});
+
+describe('miroir', () => {
+  it('un job par deck, nouveau contre ancien', () => {
+    const jobs = planMirrorJobs([1], 2, 42);
+    expect(jobs).toHaveLength(15);
+    expect(jobs.every((j) => j.games.length === 2)).toBe(true);
+    const names = runJob(jobs[0]).byEntry.map((e) => e.name);
+    expect(names).toEqual(['pipou niveau 1 nouveau', 'pipou niveau 1 ancien']);
   });
 });

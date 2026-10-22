@@ -6,6 +6,7 @@ import { allRealCards } from '../testing/real-cards';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames, playPlanned } from './tournament';
 import type {
+  Brain,
   PlannedGame,
   TournamentEntry,
   TournamentResult,
@@ -24,6 +25,10 @@ export const SCALES: Record<ScaleName, { deckSeeds: number; games: number }> = {
 export interface Job {
   deckSeed: number;
   games: PlannedGame[];
+  /** Cerveau des 15 decks (hors miroir). */
+  brain: Brain;
+  /** Miroir : indice du deck joué par le nouveau cerveau contre l'ancien. */
+  mirror?: number;
 }
 
 let cards: Card[] | undefined;
@@ -49,6 +54,7 @@ export function planJobs(
   deckSeeds: number[],
   gamesPerPair: number,
   seed: number,
+  brain: Brain = 'plan',
 ): Job[] {
   const jobs: Job[] = [];
   for (const deckSeed of deckSeeds) {
@@ -57,13 +63,48 @@ export function planJobs(
       const key = `${g.i}-${g.j}`;
       byPair.set(key, [...(byPair.get(key) ?? []), g]);
     }
-    for (const games of byPair.values()) jobs.push({ deckSeed, games });
+    for (const games of byPair.values()) jobs.push({ deckSeed, games, brain });
   }
   return jobs;
 }
 
+/** Les deux entrées d'un miroir : même deck, nouveau cerveau contre ancien. */
+function mirrorEntries(deckSeed: number, deck: number): TournamentEntry[] {
+  const e = entriesFor(deckSeed)[deck];
+  return [
+    { ...e, name: `${e.name} nouveau`, brain: 'plan' },
+    { ...e, name: `${e.name} ancien`, brain: 'greedy' },
+  ];
+}
+
+/** Miroir : un job par graine de decks et par deck, places alternées. */
+export function planMirrorJobs(
+  deckSeeds: number[],
+  gamesPerPair: number,
+  seed: number,
+): Job[] {
+  return deckSeeds.flatMap((deckSeed) =>
+    entriesFor(deckSeed).map((_, deck) => ({
+      deckSeed,
+      brain: 'plan' as const,
+      mirror: deck,
+      games: planGames(
+        mirrorEntries(deckSeed, deck),
+        gamesPerPair,
+        seed + 1000 * deck,
+      ),
+    })),
+  );
+}
+
 export function runJob(job: Job): TournamentResult {
-  return playPlanned(entriesFor(job.deckSeed), job.games);
+  if (job.mirror !== undefined)
+    return playPlanned(mirrorEntries(job.deckSeed, job.mirror), job.games);
+  const entries = entriesFor(job.deckSeed).map((e) => ({
+    ...e,
+    brain: job.brain,
+  }));
+  return playPlanned(entries, job.games);
 }
 
 /**

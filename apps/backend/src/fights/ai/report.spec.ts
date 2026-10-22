@@ -1,5 +1,12 @@
 import type { AdventureArchetype } from '@pipou/shared';
-import { alerts, formatDetail, formatSummary, wilson } from './report';
+import {
+  alerts,
+  formatDetail,
+  formatMirror,
+  formatSummary,
+  wilson,
+} from './report';
+import { emptyTelemetry } from './telemetry';
 import type { CardStats, DeckStats, Telemetry } from './telemetry';
 import type { TournamentResult } from './tournament';
 
@@ -163,5 +170,38 @@ describe('formatSummary', () => {
     );
     expect(text).toContain('| Z |');
     expect(text).toContain('données insuffisantes');
+  });
+});
+
+describe('formatMirror', () => {
+  const mirror = (rates: [number, number, number]): TournamentResult => {
+    const archetypes: AdventureArchetype[] = ['pipou', 'pixelman', 'dragon'];
+    return {
+      ...result(emptyTelemetry()),
+      byEntry: archetypes.flatMap((archetype, i) => [
+        {
+          name: `${archetype} niveau 1 nouveau`,
+          archetype,
+          level: 1 as const,
+          wins: rates[i],
+          played: 100,
+        },
+        {
+          name: `${archetype} niveau 1 ancien`,
+          archetype,
+          level: 1 as const,
+          wins: 100 - rates[i],
+          played: 100,
+        },
+      ]),
+    };
+  };
+
+  it('critère atteint : 60 % partout et écart sous 10 points', () => {
+    expect(formatMirror(mirror([70, 65, 62]))).toContain('critère atteint');
+  });
+
+  it('critère non atteint si un archétype progresse moins', () => {
+    expect(formatMirror(mirror([70, 50, 62]))).toContain('critère non atteint');
   });
 });

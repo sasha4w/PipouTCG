@@ -6,6 +6,7 @@ import type { CardInstance } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
+import { STRONGEST } from './planner';
 import type { AiLevel } from './ai-player';
 import { GameRecorder, emptyTelemetry, mergeTelemetry } from './telemetry';
 import type { Telemetry } from './telemetry';
@@ -13,12 +14,16 @@ import type { Telemetry } from './telemetry';
 /** Garde-fou : une partie qui dépasse ce nombre d'actions n'a pas de vainqueur. */
 export const MAX_ACTIONS = 2000;
 
+export type Brain = 'greedy' | 'plan';
+
 export interface TournamentEntry {
   name: string;
   archetype: AdventureArchetype;
   level: AiLevel;
   /** Une entrée par exemplaire. */
   deck: Card[];
+  /** Cerveau : glouton (par défaut, comme en aventure) ou qui planifie. */
+  brain?: Brain;
 }
 
 export interface TournamentResult {
@@ -92,7 +97,12 @@ function playGame(
   Math.random = seeded(seed ^ 0x9e3779b9);
   try {
     const engine = createEngine(fixedRng());
-    const ai = new AiPlayer(engine, random);
+    const brainOf = (e: TournamentEntry) =>
+      e.brain === 'plan' ? STRONGEST : 'greedy';
+    const ais: Record<Seat, AiPlayer> = {
+      p1: new AiPlayer(engine, random, brainOf(p1)),
+      p2: new AiPlayer(engine, random, brainOf(p2)),
+    };
     const game = createGameState(
       1,
       { userId: 1, username: p1.name, socketId: 's1' },
@@ -109,10 +119,14 @@ function playGame(
     while (game.phase !== 'finished' && actions < maxActions) {
       const actor = seats.find((s) => aiMustAct(game, s.userId));
       if (!actor) break;
-      const { action, valid } = ai.chooseDetailed(game, actor.seat, {
-        archetype: actor.entry.archetype,
-        level: actor.entry.level,
-      });
+      const { action, valid } = ais[actor.seat].chooseDetailed(
+        game,
+        actor.seat,
+        {
+          archetype: actor.entry.archetype,
+          level: actor.entry.level,
+        },
+      );
       recorder.beforeAction(game, actor.seat, valid, action);
       engine.dispatch(game, actor.seat, action);
       recorder.afterAction(game);

@@ -268,3 +268,43 @@ export function formatDetail(r: TournamentResult): string {
   );
   return lines.join('\n');
 }
+
+/** Taux minimal du nouveau cerveau contre l'ancien, dans chaque archétype. */
+export const MIRROR_MIN_RATE = 0.6;
+/** Écart maximal, en points, entre le meilleur et le moins bon archétype. */
+export const MIRROR_MAX_GAP = 10;
+
+/**
+ * Résumé d'un miroir : taux du nouveau cerveau contre l'ancien par archétype,
+ * écart entre archétypes et verdict de force égale.
+ */
+export function formatMirror(r: TournamentResult): string {
+  const rows = ARCHETYPES.map((archetype) => {
+    const mine = r.byEntry.filter(
+      (e) => e.archetype === archetype && e.name.endsWith(' nouveau'),
+    );
+    const wins = mine.reduce((n, e) => n + e.wins, 0);
+    const played = mine.reduce((n, e) => n + e.played, 0);
+    return { archetype, wins, played, rate: played === 0 ? 0 : wins / played };
+  });
+  const rates = rows.map((x) => 100 * x.rate);
+  const gap = Math.max(...rates) - Math.min(...rates);
+  const ok =
+    rows.every((x) => x.rate >= MIRROR_MIN_RATE) && gap < MIRROR_MAX_GAP;
+  return [
+    '# Miroir : nouveau cerveau contre ancien',
+    '',
+    `${r.games} parties.`,
+    '',
+    '| Archétype | Victoires du nouveau | Parties | Taux |',
+    '|---|---|---|---|',
+    ...rows.map(
+      (x) =>
+        `| ${x.archetype} | ${x.wins} | ${x.played} | ${rate(x.wins, x.played)} |`,
+    ),
+    '',
+    `Écart entre archétypes : ${gap.toFixed(1)} points.`,
+    '',
+    `Verdict : ${ok ? 'critère atteint' : 'critère non atteint'} (au moins ${100 * MIRROR_MIN_RATE} % partout, écart sous ${MIRROR_MAX_GAP} points).`,
+  ].join('\n');
+}

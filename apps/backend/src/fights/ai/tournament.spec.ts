@@ -3,6 +3,7 @@ import type { Card } from '../../cards/card.entity';
 import { generateDeck } from '../../adventure/deck-generator';
 import { LAUNCH_SIGNATURES } from '../../adventure/signatures';
 import { allRealCards } from '../testing/real-cards';
+import * as planner from './planner';
 import {
   formatTournament,
   planGames,
@@ -94,5 +95,20 @@ describe('runTournament', () => {
     const text = formatTournament(runTournament(entries, 2, 1));
     expect(text).toContain('| Pipou 3');
     expect(text).toContain('pipou');
+  });
+});
+
+describe('cerveaux au tournoi', () => {
+  it('un deck « plan » joue avec le planificateur', () => {
+    const [pipou, dragon] = [
+      entryFor('Pipou 3', 'pipou'),
+      { ...entryFor('Dragon 3', 'dragon'), brain: 'plan' as const },
+    ];
+    const spy = jest.spyOn(planner, 'planTurn');
+    const result = runTournament([pipou, dragon], 1, 1);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
+    expect(result.games).toBe(1);
+    expect(result.telemetry.decks).toHaveLength(2);
   });
 });

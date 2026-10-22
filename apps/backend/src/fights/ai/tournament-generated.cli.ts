@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { cpus } from 'node:os';
 import { join } from 'node:path';
-import { formatDetail, formatSummary } from './report';
-import { SCALES, planJobs, runJobs } from './tournament-jobs';
+import { formatDetail, formatMirror, formatSummary } from './report';
+import { SCALES, planJobs, planMirrorJobs, runJobs } from './tournament-jobs';
 import type { ScaleName } from './tournament-jobs';
 
 /** Lit `--nom <valeur>` dans argv. */
@@ -19,7 +19,8 @@ function num(name: string, fallback: number): number {
 /**
  * Tournoi sur decks générés en code à graine fixe, sans base.
  * `--scale rapide|standard|complet`, ou une seule graine avec
- * `--deck-seed`, `--games` ; `--seed` (parties), `--workers`.
+ * `--deck-seed`, `--games` ; `--seed` (parties), `--workers`,
+ * `--brain plan|greedy` (plan par défaut), `--mirror` (nouveau contre ancien).
  */
 async function main(): Promise<void> {
   const scaleName = raw('scale') as ScaleName | undefined;
@@ -34,9 +35,15 @@ async function main(): Promise<void> {
   const games = scale ? scale.games : num('games', 10);
   const seed = num('seed', 42);
   const workers = num('workers', Math.max(1, cpus().length - 2));
-  const label = scaleName ?? `graine-decks-${deckSeeds[0]}`;
+  const mirror = process.argv.includes('--mirror');
+  const brain = raw('brain') ?? 'plan';
+  if (brain !== 'plan' && brain !== 'greedy')
+    throw new Error(`Cerveau inconnu « ${brain} » (plan, greedy)`);
+  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${!mirror && brain === 'greedy' ? '-glouton' : ''}`;
 
-  const jobs = planJobs(deckSeeds, games, seed);
+  const jobs = mirror
+    ? planMirrorJobs(deckSeeds, games, seed)
+    : planJobs(deckSeeds, games, seed, brain);
   const total = jobs.reduce((n, j) => n + j.games.length, 0);
   console.log(
     `${label} : graines de decks ${deckSeeds[0]} à ${deckSeeds.at(-1)}, ${games} parties par paire, graine ${seed}, ${total} parties, ${workers} processus`,
@@ -54,7 +61,8 @@ async function main(): Promise<void> {
   });
   const seconds = Math.round((Date.now() - started) / 1000);
 
-  const summary = `${formatSummary(result, label)}\n\nDurée : ${seconds} s.`;
+  const head = mirror ? formatMirror(result) : formatSummary(result, label);
+  const summary = `${head}\n\nDurée : ${seconds} s.`;
   console.log(`\n${summary}`);
 
   const dir = join(__dirname, '..', '..', '..', '.e2e');
