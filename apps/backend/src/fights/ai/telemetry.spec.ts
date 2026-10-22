@@ -110,6 +110,20 @@ describe('GameRecorder', () => {
     expect(row(t, 'Lame')).toMatchObject({ oppDestroyed: 1 });
   });
 
+  it("impact : ce que l'adversaire dépense lui-même n'est pas une défausse", () => {
+    const game = scenario({
+      p1: { hand: [monsterCard('Lame')] },
+      p2: { hand: [monsterCard('Recyclée')] },
+    });
+    const rec = recorder();
+    play(rec, game, 'p1', summon);
+    while (game.currentTurnUserId === game.player1.userId)
+      play(rec, game, 'p1', endPhase);
+    play(rec, game, 'p2', (v) => v.find((a) => a.type === 'recycle'));
+    const t = rec.finish(game, 'p1');
+    expect(row(t, 'Lame')).toMatchObject({ oppDiscarded: 0 });
+  });
+
   it('partie sans vainqueur', () => {
     const game = scenario({ p1: { hand: [monsterCard('Lame')] } });
     const rec = recorder();

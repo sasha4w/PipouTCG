@@ -242,6 +242,8 @@ export class GameRecorder {
   private windows: { seat: Seat; card: string; until: number }[] = [];
   private snap: Snapshot | null = null;
   private eventIndex = 0;
+  /** Auteur et type du dernier coup, pour attribuer les défausses. */
+  private last: { seat: Seat; type: GameAction['type'] } | null = null;
 
   constructor(private readonly entries: Record<Seat, RecordedEntry>) {
     const deck = (e: RecordedEntry): DeckStats => ({
@@ -265,6 +267,7 @@ export class GameRecorder {
     chosen: GameAction,
   ): void {
     this.snap ??= snapshot(game);
+    this.last = { seat, type: chosen.type };
     const me = seatPlayer(game, seat);
     if (
       game.phase !== 'main' ||
@@ -348,7 +351,11 @@ export class GameRecorder {
       const opp = d[other(w.seat)];
       r.oppDestroyed += opp.destroyed;
       r.primesTaken += d[w.seat].primes;
-      r.oppDiscarded += opp.discarded;
+      // Paiements, recyclage, défausse de fin de tour : l'adversaire dépense
+      // lui-même. Seuls comptent mes coups et les choix qu'il résout (ex. une
+      // défausse imposée par mon effet).
+      if (this.last?.seat === w.seat || this.last?.type === 'pick_cards')
+        r.oppDiscarded += opp.discarded;
       r.oppBlocked += opp.blocked;
     }
     this.windows = this.windows.filter((w) => game.turnNumber <= w.until);
