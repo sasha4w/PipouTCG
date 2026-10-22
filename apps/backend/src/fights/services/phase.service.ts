@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import {
   DestroyCause,
   EffectTrigger,
+  COUNTER_OFFENSIVE_PER_TURN,
+  GUARD_MAX_TURNS,
   HAND_LIMIT,
   isImplanted,
   isPlantedBy,
@@ -18,6 +20,7 @@ import {
   getOpponentState,
   getPlayerState,
   isCurrentPlayer,
+  leaveGuard,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
 import { hatchEgg } from '../helpers/hatching';
@@ -95,6 +98,16 @@ export class PhaseService {
     const log: string[] = [];
     // L'immunité au combat dure jusqu'au début du tour de son propriétaire
     for (const m of player.monsterZones) if (m) m.combatImmune = false;
+    // Garde : un tour adverse de plus tenu ; au-delà de GUARD_MAX_TURNS, contre-offensive
+    for (const m of player.monsterZones) {
+      if (!m || m.mode !== 'guard' || isImplanted(m, player.userId)) continue;
+      m.guardTurns = (m.guardTurns ?? 0) + 1;
+      if (m.guardTurns < GUARD_MAX_TURNS) continue;
+      leaveGuard(m);
+      log.push(
+        `⚔️ ${m.card.baseCard.name} sort de la Garde et contre-attaque (+${COUNTER_OFFENSIVE_PER_TURN * GUARD_MAX_TURNS} ATK ce tour)`,
+      );
+    }
     // La protection d'un Zeta implanté tombe au début du tour de son poseur
     for (const host of [player, getOpponentState(game, player.userId)])
       for (const m of host.monsterZones)

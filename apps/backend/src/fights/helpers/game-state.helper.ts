@@ -6,6 +6,7 @@ import {
   ChoiceCandidate,
   PendingChoice,
 } from '../interfaces/game-state.interface';
+import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from '@pipou/shared';
 import type { Seat } from '@pipou/shared';
 
 const LOG_MAX = 50;
@@ -161,4 +162,17 @@ export function sendToGraveyard(
   ...cards: CardInstance[]
 ): void {
   player.graveyard.push(...cards.filter((c) => !c.token));
+}
+
+/**
+ * Sortie de Garde (volontaire ou au bout de GUARD_MAX_TURNS) : le monstre
+ * repasse en Attaque, libéré de tout verrou, avec la contre-offensive
+ * (+COUNTER_OFFENSIVE_PER_TURN d'ATK par tour tenu, jusqu'à la fin du tour).
+ */
+export function leaveGuard(m: MonsterOnBoard): void {
+  m.tempAtkBuff +=
+    COUNTER_OFFENSIVE_PER_TURN * Math.min(m.guardTurns ?? 0, GUARD_MAX_TURNS);
+  m.guardTurns = 0;
+  m.guardLocked = false;
+  m.mode = 'attack';
 }

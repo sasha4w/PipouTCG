@@ -234,3 +234,8 @@ export function graveyardHasAllElements(
     ),
   );
 }
+
+/** Tours adverses qu'un monstre peut tenir en Garde d'affilée. */
+export const GUARD_MAX_TURNS = 2;
+/** Contre-offensive : ATK gagnée par tour adverse tenu, en sortant de la Garde. */
+export const COUNTER_OFFENSIVE_PER_TURN = 100;

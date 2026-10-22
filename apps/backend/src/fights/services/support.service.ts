@@ -25,6 +25,7 @@ import {
   getPlayerState,
   getOpponentState,
   isCurrentPlayer,
+  leaveGuard,
   queueChoice,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
@@ -308,6 +309,9 @@ export class SupportService {
       };
     }
 
+    // Sortir de la Garde : contre-offensive ; y entrer : le compteur repart de zéro
+    if (mode === 'attack' && monster.mode === 'guard') leaveGuard(monster);
+    else if (mode === 'guard') monster.guardTurns = 0;
     monster.mode = mode;
     addLog(
       game,
