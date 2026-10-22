@@ -53,3 +53,12 @@ describe('miroir', () => {
     expect(names).toEqual(['pipou niveau 1 nouveau', 'pipou niveau 1 ancien']);
   });
 });
+
+describe('miroir réel', () => {
+  // Reproduit une boucle de changements de mode du planificateur (dragon niveau 3)
+  it('chaque partie a un vainqueur', () => {
+    const job = planMirrorJobs([1], 2, 42)[12];
+    const result = runJob(job);
+    expect(result.byEntry.reduce((n, e) => n + e.wins, 0)).toBe(result.games);
+  });
+});

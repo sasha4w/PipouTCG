@@ -156,10 +156,15 @@ export function planTurn(
   thinking: ThinkingProfile,
   random: () => number,
   counter: Counter,
+  /** États déjà traversés ce tour : la recherche n'y revient pas. */
+  visited: ReadonlySet<string> = new Set(),
 ): Plan | null {
   const me = seatPlayer(game, seat).userId;
   const score = (s: GameState) => evaluate(s, seat, profile.archetype);
   const root = determinize(game, seat, random);
+  // Un état déjà vu n'est plus développé : sinon Garde / Attaque en boucle
+  const seen = new Set(visited);
+  seen.add(stateSignature(root, seat));
   let beam: Node[] = [
     { state: root, actions: [], keys: [], expected: [], score: score(root) },
   ];
@@ -186,6 +191,8 @@ export function planTurn(
           continue;
         }
         const sig = stateSignature(next, seat);
+        if (seen.has(sig)) continue;
+        seen.add(sig);
         const child: Node = {
           state: next,
           actions: [...node.actions, action],

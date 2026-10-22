@@ -65,6 +65,10 @@ export class AiPlayer {
 
   /** Plan en cours (cerveau qui planifie) : prochain coup à jouer = `next`. */
   private plan: (Plan & { seat: Seat; next: number }) | null = null;
+  private visited: { turn: string; states: Set<string> } = {
+    turn: '',
+    states: new Set(),
+  };
 
   constructor(
     private readonly engine: GameEngine,
@@ -190,6 +194,10 @@ export class AiPlayer {
     valid: Scored[],
   ): GameAction | null {
     const thinking = this.thinking as ThinkingProfile;
+    // États réels traversés ce tour : un nouveau plan n'y ramène pas
+    const turn = `${seat}|${game.turnNumber}`;
+    if (this.visited.turn !== turn) this.visited = { turn, states: new Set() };
+    this.visited.states.add(stateSignature(game, seat));
     // Coup réel valide qui a cette clé (les monstres posés ont d'autres identifiants)
     const find = (key: string) =>
       valid.find((v) => actionKey(game, v.action) === key)?.action;
@@ -214,9 +222,8 @@ export class AiPlayer {
       profile,
       thinking,
       this.random,
-      {
-        used: 0,
-      },
+      { used: 0 },
+      this.visited.states,
     );
     const first = plan && find(plan.keys[0]);
     if (!plan || !first) {

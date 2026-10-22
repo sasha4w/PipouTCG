@@ -14,6 +14,7 @@ import {
   inferArchetype,
   planTurn,
   riposte,
+  stateSignature,
 } from './planner';
 import { seeded } from './tournament';
 
@@ -124,6 +125,27 @@ describe('planTurn', () => {
     }
   });
 
+  it('une suite ne repasse jamais par un état déjà visité', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        monsters: [
+          monsterCard('Alpha', { atk: 200, hp: 600 }),
+          monsterCard('Beta', { atk: 150, hp: 500 }),
+        ],
+      },
+      p2: { monsters: [monsterCard('Brute', { atk: 500, hp: 900 })] },
+    });
+    for (let s = 1; s <= 5; s++) {
+      const plan = planTurn(engine, game, 'p1', pipou, STRONGEST, seeded(s), {
+        used: 0,
+      })!;
+      const seen = [stateSignature(game, 'p1'), ...plan.expected];
+      expect(new Set(seen).size).toBe(seen.length);
+    }
+  });
+
   it('déterministe', () => {
     const game = lonelyRecruit();
     const run = () =>
@@ -194,6 +216,28 @@ describe('riposte', () => {
 });
 
 describe('AiPlayer qui planifie', () => {
+  it('finit son tour sans tourner en rond (changements de mode)', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        monsters: [
+          monsterCard('Alpha', { atk: 200, hp: 600 }),
+          monsterCard('Beta', { atk: 150, hp: 500 }),
+        ],
+      },
+      p2: { monsters: [monsterCard('Brute', { atk: 500, hp: 900 })] },
+    });
+    const ai = new AiPlayer(engine, seeded(3), STRONGEST);
+    let actions = 0;
+    while (game.currentTurnUserId === P1_ID && game.phase !== 'finished') {
+      if (++actions > 30) break;
+      const action = ai.chooseAction(game, 'p1', pipou);
+      expect(engine.dispatch(game, 'p1', action).error).toBeUndefined();
+    }
+    expect(actions).toBeLessThanOrEqual(30);
+  });
+
   it('suit son plan sans rechercher à nouveau, replanifie si la main change', () => {
     const counter = { used: 0 };
     const ai = new AiPlayer(
