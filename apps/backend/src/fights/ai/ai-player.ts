@@ -11,6 +11,8 @@ import {
 import { activeChoice, listCandidates } from './candidate-actions';
 import { determinize } from './determinize';
 import { evaluate } from './evaluate';
+import { actionKey, planTurn, stateSignature } from './planner';
+import type { Plan, ThinkingProfile } from './planner';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
 
@@ -61,9 +63,14 @@ interface Scored {
 export class AiPlayer {
   private readonly logger = new Logger(AiPlayer.name);
 
+  /** Plan en cours (cerveau qui planifie) : prochain coup à jouer = `next`. */
+  private plan: (Plan & { seat: Seat; next: number }) | null = null;
+
   constructor(
     private readonly engine: GameEngine,
     private readonly random: () => number,
+    /** 'greedy' : un coup à l'avance (aventure) ; sinon, planifie son tour. */
+    private readonly thinking: ThinkingProfile | 'greedy' = 'greedy',
   ) {}
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
@@ -117,6 +124,11 @@ export class AiPlayer {
         crashes.push({ action, error });
         continue;
       }
+      // Le cerveau qui planifie trouve ces suites lui-même
+      if (this.thinking !== 'greedy') {
+        valid.push({ action, score: evaluate(clone, seat, profile.archetype) });
+        continue;
+      }
       valid.push({
         action,
         score: Math.max(
@@ -141,11 +153,18 @@ export class AiPlayer {
     });
 
     const rate = MISTAKE_RATE[profile.level] ?? 0;
-    if (rate > 0 && this.random() < rate)
+    if (rate > 0 && this.random() < rate) {
+      this.plan = null;
       return result(valid[Math.floor(this.random() * valid.length)].action);
+    }
 
     if (game.phase === 'mulligan')
       return result(mulliganChoice(game, seat, valid));
+
+    if (this.thinking !== 'greedy') {
+      const planned = this.planned(game, seat, profile, valid);
+      if (planned) return result(planned);
+    }
 
     const endPhase = valid.find((v) => v.action.type === 'end_phase');
     const others = valid.filter((v) => v.action.type !== 'end_phase');
@@ -158,6 +177,54 @@ export class AiPlayer {
         ? best.action
         : endPhase.action,
     );
+  }
+
+  /**
+   * Coup suivant du plan si l'état réel est celui prévu, sinon nouveau plan.
+   * null : pas de plan (le glouton décide).
+   */
+  private planned(
+    game: GameState,
+    seat: Seat,
+    profile: AiProfile,
+    valid: Scored[],
+  ): GameAction | null {
+    const thinking = this.thinking as ThinkingProfile;
+    // Coup réel valide qui a cette clé (les monstres posés ont d'autres identifiants)
+    const find = (key: string) =>
+      valid.find((v) => actionKey(game, v.action) === key)?.action;
+    const p = this.plan;
+    if (
+      p &&
+      p.seat === seat &&
+      p.next < p.keys.length &&
+      stateSignature(game, seat) === p.expected[p.next - 1]
+    ) {
+      const next = find(p.keys[p.next]);
+      if (next) {
+        p.next++;
+        return next;
+      }
+    }
+
+    const plan = planTurn(
+      this.engine,
+      game,
+      seat,
+      profile,
+      thinking,
+      this.random,
+      {
+        used: 0,
+      },
+    );
+    const first = plan && find(plan.keys[0]);
+    if (!plan || !first) {
+      this.plan = null;
+      return null;
+    }
+    this.plan = { ...plan, seat, next: 1 };
+    return first;
   }
 
   /**
