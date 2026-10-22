@@ -7,9 +7,11 @@ import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
 import type { AiLevel } from './ai-player';
+import { GameRecorder, emptyTelemetry, mergeTelemetry } from './telemetry';
+import type { Telemetry } from './telemetry';
 
 /** Garde-fou : une partie qui dépasse ce nombre d'actions n'a pas de vainqueur. */
-const MAX_ACTIONS = 2000;
+export const MAX_ACTIONS = 2000;
 
 export interface TournamentEntry {
   name: string;
@@ -32,6 +34,18 @@ export interface TournamentResult {
     AdventureArchetype,
     Record<AdventureArchetype, { wins: number; played: number }>
   >;
+  telemetry: Telemetry;
+}
+
+/** Partie à jouer : indices dans `entries` et graine. */
+export interface PlannedGame {
+  /** Paire (i < j), pour les compteurs. */
+  i: number;
+  j: number;
+  /** Places de la partie. */
+  p1: number;
+  p2: number;
+  seed: number;
 }
 
 const ARCHETYPES: AdventureArchetype[] = ['pipou', 'pixelman', 'dragon'];
@@ -65,12 +79,13 @@ function instances(
   return cards;
 }
 
-/** Joue une partie ; renvoie l'indice du vainqueur (0 = p1, 1 = p2) ou null. */
+/** Joue une partie : vainqueur (0 = p1, 1 = p2, null sans vainqueur) et télémétrie. */
 function playGame(
   p1: TournamentEntry,
   p2: TournamentEntry,
   seed: number,
-): 0 | 1 | null {
+  maxActions: number,
+): { winner: 0 | 1 | null; telemetry: Telemetry } {
   const random = seeded(seed);
   // PickService mélange avec Math.random : on le fige pendant la partie
   const realRandom = Math.random;
@@ -89,21 +104,29 @@ function playGame(
       { seat: 'p1', userId: 1, entry: p1 },
       { seat: 'p2', userId: 2, entry: p2 },
     ];
+    const recorder = new GameRecorder({ p1, p2 });
     let actions = 0;
-    while (game.phase !== 'finished' && actions < MAX_ACTIONS) {
+    while (game.phase !== 'finished' && actions < maxActions) {
       const actor = seats.find((s) => aiMustAct(game, s.userId));
-      if (!actor) return null;
-      const action = ai.chooseAction(game, actor.seat, {
+      if (!actor) break;
+      const { action, valid } = ai.chooseDetailed(game, actor.seat, {
         archetype: actor.entry.archetype,
         level: actor.entry.level,
       });
+      recorder.beforeAction(game, actor.seat, valid, action);
       engine.dispatch(game, actor.seat, action);
+      recorder.afterAction(game);
       actions++;
     }
-    if (game.phase !== 'finished') return null;
-    if (game.winner === 1) return 0;
-    if (game.winner === 2) return 1;
-    return null;
+    const finished = game.phase === 'finished';
+    const winner =
+      finished && game.winner === 1
+        ? 0
+        : finished && game.winner === 2
+          ? 1
+          : null;
+    const seat = winner === 0 ? 'p1' : winner === 1 ? 'p2' : null;
+    return { winner, telemetry: recorder.finish(game, seat) };
   } finally {
     Math.random = realRandom;
   }
@@ -120,42 +143,116 @@ export function runTournament(
   seed: number,
   onGame?: (game: { p1: string; p2: string }) => void,
 ): TournamentResult {
-  const byEntry = entries.map((e) => ({
-    name: e.name,
-    archetype: e.archetype,
-    level: e.level,
-    wins: 0,
-    played: 0,
-  }));
+  const planned = planGames(entries, gamesPerPair, seed);
+  for (const g of planned)
+    onGame?.({ p1: entries[g.p1].name, p2: entries[g.p2].name });
+  return playPlanned(entries, planned);
+}
+
+/**
+ * Parties de toutes les paires non ordonnées, `gamesPerPair` chacune, places
+ * alternées ; la graine d'une partie dépend de son rang dans ce plan.
+ */
+export function planGames(
+  entries: TournamentEntry[],
+  gamesPerPair: number,
+  seed: number,
+): PlannedGame[] {
+  const out: PlannedGame[] = [];
+  for (let i = 0; i < entries.length; i++)
+    for (let j = i + 1; j < entries.length; j++)
+      for (let g = 0; g < gamesPerPair; g++) {
+        const [p1, p2] = g % 2 === 0 ? [i, j] : [j, i];
+        out.push({ i, j, p1, p2, seed: seed + out.length * 7919 });
+      }
+  return out;
+}
+
+function emptyResult(entries: TournamentEntry[]): TournamentResult {
+  return {
+    games: 0,
+    byEntry: entries.map((e) => ({
+      name: e.name,
+      archetype: e.archetype,
+      level: e.level,
+      wins: 0,
+      played: 0,
+    })),
+    byArchetype: Object.fromEntries(
+      ARCHETYPES.map((a) => [
+        a,
+        Object.fromEntries(ARCHETYPES.map((b) => [b, { wins: 0, played: 0 }])),
+      ]),
+    ) as TournamentResult['byArchetype'],
+    telemetry: emptyTelemetry(),
+  };
+}
+
+/** Joue les parties planifiées et cumule victoires et télémétrie. */
+export function playPlanned(
+  entries: TournamentEntry[],
+  planned: PlannedGame[],
+  opts: { maxActions?: number } = {},
+): TournamentResult {
+  const result = emptyResult(entries);
+  const { byEntry, byArchetype } = result;
+  for (const g of planned) {
+    const { winner, telemetry } = playGame(
+      entries[g.p1],
+      entries[g.p2],
+      g.seed,
+      opts.maxActions ?? MAX_ACTIONS,
+    );
+    const [a, b, i, j] = [g.p1, g.p2, g.i, g.j];
+    result.games++;
+    byEntry[i].played++;
+    byEntry[j].played++;
+    byArchetype[entries[i].archetype][entries[j].archetype].played++;
+    byArchetype[entries[j].archetype][entries[i].archetype].played++;
+    if (winner !== null) {
+      const w = winner === 0 ? a : b;
+      const l = w === a ? b : a;
+      byEntry[w].wins++;
+      byArchetype[entries[w].archetype][entries[l].archetype].wins++;
+    }
+    result.telemetry = mergeTelemetry(result.telemetry, telemetry);
+  }
+  return result;
+}
+
+/** Somme de deux résultats (decks rapprochés par nom). */
+export function mergeResults(
+  a: TournamentResult,
+  b: TournamentResult,
+): TournamentResult {
+  const byEntry = a.byEntry.map((e) => ({ ...e }));
+  for (const e of b.byEntry) {
+    const found = byEntry.find((x) => x.name === e.name);
+    if (found) {
+      found.wins += e.wins;
+      found.played += e.played;
+    } else byEntry.push({ ...e });
+  }
   const byArchetype = Object.fromEntries(
-    ARCHETYPES.map((a) => [
-      a,
-      Object.fromEntries(ARCHETYPES.map((b) => [b, { wins: 0, played: 0 }])),
+    ARCHETYPES.map((x) => [
+      x,
+      Object.fromEntries(
+        ARCHETYPES.map((y) => [
+          y,
+          {
+            wins: a.byArchetype[x][y].wins + b.byArchetype[x][y].wins,
+            played: a.byArchetype[x][y].played + b.byArchetype[x][y].played,
+          },
+        ]),
+      ),
     ]),
   ) as TournamentResult['byArchetype'];
-
-  let games = 0;
-  for (let i = 0; i < entries.length; i++) {
-    for (let j = i + 1; j < entries.length; j++) {
-      for (let g = 0; g < gamesPerPair; g++) {
-        const [a, b] = g % 2 === 0 ? [i, j] : [j, i];
-        onGame?.({ p1: entries[a].name, p2: entries[b].name });
-        const winner = playGame(entries[a], entries[b], seed + games * 7919);
-        games++;
-        byEntry[i].played++;
-        byEntry[j].played++;
-        byArchetype[entries[i].archetype][entries[j].archetype].played++;
-        byArchetype[entries[j].archetype][entries[i].archetype].played++;
-        if (winner !== null) {
-          const w = winner === 0 ? a : b;
-          const l = w === a ? b : a;
-          byEntry[w].wins++;
-          byArchetype[entries[w].archetype][entries[l].archetype].wins++;
-        }
-      }
-    }
-  }
-  return { games, byEntry, byArchetype };
+  return {
+    games: a.games + b.games,
+    byEntry,
+    byArchetype,
+    telemetry: mergeTelemetry(a.telemetry, b.telemetry),
+  };
 }
 
 const pct = (wins: number, played: number): string =>
