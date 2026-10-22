@@ -309,9 +309,10 @@ Mesuré le 2026-10-22, branche `ai-better-brain` : planificateur (faisceau 10, p
 | faisceau 3, prof. 8, riposte 2 (miroir rapide, 180 parties, avant correction de la boucle) | 36,7 % | 48,3 % | 43,3 % | 152 s |
 | faisceau 3, prof. 8, sans riposte | 52,6 % | 51,4 % | 53,6 % | 115 s |
 | faisceau 6, prof. 10, sans riposte | 53,8 % | 57,4 % | 59,6 % | 161 s |
-| **faisceau 10, prof. 12, sans riposte (retenu)** | **58,0 %** | **60,0 %** | **63,0 %** | 236 s |
+| faisceau 10, prof. 12, sans riposte (retenu ; « ancien » avec valeur de préparation) | 58,0 % | 60,0 % | 63,0 % | 236 s |
+| **même réglage, « ancien » = glouton exact de l'étape 1 (mesure de référence)** | **59,0 %** | **61,8 %** | **64,8 %** | 261 s |
 
-Critère de force égale : écart entre archétypes de 5,0 points (< 10, atteint) ; 60 % partout presque atteint (pipou 58,0 %, intervalle 53,6–62,2). La riposte simulée a été désactivée : elle faisait moins bien que sans (12/24 contre 17/24 sur un essai) et triplait le temps.
+Critère de force égale (2f) : **non atteint**. L'écart entre archétypes (5,8 points, < 10) est bon, mais Pipou reste sous 60 % (59,0 %, intervalle 54,6–62,2). Les 3 essais de réglage prévus sont faits ; poursuivre le réglage ou accepter est une décision du joueur. La riposte simulée a été désactivée : elle faisait moins bien que sans (12/24 contre 17/24 sur un essai) et triplait le temps.
 
 ### Archétype contre archétype
 
@@ -365,7 +366,7 @@ Critère de force égale : écart entre archétypes de 5,0 points (< 10, atteint
 
 ### Lecture
 
-- L'écart Dragon vient des cartes, pas de l'IA : avec un cerveau qui planifie, et qui progresse autant avec Dragon qu'avec les autres (63 % en miroir), Dragon reste à 36,3 % contre Pipou (35,8 % avant). Contre Pixelman, il gagne 3,4 points (41,6 %).
+- **Provisoire (critère 2f non atteint)** : l'écart Dragon semble venir des cartes plutôt que de l'IA. Avec un cerveau qui planifie, et qui progresse au moins autant avec Dragon qu'avec les autres (64,8 % en miroir), Dragon reste à 36,3 % contre Pipou (35,8 % avant). Contre Pixelman, il gagne 3,4 points (41,6 %).
 - Pixelman perd du terrain contre Pipou (45,2 %, contre 49,4 % avant) : Pipou profite mieux du planificateur dans ce duel.
 - Critère 40-60 % : toujours non atteint pour Dragon contre Pipou (36,3 %) ; Dragon contre Pixelman passe au-dessus de 40 %.
 - Alertes : Souffle Primordial et Surcharge Overclock (dragon) apparaissent « trop fortes » maintenant que l'IA sait les jouer ; Tactique Gang Gang et Canon à Particules .vxd sortent du top 10. Force Delta et Mise à jour .patch restent « mortes ».
