@@ -18,9 +18,10 @@ export async function applyBalancePatches(
       direction === 'up'
         ? [patch.before, patch.after]
         : [patch.after, patch.before];
-    const rows = (await queryRunner.query(
-      'SELECT `id`, `name`, `description`, `atk`, `hp`, `cost`, `effects` FROM `card` WHERE `name` = ?',
-      [from.name],
+    // Les deux noms : un renommage déjà fait se reconnaît (already-done), sans fausse alerte
+    const found = (await queryRunner.query(
+      'SELECT `id`, `name`, `description`, `atk`, `hp`, `cost`, `effects` FROM `card` WHERE `name` IN (?, ?)',
+      [from.name, to.name],
     )) as {
       id: number;
       name: string;
@@ -30,7 +31,9 @@ export async function applyBalancePatches(
       cost: number;
       effects: unknown;
     }[];
-    const current = rows[0];
+    const current =
+      found.find((r) => r.name === from.name) ??
+      found.find((r) => r.name === to.name);
     const decision = planBalancePatch(current, patch, direction);
     if (decision === 'apply' && current) {
       await queryRunner.query(

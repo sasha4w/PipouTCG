@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import type { QueryRunner } from 'typeorm';
 import type { BalanceFields } from './balance-2026-10-patches';
 import { GARDE_PATCHES } from './garde-2026-10-patches';
@@ -14,7 +15,7 @@ function fakeDb(rows: BalanceFields[]) {
   const runner = {
     query: (sql: string, params: unknown[] = []) => {
       if (sql.startsWith('SELECT'))
-        return Promise.resolve(table.filter((t) => t.name === params[0]));
+        return Promise.resolve(table.filter((t) => params.includes(t.name)));
       if (sql.startsWith('UPDATE')) {
         updates.push(params);
         const row = table.find((t) => t.id === params[6]);
@@ -64,4 +65,23 @@ describe('migration GardeRelevePatch', () => {
     expect(db.updates).toHaveLength(15);
     expect(db.table.some((t) => t.name === 'Force Delta')).toBe(true);
   });
+});
+
+describe('migration GardeRelevePatch : pas de fausse alerte', () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it.each(['up', 'down'] as const)(
+    '%s rejouée sur une base déjà dans cet état : aucun avertissement',
+    async (direction) => {
+      const warn = jest
+        .spyOn(Logger.prototype, 'warn')
+        .mockImplementation(() => undefined);
+      const db = fakeDb(
+        GARDE_PATCHES.map((p) => (direction === 'up' ? p.after : p.before)),
+      );
+      await migration[direction](db.runner);
+      expect(db.updates).toHaveLength(0);
+      expect(warn).not.toHaveBeenCalled();
+    },
+  );
 });

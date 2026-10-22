@@ -220,7 +220,7 @@ export const GARDE_PATCHES: BalancePatch[] = [
   }),
   tweak(SURCHARGE, {
     description:
-      'Boost instable. Donne +500 ATK temporaire à tous vos monstres ce tour, mais ils perdent 200 PV.',
+      'Boost instable. Donne +500 ATK temporaire à tous vos monstres ce tour, mais ils subissent 200 dégâts.',
     effects: [
       fx('ON_PLAY', [
         a('BUFF_ATK_TEMP', 'ALL_ALLIES', { value: 500 }),
@@ -230,7 +230,7 @@ export const GARDE_PATCHES: BalancePatch[] = [
   }),
   tweak(OEUF, {
     description:
-      'Couvé par les étoiles. Après 3 tours, il éclot en Drakon Adulte de ton choix. En attendant, soigne tes Drakons de 100 PV à chaque début de tour.',
+      'Couvé par les étoiles. Après 3 tours, il éclot en Drakon Adulte de ton choix. En attendant, soigne tes Drakons de 100 PV au début de chacun de tes tours.',
     effects: [
       fx('ON_SUMMON', [
         a('SET_HATCH_COUNTER', 'SELF', {
@@ -268,7 +268,7 @@ export const GARDE_PATCHES: BalancePatch[] = [
   }),
   tweak(MASTODONTE, {
     description:
-      'Une montagne de tendresse. Relève (2). Détruit : vous piochez 1 carte.',
+      'Une montagne de tendresse. Provocation. Relève (2) : peut prendre la place de 2 alliés Pipou. Détruit : vous piochez 1 carte.',
     effects: add(MASTODONTE, releve2, drawOnDeath),
   }),
   tweak(NOYAU_ALPHA, {
