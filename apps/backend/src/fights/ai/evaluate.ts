@@ -256,6 +256,8 @@ export function evaluate(
   game: GameState,
   seat: Seat,
   archetype: AdventureArchetype,
+  /** Valeur de ce que la main prépare : le planificateur seulement (le glouton de l'aventure reste celui de l'étape 1). */
+  prepare = false,
 ): number {
   const me = seatPlayer(game, seat);
   const opp = seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
@@ -332,7 +334,9 @@ export function evaluate(
   }
 
   return (
-    score + archetypeBonus(myBoard, profile) + handPotential(me, opp, profile)
+    score +
+    archetypeBonus(myBoard, profile) +
+    (prepare ? handPotential(me, opp, profile) : 0)
   );
 }
 

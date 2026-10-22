@@ -34,7 +34,8 @@ describe('evaluate', () => {
       p1: { hand: [young('B')], monsters: [baby] },
     });
     expect(
-      evaluate(withMatch, 'p1', 'dragon') - evaluate(withOther, 'p1', 'dragon'),
+      evaluate(withMatch, 'p1', 'dragon', true) -
+        evaluate(withOther, 'p1', 'dragon', true),
     ).toBeCloseTo(ARCHETYPE_PROFILES.dragon.prepEvolve);
   });
 
@@ -49,5 +50,19 @@ describe('evaluate', () => {
     expect(handPotential(carried.player1, carried.player2, profile)).toBe(
       profile.prepEquip,
     );
+  });
+});
+
+describe('evaluate sans préparation', () => {
+  it("le glouton (aventure) ignore la préparation, comme à l'étape 1", () => {
+    const withMatch = scenario({
+      p1: { hand: [young('A')], monsters: [baby] },
+    });
+    const withOther = scenario({
+      p1: { hand: [young('B')], monsters: [baby] },
+    });
+    expect(
+      evaluate(withMatch, 'p1', 'dragon') - evaluate(withOther, 'p1', 'dragon'),
+    ).toBeCloseTo(0);
   });
 });

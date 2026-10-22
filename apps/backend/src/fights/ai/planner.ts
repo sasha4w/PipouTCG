@@ -162,7 +162,7 @@ export function planTurn(
   visited: ReadonlySet<string> = new Set(),
 ): Plan | null {
   const me = seatPlayer(game, seat).userId;
-  const score = (s: GameState) => evaluate(s, seat, profile.archetype);
+  const score = (s: GameState) => evaluate(s, seat, profile.archetype, true);
   const root = determinize(game, seat, random);
   // Un état déjà vu n'est plus développé : sinon Garde / Attaque en boucle
   const seen = new Set(visited);
@@ -282,7 +282,7 @@ export function riposte(
   random: () => number,
   counter: Counter,
 ): number {
-  const base = evaluate(leaf, seat, profile.archetype);
+  const base = evaluate(leaf, seat, profile.archetype, true);
   if (leaf.phase === 'finished') return base;
   const oppSeat: Seat = seat === 'p1' ? 'p2' : 'p1';
   const meId = seatPlayer(leaf, seat).userId;
@@ -318,7 +318,7 @@ export function riposte(
         counted.dispatch(s, oppSeat, greedy.chooseAction(s, oppSeat, theirs));
       else break;
     }
-    scores.push(evaluate(s, seat, profile.archetype));
+    scores.push(evaluate(s, seat, profile.archetype, true));
   }
   if (scores.length === 0) return base;
   if (scores.includes(-Infinity)) return -Infinity;
