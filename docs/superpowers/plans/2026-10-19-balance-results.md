@@ -296,3 +296,77 @@ Mesuré le 2026-10-22 sur la branche `ai-better-brain` : cerveau glouton actuel,
 - La difficulté n'est toujours pas croissante : pixelman 3 (30,8 %) sous pixelman 2 (64,0 %), dragon 2 et 3 au même niveau.
 - Alertes « trop forte » : Tactique Gang Gang, Canon à Particules .vxd, Rootkit de Transmission. Alertes « morte » : Force Delta, Mise à jour .patch, Adulte Teros.
 - Des decks générés contiennent des cartes d'un autre archétype (ex. Canon à Particules .vxd et Mise à jour .patch dans des decks Pipou). C'est voulu : un deck peut mélanger les archétypes, c'est seulement moins synergique. Une alerte « morte » sur une carte hors de son archétype dit surtout qu'elle n'a pas sa synergie dans ce deck.
+
+
+## Nouveau cerveau (Standard)
+
+Mesuré le 2026-10-22, branche `ai-better-brain` : planificateur (faisceau 10, profondeur 12, budget 10 000 simulations, sans riposte) pour les 15 decks. Mêmes graines que la référence (decks 1 à 10, 10 parties par paire, graine 42). 10 500 parties en 3 072 s sur 10 processus.
+
+### Réglage (miroir Standard, nouveau contre ancien, 1 500 parties)
+
+| Réglage | pipou | pixelman | dragon | Durée |
+|---|---|---|---|---|
+| faisceau 3, prof. 8, riposte 2 (miroir rapide, 180 parties, avant correction de la boucle) | 36,7 % | 48,3 % | 43,3 % | 152 s |
+| faisceau 3, prof. 8, sans riposte | 52,6 % | 51,4 % | 53,6 % | 115 s |
+| faisceau 6, prof. 10, sans riposte | 53,8 % | 57,4 % | 59,6 % | 161 s |
+| **faisceau 10, prof. 12, sans riposte (retenu)** | **58,0 %** | **60,0 %** | **63,0 %** | 236 s |
+
+Critère de force égale : écart entre archétypes de 5,0 points (< 10, atteint) ; 60 % partout presque atteint (pipou 58,0 %, intervalle 53,6–62,2). La riposte simulée a été désactivée : elle faisait moins bien que sans (12/24 contre 17/24 sur un essai) et triplait le temps.
+
+### Archétype contre archétype
+
+| Ligne contre colonne | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 49.8 % [47.6–52.0] | 54.6 % [52.7–56.6] | 63.4 % [61.5–65.3] |
+| pixelman | 45.2 % [43.3–47.2] | 50.0 % [47.8–52.2] | 58.4 % [56.4–60.3] |
+| dragon | 36.3 % [34.5–38.2] | 41.6 % [39.7–43.5] | 50.0 % [47.8–52.2] |
+
+### Par deck
+
+| Deck | Victoires | Parties | Taux |
+|---|---|---|---|
+| pipou niveau 1 | 379 | 1400 | 27.1 % [24.8–29.5] |
+| pipou niveau 2 | 552 | 1400 | 39.4 % [36.9–42.0] |
+| pipou niveau 3 | 877 | 1400 | 62.6 % [60.1–65.1] |
+| pipou niveau 4 | 981 | 1400 | 70.1 % [67.6–72.4] |
+| pipou niveau 5 | 1159 | 1400 | 82.8 % [80.7–84.7] |
+| pixelman niveau 1 | 494 | 1400 | 35.3 % [32.8–37.8] |
+| pixelman niveau 2 | 794 | 1400 | 56.7 % [54.1–59.3] |
+| pixelman niveau 3 | 379 | 1400 | 27.1 % [24.8–29.5] |
+| pixelman niveau 4 | 788 | 1400 | 56.3 % [53.7–58.9] |
+| pixelman niveau 5 | 1135 | 1400 | 81.1 % [78.9–83.0] |
+| dragon niveau 1 | 208 | 1400 | 14.9 % [13.1–16.8] |
+| dragon niveau 2 | 491 | 1400 | 35.1 % [32.6–37.6] |
+| dragon niveau 3 | 536 | 1400 | 38.3 % [35.8–40.9] |
+| dragon niveau 4 | 845 | 1400 | 60.4 % [57.8–62.9] |
+| dragon niveau 5 | 868 | 1400 | 62.0 % [59.4–64.5] |
+
+### Alertes (10 sur 32)
+
+- Souffle Primordial (dragon) — trop forte : +26 pts contre pipou, +26 pts contre pixelman
+- Force Delta (dragon) — morte : jouable 0 % du temps en main
+- Mise à jour .patch (pipou) — morte : jouable 0 % du temps en main
+- Mise à jour .patch (pixelman) — morte : jouable 1 % du temps en main
+- Adulte Teros (pixelman) — morte : jouable 1 % du temps en main
+- Mise à jour .patch (dragon) — morte : jouable 1 % du temps en main
+- Force Delta (pipou) — morte : jouable 1 % du temps en main
+- Rootkit de Transmission (pixelman) — trop forte : +27 pts contre pipou, +18 pts contre dragon
+- Force Delta (pixelman) — morte : jouable 3 % du temps en main
+- Surcharge Overclock (dragon) — trop forte : +15 pts contre pipou, +16 pts contre pixelman
+
+
+### Écart avec la référence (IA actuelle)
+
+| Duel | Référence | Nouveau cerveau | Écart |
+|---|---|---|---|
+| pipou contre pixelman | 50,5 % | 54,6 % | +4,1 |
+| pipou contre dragon | 64,0 % | 63,4 % | -0,6 |
+| pixelman contre dragon | 61,8 % | 58,4 % | -3,4 |
+
+### Lecture
+
+- L'écart Dragon vient des cartes, pas de l'IA : avec un cerveau qui planifie, et qui progresse autant avec Dragon qu'avec les autres (63 % en miroir), Dragon reste à 36,3 % contre Pipou (35,8 % avant). Contre Pixelman, il gagne 3,4 points (41,6 %).
+- Pixelman perd du terrain contre Pipou (45,2 %, contre 49,4 % avant) : Pipou profite mieux du planificateur dans ce duel.
+- Critère 40-60 % : toujours non atteint pour Dragon contre Pipou (36,3 %) ; Dragon contre Pixelman passe au-dessus de 40 %.
+- Alertes : Souffle Primordial et Surcharge Overclock (dragon) apparaissent « trop fortes » maintenant que l'IA sait les jouer ; Tactique Gang Gang et Canon à Particules .vxd sortent du top 10. Force Delta et Mise à jour .patch restent « mortes ».
+- Difficulté toujours non croissante (pixelman 3 à 27,1 %, sous pixelman 2 à 56,7 %).
