@@ -66,7 +66,7 @@ describe('couverture des effets', () => {
       // Jeune / Adulte Drakon : il n'arrive que par évolution, sur le stade
       // précédent de sa lignée
       const evolvesOnly = !canSummonFromHand(card);
-      const allyName = card.name === 'Force Delta' ? 'Noyau Delta' : 'Allié';
+      const allyName = card.name === 'Force Plasma' ? 'Noyau Delta' : 'Allié';
       const base = monsterCard('Base', {
         archetype: 'dragon',
         lineage: card.lineage,

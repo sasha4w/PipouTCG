@@ -170,7 +170,7 @@ describe('vraies cartes — combos', () => {
     expect(monsterNamed(game, 'p2', 'Lutin').mode).toBe('guard');
   });
 
-  it('Canon à Particules : +400 ATK et Perçant une fois équipé', () => {
+  it('Canon à Particules : +250 ATK et Perçant une fois équipé', () => {
     const game = scenario({
       p1: {
         monsters: [monsterCard('Porteur')],
@@ -185,7 +185,7 @@ describe('vraies cartes — combos', () => {
     });
 
     expect(monsterNamed(game, 'p1', 'Porteur')).toMatchObject({
-      atkBuff: 400,
+      atkBuff: 250,
       hasPiercing: true,
     });
   });
@@ -352,10 +352,10 @@ describe('vraies cartes — combos', () => {
       expect(candidateNames(game)).toEqual(['Firewall .sys']);
     });
 
-    it('Force Delta : injouable sans Noyau Delta, jouable avec', () => {
+    it('Force Plasma : injouable sans Noyau, jouable avec Noyau Delta', () => {
       const cible = () => ({ monsters: [monsterCard('Cible', { hp: 500 })] });
       const sans = scenario({
-        p1: { hand: [realCard('Force Delta')] },
+        p1: { hand: [realCard('Force Plasma')] },
         p2: cible(),
       });
       const refus = engine.dispatch(sans, 'p1', {
@@ -368,7 +368,7 @@ describe('vraies cartes — combos', () => {
 
       const avec = scenario({
         p1: {
-          hand: [realCard('Force Delta')],
+          hand: [realCard('Force Plasma')],
           monsters: [realCard('Noyau Delta')],
         },
         p2: cible(),

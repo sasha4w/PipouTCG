@@ -207,7 +207,7 @@ describe('cartes retravaillées', () => {
       });
 
     it.each([
-      'Force Delta',
+      'Force Plasma',
       'Rootkit de Transmission',
       'Protocole de Gel .frz',
       'Verrou de Position .lock',
@@ -283,10 +283,10 @@ describe('cartes retravaillées', () => {
       expect(handNames(game, 'p1')).toEqual(['Recyclage .bat']);
     });
 
-    it('Force Delta ne peut pas viser un Beta ennemi protégé', () => {
+    it('Force Plasma ne peut pas viser un Beta ennemi protégé', () => {
       const game = scenario({
         p1: {
-          hand: [realCard('Force Delta')],
+          hand: [realCard('Force Plasma')],
           monsters: [realCard('Noyau Delta')],
         },
         p2: {

@@ -37,12 +37,12 @@ export interface BalanceNewCard {
   effects: CardEffect[];
 }
 
-const fx = (
+export const fx = (
   trigger: CardEffect['trigger'],
   actions: EffectAction[],
   condition: EffectCondition | null = null,
 ): CardEffect => ({ trigger, condition, actions });
-const a = (
+export const a = (
   type: EffectAction['type'],
   target: EffectAction['target'],
   extra: Partial<EffectAction> = {},
@@ -53,7 +53,7 @@ const equippedOn = (value: string): EffectCondition => ({
 });
 
 /** Change seulement les valeurs données ; le reste est identique avant/après. */
-const tweak = (
+export const tweak = (
   before: BalanceFields,
   changes: Partial<BalanceFields>,
 ): BalancePatch => ({ before, after: { ...before, ...changes } });

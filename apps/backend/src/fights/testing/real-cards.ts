@@ -7,6 +7,7 @@ import {
   BALANCE_NEW_CARDS,
   BALANCE_PATCHES,
 } from '../../database/balance-2026-10-patches';
+import { GARDE_PATCHES } from '../../database/garde-2026-10-patches';
 import {
   DRAKON_NEW_CARDS,
   DRAKON_PATCHES,
@@ -92,8 +93,8 @@ export function allRealCardsBeforeBalance(): Card[] {
   return [...cards, ...created];
 }
 
-/** Cartes avec les effets attendus après toutes les migrations de cartes. */
-export function allRealCards(): Card[] {
+/** Cartes après le rééquilibrage 2026-10, avant le patch Garde / Relève. */
+export function allRealCardsBeforeGarde(): Card[] {
   const cards = allRealCardsBeforeBalance().map((c) => {
     const patch = BALANCE_PATCHES.find((p) => p.before.name === c.name);
     return patch
@@ -139,4 +140,22 @@ export function realCard(name: string): Card {
   );
   if (!card) throw new Error(`Carte « ${name} » absente de l'instantané`);
   return card;
+}
+
+/** Cartes avec les effets attendus après toutes les migrations de cartes. */
+export function allRealCards(): Card[] {
+  return allRealCardsBeforeGarde().map((c) => {
+    const patch = GARDE_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          name: patch.after.name,
+          description: patch.after.description,
+          atk: patch.after.atk,
+          hp: patch.after.hp,
+          cost: patch.after.cost,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
 }
