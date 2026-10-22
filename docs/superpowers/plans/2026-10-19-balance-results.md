@@ -371,3 +371,43 @@ Critère de force égale (2f) : **non atteint**. L'écart entre archétypes (5,8
 - Critère 40-60 % : toujours non atteint pour Dragon contre Pipou (36,3 %) ; Dragon contre Pixelman passe au-dessus de 40 %.
 - Alertes : Souffle Primordial et Surcharge Overclock (dragon) apparaissent « trop fortes » maintenant que l'IA sait les jouer ; Tactique Gang Gang et Canon à Particules .vxd sortent du top 10. Force Delta et Mise à jour .patch restent « mortes ».
 - Difficulté toujours non croissante (pixelman 3 à 27,1 %, sous pixelman 2 à 56,7 %).
+
+
+## Patch Garde — plan 2 (Rapide)
+
+Mesuré le 2026-10-23, branche `patch-garde-origines` : nouveau cerveau, Garde limitée (plan 1) et les 15 cartes patchées (plan 2). Graines de decks 1 à 3, 4 parties par paire, 1 260 parties, 428 s. Échelle Rapide : intervalles d'environ ± 5 points, à confirmer en Standard après le plan 3.
+
+| Ligne contre colonne | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 50.0 % [43.7–56.3] | 57.3 % [51.7–62.8] | 54.0 % [48.3–59.6] |
+| pixelman | 42.7 % [37.2–48.3] | 50.0 % [43.7–56.3] | 52.0 % [46.4–57.6] |
+| dragon | 46.0 % [40.4–51.7] | 48.0 % [42.4–53.6] | 50.0 % [43.7–56.3] |
+
+| Mesure | Nouveau cerveau (Standard, avant patch) | Plan 1 seul (Rapide) | Plan 2 (Rapide) |
+|---|---|---|---|
+| dragon contre pipou | 36,3 % | 39,7 % | **46,0 %** |
+| dragon contre pixelman | 41,6 % | 43,7 % | **48,0 %** |
+| pipou contre pixelman | 54,6 % | 55,0 % | 57,3 % |
+| Pipou : phases sans coup utile | 16,1 % | — | 14,2 % |
+| tours par partie (pipou / pixelman / dragon) | 12,1 / 13,9 / 12,8 | 12,0 / 13,4 / 12,5 | 11,9 / 13,4 / 12,7 |
+| parties sans vainqueur | 0 | 0 | 0 |
+
+### Cartes patchées (valeur ajoutée, hors miroir)
+
+| Carte | Avant (Standard) | Plan 2 (Rapide) |
+|---|---|---|
+| Tactique Gang Gang | +17 | +8 |
+| Canon à Particules .vxd | +17 | +5 |
+| Surcharge Overclock | +15 / +16 | +12 |
+| Bébé Teros | −36 | −26 |
+| Œuf Céleste | −39 | −21 |
+| Jeune Teros / Adulte Teros | — | −7 / −5 |
+| Général Chatouille / Champion Ouille-Ouille | — | +5 / +12 |
+
+### Lecture
+
+- Les 6 duels sont dans la fourchette 40-60 % ; Dragon passe de 36 % à 46 % contre Pipou.
+- Le jeu ne se bloque pas : même nombre de tours par partie, aucune partie sans vainqueur.
+- Les cartes trop fortes redescendent (Tactique, Canon) ; la lignée Teros et l'Œuf restent négatifs mais beaucoup moins.
+- Pipou étouffe un peu moins (14,2 % de phases sans coup utile), sans atteindre l'objectif de 12 %.
+- Force Plasma reste peu jouable (18 % du temps en main) : la condition « un Noyau sur mon terrain » reste exigeante.
