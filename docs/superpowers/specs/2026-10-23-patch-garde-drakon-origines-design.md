@@ -44,7 +44,7 @@ Intention du joueur : **« soit je perds une Prime, soit je gagne du temps pour 
 Ce qui ne change pas : un monstre en Garde ne peut pas attaquer, encaisse sans riposter, et sa destruction ne donne pas de Prime à l'attaquant, sauf avec la perforation.
 
 Ce qui s'ajoute :
-- **Durée limitée** : un monstre ne peut pas rester en Garde plus de **2 tours adverses d'affilée**. Au début du tour de son propriétaire qui suit le 2ᵉ tour adverse tenu, il repasse automatiquement en Attaque. Le compteur repart à zéro dès que le monstre est en Attaque.
+- **Durée limitée** : un monstre ne peut pas rester en Garde plus de **2 tours adverses d'affilée**. *(Ajouté à la relecture du plan 1)* Après une sortie de Garde, automatique ou volontaire, il ne peut pas y revenir avant le prochain tour de son propriétaire : sinon la limite se contournerait en remettant le monstre en Garde aussitôt. Au début du tour de son propriétaire qui suit le 2ᵉ tour adverse tenu, il repasse automatiquement en Attaque. Le compteur repart à zéro dès que le monstre est en Attaque.
 - **Contre-offensive** : quand un monstre passe de la Garde à l'Attaque, que ce soit par le joueur ou automatiquement, il gagne **+100 ATK par tour adverse tenu, +200 au maximum, jusqu'à la fin de ce tour**.
 - *(Choix de Claude)* Un monstre verrouillé en Garde (Verrou de Position .lock) est soumis à la même limite : au-delà de 2 tours adverses, le verrou tombe et le monstre repasse en Attaque.
 - Le joueur voit, sur le monstre, le nombre de tours de Garde tenus et le bonus de contre-offensive qui l'attend.
@@ -130,6 +130,7 @@ Les nouvelles cartes sont livrées **sans image** (`image` à null, aucune image
 
 ## Laissé au builder
 
+- **Premier point du plan 2 (données)** : une migration qui ajoute `ancestral` à l'enum MySQL `card.stage` (créée par `1791000000005-DrakonColumns.ts` avec egg, baby, young et adult ; la prod tourne avec `synchronize: false`). Sans elle, aucune carte Ancestrale ne peut être insérée.
 - Le découpage en plans : le patch est gros (moteur, données, aventure, front, IA). *Suggestion : plan 1 mécaniques moteur + IA, plan 2 données de cartes + migration, plan 3 extension Drakon + aventure, plan 4 front.*
 - Les noms exacts des nouveaux types d'action et de condition dans `@pipou/shared`, et leur texte affiché.
 - La façon de stocker le compteur de Garde sur le monstre.
