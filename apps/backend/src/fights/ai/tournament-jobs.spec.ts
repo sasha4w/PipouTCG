@@ -1,5 +1,6 @@
 import { allRealCards } from '../testing/real-cards';
 import * as planner from './planner';
+import { STRONGEST } from './planner';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames } from './tournament';
 import {
@@ -72,7 +73,10 @@ describe('réglage de réflexion', () => {
       thinking: { beamWidth: 6 },
     };
     runJob(job);
-    expect(spy.mock.calls[0][4]).toMatchObject({ beamWidth: 6, depth: 8 });
+    expect(spy.mock.calls[0][4]).toMatchObject({
+      beamWidth: 6,
+      depth: STRONGEST.depth,
+    });
     spy.mockRestore();
   });
 });
