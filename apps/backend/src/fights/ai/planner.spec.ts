@@ -19,6 +19,7 @@ import {
 import { seeded } from './tournament';
 
 const engine = createEngine();
+const WITH_RIPOSTE = { ...STRONGEST, ripostes: 2 };
 const dragon: AiProfile = { archetype: 'dragon', level: 3 };
 const pipou: AiProfile = { archetype: 'pipou', level: 3 };
 
@@ -180,7 +181,7 @@ describe('riposte', () => {
     });
     expect(evaluate(leaf, 'p1', 'pipou')).toBeGreaterThan(-Infinity);
     expect(
-      riposte(engine, leaf, 'p1', pipou, STRONGEST, seeded(1), { used: 0 }),
+      riposte(engine, leaf, 'p1', pipou, WITH_RIPOSTE, seeded(1), { used: 0 }),
     ).toBe(-Infinity);
   });
 
@@ -189,7 +190,7 @@ describe('riposte', () => {
     leaf.winner = P1_ID;
     const counter = { used: 0 };
     expect(
-      riposte(engine, leaf, 'p1', pipou, STRONGEST, seeded(1), counter),
+      riposte(engine, leaf, 'p1', pipou, WITH_RIPOSTE, seeded(1), counter),
     ).toBe(Infinity);
     expect(counter.used).toBe(0);
   });

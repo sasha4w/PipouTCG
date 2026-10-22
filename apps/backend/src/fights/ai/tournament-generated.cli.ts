@@ -3,6 +3,7 @@ import { cpus } from 'node:os';
 import { join } from 'node:path';
 import { formatDetail, formatMirror, formatSummary } from './report';
 import { SCALES, planJobs, planMirrorJobs, runJobs } from './tournament-jobs';
+import type { ThinkingProfile } from './planner';
 import type { ScaleName } from './tournament-jobs';
 
 /** Lit `--nom <valeur>` dans argv. */
@@ -20,7 +21,8 @@ function num(name: string, fallback: number): number {
  * Tournoi sur decks générés en code à graine fixe, sans base.
  * `--scale rapide|standard|complet`, ou une seule graine avec
  * `--deck-seed`, `--games` ; `--seed` (parties), `--workers`,
- * `--brain plan|greedy` (plan par défaut), `--mirror` (nouveau contre ancien).
+ * `--brain plan|greedy` (plan par défaut), `--mirror` (nouveau contre ancien),
+ * `--thinking <json>` (essai de réglage du planificateur).
  */
 async function main(): Promise<void> {
   const scaleName = raw('scale') as ScaleName | undefined;
@@ -41,9 +43,16 @@ async function main(): Promise<void> {
     throw new Error(`Cerveau inconnu « ${brain} » (plan, greedy)`);
   const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${!mirror && brain === 'greedy' ? '-glouton' : ''}`;
 
-  const jobs = mirror
-    ? planMirrorJobs(deckSeeds, games, seed)
-    : planJobs(deckSeeds, games, seed, brain);
+  // Essai de réglage du planificateur : --thinking '{"beamWidth":6}'
+  const rawThinking = raw('thinking');
+  const thinking = rawThinking
+    ? (JSON.parse(rawThinking) as Partial<ThinkingProfile>)
+    : undefined;
+  const jobs = (
+    mirror
+      ? planMirrorJobs(deckSeeds, games, seed)
+      : planJobs(deckSeeds, games, seed, brain)
+  ).map((j) => ({ ...j, thinking }));
   const total = jobs.reduce((n, j) => n + j.games.length, 0);
   console.log(
     `${label} : graines de decks ${deckSeeds[0]} à ${deckSeeds.at(-1)}, ${games} parties par paire, graine ${seed}, ${total} parties, ${workers} processus`,

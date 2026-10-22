@@ -5,6 +5,7 @@ import type { Card } from '../../cards/card.entity';
 import { allRealCards } from '../testing/real-cards';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames, playPlanned } from './tournament';
+import type { ThinkingProfile } from './planner';
 import type {
   Brain,
   PlannedGame,
@@ -29,6 +30,8 @@ export interface Job {
   brain: Brain;
   /** Miroir : indice du deck joué par le nouveau cerveau contre l'ancien. */
   mirror?: number;
+  /** Réglage du planificateur (essais), par-dessus STRONGEST. */
+  thinking?: Partial<ThinkingProfile>;
 }
 
 let cards: Card[] | undefined;
@@ -69,10 +72,14 @@ export function planJobs(
 }
 
 /** Les deux entrées d'un miroir : même deck, nouveau cerveau contre ancien. */
-function mirrorEntries(deckSeed: number, deck: number): TournamentEntry[] {
+function mirrorEntries(
+  deckSeed: number,
+  deck: number,
+  thinking?: Partial<ThinkingProfile>,
+): TournamentEntry[] {
   const e = entriesFor(deckSeed)[deck];
   return [
-    { ...e, name: `${e.name} nouveau`, brain: 'plan' },
+    { ...e, name: `${e.name} nouveau`, brain: 'plan', thinking },
     { ...e, name: `${e.name} ancien`, brain: 'greedy' },
   ];
 }
@@ -99,10 +106,14 @@ export function planMirrorJobs(
 
 export function runJob(job: Job): TournamentResult {
   if (job.mirror !== undefined)
-    return playPlanned(mirrorEntries(job.deckSeed, job.mirror), job.games);
+    return playPlanned(
+      mirrorEntries(job.deckSeed, job.mirror, job.thinking),
+      job.games,
+    );
   const entries = entriesFor(job.deckSeed).map((e) => ({
     ...e,
     brain: job.brain,
+    thinking: job.thinking,
   }));
   return playPlanned(entries, job.games);
 }

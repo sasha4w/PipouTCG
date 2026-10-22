@@ -23,10 +23,12 @@ export interface ThinkingProfile {
   budget: number;
 }
 
+/** Réglage retenu après le miroir (voir 2026-10-19-balance-results.md). */
 export const STRONGEST: ThinkingProfile = {
   beamWidth: 3,
   depth: 8,
-  ripostes: 2,
+  // Riposte simulée désactivée : mesurée nuisible (miroir 12/24 contre 17/24 sans)
+  ripostes: 0,
   budget: 2500,
 };
 

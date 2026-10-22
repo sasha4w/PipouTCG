@@ -1,4 +1,5 @@
 import { allRealCards } from '../testing/real-cards';
+import * as planner from './planner';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames } from './tournament';
 import {
@@ -60,5 +61,18 @@ describe('miroir réel', () => {
     const job = planMirrorJobs([1], 2, 42)[12];
     const result = runJob(job);
     expect(result.byEntry.reduce((n, e) => n + e.wins, 0)).toBe(result.games);
+  });
+});
+
+describe('réglage de réflexion', () => {
+  it('le réglage du job atteint le planificateur', () => {
+    const spy = jest.spyOn(planner, 'planTurn');
+    const job = {
+      ...planMirrorJobs([1], 1, 42)[0],
+      thinking: { beamWidth: 6 },
+    };
+    runJob(job);
+    expect(spy.mock.calls[0][4]).toMatchObject({ beamWidth: 6, depth: 8 });
+    spy.mockRestore();
   });
 });

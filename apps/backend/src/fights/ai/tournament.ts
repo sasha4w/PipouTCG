@@ -7,6 +7,7 @@ import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
 import { STRONGEST } from './planner';
+import type { ThinkingProfile } from './planner';
 import type { AiLevel } from './ai-player';
 import { GameRecorder, emptyTelemetry, mergeTelemetry } from './telemetry';
 import type { Telemetry } from './telemetry';
@@ -24,6 +25,8 @@ export interface TournamentEntry {
   deck: Card[];
   /** Cerveau : glouton (par défaut, comme en aventure) ou qui planifie. */
   brain?: Brain;
+  /** Réglage du planificateur, par-dessus STRONGEST. */
+  thinking?: Partial<ThinkingProfile>;
 }
 
 export interface TournamentResult {
@@ -98,7 +101,7 @@ function playGame(
   try {
     const engine = createEngine(fixedRng());
     const brainOf = (e: TournamentEntry) =>
-      e.brain === 'plan' ? STRONGEST : 'greedy';
+      e.brain === 'plan' ? { ...STRONGEST, ...e.thinking } : 'greedy';
     const ais: Record<Seat, AiPlayer> = {
       p1: new AiPlayer(engine, random, brainOf(p1)),
       p2: new AiPlayer(engine, random, brainOf(p2)),
