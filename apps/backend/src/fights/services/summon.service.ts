@@ -6,11 +6,15 @@ import {
 } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import {
+  Archetype,
   CardType,
+  DestroyCause,
   EffectTrigger,
   canSummonFromHand,
   canImplantOn,
   canSummonOnEnemySide,
+  isImplanted,
+  releveCount,
 } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
@@ -32,6 +36,7 @@ export class SummonService {
     zoneIndex: number,
     paymentHandIndices: number[],
     onOpponentSide: boolean,
+    releveInstanceIds?: string[],
   ): { error?: string } {
     if (onOpponentSide) {
       const card = getPlayerState(game, userId).hand[handIndex];
@@ -50,6 +55,7 @@ export class SummonService {
       zoneIndex,
       paymentHandIndices,
       onOpponentSide,
+      releveInstanceIds,
     );
   }
 
@@ -100,6 +106,7 @@ export class SummonService {
     zoneIndex: number,
     paymentHandIndices: number[],
     onOpponentZone: boolean,
+    releveInstanceIds?: string[],
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -110,7 +117,10 @@ export class SummonService {
     const target = onOpponentZone ? opponent : player;
 
     if (zoneIndex < 0 || zoneIndex > 2) return { error: 'Zone invalide (0-2)' };
-    if (target.monsterZones[zoneIndex]) return { error: 'Zone occupée' };
+    // Relève : la zone d'un allié sacrifié se libère
+    const occupant = target.monsterZones[zoneIndex];
+    if (occupant && !releveInstanceIds?.includes(occupant.instanceId))
+      return { error: 'Zone occupée' };
     if (handIndex < 0 || handIndex >= player.hand.length)
       return { error: 'Index main invalide' };
 
@@ -121,6 +131,32 @@ export class SummonService {
       return {
         error: `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
       };
+
+    if (releveInstanceIds) {
+      const error = this.releveError(player, card, releveInstanceIds);
+      if (error) return { error };
+      const log: string[] = [];
+      addLog(
+        game,
+        `🎖️ Relève : ${releveInstanceIds.length} allié(s) cèdent leur place à ${card.baseCard.name}`,
+      );
+      for (const id of releveInstanceIds)
+        this.effectsResolver.destroyMonster(game, player, id, log, {
+          draw: false,
+          cause: DestroyCause.SACRIFICE,
+        });
+      log.forEach((l) => addLog(game, l));
+      return this.place(
+        game,
+        player,
+        opponent,
+        target,
+        card,
+        zoneIndex,
+        onOpponentZone,
+        userId,
+      );
+    }
 
     const isFree = player.freeSummonInstanceIds.includes(card.instanceId);
     if (isFree)
@@ -152,10 +188,30 @@ export class SummonService {
       player.graveyard.push(discarded);
     }
 
-    const removedBefore = sortedPay.filter(
-      (i, n) => i < handIndex && n < handPayNeeded,
-    ).length;
-    const [monster] = player.hand.splice(handIndex - removedBefore, 1);
+    return this.place(
+      game,
+      player,
+      opponent,
+      target,
+      card,
+      zoneIndex,
+      onOpponentZone,
+      userId,
+    );
+  }
+
+  /** Pose `card` (encore en main) dans la zone : événement, journal, ON_SUMMON, ON_ALLY_SUMMON. */
+  private place(
+    game: GameState,
+    player: PlayerGameState,
+    opponent: PlayerGameState,
+    target: PlayerGameState,
+    card: CardInstance,
+    zoneIndex: number,
+    onOpponentZone: boolean,
+    userId: number,
+  ): { error?: string } {
+    const [monster] = player.hand.splice(player.hand.indexOf(card), 1);
 
     const instance = createMonsterOnBoard(monster, {
       // Mémorise le poseur quand c'est une zone adverse (Zeta)
@@ -197,5 +253,28 @@ export class SummonService {
       allyLog.forEach((l) => addLog(game, l));
     }
     return {};
+  }
+
+  /** Raison du refus d'une Relève, ou null. */
+  private releveError(
+    player: PlayerGameState,
+    card: CardInstance,
+    sacrificed: string[],
+  ): string | null {
+    const needed = releveCount(card.baseCard.effects);
+    if (needed === 0) return `${card.baseCard.name} n'a pas la Relève`;
+    const unique = new Set(sacrificed);
+    if (unique.size !== needed || sacrificed.length !== needed)
+      return `La Relève de ${card.baseCard.name} demande ${needed} allié(s)`;
+    for (const id of unique) {
+      const ally = player.monsterZones.find((m) => m?.instanceId === id);
+      if (
+        !ally ||
+        isImplanted(ally, player.userId) ||
+        ally.card.baseCard.archetype !== Archetype.PIPOU
+      )
+        return 'La Relève ne sacrifie que des alliés Pipou de ton terrain';
+    }
+    return null;
   }
 }

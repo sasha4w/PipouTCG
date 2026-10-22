@@ -1,4 +1,5 @@
 import {
+  Archetype,
   CardType,
   DrakonStage,
   HAND_LIMIT,
@@ -13,6 +14,7 @@ import {
   evolutionCost,
   isImplanted,
   isPlantedBy,
+  releveCount,
 } from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
 import type {
@@ -162,6 +164,8 @@ function mainCandidates(
     const card = me.hand[handIndex].baseCard;
 
     if (card.type === CardType.MONSTER) {
+      if (canSummonFromHand(card))
+        out.push(...releveCandidates(me, myMonsters, handIndex));
       if (canSummonFromHand(card)) {
         const free = me.freeSummonInstanceIds.includes(
           me.hand[handIndex].instanceId,
@@ -280,5 +284,36 @@ function attackCandidates(
         direct: true,
       });
   }
+  return out;
+}
+
+/** Relève (N) : chaque groupe de N alliés Pipou, posé dans la zone du premier. */
+function releveCandidates(
+  me: PlayerGameState,
+  myMonsters: MonsterOnBoard[],
+  handIndex: number,
+): GameAction[] {
+  const needed = releveCount(me.hand[handIndex].baseCard.effects);
+  if (needed === 0) return [];
+  const allies = myMonsters.filter(
+    (m) => m.card.baseCard.archetype === Archetype.PIPOU,
+  );
+  const out: GameAction[] = [];
+  const pick = (start: number, chosen: MonsterOnBoard[]) => {
+    if (out.length >= MAX_PICK_COMBOS) return;
+    if (chosen.length === needed) {
+      out.push({
+        type: 'summon',
+        handIndex,
+        zoneIndex: me.monsterZones.indexOf(chosen[0]),
+        paymentHandIndices: [],
+        releveInstanceIds: chosen.map((m) => m.instanceId),
+      });
+      return;
+    }
+    for (let i = start; i < allies.length; i++)
+      pick(i + 1, [...chosen, allies[i]]);
+  };
+  pick(0, []);
   return out;
 }

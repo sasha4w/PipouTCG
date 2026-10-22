@@ -239,3 +239,12 @@ export function graveyardHasAllElements(
 export const GUARD_MAX_TURNS = 2;
 /** Contre-offensive : ATK gagnée par tour adverse tenu, en sortant de la Garde. */
 export const COUNTER_OFFENSIVE_PER_TURN = 100;
+
+/** Relève (N) : nombre d'alliés Pipou à sacrifier à la place du coût, 0 sans Relève. */
+export function releveCount(effects: CardEffect[] | null | undefined): number {
+  for (const e of effects ?? [])
+    if (e.trigger === EffectTrigger.PASSIVE)
+      for (const a of e.actions)
+        if (a.type === ActionType.RELEVE) return a.value ?? 0;
+  return 0;
+}

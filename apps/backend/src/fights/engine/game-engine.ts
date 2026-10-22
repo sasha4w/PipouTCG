@@ -215,6 +215,7 @@ export class GameEngine {
           action.zoneIndex,
           action.paymentHandIndices,
           action.onOpponentSide ?? false,
+          action.releveInstanceIds,
         );
       case 'evolve':
         return this.evolution.evolve(
