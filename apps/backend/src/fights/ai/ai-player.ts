@@ -9,6 +9,7 @@ import {
   seatPlayer,
 } from '../helpers/game-state.helper';
 import { activeChoice, listCandidates } from './candidate-actions';
+import { determinize } from './determinize';
 import { evaluate } from './evaluate';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
@@ -93,9 +94,11 @@ export class AiPlayer {
     profile: AiProfile,
     crashes: SimulationCrash[],
   ): GameAction | null {
+    // L'IA ne voit que ce qu'un joueur voit : cartes cachées redistribuées
+    const known = determinize(game, seat, this.random);
     const valid: Scored[] = [];
-    for (const action of listCandidates(game, seat)) {
-      const clone = cloneForSimulation(game);
+    for (const action of listCandidates(known, seat)) {
+      const clone = cloneForSimulation(known);
       try {
         if (this.engine.dispatch(clone, seat, action).error) continue;
       } catch (error) {
@@ -132,7 +135,7 @@ export class AiPlayer {
     if (others.length === 0) return endPhase!.action;
     const best = others.reduce((a, b) => (b.score > a.score ? b : a));
     if (!endPhase) return best.action;
-    const current = evaluate(game, seat, profile.archetype);
+    const current = evaluate(known, seat, profile.archetype);
     return best.score > current + IMPROVEMENT_EPSILON
       ? best.action
       : endPhase.action;
