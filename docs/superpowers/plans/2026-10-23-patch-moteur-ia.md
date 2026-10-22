@@ -14,7 +14,7 @@
 
 - Branche `patch-garde-origines`. Commits en français : `feat(back): …`, `feat(shared): …`.
 - Types et enums échangés front/back dans `@pipou/shared`, jamais redéfinis ailleurs. Après chaque modification de shared : `pnpm build:shared`.
-- Toute valeur ajoutée à `ActionType`, `EffectTrigger` ou `EffectConditionType` est implémentée dans la même tâche et déclarée dans `apps/backend/src/fights/engine/supported-effects.ts`. Sinon `effects-coverage.spec.ts` échoue.
+- Toute valeur ajoutée à `ActionType`, `EffectTrigger` ou `EffectConditionType` est implémentée dans la même tâche et déclarée dans `apps/backend/src/fights/engine/supported-effects.ts`. Sinon `effects-coverage.spec.ts` échoue. Elle est aussi ajoutée à la liste attendue de `packages/shared/src/enums/enums.test.ts`, comme toute nouvelle valeur de `DrakonStage` ou de `PendingChoiceResolution` que ce test vérifie.
 - Valeurs du design :
   - Garde : 2 tours adverses au plus, puis retour automatique en Attaque ;
   - contre-offensive : +100 ATK par tour adverse tenu, +200 au maximum, jusqu'à la fin du tour ;
