@@ -155,6 +155,15 @@ export class SupportService {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Zone de support occupée' };
         }
+        // Un seul exemplaire d'un même terrain en jeu par joueur
+        if (
+          player.supportZones.some(
+            (z) => z?.baseCard.name === support.baseCard.name,
+          )
+        ) {
+          player.hand.splice(handIndex, 0, support);
+          return { error: 'Ce terrain est déjà en jeu' };
+        }
         support.placedSeq = ++game.terrainSeq;
         player.supportZones[zoneIndex] = support;
         game.pendingEvents.push({
