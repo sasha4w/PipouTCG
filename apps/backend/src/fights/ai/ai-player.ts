@@ -68,17 +68,29 @@ export class AiPlayer {
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
   chooseAction(game: GameState, seat: Seat, profile: AiProfile): GameAction {
+    return this.chooseDetailed(game, seat, profile).action;
+  }
+
+  /** Comme `chooseAction`, avec les coups acceptés par le moteur ([] en repli). */
+  chooseDetailed(
+    game: GameState,
+    seat: Seat,
+    profile: AiProfile,
+  ): { action: GameAction; valid: GameAction[] } {
     const crashes: SimulationCrash[] = [];
     try {
       return (
-        this.decide(game, seat, profile, crashes) ?? fallbackAction(game, seat)
+        this.decide(game, seat, profile, crashes) ?? {
+          action: fallbackAction(game, seat),
+          valid: [],
+        }
       );
     } catch (err) {
       const fallback = safeFallback(game, seat);
       this.logger.warn(
         `Match ${game.matchId} (${seat}) : décision IA en échec, repli ${JSON.stringify(fallback)} — ${describe(err)}`,
       );
-      return fallback;
+      return { action: fallback, valid: [] };
     } finally {
       // Un seul message par décision, même si plusieurs simulations ont planté
       if (crashes.length > 0)
@@ -93,7 +105,7 @@ export class AiPlayer {
     seat: Seat,
     profile: AiProfile,
     crashes: SimulationCrash[],
-  ): GameAction | null {
+  ): { action: GameAction; valid: GameAction[] } | null {
     // L'IA ne voit que ce qu'un joueur voit : cartes cachées redistribuées
     const known = determinize(game, seat, this.random);
     const valid: Scored[] = [];
@@ -123,22 +135,29 @@ export class AiPlayer {
       });
     }
     if (valid.length === 0) return null;
+    const result = (action: GameAction) => ({
+      action,
+      valid: valid.map((v) => v.action),
+    });
 
     const rate = MISTAKE_RATE[profile.level] ?? 0;
     if (rate > 0 && this.random() < rate)
-      return valid[Math.floor(this.random() * valid.length)].action;
+      return result(valid[Math.floor(this.random() * valid.length)].action);
 
-    if (game.phase === 'mulligan') return mulliganChoice(game, seat, valid);
+    if (game.phase === 'mulligan')
+      return result(mulliganChoice(game, seat, valid));
 
     const endPhase = valid.find((v) => v.action.type === 'end_phase');
     const others = valid.filter((v) => v.action.type !== 'end_phase');
-    if (others.length === 0) return endPhase!.action;
+    if (others.length === 0) return result(endPhase!.action);
     const best = others.reduce((a, b) => (b.score > a.score ? b : a));
-    if (!endPhase) return best.action;
+    if (!endPhase) return result(best.action);
     const current = evaluate(known, seat, profile.archetype);
-    return best.score > current + IMPROVEMENT_EPSILON
-      ? best.action
-      : endPhase.action;
+    return result(
+      best.score > current + IMPROVEMENT_EPSILON
+        ? best.action
+        : endPhase.action,
+    );
   }
 
   /**
