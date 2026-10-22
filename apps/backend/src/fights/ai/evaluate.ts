@@ -4,15 +4,22 @@ import {
   DrakonStage,
   EffectTarget,
   EffectTrigger,
+  SupportType,
+  canEvolveOnto,
+  ephemeralTargetSide,
   isImplanted,
+  isPlantedBy,
 } from '@pipou/shared';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
 import type {
   GameState,
   MonsterOnBoard,
+  PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { effectiveAtk, seatPlayer } from '../helpers/game-state.helper';
+import { ARCHETYPE_PROFILES } from './archetype-profiles';
+import type { ArchetypeProfile } from './archetype-profiles';
 
 /** Valeur d'une Prime : la condition de victoire domine tout le reste. */
 const PRIME = 2500;
@@ -32,14 +39,6 @@ const COUNTER_PRIME = PRIME * 0.3;
 const VIRUS_TURN_VALUE = 150;
 /** Surcoût d'un monstre « à protéger » (noyau équipé, Drakon en croissance). */
 const PROTECT_PENALTY = PRIME * 0.3;
-
-const PIPOU_PER_MONSTER = 400;
-const PIXELMAN_PER_EQUIPMENT = 400;
-/** Un équipement sur un Noyau compte davantage : c'est lui qu'on bombarde. */
-const PIXELMAN_CORE_FACTOR = 1.25;
-const PIXELMAN_CORE_PRESENCE = 300;
-const DRAGON_PER_STAGE = 300;
-const DRAGON_GROWING_HP = 0.3;
 
 const STAGE_RANK: Record<string, number> = {
   [DrakonStage.EGG]: 1,
@@ -195,18 +194,58 @@ export function teamBoost(
 /** Bonus d'équipe qui vaut un poids « à protéger » de 1. */
 const BOOST_PER_PROTECT = 200;
 
-/** Poids d'un monstre à protéger selon l'archétype. */
+/** Poids d'un monstre à protéger selon la philosophie de l'archétype. */
 function protectWeight(
   m: MonsterOnBoard,
   zones: readonly (MonsterOnBoard | null)[],
-  archetype: AdventureArchetype,
+  profile: ArchetypeProfile,
 ): number {
-  if (archetype === 'pixelman') return m.equipments.length;
-  if (archetype === 'dragon' && isGrowing(m)) return 1;
-  // Pipou : garder en vie ceux qui boostent les autres
-  if (archetype === 'pipou')
-    return Math.min(2, teamBoost(m, zones) / BOOST_PER_PROTECT);
-  return 0;
+  switch (profile.protect) {
+    case 'equipments':
+      return m.equipments.length;
+    case 'growing':
+      return isGrowing(m) ? 1 : 0;
+    case 'boosters':
+      // Garder en vie ceux qui boostent les autres
+      return Math.min(2, teamBoost(m, zones) / BOOST_PER_PROTECT);
+  }
+}
+
+/**
+ * Ce que la main prépare : une évolution qui a une base, un équipement qui a
+ * un porteur, un éphémère ciblé qui a une cible.
+ */
+export function handPotential(
+  me: PlayerGameState,
+  opp: PlayerGameState,
+  profile: ArchetypeProfile,
+): number {
+  const allies = me.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && !isImplanted(m, me.userId),
+  );
+  const planted = opp.monsterZones.some(
+    (m) => m !== null && isPlantedBy(m, me.userId),
+  );
+  const enemies = opp.monsterZones.some(
+    (m) => m !== null && !isPlantedBy(m, me.userId),
+  );
+  let total = 0;
+  for (const { baseCard: card } of me.hand) {
+    if (card.stage === DrakonStage.YOUNG || card.stage === DrakonStage.ADULT) {
+      if (allies.some((m) => canEvolveOnto(card, m)))
+        total += profile.prepEvolve;
+    } else if (card.supportType === SupportType.EQUIPMENT) {
+      if (allies.length > 0 || planted) total += profile.prepEquip;
+    } else if (card.supportType === SupportType.EPHEMERAL) {
+      const side = ephemeralTargetSide(card.effects);
+      if (
+        (side === 'ally' && allies.length > 0) ||
+        (side === 'enemy' && enemies)
+      )
+        total += profile.prepTarget;
+    }
+  }
+  return total;
 }
 
 /**
@@ -220,6 +259,7 @@ export function evaluate(
 ): number {
   const me = seatPlayer(game, seat);
   const opp = seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
+  const profile = ARCHETYPE_PROFILES[archetype];
 
   if (game.phase === 'finished') {
     if (game.winner === me.userId) return Infinity;
@@ -277,7 +317,7 @@ export function evaluate(
   for (const d of threat.destroyed)
     score -=
       monsterValue(d) / 2 +
-      PROTECT_PENALTY * protectWeight(d, myZones, archetype);
+      PROTECT_PENALTY * protectWeight(d, myZones, profile);
 
   // Mon tour, avant le combat : Primes encore à prendre
   if (game.currentTurnUserId === me.userId && game.phase === 'main') {
@@ -291,43 +331,35 @@ export function evaluate(
     score += POTENTIAL_PRIME * potential.primes;
   }
 
-  return score + archetypeBonus(myBoard, archetype);
+  return (
+    score + archetypeBonus(myBoard, profile) + handPotential(me, opp, profile)
+  );
 }
 
 /**
- * Pipou : nombre de monstres (l'union fait la force).
- * Pixelman : équipements du monstre le plus équipé (le noyau).
- * Drakon : stades cumulés et PV des unités en croissance.
+ * Bonus de philosophie, même formule pour tous (poids nuls hors archétype) :
+ * nombre de monstres, équipements du monstre le plus équipé (le Noyau),
+ * stades cumulés et PV des unités en croissance.
  */
-function archetypeBonus(
-  mine: MonsterOnBoard[],
-  archetype: AdventureArchetype,
-): number {
-  switch (archetype) {
-    case 'pipou':
-      return PIPOU_PER_MONSTER * mine.length;
-    case 'pixelman':
-      return (
-        PIXELMAN_CORE_PRESENCE * Math.min(1, mine.filter(isCore).length) +
-        PIXELMAN_PER_EQUIPMENT *
-          Math.max(
-            0,
-            // Un monstre qui va s'autodétruire n'est pas un bon porteur
-            ...mine
-              .filter((m) => m.turnCounter === undefined)
-              .map(
-                (m) =>
-                  m.equipments.length * (isCore(m) ? PIXELMAN_CORE_FACTOR : 1),
-              ),
-          )
-      );
-    case 'dragon':
-      return mine.reduce(
-        (sum, m) =>
-          sum +
-          DRAGON_PER_STAGE * (STAGE_RANK[m.card.baseCard.stage ?? ''] ?? 0) +
-          (isGrowing(m) ? DRAGON_GROWING_HP * Math.max(0, m.currentHp) : 0),
-        0,
-      );
-  }
+function archetypeBonus(mine: MonsterOnBoard[], p: ArchetypeProfile): number {
+  const mostEquipped = Math.max(
+    0,
+    // Un monstre qui va s'autodétruire n'est pas un bon porteur
+    ...mine
+      .filter((m) => m.turnCounter === undefined)
+      .map((m) => m.equipments.length * (isCore(m) ? p.coreFactor : 1)),
+  );
+  const growth = mine.reduce(
+    (sum, m) =>
+      sum +
+      p.perStage * (STAGE_RANK[m.card.baseCard.stage ?? ''] ?? 0) +
+      (isGrowing(m) ? p.growingHp * Math.max(0, m.currentHp) : 0),
+    0,
+  );
+  return (
+    p.perMonster * mine.length +
+    p.corePresence * Math.min(1, mine.filter(isCore).length) +
+    p.perEquipment * mostEquipped +
+    growth
+  );
 }
