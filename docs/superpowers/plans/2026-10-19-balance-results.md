@@ -241,3 +241,58 @@ Les tableaux donnent le taux de victoire de la ligne contre la colonne (moyenne 
 - Les écarts d'archétype à archétype (0 à 5 points en moyenne) sont du même ordre que la dispersion entre graines de decks (souvent 10 à 20 points entre min et max) : aucun n'est clairement significatif avec 10 parties par paire.
 - Les écarts par niveau sont bruités (pixelman 4 : -16,7 ; dragon 2 : +12,6) et la difficulté n'est pas monotone (pipou 3 > pipou 2, pixelman 3 faible), défaut antérieur au rééquilibrage et toujours présent.
 - Verdict : neutre à légèrement positif sur la parité entre mondes ; il faudrait plus de parties ou de graines pour conclure sur les écarts restants.
+
+
+## Référence IA actuelle (Standard)
+
+Mesuré le 2026-10-22 sur la branche `ai-better-brain` : cerveau glouton actuel, qui ne voit plus les cartes cachées. Graines de decks 1 à 10, 10 parties par paire, graine de parties 42, 10 500 parties en 395 s sur 10 processus (`pnpm --filter @pipou/backend tournament:generated --scale standard`).
+
+### Archétype contre archétype
+
+| Ligne contre colonne | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 50.0 % [47.8–52.1] | 50.5 % [48.5–52.4] | 64.0 % [62.1–65.9] |
+| pixelman | 49.4 % [47.4–51.4] | 50.0 % [47.8–52.1] | 61.8 % [59.9–63.7] |
+| dragon | 35.8 % [33.9–37.7] | 38.2 % [36.3–40.1] | 50.0 % [47.8–52.2] |
+
+### Par deck
+
+| Deck | Victoires | Parties | Taux |
+|---|---|---|---|
+| pipou niveau 1 | 351 | 1400 | 25.1 % [22.9–27.4] |
+| pipou niveau 2 | 508 | 1400 | 36.3 % [33.8–38.8] |
+| pipou niveau 3 | 817 | 1400 | 58.4 % [55.8–60.9] |
+| pipou niveau 4 | 969 | 1400 | 69.2 % [66.7–71.6] |
+| pipou niveau 5 | 1217 | 1400 | 86.9 % [85.1–88.6] |
+| pixelman niveau 1 | 482 | 1400 | 34.4 % [32.0–37.0] |
+| pixelman niveau 2 | 896 | 1400 | 64.0 % [61.5–66.5] |
+| pixelman niveau 3 | 431 | 1400 | 30.8 % [28.4–33.3] |
+| pixelman niveau 4 | 807 | 1400 | 57.6 % [55.0–60.2] |
+| pixelman niveau 5 | 1164 | 1400 | 83.1 % [81.1–85.0] |
+| dragon niveau 1 | 180 | 1400 | 12.9 % [11.2–14.7] |
+| dragon niveau 2 | 498 | 1400 | 35.6 % [33.1–38.1] |
+| dragon niveau 3 | 511 | 1400 | 36.5 % [34.0–39.1] |
+| dragon niveau 4 | 810 | 1400 | 57.9 % [55.3–60.4] |
+| dragon niveau 5 | 850 | 1400 | 60.7 % [58.1–63.2] |
+
+### Alertes (10 sur 57)
+
+- Tactique Gang Gang (pipou) — trop forte : +26 pts contre pixelman, +24 pts contre dragon
+- Mise à jour .patch (pipou) — morte : jouable 0 % du temps en main
+- Canon à Particules .vxd (pipou) — trop forte : +21 pts contre pixelman, +20 pts contre dragon
+- Adulte Teros (pixelman) — morte : jouable 0 % du temps en main
+- Mise à jour .patch (dragon) — morte : jouable 1 % du temps en main
+- Mise à jour .patch (pixelman) — morte : jouable 1 % du temps en main
+- Force Delta (dragon) — morte : jouable 1 % du temps en main
+- Force Delta (pipou) — morte : jouable 1 % du temps en main
+- Rootkit de Transmission (pixelman) — trop forte : +39 pts contre pipou, +18 pts contre dragon
+- Force Delta (pixelman) — morte : jouable 3 % du temps en main
+
+
+### Lecture
+
+- Critère 40-60 % : Pipou et Pixelman sont dans la fourchette l'un contre l'autre (50,5 / 49,4 %), mais tous deux battent Dragon au-delà (64,0 et 61,8 %). Dragon reste sous 40 % contre les deux (35,8 et 38,2 %) : critère non atteint pour Dragon.
+- Les intervalles font environ ± 2 points : les écarts entre archétypes sont désormais significatifs.
+- La difficulté n'est toujours pas croissante : pixelman 3 (30,8 %) sous pixelman 2 (64,0 %), dragon 2 et 3 au même niveau.
+- Alertes « trop forte » : Tactique Gang Gang, Canon à Particules .vxd, Rootkit de Transmission. Alertes « morte » : Force Delta, Mise à jour .patch, Adulte Teros.
+- Des decks générés contiennent des cartes d'un autre archétype (ex. Canon à Particules .vxd et Mise à jour .patch dans des decks Pipou) : une partie des alertes vient de là, à examiner avant de modifier des cartes.
