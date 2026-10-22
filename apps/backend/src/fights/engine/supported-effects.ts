@@ -70,6 +70,8 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.VIRUS_ATK_DEBUFF,
   ActionType.REFLECT_DAMAGE,
   ActionType.RELEVE,
+  ActionType.SUMMON_IF_ALL_ELEMENTS,
+  ActionType.COPY_GRAVEYARD_EFFECTS,
   ActionType.SET_HATCH_COUNTER,
   ActionType.ADVANCE_HATCH,
   ActionType.SUMMON_FROM_DECK,

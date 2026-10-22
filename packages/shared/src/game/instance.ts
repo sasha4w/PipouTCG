@@ -61,6 +61,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   guardTurns?: number;
   /** Part (en %) des dégâts de combat subis renvoyée à l'attaquant. */
   reflectPercent?: number;
+  /** Drakon des Origines : la carte avant copie des effets, rendue à la sortie du terrain. */
+  originalCard?: CardInstance<C>;
   /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
   combatImmune?: boolean;
   /** Zeta implanté : à l'abri de la désinfection jusqu'au prochain tour de son poseur. */

@@ -12,6 +12,7 @@ import { applyActions } from './effects/effect-actions.applier';
 import {
   drawCard,
   getPlayerState,
+  boardCard,
   sendToGraveyard,
 } from './helpers/game-state.helper';
 
@@ -121,10 +122,10 @@ export class EffectsResolverService {
     // équipement celui de son propriétaire (le poseur à défaut)
     const poserId = monster.ownerUserId ?? host.userId;
     if (poserId === host.userId) {
-      sendToGraveyard(host, ...monster.equipments, monster.card);
+      sendToGraveyard(host, ...monster.equipments, boardCard(monster));
     } else {
       const poser = getPlayerState(game, poserId);
-      sendToGraveyard(poser, monster.card);
+      sendToGraveyard(poser, boardCard(monster));
       for (const equipment of monster.equipments)
         sendToGraveyard(
           equipment.ownerId === host.userId ? host : poser,

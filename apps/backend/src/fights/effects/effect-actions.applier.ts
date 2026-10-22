@@ -1,4 +1,9 @@
-import { CardEffect, ActionType, isPlantedBy } from '@pipou/shared';
+import {
+  CardEffect,
+  ActionType,
+  DrakonStage,
+  isPlantedBy,
+} from '@pipou/shared';
 import {
   CardInstance,
   MonsterOnBoard,
@@ -8,6 +13,7 @@ import { EffectContext } from './effect-context.interface';
 import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
 import {
+  boardCard,
   drawCard,
   getOpponentState,
   queueChoice,
@@ -316,6 +322,38 @@ export function applyActions(
         }
         break;
 
+      // Drakon des Origines : choisir un Adulte ou un Ancestral du cimetière
+      // dont il copie les effets (résolu par PickService, « copy_effects »)
+      case ActionType.COPY_GRAVEYARD_EFFECTS:
+        for (const p of targets.players) {
+          const candidates = p.graveyard
+            .filter(
+              (c) =>
+                c.baseCard.stage === DrakonStage.ADULT ||
+                c.baseCard.stage === DrakonStage.ANCESTRAL,
+            )
+            .map((c) => ({
+              instanceId: c.instanceId,
+              baseCard: c.baseCard,
+              source: 'graveyard' as const,
+            }));
+          if (candidates.length === 0) {
+            ctx.log.push(
+              `🐉 ${card.baseCard.name} — aucun Adulte ni Ancestral au cimetière à copier`,
+            );
+            continue;
+          }
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates,
+            count: 1,
+            prompt: 'Choisis le pouvoir élémentaire à copier',
+            resolution: 'copy_effects',
+            sourceInstanceId: ctx.sourceMonster?.instanceId,
+          });
+        }
+        break;
+
       // ── Interactive picks ─────────────────────────────────────────────────
       case ActionType.RETURN_FROM_GRAVEYARD:
       case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK:
@@ -463,7 +501,7 @@ function returnMonsterToHand(
   for (const eq of monster.equipments.filter((e) => !e.token)) {
     owner.hand.push(eq);
   }
-  if (!monster.card.token) owner.hand.push(monster.card);
+  if (!monster.card.token) owner.hand.push(boardCard(monster));
   owner.monsterZones[idx] = null;
 
   ctx.log.push(

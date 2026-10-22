@@ -14,7 +14,9 @@ import {
   canImplantOn,
   canSummonOnEnemySide,
   isImplanted,
+  graveyardHasAllElements,
   releveCount,
+  requiresAllElements,
 } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
@@ -130,6 +132,15 @@ export class SummonService {
     if (!canSummonFromHand(card.baseCard))
       return {
         error: `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
+      };
+
+    if (
+      requiresAllElements(card.baseCard.effects) &&
+      !graveyardHasAllElements(player.graveyard.map((c) => c.baseCard))
+    )
+      return {
+        error:
+          'Il faut un Adulte ou un Ancestral de chaque élément au cimetière',
       };
 
     if (releveInstanceIds) {
@@ -253,6 +264,52 @@ export class SummonService {
       allyLog.forEach((l) => addLog(game, l));
     }
     return {};
+  }
+
+  /**
+   * Drakon des Origines : le monstre `sourceInstanceId` garde ses effets et
+   * reçoit ceux de `picked` (qui reste au cimetière). L'arrivée copiée se
+   * résout aussitôt ; la carte d'origine est mémorisée pour sa sortie du terrain.
+   */
+  copyEffects(
+    game: GameState,
+    player: PlayerGameState,
+    sourceInstanceId: string | undefined,
+    picked: CardInstance,
+  ): void {
+    const monster = player.monsterZones.find(
+      (m) => m?.instanceId === sourceInstanceId,
+    );
+    if (!monster) {
+      addLog(
+        game,
+        `💨 Le monstre qui devait copier ${picked.baseCard.name} a disparu`,
+      );
+      return;
+    }
+    monster.originalCard ??= monster.card;
+    const own = monster.originalCard;
+    monster.card = {
+      ...own,
+      baseCard: {
+        ...own.baseCard,
+        effects: [
+          ...(own.baseCard.effects ?? []),
+          ...(picked.baseCard.effects ?? []),
+        ],
+      },
+    };
+    addLog(
+      game,
+      `🐉 ${own.baseCard.name} prend le pouvoir de ${picked.baseCard.name}`,
+    );
+    const log: string[] = [];
+    this.effectsResolver.resolve(
+      { ...monster.card, baseCard: { ...picked.baseCard } },
+      EffectTrigger.ON_SUMMON,
+      { game, ownerUserId: player.userId, sourceMonster: monster, log },
+    );
+    log.forEach((l) => addLog(game, l));
   }
 
   /** Raison du refus d'une Relève, ou null. */

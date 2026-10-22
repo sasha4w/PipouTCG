@@ -13,6 +13,7 @@ import {
   addLog,
   getPlayerState,
   isCurrentPlayer,
+  boardCard,
   sendToGraveyard,
 } from '../helpers/game-state.helper';
 
@@ -85,7 +86,7 @@ export class EvolutionService {
     evolved.attacksUsedThisTurn = base.attacksUsedThisTurn;
     evolved.hasAttackedThisTurn = base.hasAttackedThisTurn;
 
-    sendToGraveyard(player, base.card);
+    sendToGraveyard(player, boardCard(base));
     player.monsterZones[zoneIndex] = evolved;
     game.pendingEvents.push({
       kind: 'monster_summoned',

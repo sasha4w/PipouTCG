@@ -69,6 +69,8 @@ export interface PendingChoice {
   resolution?: PendingChoiceResolution;
   /** summon_to_zone : le monstre vient d'un œuf, il peut évoluer le tour même. */
   fromEgg?: boolean;
+  /** copy_effects : le monstre qui copie les effets choisis. */
+  sourceInstanceId?: string;
   /** summon_to_zone : zone visée. */
   zoneIndex?: number;
 }

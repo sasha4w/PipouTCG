@@ -248,3 +248,14 @@ export function releveCount(effects: CardEffect[] | null | undefined): number {
         if (a.type === ActionType.RELEVE) return a.value ?? 0;
   return 0;
 }
+
+/** Carte invocable seulement avec un Adulte ou un Ancestral de chaque élément au cimetière. */
+export function requiresAllElements(
+  effects: CardEffect[] | null | undefined,
+): boolean {
+  return (effects ?? []).some(
+    (e) =>
+      e.trigger === EffectTrigger.PASSIVE &&
+      e.actions.some((a) => a.type === ActionType.SUMMON_IF_ALL_ELEMENTS),
+  );
+}

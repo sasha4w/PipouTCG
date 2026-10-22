@@ -14,9 +14,12 @@ import {
   evolutionCost,
   isImplanted,
   isPlantedBy,
+  graveyardHasAllElements,
   releveCount,
+  requiresAllElements,
 } from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
+import type { Card } from '../../cards/card.entity';
 import type {
   CardInstance,
   GameState,
@@ -164,9 +167,9 @@ function mainCandidates(
     const card = me.hand[handIndex].baseCard;
 
     if (card.type === CardType.MONSTER) {
-      if (canSummonFromHand(card))
-        out.push(...releveCandidates(me, myMonsters, handIndex));
-      if (canSummonFromHand(card)) {
+      const summonable = canSummonFromHand(card) && elementsReady(me, card);
+      if (summonable) out.push(...releveCandidates(me, myMonsters, handIndex));
+      if (summonable) {
         const free = me.freeSummonInstanceIds.includes(
           me.hand[handIndex].instanceId,
         );
@@ -320,4 +323,12 @@ function releveCandidates(
   };
   pick(0, []);
   return out;
+}
+
+/** Drakon des Origines : invocable seulement avec les 4 éléments au cimetière. */
+function elementsReady(me: PlayerGameState, card: Card): boolean {
+  return (
+    !requiresAllElements(card.effects) ||
+    graveyardHasAllElements(me.graveyard.map((c) => c.baseCard))
+  );
 }

@@ -18,7 +18,11 @@ export type GameEndReason = MatchEndReason;
  * - 'pick_to_hand' : récupère depuis le cimetière ou le deck
  * - 'discard'      : défausse depuis la main
  */
-export type PendingChoiceResolution = "pick_to_hand" | "discard" | "summon_to_zone";
+export type PendingChoiceResolution =
+  | "pick_to_hand"
+  | "discard"
+  | "summon_to_zone"
+  | "copy_effects";
 
 export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 

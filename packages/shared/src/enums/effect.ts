@@ -70,6 +70,8 @@ export const ActionType = {
   VIRUS_ATK_DEBUFF: "VIRUS_ATK_DEBUFF",
   REFLECT_DAMAGE: "REFLECT_DAMAGE",
   RELEVE: "RELEVE",
+  SUMMON_IF_ALL_ELEMENTS: "SUMMON_IF_ALL_ELEMENTS",
+  COPY_GRAVEYARD_EFFECTS: "COPY_GRAVEYARD_EFFECTS",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

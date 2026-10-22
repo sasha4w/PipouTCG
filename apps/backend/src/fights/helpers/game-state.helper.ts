@@ -176,3 +176,8 @@ export function leaveGuard(m: MonsterOnBoard): void {
   m.guardLocked = false;
   m.mode = 'attack';
 }
+
+/** Carte qui quitte le terrain avec le monstre : l'originale si ses effets ont été copiés. */
+export function boardCard(m: MonsterOnBoard): CardInstance {
+  return m.originalCard ?? m.card;
+}
