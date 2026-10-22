@@ -58,6 +58,7 @@ export class BuffsCalculatorService {
       m.ignoresTaunt = false;
       m.evolutionJoker = false;
       m.instantEvolution = false;
+      m.reflectPercent = undefined;
     }
 
     // Un monstre implanté (Zeta) ne reçoit aucun bonus d'allié de son hôte
@@ -241,6 +242,9 @@ function applyPassive(m: MonsterOnBoard, action: EffectAction): void {
       break;
     case ActionType.SET_DAMAGE_REDUCTION:
       m.damageReduction = Math.max(m.damageReduction ?? 1, action.value ?? 2);
+      break;
+    case ActionType.REFLECT_DAMAGE:
+      m.reflectPercent = Math.max(m.reflectPercent ?? 0, action.value ?? 0);
       break;
     case ActionType.SET_ATTACKS_PER_TURN:
       m.attacksPerTurn = Math.max(m.attacksPerTurn, action.value ?? 1);

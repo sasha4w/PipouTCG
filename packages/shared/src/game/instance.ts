@@ -59,6 +59,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   guardLocked?: boolean;
   /** Tours adverses tenus d'affilée en Garde (repasse en Attaque à GUARD_MAX_TURNS). */
   guardTurns?: number;
+  /** Part (en %) des dégâts de combat subis renvoyée à l'attaquant. */
+  reflectPercent?: number;
   /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
   combatImmune?: boolean;
   /** Zeta implanté : à l'abri de la désinfection jusqu'au prochain tour de son poseur. */
