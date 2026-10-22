@@ -45,6 +45,7 @@ const STAGE_RANK: Record<string, number> = {
   [DrakonStage.BABY]: 2,
   [DrakonStage.YOUNG]: 3,
   [DrakonStage.ADULT]: 4,
+  [DrakonStage.ANCESTRAL]: 5,
 };
 
 /** Intérêt d'une carte en main : sert aussi à choisir quoi défausser. */
@@ -71,7 +72,9 @@ const isCore = (m: MonsterOnBoard) => /^noyau /i.test(m.card.baseCard.name);
 /** Unité Drakon pas encore adulte (œuf, bébé, jeune). */
 function isGrowing(m: MonsterOnBoard): boolean {
   const stage = m.card.baseCard.stage;
-  return !!stage && stage !== DrakonStage.ADULT;
+  return (
+    !!stage && stage !== DrakonStage.ADULT && stage !== DrakonStage.ANCESTRAL
+  );
 }
 
 /** Dégâts de combat réellement subis par `target`. */
@@ -231,7 +234,11 @@ export function handPotential(
   );
   let total = 0;
   for (const { baseCard: card } of me.hand) {
-    if (card.stage === DrakonStage.YOUNG || card.stage === DrakonStage.ADULT) {
+    if (
+      card.stage === DrakonStage.YOUNG ||
+      card.stage === DrakonStage.ADULT ||
+      card.stage === DrakonStage.ANCESTRAL
+    ) {
       if (allies.some((m) => canEvolveOnto(card, m)))
         total += profile.prepEvolve;
     } else if (card.supportType === SupportType.EQUIPMENT) {

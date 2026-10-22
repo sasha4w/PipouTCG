@@ -191,7 +191,11 @@ function mainCandidates(
               });
         }
       }
-      if (card.stage === DrakonStage.YOUNG || card.stage === DrakonStage.ADULT)
+      if (
+        card.stage === DrakonStage.YOUNG ||
+        card.stage === DrakonStage.ADULT ||
+        card.stage === DrakonStage.ANCESTRAL
+      )
         for (const base of myMonsters) {
           if (!canEvolveOnto(card, base) || !canEvolveNow(base)) continue;
           const needed = Math.max(

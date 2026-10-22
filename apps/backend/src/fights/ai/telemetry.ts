@@ -136,7 +136,11 @@ export function blockReason(
     cost - me.recycleEnergy > me.hand.length - 1;
 
   if (card.type === CardType.MONSTER) {
-    if (card.stage === DrakonStage.YOUNG || card.stage === DrakonStage.ADULT) {
+    if (
+      card.stage === DrakonStage.YOUNG ||
+      card.stage === DrakonStage.ADULT ||
+      card.stage === DrakonStage.ANCESTRAL
+    ) {
       const bases = allies.filter((m) => canEvolveOnto(card, m));
       if (bases.length === 0) return 'cible';
       return bases.every((m) => tooExpensive(evolutionCost(card, m)))
