@@ -163,7 +163,8 @@ function dragonPlan(
   }
 
   const forced: Plan['forced'] = [];
-  const qty = { baby: 3, young: 2, adult: 2 } as const;
+  // Ancestral : légendaire, un seul exemplaire (réglage fin au plan 3 du patch)
+  const qty = { baby: 3, young: 2, adult: 2, ancestral: 1 } as const;
   for (const c of set) {
     if (
       c.element &&

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canSummonFromHand,
+  graveyardHasAllElements,
   canTransform,
   canEvolveNow,
   canEvolveOnto,
@@ -232,5 +233,55 @@ describe("isTargetableByEphemeral — cibles qui profitent de l'effet", () => {
       { trigger: "ON_PLAY", actions: [{ type: "HEAL", target: "TARGET_ALLY", value: 600 }] },
     ];
     expect(isTargetableByEphemeral(drakon(null), "ally", soin)).toBe(true);
+  });
+});
+
+describe("stade ancestral", () => {
+  const card = (stage: string, lineage: string, cost = 3) =>
+    ({ stage, lineage, cost }) as never;
+  const base = (stage: string, lineage: string) =>
+    ({ card: { baseCard: { stage, lineage, cost: 3 } } }) as never;
+
+  it("un Ancestral évolue sur l'Adulte de sa lignée seulement", () => {
+    expect(canEvolveOnto(card("ancestral", "feros", 4), base("adult", "feros"))).toBe(true);
+    expect(canEvolveOnto(card("ancestral", "feros", 4), base("adult", "teros"))).toBe(false);
+    expect(canEvolveOnto(card("ancestral", "feros", 4), base("young", "feros"))).toBe(false);
+  });
+
+  it("ne se pose pas depuis la main, mais se transforme", () => {
+    expect(canSummonFromHand({ stage: "ancestral" })).toBe(false);
+    expect(canTransform({ stage: "ancestral", lineage: "feros" })).toBe(true);
+  });
+});
+
+describe("graveyardHasAllElements", () => {
+  const c = (stage: string, element: string) => ({ stage, element }) as never;
+
+  it("vrai avec un Adulte ou un Ancestral de chaque élément", () => {
+    expect(
+      graveyardHasAllElements([
+        c("adult", "earth"),
+        c("ancestral", "fire"),
+        c("adult", "water"),
+        c("adult", "wind"),
+      ]),
+    ).toBe(true);
+  });
+
+  it("faux avec 3 éléments", () => {
+    expect(
+      graveyardHasAllElements([c("adult", "earth"), c("adult", "fire"), c("adult", "water")]),
+    ).toBe(false);
+  });
+
+  it("faux si l'élément manquant n'a qu'un Bébé", () => {
+    expect(
+      graveyardHasAllElements([
+        c("adult", "earth"),
+        c("adult", "fire"),
+        c("adult", "water"),
+        c("baby", "wind"),
+      ]),
+    ).toBe(false);
   });
 });
