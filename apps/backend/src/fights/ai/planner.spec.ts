@@ -1,8 +1,9 @@
 import type { GameAction } from '@pipou/shared';
 import type { GameState } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
-import { monsterCard } from '../testing/cards';
-import { P1_ID, scenario } from '../testing/scenario';
+import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
+import { act, effect, ephemeralCard, monsterCard } from '../testing/cards';
+import { P1_ID, P2_ID, scenario } from '../testing/scenario';
 import { AiPlayer } from './ai-player';
 import type { AiProfile } from './ai-player';
 import { listCandidates } from './candidate-actions';
@@ -266,5 +267,74 @@ describe('AiPlayer qui planifie', () => {
     counter.used = 0;
     ai.chooseDetailed(game, 'p1', dragon);
     expect(counter.used).toBeGreaterThan(following);
+  });
+});
+
+describe('fins de suite', () => {
+  it("un choix laissé à l'adversaire termine la suite", () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [
+          ephemeralCard('Pillage', [
+            effect(EffectTrigger.ON_PLAY, [
+              act(ActionType.DISCARD, EffectTarget.OPPONENT, { value: 1 }),
+            ]),
+          ]),
+          monsterCard('Recrue'),
+        ],
+      },
+      p2: { hand: [monsterCard('A'), monsterCard('B')] },
+    });
+    const played = structuredClone(game);
+    expect(
+      engine.dispatch(played, 'p1', { type: 'play_support', handIndex: 0 })
+        .error,
+    ).toBeUndefined();
+    // Le choix de défausse revient à p2 : plus aucun coup pour p1
+    expect(played.pendingChoices[0]?.forUserId).toBe(P2_ID);
+    expect(
+      planTurn(engine, played, 'p1', pipou, STRONGEST, seeded(1), { used: 0 }),
+    ).toBeNull();
+    // Dans une recherche, ce coup ne peut donc être que le dernier de sa suite
+    const plan = planTurn(engine, game, 'p1', pipou, STRONGEST, seeded(1), {
+      used: 0,
+    })!;
+    const at = plan.actions.findIndex(
+      (a) => a.type === 'play_support' && a.handIndex === 0,
+    );
+    if (at !== -1) expect(at).toBe(plan.actions.length - 1);
+  });
+
+  it('un Jeune jouable sur le Bébé en jeu est bien joué', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        recycleEnergy: 1,
+        hand: [
+          monsterCard('Jeune Feros', {
+            stage: 'young',
+            lineage: 'feros',
+            atk: 300,
+            hp: 800,
+            cost: 1,
+          }),
+        ],
+        monsters: [
+          monsterCard('Bébé Feros', {
+            stage: 'baby',
+            lineage: 'feros',
+            atk: 100,
+            hp: 300,
+          }),
+        ],
+      },
+    });
+    const plan = planTurn(engine, game, 'p1', dragon, STRONGEST, seeded(1), {
+      used: 0,
+    })!;
+    expect(types(plan.actions)).toContain('evolve');
   });
 });
