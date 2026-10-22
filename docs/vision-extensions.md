@@ -12,6 +12,8 @@ Idées du joueur (2026-10-22), à reprendre au moment de concevoir de nouvelles 
 
 Une extension suit la philosophie de son archétype, mais lui apporte une nouvelle mécanique.
 
+Un deck peut mélanger les archétypes : c'est permis, mais souvent moins intéressant, car les synergies sont dans un même archétype. Piste : en mélangeant deux archétypes, trouver des combos intéressants (à explorer, par exemple avec des decks mixtes dans le tournoi).
+
 ## Drakon (évolution par stades)
 
 - **Drakons plante** : un nouveau genre de Drakon, dont la mécanique est d'entraver l'adversaire.

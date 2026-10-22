@@ -295,4 +295,4 @@ Mesuré le 2026-10-22 sur la branche `ai-better-brain` : cerveau glouton actuel,
 - Les intervalles font environ ± 2 points : les écarts entre archétypes sont désormais significatifs.
 - La difficulté n'est toujours pas croissante : pixelman 3 (30,8 %) sous pixelman 2 (64,0 %), dragon 2 et 3 au même niveau.
 - Alertes « trop forte » : Tactique Gang Gang, Canon à Particules .vxd, Rootkit de Transmission. Alertes « morte » : Force Delta, Mise à jour .patch, Adulte Teros.
-- Des decks générés contiennent des cartes d'un autre archétype (ex. Canon à Particules .vxd et Mise à jour .patch dans des decks Pipou) : une partie des alertes vient de là, à examiner avant de modifier des cartes.
+- Des decks générés contiennent des cartes d'un autre archétype (ex. Canon à Particules .vxd et Mise à jour .patch dans des decks Pipou). C'est voulu : un deck peut mélanger les archétypes, c'est seulement moins synergique. Une alerte « morte » sur une carte hors de son archétype dit surtout qu'elle n'a pas sa synergie dans ce deck.
