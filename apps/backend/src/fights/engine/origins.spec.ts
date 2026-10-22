@@ -87,7 +87,7 @@ describe('Drakon des Origines', () => {
       monsterCard('Bébé wind', {
         stage: 'baby',
         element: 'wind',
-      } as Partial<Card>),
+      }),
     ]);
     expect(summon(game).error).toBeDefined();
   });
