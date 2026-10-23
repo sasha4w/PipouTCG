@@ -473,3 +473,30 @@ Mesuré le 2026-10-23, branche `patch-garde-origines` : nouveau cerveau, plans 1
 - **La Relève est neutre** (Chatouille −4, Champion −5, Mastodonte −7) et Pipou étouffe encore (14,5 %).
 - **9 parties sans vainqueur** (aucune avant) : rejouées une à une, ce sont toutes des **égalités par double KO** (les deux joueurs prennent leur dernière Prime dans le même combat, règle existante), surtout entre petits decks Pipou. Aucun blocage du moteur ou de l'IA.
 - Pixelman niveau 3 (Noyau Zeta) reste le deck le plus faible du jeu (19,4 %).
+
+## Réglage après le patch complet (Standard)
+
+Mesuré le 2026-10-24, commit 73c255d : Force Plasma inflige 1 500 dégâts au lieu de détruire ; Œuf Céleste coûte 1 et soigne 200 ; Bébé Teros a 1 300 PV et renvoie 40 % ; Sentinelle Gargouille a 1 300 PV. Mêmes graines (decks 1 à 10, 10 parties par paire, graine 42), 10 500 parties en 4 542 s.
+
+| Ligne contre colonne | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 49.9 % [47.7–52.0] | 56.2 % [54.3–58.2] | 59.4 % [57.4–61.3] |
+| pixelman | 43.6 % [41.7–45.6] | 50.0 % [47.8–52.2] | 50.4 % [48.5–52.4] |
+| dragon | 40.4 % [38.5–42.4] | 49.5 % [47.5–51.4] | 50.0 % [47.8–52.2] |
+
+| Critère | Patch complet | Après réglage | Atteint ? |
+|---|---|---|---|
+| Dragon contre Pipou ≥ 40 % | 37,6 % | 40,4 % | oui (de peu) |
+| Dragon contre Pixelman ≥ 40 % | 45,3 % | 49,5 % | oui |
+| Chaque duel entre 40 et 60 % | Pipou-Dragon 62,3 % | Pipou-Dragon 59,4 % | oui |
+| Pipou : phases sans coup utile < 12 % (moyenne des 5 decks) | 14,2 % (10 / 11 / 13 / 18 / 19) | 16,4 % (12 / 13 / 15 / 20 / 22) | non, en recul |
+| Force Plasma hors « trop forte » (decks Pixelman) | +16 / +16 | +9 / +20 / +18 (57 à 82 parties jouées) | non |
+| Parties sans vainqueur | 9 | 14 (cause non rejouée) | à vérifier |
+
+Cartes défensives dans leur archétype (contre dragon / pipou / pixelman) : Œuf Céleste −22 / −33 / −33, Bébé Teros −14 / −14 / −33, Sentinelle Gargouille −21 / −32 / −39. Elles restent négatives malgré les renforts : la mesure « valeur ajoutée » les pénalise sans doute (un mur est posé quand on est en difficulté), et l'IA ne sait pas encore en tirer profit.
+
+### Lecture
+
+- **Les duels sont tous dans la fourchette** : Dragon gagne 3 points contre Pipou et 4 contre Pixelman. Les renforts Dragon (Œuf, Bébé Teros) et la Force Plasma moins brutale contre les Adultes y suffisent.
+- **Pipou étouffe davantage** : la hausse vient surtout de « pas de zone libre » ; une Sentinelle à 1 300 PV reste plus longtemps sur le terrain et occupe une zone.
+- **Force Plasma reste forte chez Pixelman** sur un petit échantillon ; la piste suivante serait de baisser les dégâts (1 000) ou de lui faire coûter des PV au Noyau.
