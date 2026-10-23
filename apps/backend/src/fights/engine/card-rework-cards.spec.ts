@@ -283,7 +283,7 @@ describe('cartes retravaillées', () => {
       expect(handNames(game, 'p1')).toEqual(['Recyclage .bat']);
     });
 
-    it('Force Plasma ne peut pas viser un Beta ennemi protégé', () => {
+    it('Force Plasma inflige 1500 dégâts, même à un monstre protégé des destructions', () => {
       const game = scenario({
         p1: {
           hand: [realCard('Force Plasma')],
@@ -292,7 +292,7 @@ describe('cartes retravaillées', () => {
         p2: {
           monsters: [
             {
-              card: realCard('Noyau Beta'),
+              card: monsterCard('Mur', { hp: 3000 }),
               patch: { supportDestroyImmune: true },
             },
           ],
@@ -301,9 +301,10 @@ describe('cartes retravaillées', () => {
       const res = engine.dispatch(game, 'p1', {
         type: 'play_support',
         handIndex: 0,
-        targetInstanceId: monsterNamed(game, 'p2', 'Noyau Beta').instanceId,
+        targetInstanceId: monsterNamed(game, 'p2', 'Mur').instanceId,
       });
-      expect(res.error).toBe('Aucune cible valide pour cette carte');
+      expect(res.error).toBeUndefined();
+      expect(monsterNamed(game, 'p2', 'Mur').currentHp).toBe(1500);
     });
   });
 });

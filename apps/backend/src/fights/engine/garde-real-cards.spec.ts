@@ -111,7 +111,7 @@ describe('vraies cartes du patch Garde', () => {
     ).toBe(false);
   });
 
-  it('Œuf Céleste : soigne les Drakons de 100, sans dépasser les PV max', () => {
+  it('Œuf Céleste : soigne les Drakons de 200, sans dépasser les PV max', () => {
     const game = scenario({
       p1: {
         monsters: [
@@ -126,7 +126,7 @@ describe('vraies cartes du patch Garde', () => {
     });
     passTurn(engine, game);
     passTurn(engine, game);
-    expect(monsterNamed(game, 'p1', 'Blessé').currentHp).toBe(600);
+    expect(monsterNamed(game, 'p1', 'Blessé').currentHp).toBe(700);
     expect(monsterNamed(game, 'p1', 'Plein').currentHp).toBe(1000);
   });
 

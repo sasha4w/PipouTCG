@@ -187,9 +187,9 @@ export const GARDE_PATCHES: BalancePatch[] = [
   tweak(FORCE_DELTA, {
     name: 'Force Plasma',
     description:
-      'Frappe de suppression. Jouable seulement si vous contrôlez un Noyau : détruit un monstre adverse de votre choix.',
+      'Frappe de suppression. Jouable seulement si vous contrôlez un Noyau : inflige 1500 dégâts à un monstre adverse de votre choix.',
     effects: [
-      fx('ON_PLAY', [a('DESTROY_MONSTER', 'ENEMY_MONSTER')], {
+      fx('ON_PLAY', [a('DEAL_DAMAGE', 'ENEMY_MONSTER', { value: 1500 })], {
         type: 'SPECIFIC_CARD_ON_BOARD',
         value: 'Noyau',
         match: 'contains',
@@ -230,7 +230,8 @@ export const GARDE_PATCHES: BalancePatch[] = [
   }),
   tweak(OEUF, {
     description:
-      'Couvé par les étoiles. Après 3 tours, il éclot en Drakon Adulte de ton choix. En attendant, soigne tes Drakons de 100 PV au début de chacun de tes tours.',
+      'Couvé par les étoiles. Après 3 tours, il éclot en Drakon Adulte de ton choix. En attendant, soigne tes Drakons de 200 PV au début de chacun de tes tours.',
+    cost: 1,
     effects: [
       fx('ON_SUMMON', [
         a('SET_HATCH_COUNTER', 'SELF', {
@@ -238,13 +239,14 @@ export const GARDE_PATCHES: BalancePatch[] = [
           filter: { stage: 'adult' },
         }),
       ]),
-      fx('ON_TURN_START', [a('HEAL', 'ARCHETYPE_ALLIES', { value: 100 })]),
+      fx('ON_TURN_START', [a('HEAL', 'ARCHETYPE_ALLIES', { value: 200 })]),
     ],
   }),
   tweak(BEBE_TEROS, {
     description:
-      'Petit mur de pierre. Provocation, renvoie 30 % des dégâts reçus. Détruit : vous piochez 1 carte.',
-    effects: add(BEBE_TEROS, reflect(30), drawOnDeath),
+      'Petit mur de pierre. Provocation, renvoie 40 % des dégâts reçus. Détruit : vous piochez 1 carte.',
+    hp: 1300,
+    effects: add(BEBE_TEROS, reflect(40), drawOnDeath),
   }),
   tweak(JEUNE_TEROS, {
     description:
@@ -259,6 +261,7 @@ export const GARDE_PATCHES: BalancePatch[] = [
   tweak(SENTINELLE, {
     description:
       'Veille sur la brigade sans jamais ciller. Provocation. Détruite : vous piochez 1 carte.',
+    hp: 1300,
     effects: add(SENTINELLE, drawOnDeath),
   }),
   tweak(GRIBOUILLE, {
