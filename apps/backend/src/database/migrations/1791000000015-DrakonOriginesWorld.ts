@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import type { EntityManager, MigrationInterface, QueryRunner } from 'typeorm';
-import type { DrakonElement } from '@pipou/shared';
 import { generateDeck } from '../../adventure/deck-generator';
+import { farmCardFor } from '../../adventure/farm-card';
 import { AdventureOpponent } from '../../adventure/entities/adventure-opponent.entity';
 import { AdventureOpponentCard } from '../../adventure/entities/adventure-opponent-card.entity';
 import type { Signature } from '../../adventure/signatures';
@@ -9,15 +9,6 @@ import { Card } from '../../cards/card.entity';
 
 const ORIGINES = 'Drakon des Origines';
 const OEUF = 'Œuf Céleste';
-/** Ancestral qui tombe en farm, par élément de la signature. */
-const ANCESTRAL: Record<DrakonElement, string> = {
-  earth: 'Ancestral Teros',
-  fire: 'Ancestral Feros',
-  water: 'Ancestral Ackos',
-  wind: 'Ancestral Tempestu',
-};
-const ANCESTRAL_PCT = 5;
-const ORIGINES_PCT = 1;
 
 interface DragonOpponent {
   opponent: AdventureOpponent;
@@ -89,16 +80,11 @@ export class DrakonOriginesWorld1791000000015 implements MigrationInterface {
       const signature: Signature = isBoss
         ? { archetype: 'dragon', cardName: ORIGINES }
         : current;
-      const farmCard = isBoss
-        ? origines
-        : current.element
-          ? byName(ANCESTRAL[current.element])
-          : undefined;
+      // Même règle que la création des mondes (seeder, admin)
       const changes = {
         signature: JSON.stringify(signature),
         ...(isBoss ? { portraitCardId: origines.id } : {}),
-        farmCardId: farmCard?.id ?? null,
-        farmCardPct: farmCard ? (isBoss ? ORIGINES_PCT : ANCESTRAL_PCT) : 0,
+        ...farmCardFor(setCards, signature, opponent.position),
       };
       await m.update(AdventureOpponent, { id: opponent.id }, changes);
 
