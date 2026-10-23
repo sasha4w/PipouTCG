@@ -834,6 +834,10 @@ describe('AdventureService : carte précise en farm', () => {
       1,
       ctx.manager,
     );
+    expect(ctx.events.emit).toHaveBeenCalledWith('card.set.check', {
+      userId: USER,
+      setId: 10,
+    });
     expect(r.loot?.cards).toEqual([
       expect.objectContaining({ cardId: 950, name: 'Carte 950' }),
     ]);

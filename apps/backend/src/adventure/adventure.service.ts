@@ -321,6 +321,8 @@ export class AdventureService implements PveHooks {
             rarity: card.rarity,
             imageUrl: card.image?.url ?? null,
           });
+          // La carte de farm est du set du monde (contrôlé par l'admin)
+          setCheck = world.cardSetId;
         }
       }
       const gained =
