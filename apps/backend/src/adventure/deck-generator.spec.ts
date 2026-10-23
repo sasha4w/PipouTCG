@@ -48,7 +48,7 @@ describe('snapshot', () => {
   it('a la taille attendue des sets', () => {
     expect(setOf('pipou')).toHaveLength(27);
     expect(setOf('pixelman')).toHaveLength(26);
-    expect(setOf('dragon')).toHaveLength(23);
+    expect(setOf('dragon')).toHaveLength(28); // + 4 Ancestraux et le Drakon des Origines
   });
 });
 
@@ -195,7 +195,10 @@ describe('identité de chaque monde', () => {
         );
         if (level < 5) {
           const lineage = set.filter(
-            (c) => c.element === sig.element && c.stage !== null,
+            (c) =>
+              c.element === sig.element &&
+              c.stage !== null &&
+              c.stage !== 'ancestral',
           );
           expect(lineage).toHaveLength(3);
           for (const c of lineage) expect(inDeck.has(c.id)).toBe(true);

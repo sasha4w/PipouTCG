@@ -163,14 +163,15 @@ function dragonPlan(
   }
 
   const forced: Plan['forced'] = [];
-  // Ancestral : légendaire, un seul exemplaire (réglage fin au plan 3 du patch)
+  // Ancestral : légendaire, un seul exemplaire, à partir du niveau 3
   const qty = { baby: 3, young: 2, adult: 2, ancestral: 1 } as const;
   for (const c of set) {
     if (
       c.element &&
       elements.includes(c.element) &&
       c.stage &&
-      c.stage !== 'egg'
+      c.stage !== 'egg' &&
+      (c.stage !== 'ancestral' || level >= 3)
     )
       forced.push({ card: c, quantity: qty[c.stage] });
   }

@@ -70,7 +70,12 @@ describe('couverture des effets', () => {
       const base = monsterCard('Base', {
         archetype: 'dragon',
         lineage: card.lineage,
-        stage: card.stage === 'adult' ? 'young' : 'baby',
+        stage:
+          card.stage === 'ancestral'
+            ? 'adult'
+            : card.stage === 'adult'
+              ? 'young'
+              : 'baby',
       });
       const game = scenario({
         p1: {
@@ -78,9 +83,10 @@ describe('couverture des effets', () => {
           // Cimetière et deck garnis : les cartes de récupération ont de quoi faire
           graveyard: allRealCards(),
           deck: allRealCards(),
-          recycleEnergy: 3,
+          // 4 : coût des Ancestraux et du Drakon des Origines
+          recycleEnergy: 4,
           monsters: [
-            // Force Delta exige un Noyau Delta en jeu
+            // Force Plasma exige un Noyau en jeu
             monsterCard(allyName, { hp: 5000, archetype: 'dragon' }),
             // Drakon posé ce tour : cible utile pour les accélérateurs (Incubation)
             {

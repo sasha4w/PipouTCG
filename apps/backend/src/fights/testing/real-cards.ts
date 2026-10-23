@@ -7,6 +7,7 @@ import {
   BALANCE_NEW_CARDS,
   BALANCE_PATCHES,
 } from '../../database/balance-2026-10-patches';
+import { DRAKON_ORIGINES_CARDS } from '../../database/drakon-origines-cards';
 import { GARDE_PATCHES } from '../../database/garde-2026-10-patches';
 import {
   DRAKON_NEW_CARDS,
@@ -144,7 +145,7 @@ export function realCard(name: string): Card {
 
 /** Cartes avec les effets attendus après toutes les migrations de cartes. */
 export function allRealCards(): Card[] {
-  return allRealCardsBeforeGarde().map((c) => {
+  const cards = allRealCardsBeforeGarde().map((c) => {
     const patch = GARDE_PATCHES.find((p) => p.before.name === c.name);
     return patch
       ? ({
@@ -158,4 +159,31 @@ export function allRealCards(): Card[] {
         } as Card)
       : c;
   });
+  return [...cards, ...extensionCards(cards)];
+}
+
+/** Extension Drakon (Ancestraux, Drakon des Origines), après le patch Garde. */
+function extensionCards(cards: Card[]): Card[] {
+  const set = cards.find((c) => c.name === 'Bébé Teros')?.cardSet;
+  return DRAKON_ORIGINES_CARDS.map(
+    (c, i) =>
+      ({
+        id: 92_001 + i,
+        name: c.name,
+        rarity: c.rarity,
+        type: 'monster',
+        atk: c.atk,
+        hp: c.hp,
+        cost: c.cost,
+        supportType: null,
+        archetype: 'dragon',
+        effects: c.effects,
+        description: c.description,
+        element: c.element,
+        lineage: c.lineage,
+        stage: c.stage,
+        image: null,
+        cardSet: set,
+      }) as Card,
+  );
 }
