@@ -19,6 +19,14 @@ export class RegenerateAdventureDecks1791000000010 implements MigrationInterface
     const m = queryRunner.manager;
     const opponents = await m.find(AdventureOpponent, {
       relations: { world: true },
+      // Colonnes présentes dès la migration 008 : l'entité actuelle en a
+      // d'autres (farm_card_*, migration 014) que la prod n'a pas encore ici
+      select: {
+        id: true,
+        position: true,
+        signature: true,
+        world: { id: true, cardSetId: true },
+      },
     });
     const setCache = new Map<number, Card[]>();
 

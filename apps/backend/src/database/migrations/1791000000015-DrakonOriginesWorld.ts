@@ -31,6 +31,13 @@ async function dragonOpponents(
 ): Promise<DragonOpponent[]> {
   const opponents = await m.find(AdventureOpponent, {
     relations: { world: true },
+    // Colonnes explicites : une migration ne doit pas dépendre de l'entité future
+    select: {
+      id: true,
+      position: true,
+      signature: true,
+      world: { id: true, cardSetId: true },
+    },
   });
   const out: DragonOpponent[] = [];
   for (const opponent of opponents) {
