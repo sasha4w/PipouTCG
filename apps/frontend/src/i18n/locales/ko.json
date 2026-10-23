@@ -531,7 +531,11 @@
       "freeze_other": "{{count}}턴 더 빙결",
       "countdown_other": "{{count}}턴 후 파괴",
       "hatch_other": "{{count}}턴 후 부화",
-      "canEvolve": "이번 턴 진화 가능"
+      "canEvolve": "이번 턴 진화 가능",
+      "guard": "가드 중: 상대 턴 {{turns}}/{{max}}",
+      "counterOffensive": "가드 해제 시 반격: +{{value}} ATK",
+      "guardCooldown": "다음 턴에 다시 가드 가능",
+      "reflect": "전투 피해의 {{value}}% 반사"
     }
   },
   "keywords": {

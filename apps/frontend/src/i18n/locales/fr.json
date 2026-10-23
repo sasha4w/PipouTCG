@@ -584,7 +584,11 @@
       "countdown_other": "Détruit dans {{count}} tours",
       "hatch_one": "Éclot dans {{count}} tour",
       "hatch_other": "Éclot dans {{count}} tours",
-      "canEvolve": "Peut évoluer ce tour"
+      "canEvolve": "Peut évoluer ce tour",
+      "guard": "En Garde : {{turns}}/{{max}} tours adverses",
+      "counterOffensive": "Contre-offensive à la sortie : +{{value}} ATK",
+      "guardCooldown": "Retour en Garde possible au prochain tour",
+      "reflect": "Renvoie {{value}} % des dégâts de combat"
     }
   },
   "keywords": {

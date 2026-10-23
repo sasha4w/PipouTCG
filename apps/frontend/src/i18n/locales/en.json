@@ -582,7 +582,11 @@
       "countdown_other": "Destroyed in {{count}} turns",
       "hatch_one": "Hatches in {{count}} turn",
       "hatch_other": "Hatches in {{count}} turns",
-      "canEvolve": "Can evolve this turn"
+      "canEvolve": "Can evolve this turn",
+      "guard": "In Guard: {{turns}}/{{max}} opponent turns",
+      "counterOffensive": "Counter-offensive on leaving: +{{value}} ATK",
+      "guardCooldown": "Can return to Guard next turn",
+      "reflect": "Reflects {{value}}% of combat damage"
     }
   },
   "keywords": {
