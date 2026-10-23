@@ -73,3 +73,31 @@ describe("emitGameAction", () => {
     expect(emit).toHaveBeenCalledWith(event, { matchId: 7, ...payload });
   });
 });
+
+describe("emitGameAction : Relève", () => {
+  it("émet les alliés sacrifiés, et rien sans eux", () => {
+    const withReleve = socket();
+    emitGameAction(withReleve.socket, 9, {
+      type: "summon",
+      handIndex: 0,
+      zoneIndex: 1,
+      paymentHandIndices: [],
+      releveInstanceIds: ["a", "b"],
+    });
+    expect(withReleve.emit).toHaveBeenCalledWith("fight:summon", {
+      matchId: 9,
+      handIndex: 0,
+      zoneIndex: 1,
+      paymentHandIndices: [],
+      releveInstanceIds: ["a", "b"],
+    });
+    const plain = socket();
+    emitGameAction(plain.socket, 9, {
+      type: "summon",
+      handIndex: 0,
+      zoneIndex: 1,
+      paymentHandIndices: [0],
+    });
+    expect(plain.emit.mock.calls[0][1]).not.toHaveProperty("releveInstanceIds");
+  });
+});

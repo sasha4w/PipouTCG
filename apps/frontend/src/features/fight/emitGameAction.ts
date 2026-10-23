@@ -21,6 +21,9 @@ export function emitGameAction(
         zoneIndex: action.zoneIndex,
         paymentHandIndices: action.paymentHandIndices,
         ...(action.onOpponentSide && { onOpponentSide: true }),
+        ...(action.releveInstanceIds && {
+          releveInstanceIds: action.releveInstanceIds,
+        }),
       });
       return;
     case "evolve":

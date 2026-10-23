@@ -25,6 +25,8 @@ export interface SummonPayload {
   paymentHandIndices: number[];
   /** Invocation sur une zone adverse libre (cartes SUMMONABLE_ON_ENEMY_SIDE). */
   onOpponentSide?: boolean;
+  /** Relève : alliés Pipou envoyés au cimetière à la place du coût. */
+  releveInstanceIds?: string[];
 }
 
 export interface PlaySupportPayload {

@@ -185,6 +185,9 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       zoneIndex: data.zoneIndex,
       paymentHandIndices: data.paymentHandIndices ?? [],
       onOpponentSide: data.onOpponentSide ?? false,
+      ...(Array.isArray(data.releveInstanceIds) && {
+        releveInstanceIds: data.releveInstanceIds,
+      }),
     });
   }
 
