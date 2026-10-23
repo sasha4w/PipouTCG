@@ -680,6 +680,7 @@
     "zetaAlreadyImplanted": "Un Zeta est déjà implanté chez l'adversaire",
     "zetaDisinfectHint": "Attaque le Zeta implanté chez toi pour le désinfecter",
     "releve": {
+      "stats": "{{atk}} ATK · {{hp}} PV",
       "mode": "Relève",
       "payMode": "Payer le coût",
       "confirm": "Relever",

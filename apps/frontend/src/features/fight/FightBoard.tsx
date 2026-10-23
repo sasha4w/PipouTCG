@@ -397,15 +397,6 @@ export default function FightBoard({
           }
           return;
         }
-        if (
-          occupant &&
-          releve?.allies.some((a) => a.instanceId === occupant.instanceId)
-        ) {
-          onSetSelectedZone(idx);
-          setReleveLockedId(occupant.instanceId);
-          setShowSummonModal(true);
-          return;
-        }
         // Relève : la zone d'un allié Pipou accueille le monstre à sa place
         if (
           occupant &&

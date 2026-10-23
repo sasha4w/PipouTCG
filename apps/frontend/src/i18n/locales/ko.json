@@ -627,6 +627,7 @@
     "zetaAlreadyImplanted": "상대 진영에 이미 제타가 이식되어 있습니다",
     "zetaDisinfectHint": "내 진영에 이식된 제타를 공격해 제거하세요",
     "releve": {
+      "stats": "공격 {{atk}} · 체력 {{hp}}",
       "mode": "교대",
       "payMode": "비용 지불",
       "confirm": "교대하기",

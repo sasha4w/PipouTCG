@@ -127,7 +127,7 @@ export default function SummonCostModal({
                     onClick={() => toggleAlly(a.instanceId)}
                   >
                     <div className="scm-card-name">{a.name}</div>
-                    <div className="scm-card-sub">{`${a.atk}⚔ ${a.hp}❤`}</div>
+                    <div className="scm-card-sub">{t("fight.releve.stats", { atk: a.atk, hp: a.hp })}</div>
                   </div>
                 );
               })}

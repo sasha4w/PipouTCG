@@ -678,6 +678,7 @@
     "zetaAlreadyImplanted": "A Zeta is already implanted on the opponent's side",
     "zetaDisinfectHint": "Attack the Zeta implanted on your side to disinfect it",
     "releve": {
+      "stats": "{{atk}} ATK · {{hp}} HP",
       "mode": "Relief",
       "payMode": "Pay the cost",
       "confirm": "Relieve",
