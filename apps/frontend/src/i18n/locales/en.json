@@ -881,6 +881,8 @@
       "farm_xp": "XP (farm)",
       "farm_booster_pct": "Booster chance in farm (%)",
       "farm_legendary_pct": "Legendary chance in farm (%)",
+      "farm_card": "Specific card in farm",
+      "farm_card_none": "None",
       "farm_card_pct": "Specific card chance in farm (%)"
     },
     "deck": {

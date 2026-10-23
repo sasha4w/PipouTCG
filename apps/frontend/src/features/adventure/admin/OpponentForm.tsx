@@ -14,7 +14,7 @@ import "./AdventureManager.css";
 
 interface Props {
   opponent: AdminAdventureOpponent;
-  /** Cartes du set du monde (portrait). */
+  /** Cartes du set du monde (portrait, carte précise). */
   cards: Card[];
   onDone: () => void;
 }
@@ -50,7 +50,6 @@ export default function OpponentForm({ opponent, cards, onDone }: Props) {
     farmXp: opponent.farmXp,
     farmBoosterPct: opponent.farmBoosterPct,
     farmLegendaryPct: opponent.farmLegendaryPct,
-    // Choix de la carte : écran admin du plan 4 (la valeur actuelle est conservée)
     farmCardId: opponent.farmCardId,
     farmCardPct: opponent.farmCardPct,
   });
@@ -67,7 +66,9 @@ export default function OpponentForm({ opponent, cards, onDone }: Props) {
     REWARD_FIELDS.every(({ key, max }) => {
       const value = form[key];
       return (
-        Number.isInteger(value) && value >= 0 && (max === undefined || value <= max)
+        Number.isInteger(value) &&
+        value >= 0 &&
+        (max === undefined || value <= max)
       );
     });
 
@@ -123,6 +124,32 @@ export default function OpponentForm({ opponent, cards, onDone }: Props) {
           ))}
         </select>
       </div>
+      <div className="manager-form__row">
+        <label className="manager-form__label" htmlFor="adv-opp-farm-card">
+          {t("adventure_admin.opponent.farm_card")}
+        </label>
+        <select
+          id="adv-opp-farm-card"
+          className="manager-form__select"
+          value={form.farmCardId ?? ""}
+          onChange={(e) =>
+            setForm(
+              e.target.value === ""
+                ? { ...form, farmCardId: null, farmCardPct: 0 }
+                : { ...form, farmCardId: Number(e.target.value) },
+            )
+          }
+        >
+          <option value="">
+            {t("adventure_admin.opponent.farm_card_none")}
+          </option>
+          {cards.map((card) => (
+            <option key={card.id} value={card.id}>
+              {card.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="manager-form__grid">
         {REWARD_FIELDS.map(({ key, label, max }) => (
@@ -137,7 +164,9 @@ export default function OpponentForm({ opponent, cards, onDone }: Props) {
               min={0}
               max={max}
               value={form[key]}
-              onChange={(e) => setForm({ ...form, [key]: Number(e.target.value) })}
+              onChange={(e) =>
+                setForm({ ...form, [key]: Number(e.target.value) })
+              }
             />
           </div>
         ))}
@@ -148,7 +177,9 @@ export default function OpponentForm({ opponent, cards, onDone }: Props) {
         disabled={!valid || save.isPending}
         onClick={() => save.mutate(form)}
       >
-        {save.isPending ? t("adventure_admin.saving") : t("adventure_admin.save")}
+        {save.isPending
+          ? t("adventure_admin.saving")
+          : t("adventure_admin.save")}
       </Button>
     </div>
   );

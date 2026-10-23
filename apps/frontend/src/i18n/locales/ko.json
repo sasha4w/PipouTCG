@@ -829,6 +829,8 @@
       "farm_xp": "XP (파밍)",
       "farm_booster_pct": "파밍 부스터 확률 (%)",
       "farm_legendary_pct": "파밍 전설 확률 (%)",
+      "farm_card": "파밍 지정 카드",
+      "farm_card_none": "없음",
       "farm_card_pct": "파밍 지정 카드 확률 (%)"
     },
     "deck": {
