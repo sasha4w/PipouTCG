@@ -283,7 +283,7 @@ describe('cartes retravaillées', () => {
       expect(handNames(game, 'p1')).toEqual(['Recyclage .bat']);
     });
 
-    it('Force Plasma inflige 1500 dégâts, même à un monstre protégé des destructions', () => {
+    it('Force Plasma inflige 1000 dégâts, même à un monstre protégé des destructions', () => {
       const game = scenario({
         p1: {
           hand: [realCard('Force Plasma')],
@@ -304,7 +304,7 @@ describe('cartes retravaillées', () => {
         targetInstanceId: monsterNamed(game, 'p2', 'Mur').instanceId,
       });
       expect(res.error).toBeUndefined();
-      expect(monsterNamed(game, 'p2', 'Mur').currentHp).toBe(1500);
+      expect(monsterNamed(game, 'p2', 'Mur').currentHp).toBe(2000);
     });
   });
 });

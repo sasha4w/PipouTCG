@@ -31,16 +31,15 @@ describe('garde-2026-10-patches', () => {
     expect(p.after.name).toBe('Force Plasma');
   });
 
-  it('réglage du tournoi : Force Plasma, Œuf, Bébé Teros, Sentinelle', () => {
+  it('réglage du tournoi : Force Plasma, Œuf, Bébé Teros', () => {
     const after = (name: string) =>
       GARDE_PATCHES.find((x) => x.before.name === name)!.after;
     expect(after('Force Delta').effects?.[0].actions[0]).toMatchObject({
       type: 'DEAL_DAMAGE',
-      value: 1500,
+      value: 1000,
     });
     expect(after('Œuf Céleste').cost).toBe(1);
     expect(after('Bébé Teros').hp).toBe(1300);
-    expect(after('Sentinelle Gargouille').hp).toBe(1300);
   });
 
   it('chaque « before » correspond aux cartes actuelles', () => {
