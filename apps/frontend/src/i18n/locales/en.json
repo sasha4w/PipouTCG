@@ -392,7 +392,8 @@
       "evolutionOnly": "Only enters play by evolution or through an Egg's effect.",
       "title": "Effects",
       "keywords": "Keywords",
-      "status": "Current state"
+      "status": "Current state",
+      "evolutionOnlyAncestral": "Only enters play by evolving from an Adult of its lineage."
     },
     "trigger": {
       "ON_SUMMON": "On summon",
@@ -542,7 +543,13 @@
       "INSTANT_EVOLUTION_many": "{{target}} gain **{{kw}}**.",
       "ALLOW_EVOLUTION_THIS_TURN": "{{target}} can evolve this turn.",
       "ALLOW_EVOLUTION_THIS_TURN_many": "{{target}} can evolve this turn.",
-      "unknown": "Special effect ({{type}})."
+      "unknown": "Special effect ({{type}}).",
+      "REFLECT_DAMAGE": "{{target}} gains **{{kw}}**: {{value}}% of the combat damage taken is sent back to the attacker.",
+      "REFLECT_DAMAGE_many": "{{target}} gain **{{kw}}**: {{value}}% of the combat damage taken is sent back to the attacker.",
+      "RELEVE": "**{{kw}}** ({{value}}): can be summoned by sending {{value}} Pipou allies from your field to the graveyard instead of paying its cost.",
+      "SUMMON_IF_ALL_ELEMENTS": "Can only be summoned with an Adult or an Ancestral of each element (Earth, Fire, Water, Wind) in your graveyard.",
+      "COPY_GRAVEYARD_EFFECTS": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
+      "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities."
     },
     "filter": {
       "name": "name containing “{{name}}”"
@@ -551,7 +558,8 @@
       "egg": "Egg",
       "baby": "Baby",
       "young": "Young",
-      "adult": "Adult"
+      "adult": "Adult",
+      "ancestral": "Ancestral"
     },
     "element": {
       "earth": "Earth",
@@ -645,6 +653,14 @@
     "instantEvolution": {
       "name": "Instant evolution",
       "desc": "Can evolve on the turn it is played."
+    },
+    "reflect": {
+      "name": "Reflect",
+      "desc": "Part of the combat damage taken is sent back to the attacker. In Guard, an attacker destroyed this way gives no Prime."
+    },
+    "releve": {
+      "name": "Relief",
+      "desc": "Instead of paying its cost, this monster can be summoned by sending the given number of Pipou allies from your field to the graveyard; it takes the place of one of them."
     }
   },
   "fight": {

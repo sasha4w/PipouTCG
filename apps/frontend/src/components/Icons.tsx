@@ -1289,3 +1289,74 @@ export function IconStar(props: IconProps) {
     </StrokeIcon>
   );
 }
+
+/** Renvoi de dégâts : un bouclier qui renvoie une flèche. */
+export function IconReflect({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3L19 6V11C19 15.5 16 19 12 21C8 19 5 15.5 5 11V6L12 3Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M14.5 9.5L9.5 14.5M9.5 14.5H13M9.5 14.5V11"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** Relève : deux silhouettes, l'une prend la place de l'autre. */
+export function IconReleve({
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <circle cx="8" cy="7" r="3" stroke={color} strokeWidth="2" />
+      <path
+        d="M3 20C3 16.5 5.2 14 8 14C9.4 14 10.6 14.6 11.5 15.6"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15 11L18 8L21 11M18 8V17"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

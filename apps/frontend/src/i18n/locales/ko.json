@@ -391,7 +391,8 @@
       "evolutionOnly": "진화 또는 알의 효과로만 필드에 나옵니다.",
       "title": "효과",
       "keywords": "키워드",
-      "status": "현재 상태"
+      "status": "현재 상태",
+      "evolutionOnlyAncestral": "같은 계통의 성체에서 진화해야만 등장합니다."
     },
     "trigger": {
       "ON_SUMMON": "소환 시",
@@ -494,7 +495,13 @@
       "EVOLUTION_JOKER": "{{target}}에게 **{{kw}}** 부여.",
       "INSTANT_EVOLUTION": "{{target}}에게 **{{kw}}** 부여.",
       "ALLOW_EVOLUTION_THIS_TURN": "{{target}}: 이번 턴 진화 가능.",
-      "unknown": "특수 효과 ({{type}})."
+      "unknown": "특수 효과 ({{type}}).",
+      "REFLECT_DAMAGE": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
+      "REFLECT_DAMAGE_many": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
+      "RELEVE": "**{{kw}}** ({{value}}): 비용 대신 내 필드의 Pipou 아군 {{value}}명을 묘지로 보내 소환할 수 있습니다.",
+      "SUMMON_IF_ALL_ELEMENTS": "묘지에 각 원소(대지, 불, 물, 바람)의 성체 또는 고대종이 있어야만 소환할 수 있습니다.",
+      "COPY_GRAVEYARD_EFFECTS": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
+      "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다."
     },
     "filter": {
       "name": "이름에 '{{name}}' 포함"
@@ -503,7 +510,8 @@
       "egg": "알",
       "baby": "아기",
       "young": "청년",
-      "adult": "성체"
+      "adult": "성체",
+      "ancestral": "고대종"
     },
     "element": {
       "earth": "대지",
@@ -594,6 +602,14 @@
     "instantEvolution": {
       "name": "즉시 진화",
       "desc": "놓인 턴에 바로 진화할 수 있습니다."
+    },
+    "reflect": {
+      "name": "반사",
+      "desc": "받은 전투 피해의 일부를 공격자에게 돌려줍니다. 가드 상태에서 이렇게 파괴된 공격자는 프라임을 주지 않습니다."
+    },
+    "releve": {
+      "name": "교대",
+      "desc": "비용 대신, 지정된 수의 Pipou 아군을 내 필드에서 묘지로 보내 이 몬스터를 소환할 수 있으며, 그중 한 자리를 차지합니다."
     }
   },
   "fight": {

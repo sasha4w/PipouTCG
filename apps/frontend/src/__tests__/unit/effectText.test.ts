@@ -490,3 +490,68 @@ describe.each(Object.keys(LOCALES) as Lng[])(
     });
   },
 );
+
+describe("describeCardEffects : patch Garde, Relève et Origines (fr)", () => {
+  let t: TFunction;
+  beforeAll(async () => {
+    t = await makeT("fr");
+  });
+  const fx = (trigger: string, type: string, target: string, value?: number) =>
+    ({
+      trigger,
+      condition: null,
+      actions: [{ type, target, value }],
+    }) as CardEffect;
+  const linesOf = (card: EffectSourceCard) =>
+    describeCardEffects(card, t).rules.flatMap((r) =>
+      r.lines.map((l) => l.text),
+    );
+  const unknown = (type: string) => t("effects.action.unknown", { type });
+
+  it("Jeune Teros : renvoi de 40 %", () => {
+    const card = monster(
+      [fx("PASSIVE", "REFLECT_DAMAGE", "SELF", 40)],
+      "dragon",
+    );
+    const { keywords } = describeCardEffects(card, t);
+    expect(linesOf(card).some((l) => l.includes("40 %"))).toBe(true);
+    expect(keywords).toContain("reflect");
+  });
+
+  it("Général Chatouille : Relève (2)", () => {
+    const card = monster([fx("PASSIVE", "RELEVE", "SELF", 2)]);
+    const { keywords } = describeCardEffects(card, t);
+    expect(linesOf(card).join(" ")).toContain("2 alliés Pipou");
+    expect(keywords).toContain("releve");
+  });
+
+  it("Ancestral : règle de pose par évolution d'un Adulte", () => {
+    const card = { ...monster([], "dragon"), stage: "ancestral" };
+    expect(linesOf(card)).toContain(t("effects.ui.evolutionOnlyAncestral"));
+  });
+
+  it("Drakon des Origines : 4 éléments et copie", () => {
+    const card = monster(
+      [
+        fx("PASSIVE", "SUMMON_IF_ALL_ELEMENTS", "SELF"),
+        fx("ON_SUMMON", "COPY_GRAVEYARD_EFFECTS", "PLAYER"),
+      ],
+      "dragon",
+    );
+    const text = linesOf(card).join(" ");
+    expect(text).toContain("chaque élément");
+    expect(text).toContain("copie");
+  });
+
+  it("aucun « Effet spécial » pour les nouvelles actions", () => {
+    for (const type of [
+      "REFLECT_DAMAGE",
+      "RELEVE",
+      "SUMMON_IF_ALL_ELEMENTS",
+      "COPY_GRAVEYARD_EFFECTS",
+    ])
+      expect(linesOf(monster([fx("PASSIVE", type, "SELF", 1)]))).not.toContain(
+        unknown(type),
+      );
+  });
+});

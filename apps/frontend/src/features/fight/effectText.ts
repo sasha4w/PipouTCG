@@ -29,6 +29,8 @@ export const KEYWORD_ICON = {
   hatch: "",
   evolutionJoker: "",
   instantEvolution: "",
+  reflect: "",
+  releve: "",
 } as const;
 export type KeywordId = keyof typeof KEYWORD_ICON;
 export const KEYWORD_IDS = Object.keys(KEYWORD_ICON) as KeywordId[];
@@ -232,6 +234,15 @@ const ACTIONS: Record<string, ActionSpec> = {
   SET_DISINFECT_IMMUNITY: { tone: "buff", subject: "monster" },
   SET_FREE_SUMMON: { tone: "buff", subject: "card" },
   SUMMONABLE_ON_ENEMY_SIDE: { tone: "neutral", subject: "card" },
+  REFLECT_DAMAGE: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "reflect",
+    defaultValue: 0,
+  },
+  RELEVE: { tone: "neutral", subject: "card", keyword: "releve", defaultValue: 2 },
+  SUMMON_IF_ALL_ELEMENTS: { tone: "neutral", subject: "card" },
+  COPY_GRAVEYARD_EFFECTS: { tone: "buff", subject: "player" },
 };
 
 /** Cibles qui désignent plusieurs monstres (accord du verbe). */
@@ -434,12 +445,25 @@ export function describeCardEffects(
   const rules: EffectRule[] = [];
 
   // Règle de pose (miroir de canSummonFromHand) : pas un effet, mais à connaître
-  if (card.stage === "young" || card.stage === "adult")
+  if (
+    card.stage === "young" ||
+    card.stage === "adult" ||
+    card.stage === "ancestral"
+  )
     rules.push({
       icon: "",
       trigger: t("effects.ui.summonRule"),
       condition: null,
-      lines: [{ text: t("effects.ui.evolutionOnly"), tone: "neutral" }],
+      lines: [
+        {
+          text: t(
+            card.stage === "ancestral"
+              ? "effects.ui.evolutionOnlyAncestral"
+              : "effects.ui.evolutionOnly",
+          ),
+          tone: "neutral",
+        },
+      ],
     });
 
   for (const effect of card.effects ?? []) {
