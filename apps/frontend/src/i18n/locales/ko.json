@@ -625,7 +625,14 @@
     "zetaProtected": "상대의 다음 턴까지 보호됨",
     "zetaImplantHint": "{{name}}을(를) 이식할 상대의 빈 구역을 선택하세요",
     "zetaAlreadyImplanted": "상대 진영에 이미 제타가 이식되어 있습니다",
-    "zetaDisinfectHint": "내 진영에 이식된 제타를 공격해 제거하세요"
+    "zetaDisinfectHint": "내 진영에 이식된 제타를 공격해 제거하세요",
+    "releve": {
+      "mode": "교대",
+      "payMode": "비용 지불",
+      "confirm": "교대하기",
+      "hint_one": "자리를 내줄 Pipou 아군 {{count}}명을 고르세요",
+      "hint_other": "자리를 내줄 Pipou 아군 {{count}}명을 고르세요"
+    }
   },
   "achievements": {
     "tab": "업적",

@@ -676,7 +676,14 @@
     "zetaProtected": "Protected until the opponent's next turn",
     "zetaImplantHint": "Select an empty opposing zone to implant {{name}}",
     "zetaAlreadyImplanted": "A Zeta is already implanted on the opponent's side",
-    "zetaDisinfectHint": "Attack the Zeta implanted on your side to disinfect it"
+    "zetaDisinfectHint": "Attack the Zeta implanted on your side to disinfect it",
+    "releve": {
+      "mode": "Relief",
+      "payMode": "Pay the cost",
+      "confirm": "Relieve",
+      "hint_one": "Choose {{count}} Pipou ally to step aside",
+      "hint_other": "Choose {{count}} Pipou allies to step aside"
+    }
   },
   "achievements": {
     "tab": "Achievements",

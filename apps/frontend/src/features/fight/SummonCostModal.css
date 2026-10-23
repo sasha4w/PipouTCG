@@ -162,3 +162,9 @@
 .scm-btn-confirm {
   flex: 2;
 }
+
+.scm-mode-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}

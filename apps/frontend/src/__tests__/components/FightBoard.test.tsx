@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import type { CardInstance } from "@pipou/shared";
 import FightBoard from "../../features/fight/FightBoard";
@@ -69,7 +69,11 @@ function state(recycleEnergy: number, youngCost = 2): GameState {
   } as GameState;
 }
 
-function renderBoard(gs: GameState, onEvolve = vi.fn()) {
+function renderBoard(
+  gs: GameState,
+  onEvolve = vi.fn(),
+  extra: Partial<ComponentProps<typeof FightBoard>> = {},
+) {
   const props: ComponentProps<typeof FightBoard> = {
     gs,
     selectedCard: 0,
@@ -83,6 +87,7 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     onDirectAttack: vi.fn(),
     onSummon: vi.fn(),
     onSummonZeta: vi.fn(),
+    onSummonReleve: vi.fn(),
     onEvolve,
     onPlaySupport: vi.fn(),
     onChangeMode: vi.fn(),
@@ -90,6 +95,7 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     onTransform: vi.fn(),
     onDiscardCard: vi.fn(),
     onEndPhase: vi.fn(),
+    ...extra,
   };
   const { rerender } = render(<FightBoard {...props} />);
   const row = screen.getByText("Mes Monstres").closest(".zr-wrap")!;
@@ -260,6 +266,7 @@ function renderZeta(
     onDirectAttack: vi.fn(),
     onSummon: vi.fn(),
     onSummonZeta: vi.fn(),
+    onSummonReleve: vi.fn(),
     onEvolve: vi.fn(),
     onPlaySupport: vi.fn(),
     onChangeMode: vi.fn(),
@@ -368,5 +375,60 @@ describe("FightBoard — Noyau Zeta", () => {
     expect(
       screen.getByText(/Un Zeta est déjà implanté chez l'adversaire/),
     ).toBeInTheDocument();
+  });
+});
+
+describe("FightBoard : Relève", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("zone occupée par un allié Pipou : son allié est sacrifié d'office", () => {
+    const soldat = (id: string) =>
+      monster({
+        instanceId: id,
+        card: {
+          instanceId: id,
+          ownerId: 1,
+          baseCard: {
+            ...monster().card.baseCard,
+            name: `Soldat ${id}`,
+            archetype: "pipou",
+          },
+        },
+      });
+    const gs = state(0);
+    gs.me.hand = [
+      {
+        instanceId: "chef",
+        ownerId: 1,
+        baseCard: {
+          ...monster().card.baseCard,
+          name: "Chef",
+          cost: 3,
+          archetype: "pipou",
+          effects: [
+            {
+              trigger: "PASSIVE",
+              condition: null,
+              actions: [{ type: "RELEVE", target: "SELF", value: 2 }],
+            },
+          ],
+        },
+      },
+    ];
+    gs.me.monsterZones = [soldat("A"), soldat("B"), soldat("C")];
+    const { zones, props } = renderBoard(gs, vi.fn(), { selectedZone: 1 });
+    fireEvent.click(zones[1]);
+    const modal = within(document.querySelector<HTMLElement>(".scm-modal")!);
+    expect(
+      modal.getByText(i18n.t("fight.releve.hint", { count: 2 })),
+    ).toBeInTheDocument();
+    // L'allié de la zone est déjà coché : un second suffit
+    fireEvent.click(modal.getByText("Soldat A"));
+    fireEvent.click(
+      modal.getByRole("button", { name: i18n.t("fight.releve.confirm") }),
+    );
+    expect(props.onSummonReleve).toHaveBeenCalledWith(1, ["B", "A"]);
   });
 });

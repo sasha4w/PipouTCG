@@ -678,7 +678,14 @@
     "zetaProtected": "Protégé jusqu'au prochain tour adverse",
     "zetaImplantHint": "Sélectionne une zone adverse vide pour implanter {{name}}",
     "zetaAlreadyImplanted": "Un Zeta est déjà implanté chez l'adversaire",
-    "zetaDisinfectHint": "Attaque le Zeta implanté chez toi pour le désinfecter"
+    "zetaDisinfectHint": "Attaque le Zeta implanté chez toi pour le désinfecter",
+    "releve": {
+      "mode": "Relève",
+      "payMode": "Payer le coût",
+      "confirm": "Relever",
+      "hint_one": "Choisis {{count}} allié Pipou qui cède sa place",
+      "hint_other": "Choisis {{count}} alliés Pipou qui cèdent leur place"
+    }
   },
   "achievements": {
     "tab": "Succès",

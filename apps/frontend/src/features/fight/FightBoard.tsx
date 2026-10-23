@@ -22,6 +22,7 @@ import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
+import { releveOptions } from "./releve";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
 import {
   HAND_LIMIT,
@@ -54,6 +55,7 @@ interface Props {
   onSummon: () => void;
   /** Invoque Noyau Zeta sur la zone adverse zoneIndex */
   onSummonZeta: (zoneIndex: number) => void;
+  onSummonReleve: (zoneIndex: number, releveInstanceIds: string[]) => void;
   /** Fait évoluer la carte sélectionnée sur le monstre allié visé */
   onEvolve: (targetInstanceId: string, paymentIndices?: number[]) => void;
   onPlaySupport: (
@@ -83,6 +85,7 @@ export default function FightBoard({
   onDirectAttack,
   onSummon,
   onSummonZeta,
+  onSummonReleve,
   onEvolve,
   onPlaySupport,
   onChangeMode,
@@ -122,6 +125,8 @@ export default function FightBoard({
   }, [fx, reduced]);
 
   const [showSummonModal, setShowSummonModal] = useState(false);
+  // Relève sur une zone occupée : l'allié de cette zone est sacrifié d'office
+  const [releveLockedId, setReleveLockedId] = useState<string | null>(null);
   // Monstre visé par une évolution en attente de paiement
   const [evolveTargetId, setEvolveTargetId] = useState<string | null>(null);
   // Une évolution en attente ne survit pas à un changement de carte sélectionnée
@@ -246,7 +251,9 @@ export default function FightBoard({
   const equippableIds = new Set(
     isEquipment && isMyMain
       ? gs.me.monsterZones
-          .filter((m): m is MonsterOnBoard => !!m && !implantedIds.has(m.instanceId))
+          .filter(
+            (m): m is MonsterOnBoard => !!m && !implantedIds.has(m.instanceId),
+          )
           .map((m) => m.instanceId)
       : [],
   );
@@ -261,6 +268,11 @@ export default function FightBoard({
   const selectedInstance =
     selectedCard !== null ? gs.me.hand[selectedCard] : undefined;
   // Jeune / Adulte Drakon : jamais posé sur une zone vide, seulement par évolution
+  // Relève possible pour la carte sélectionnée (alliés Pipou en nombre suffisant)
+  const releve =
+    selectedInstance && canSummonFromHand(selectedInstance.baseCard)
+      ? releveOptions(selectedInstance.baseCard, gs.me.monsterZones, myId)
+      : null;
   const evolvesOnly =
     !!selectedInstance && !canSummonFromHand(selectedInstance.baseCard);
   const evolvableTargets: MonsterOnBoard[] =
@@ -305,25 +317,24 @@ export default function FightBoard({
     const candidates: ClientChoiceCandidate[] = targetableZones(
       targetSide,
       effects,
-    )
-      .map((z) => ({
-        instanceId: z.instanceId,
-        baseCard: {
-          id: z.card.baseCard.id,
-          name: z.card.baseCard.name,
-          type: z.card.baseCard.type,
-          atk: z.card.baseCard.atk,
-          hp: z.card.baseCard.hp,
-          rarity: z.card.baseCard.rarity,
-          supportType: z.card.baseCard.supportType,
-          cost: z.card.baseCard.cost,
-          image: z.card.baseCard.image,
-          description: z.card.baseCard.description,
-          element: z.card.baseCard.element,
-          stage: z.card.baseCard.stage,
-        },
-        source: "board" as const,
-      }));
+    ).map((z) => ({
+      instanceId: z.instanceId,
+      baseCard: {
+        id: z.card.baseCard.id,
+        name: z.card.baseCard.name,
+        type: z.card.baseCard.type,
+        atk: z.card.baseCard.atk,
+        hp: z.card.baseCard.hp,
+        rarity: z.card.baseCard.rarity,
+        supportType: z.card.baseCard.supportType,
+        cost: z.card.baseCard.cost,
+        image: z.card.baseCard.image,
+        description: z.card.baseCard.description,
+        element: z.card.baseCard.element,
+        stage: z.card.baseCard.stage,
+      },
+      source: "board" as const,
+    }));
 
     // Aucune cible : la barre d'action désactive déjà le bouton
     if (candidates.length === 0) return;
@@ -371,7 +382,11 @@ export default function FightBoard({
         if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
         const occupant = gs.me.monsterZones[idx];
         if (occupant && implantedIds.has(occupant.instanceId)) return; // Zeta adverse : intouchable
-        if (occupant && evolvableIds.has(occupant.instanceId) && selectedInstance) {
+        if (
+          occupant &&
+          evolvableIds.has(occupant.instanceId) &&
+          selectedInstance
+        ) {
           const cost = evolutionCost(selectedInstance.baseCard, occupant);
           if (Math.max(0, cost - gs.me.recycleEnergy) > 0) {
             onSetPayIndices([]);
@@ -380,6 +395,25 @@ export default function FightBoard({
           } else {
             onEvolve(occupant.instanceId, []);
           }
+          return;
+        }
+        if (
+          occupant &&
+          releve?.allies.some((a) => a.instanceId === occupant.instanceId)
+        ) {
+          onSetSelectedZone(idx);
+          setReleveLockedId(occupant.instanceId);
+          setShowSummonModal(true);
+          return;
+        }
+        // Relève : la zone d'un allié Pipou accueille le monstre à sa place
+        if (
+          occupant &&
+          releve?.allies.some((a) => a.instanceId === occupant.instanceId)
+        ) {
+          onSetSelectedZone(idx);
+          setReleveLockedId(occupant.instanceId);
+          setShowSummonModal(true);
           return;
         }
         if (evolvesOnly) return;
@@ -491,6 +525,7 @@ export default function FightBoard({
   };
 
   const handleModalClose = () => {
+    setReleveLockedId(null);
     setShowSummonModal(false);
     setEvolveTargetId(null);
     onSetSelectedZone(null);
@@ -570,7 +605,11 @@ export default function FightBoard({
         <TerrainBackground
           terrain={oppTerrain}
           side="opponent"
-          waveFromZone={terrainWaveZone(oppTerrain, gs.opponent.supportZones, fx.opponent.supports)}
+          waveFromZone={terrainWaveZone(
+            oppTerrain,
+            gs.opponent.supportZones,
+            fx.opponent.supports,
+          )}
           reduced={reduced}
         />
         <GraveyardPile
@@ -632,7 +671,11 @@ export default function FightBoard({
         <TerrainBackground
           terrain={myTerrain}
           side="me"
-          waveFromZone={terrainWaveZone(myTerrain, gs.me.supportZones, fx.me.supports)}
+          waveFromZone={terrainWaveZone(
+            myTerrain,
+            gs.me.supportZones,
+            fx.me.supports,
+          )}
           reduced={reduced}
         />
         <div className="fb-zones-col">
@@ -763,6 +806,26 @@ export default function FightBoard({
             costOverride={
               evolveTarget && selectedInstance
                 ? evolutionCost(selectedInstance.baseCard, evolveTarget)
+                : undefined
+            }
+            releve={
+              releve && !evolveTarget && !isZeta
+                ? {
+                    needed: releve.needed,
+                    allies: releve.allies.map((m) => ({
+                      instanceId: m.instanceId,
+                      name: m.card.baseCard.name,
+                      atk: m.card.baseCard.atk ?? 0,
+                      hp: m.currentHp,
+                    })),
+                    lockedId: releveLockedId ?? undefined,
+                    onConfirm: (ids) => {
+                      setShowSummonModal(false);
+                      setReleveLockedId(null);
+                      if (selectedZone !== null)
+                        onSummonReleve(selectedZone, ids);
+                    },
+                  }
                 : undefined
             }
           />
