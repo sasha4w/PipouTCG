@@ -168,6 +168,18 @@ export class AdventureAdminService {
       throw new BadRequestException(
         'Le portrait doit être une carte du set du monde',
       );
+    if (body.farmCardId != null) {
+      const farmCard = await m.findOne(Card, {
+        where: {
+          id: body.farmCardId,
+          cardSet: { id: opponent.world.cardSetId },
+        },
+      });
+      if (!farmCard)
+        throw new BadRequestException(
+          'La carte de farm doit être une carte du set du monde',
+        );
+    }
     await m.update(
       AdventureOpponent,
       { id },
@@ -181,6 +193,8 @@ export class AdventureAdminService {
         farmXp: body.farmXp,
         farmBoosterPct: body.farmBoosterPct,
         farmLegendaryPct: body.farmLegendaryPct,
+        farmCardId: body.farmCardId ?? null,
+        farmCardPct: body.farmCardPct,
       },
     );
     return this.view(m, opponent.worldId);
@@ -445,6 +459,8 @@ function opponentView(o: AdventureOpponent): AdminAdventureOpponent {
     farmXp: o.farmXp,
     farmBoosterPct: o.farmBoosterPct,
     farmLegendaryPct: o.farmLegendaryPct,
+    farmCardId: o.farmCardId,
+    farmCardPct: o.farmCardPct,
     deck: cards
       .map((c) => ({
         cardId: c.cardId,

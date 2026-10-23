@@ -59,13 +59,16 @@ export interface AdventureLoot {
   xp: number;
   booster: boolean;
   legendary: boolean;
+  /** Carte précise de l'adversaire (farmCardId). */
+  card: boolean;
   capped: boolean;
 }
 
 /**
  * Récompense d'une victoire. Pourcentages 0..100 : un jet réussit si
  * `random() * 100 < pct`. Ordre des appels à `random` en farm : booster,
- * puis légendaire (boss uniquement ; aucun appel sinon).
+ * puis légendaire (boss uniquement ; aucun appel sinon), puis carte précise
+ * (seulement si farmCardId est réglé ; aucun appel sinon).
  * La 1re victoire paie toujours (booster garanti, légendaire si boss) et
  * ne consomme pas le plafond ; le farm est plafonné à `dailyCap`.
  */
@@ -85,19 +88,30 @@ export function rollLoot(input: {
       xp: config.firstWinXp,
       booster: true,
       legendary: isBoss,
+      card: false,
       capped: false,
     };
   }
   if (farmRewardsToday >= dailyCap) {
-    return { gold: 0, xp: 0, booster: false, legendary: false, capped: true };
+    return {
+      gold: 0,
+      xp: 0,
+      booster: false,
+      legendary: false,
+      card: false,
+      capped: true,
+    };
   }
   const booster = random() * 100 < config.farmBoosterPct;
   const legendary = isBoss && random() * 100 < config.farmLegendaryPct;
+  const card =
+    config.farmCardId !== null && random() * 100 < config.farmCardPct;
   return {
     gold: config.farmGold,
     xp: config.farmXp,
     booster,
     legendary,
+    card,
     capped: false,
   };
 }

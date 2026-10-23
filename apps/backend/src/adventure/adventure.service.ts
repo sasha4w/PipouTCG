@@ -88,7 +88,7 @@ export class AdventureService implements PveHooks {
           cardSet: true,
           booster: true,
           prerequisites: true,
-          opponents: { portraitCard: true },
+          opponents: { portraitCard: true, farmCard: true },
         },
       }),
       this.progress(userId, m),
@@ -305,6 +305,24 @@ export class AdventureService implements PveHooks {
           setCheck = world.cardSetId;
         }
       }
+      if (roll.card && opponent.farmCardId !== null) {
+        const card = await m.findOne(Card, {
+          where: { id: opponent.farmCardId },
+        });
+        if (!card)
+          this.logger.warn(
+            `IA ${opponent.id} : carte de farm ${opponent.farmCardId} introuvable`,
+          );
+        else {
+          await this.users.addCardToUser(match.userId, card.id, 1, m);
+          loot.cards.push({
+            cardId: card.id,
+            name: card.name,
+            rarity: card.rarity,
+            imageUrl: card.image?.url ?? null,
+          });
+        }
+      }
       const gained =
         loot.gold > 0 ||
         loot.xp > 0 ||
@@ -454,6 +472,10 @@ export class AdventureService implements PveHooks {
             xp: o.farmXp,
             boosterPct: o.farmBoosterPct,
             legendaryPct: isBoss ? o.farmLegendaryPct : 0,
+            card:
+              o.farmCard && o.farmCardPct > 0
+                ? { name: o.farmCard.name, pct: o.farmCardPct }
+                : null,
           },
         };
       });

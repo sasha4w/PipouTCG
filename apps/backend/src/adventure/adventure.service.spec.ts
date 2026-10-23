@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
 import { FindOperator, type DataSource } from 'typeorm';
 import { ADVENTURE_LEVEL_DEFAULTS, Rarity } from '@pipou/shared';
@@ -160,6 +160,8 @@ function setup(opts?: { worlds?: Row[]; cards?: Row[]; dailyCap?: number }) {
             ? null
             : { id: 1, dailyCap: opts.dailyCap },
         );
+      if (e === Card)
+        return Promise.resolve(cards.find((c) => c.id === id) ?? null);
       throw new Error('findOne inattendu');
     }),
     count: jest.fn((e: unknown, o: { where: Row }) => {
@@ -801,5 +803,63 @@ describe('AdventureService.countFarmRewardsToday', () => {
       endedAt: new Date(farmWindowStart(NOW).getTime() - 1),
     });
     expect(await ctx.service.countFarmRewardsToday(USER, NOW)).toBe(1);
+  });
+});
+
+// ── Carte précise en farm ───────────────────────────────────────────────────
+
+describe('AdventureService : carte précise en farm', () => {
+  function withFarmCard(farmCardId: number) {
+    const w = world(1, {});
+    const first = (w.opponents as Row[])[0];
+    Object.assign(first, {
+      farmCardId,
+      farmCardPct: 100,
+      farmCard: farmCardId === 950 ? card(950, 10, Rarity.EPIC) : null,
+    });
+    return setup({
+      worlds: [w],
+      cards: [card(900, 10, Rarity.LEGENDARY), card(950, 10, Rarity.EPIC)],
+    });
+  }
+
+  it('une victoire de farm attribue la carte et l’ajoute au butin', async () => {
+    const ctx = withFarmCard(950);
+    ctx.beat(1, 1);
+    const id = await startedMatch(ctx, 11);
+    const r = await ctx.service.recordResult(game(USER), pve(id, 11), NOW);
+    expect(ctx.users.addCardToUser).toHaveBeenCalledWith(
+      USER,
+      950,
+      1,
+      ctx.manager,
+    );
+    expect(r.loot?.cards).toEqual([
+      expect.objectContaining({ cardId: 950, name: 'Carte 950' }),
+    ]);
+  });
+
+  it('carte introuvable : avertissement, rien attribué', async () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    const ctx = withFarmCard(999);
+    ctx.beat(1, 1);
+    const id = await startedMatch(ctx, 11);
+    await ctx.service.recordResult(game(USER), pve(id, 11), NOW);
+    expect(ctx.users.addCardToUser).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('affiche la carte et son taux au joueur', async () => {
+    const ctx = withFarmCard(950);
+    const o = await ctx.service.getOverview(USER, NOW);
+    const w1 = o.worlds.find((w) => w.id === 1)!;
+    expect(w1.opponents[0].farm.card).toEqual({
+      name: 'Carte 950',
+      pct: 100,
+    });
+    expect(w1.opponents[1].farm.card).toBeNull();
   });
 });

@@ -18,7 +18,7 @@ const opponent = (over: Partial<AdventureOpponentView> = {}): AdventureOpponentV
   wins: 0,
   isBoss: true,
   firstWin: { gold: 500, xp: 300, boosterName: "Booster Brigade", legendary: true },
-  farm: { gold: 60, xp: 40, boosterPct: 10, legendaryPct: 2 },
+  farm: { gold: 60, xp: 40, boosterPct: 10, legendaryPct: 2, card: null },
   ...over,
 });
 

@@ -2,6 +2,7 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Max,
   MaxLength,
@@ -49,4 +50,15 @@ export class AdminOpponentDto implements AdminAdventureOpponentBody {
   @Min(0)
   @Max(100)
   farmLegendaryPct!: number;
+
+  /** Carte précise qui peut tomber en farm, ou null. */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  farmCardId!: number | null;
+
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(100)
+  farmCardPct!: number;
 }

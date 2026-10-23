@@ -47,6 +47,8 @@ function opponentWith(size: number): AdminAdventureOpponent {
     farmXp: 0,
     farmBoosterPct: 0,
     farmLegendaryPct: 0,
+    farmCardId: null,
+    farmCardPct: 0,
   };
 }
 

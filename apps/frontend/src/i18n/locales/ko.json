@@ -801,7 +801,8 @@
       "farm_gold": "골드 (파밍)",
       "farm_xp": "XP (파밍)",
       "farm_booster_pct": "파밍 부스터 확률 (%)",
-      "farm_legendary_pct": "파밍 전설 확률 (%)"
+      "farm_legendary_pct": "파밍 전설 확률 (%)",
+      "farm_card_pct": "파밍 지정 카드 확률 (%)"
     },
     "deck": {
       "title": "{{name}}의 덱",

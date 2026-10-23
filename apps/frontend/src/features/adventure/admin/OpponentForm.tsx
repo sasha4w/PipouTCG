@@ -25,7 +25,8 @@ type RewardKey =
   | "farmGold"
   | "farmXp"
   | "farmBoosterPct"
-  | "farmLegendaryPct";
+  | "farmLegendaryPct"
+  | "farmCardPct";
 
 const REWARD_FIELDS: { key: RewardKey; label: string; max?: number }[] = [
   { key: "firstWinGold", label: "first_win_gold" },
@@ -34,6 +35,7 @@ const REWARD_FIELDS: { key: RewardKey; label: string; max?: number }[] = [
   { key: "farmXp", label: "farm_xp" },
   { key: "farmBoosterPct", label: "farm_booster_pct", max: 100 },
   { key: "farmLegendaryPct", label: "farm_legendary_pct", max: 100 },
+  { key: "farmCardPct", label: "farm_card_pct", max: 100 },
 ];
 
 export default function OpponentForm({ opponent, cards, onDone }: Props) {
@@ -48,6 +50,9 @@ export default function OpponentForm({ opponent, cards, onDone }: Props) {
     farmXp: opponent.farmXp,
     farmBoosterPct: opponent.farmBoosterPct,
     farmLegendaryPct: opponent.farmLegendaryPct,
+    // Choix de la carte : écran admin du plan 4 (la valeur actuelle est conservée)
+    farmCardId: opponent.farmCardId,
+    farmCardPct: opponent.farmCardPct,
   });
 
   const save = useAdminAdventureMutation(

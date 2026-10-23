@@ -854,7 +854,8 @@
       "farm_gold": "Or (farm)",
       "farm_xp": "XP (farm)",
       "farm_booster_pct": "Chance de booster en farm (%)",
-      "farm_legendary_pct": "Chance de légendaire en farm (%)"
+      "farm_legendary_pct": "Chance de légendaire en farm (%)",
+      "farm_card_pct": "Chance de la carte précise en farm (%)"
     },
     "deck": {
       "title": "Deck de {{name}}",

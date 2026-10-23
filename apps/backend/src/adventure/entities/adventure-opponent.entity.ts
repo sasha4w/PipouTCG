@@ -90,6 +90,27 @@ export class AdventureOpponent {
   })
   farmLegendaryPct!: number;
 
+  /** Carte précise qui peut tomber en farm (ex. l'Ancestral d'un niveau Drakon). */
+  @ManyToOne(() => Card, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({
+    name: 'farm_card_id',
+    foreignKeyConstraintName: 'FK_adventure_opponent_farm_card',
+  })
+  farmCard!: Card | null;
+
+  @Column({ name: 'farm_card_id', type: 'int', nullable: true, default: null })
+  farmCardId!: number | null;
+
+  @Column({
+    name: 'farm_card_pct',
+    type: 'decimal',
+    precision: 5,
+    scale: 2,
+    default: 0,
+    transformer: decimalTransformer,
+  })
+  farmCardPct!: number;
+
   @OneToMany(() => AdventureOpponentCard, (c) => c.opponent)
   cards!: AdventureOpponentCard[];
 }
