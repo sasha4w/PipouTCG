@@ -33,9 +33,12 @@ function fakeDb(
 const migration = new DrakonOriginesCards1791000000013();
 
 describe('migration DrakonOriginesCards', () => {
-  beforeEach(() =>
-    jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined),
-  );
+  let warn: jest.SpyInstance;
+  beforeEach(() => {
+    warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+  });
   afterEach(() => jest.restoreAllMocks());
 
   it('up crée les 5 cartes avec stade, élément et lignée', async () => {
@@ -58,7 +61,7 @@ describe('migration DrakonOriginesCards', () => {
     const db = fakeDb({ withSet: false });
     await migration.up(db.runner);
     expect(db.inserts).toHaveLength(0);
-    expect(Logger.prototype.warn).toHaveBeenCalled();
+    expect(warn).toHaveBeenCalled();
   });
 
   it('down ne supprime pas une carte référencée', async () => {
