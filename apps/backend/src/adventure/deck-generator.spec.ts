@@ -321,3 +321,53 @@ describe('robustesse', () => {
     expect(() => generateDeck(setOf('pipou'), 1, sig, rng(1))).toThrow();
   });
 });
+
+describe('extension Drakon dans les decks', () => {
+  const set = setOf('dragon');
+  const cards = byId(set);
+  const ancestrals = (d: Entry[]) =>
+    d.filter((e) => cards.get(e.cardId)!.stage === 'ancestral');
+
+  it('niveaux 1 et 2 : aucun Ancestral', () => {
+    for (const level of [1, 2] as const)
+      for (const seed of SEEDS) {
+        const deck = generateDeck(
+          set,
+          level,
+          LAUNCH_SIGNATURES.dragon[level - 1],
+          rng(seed),
+        );
+        expect(ancestrals(deck)).toEqual([]);
+      }
+  });
+
+  it("niveau 3 : 1 Ancestral de l'élément de la signature", () => {
+    const sig = LAUNCH_SIGNATURES.dragon[2];
+    for (const seed of SEEDS) {
+      const found = ancestrals(generateDeck(set, 3, sig, rng(seed)));
+      expect(found).toHaveLength(1);
+      expect(cards.get(found[0].cardId)!.element).toBe(sig.element);
+      expect(found[0].quantity).toBe(1);
+    }
+  });
+
+  it('boss : le Drakon des Origines et un Adulte de chaque élément', () => {
+    const sig = LAUNCH_SIGNATURES.dragon[4];
+    expect(sig.cardName).toBe('Drakon des Origines');
+    for (const seed of SEEDS) {
+      const deck = generateDeck(set, 5, sig, rng(seed));
+      const names = deck.map((e) => cards.get(e.cardId)!.name);
+      expect(names).toContain('Drakon des Origines');
+      for (const el of ['earth', 'fire', 'water', 'wind'])
+        expect(
+          deck.some(
+            (e) =>
+              cards.get(e.cardId)!.stage === 'adult' &&
+              cards.get(e.cardId)!.element === el,
+          ),
+        ).toBe(true);
+      expect(total(deck)).toBeGreaterThanOrEqual(30);
+      expect(total(deck)).toBeLessThanOrEqual(40);
+    }
+  });
+});

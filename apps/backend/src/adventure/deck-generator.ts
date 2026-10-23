@@ -4,6 +4,7 @@ import {
   DrakonElement,
   Rarity,
   SupportType,
+  requiresAllElements,
 } from '@pipou/shared';
 import type { Card } from '../cards/card.entity';
 import { normalizeCardName } from '../fights/effects/card-name';
@@ -152,8 +153,11 @@ function dragonPlan(
   level: Level,
   random: () => number,
 ): Plan {
+  // Drakon des Origines : les 4 éléments, chacun en plus petit nombre
+  const allElements = requiresAllElements(sig.effects);
   let elements: DrakonElement[];
-  if (signature.element) elements = [signature.element];
+  if (allElements) elements = [...ELEMENTS];
+  else if (signature.element) elements = [signature.element];
   else {
     const pool = [...ELEMENTS];
     elements = [];
@@ -164,7 +168,9 @@ function dragonPlan(
 
   const forced: Plan['forced'] = [];
   // Ancestral : légendaire, un seul exemplaire, à partir du niveau 3
-  const qty = { baby: 3, young: 2, adult: 2, ancestral: 1 } as const;
+  const qty = allElements
+    ? ({ baby: 2, young: 1, adult: 2, ancestral: 1 } as const)
+    : ({ baby: 3, young: 2, adult: 2, ancestral: 1 } as const);
   for (const c of set) {
     if (
       c.element &&
@@ -202,9 +208,13 @@ function dragonPlan(
 
   return {
     forced,
+    // Ancestraux et Drakon des Origines : seulement par les règles ci-dessus
     playable: (c, counts) =>
-      (c.stage !== 'young' && c.stage !== 'adult') || hasBaby(c, counts),
+      c.stage !== 'ancestral' &&
+      !requiresAllElements(c.effects) &&
+      ((c.stage !== 'young' && c.stage !== 'adult') || hasBaby(c, counts)),
     baseWeight: (c, counts) => {
+      if (c.stage === 'ancestral' || requiresAllElements(c.effects)) return 0;
       if (c.stage === 'egg') return 1.5;
       if (c.stage === 'baby') return 0.5;
       if (c.stage === 'young' || c.stage === 'adult') {
