@@ -411,3 +411,65 @@ Mesuré le 2026-10-23, branche `patch-garde-origines` : nouveau cerveau, Garde l
 - Les cartes trop fortes redescendent (Tactique, Canon) ; la lignée Teros et l'Œuf restent négatifs mais beaucoup moins.
 - Pipou étouffe un peu moins (14,2 % de phases sans coup utile), sans atteindre l'objectif de 12 %.
 - Force Plasma reste peu jouable (18 % du temps en main) : la condition « un Noyau sur mon terrain » reste exigeante.
+
+
+## Patch Garde, Relève et Origines (Standard)
+
+Mesuré le 2026-10-23, branche `patch-garde-origines` : nouveau cerveau, plans 1 à 3 (Garde limitée, renvoi de dégâts, Relève, 15 cartes patchées, Ancestraux, Drakon des Origines en boss). Mêmes graines que « Nouveau cerveau (Standard) » : decks 1 à 10, 10 parties par paire, graine 42. 10 500 parties en 4 268 s.
+
+| Ligne contre colonne | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 49.9 % [47.7–52.0] | 56.2 % [54.3–58.2] | 62.3 % [60.4–64.2] |
+| pixelman | 43.6 % [41.7–45.6] | 50.0 % [47.8–52.2] | 54.7 % [52.7–56.6] |
+| dragon | 37.6 % [35.7–39.5] | 45.3 % [43.3–47.2] | 50.0 % [47.8–52.2] |
+
+| Deck | Victoires | Parties | Taux |
+|---|---|---|---|
+| pipou niveau 1 | 395 | 1400 | 28.2 % [25.9–30.6] |
+| pipou niveau 2 | 560 | 1400 | 40.0 % [37.5–42.6] |
+| pipou niveau 3 | 935 | 1400 | 66.8 % [64.3–69.2] |
+| pipou niveau 4 | 986 | 1400 | 70.4 % [68.0–72.8] |
+| pipou niveau 5 | 1085 | 1400 | 77.5 % [75.2–79.6] |
+| pixelman niveau 1 | 449 | 1400 | 32.1 % [29.7–34.6] |
+| pixelman niveau 2 | 779 | 1400 | 55.6 % [53.0–58.2] |
+| pixelman niveau 3 | 271 | 1400 | 19.4 % [17.4–21.5] |
+| pixelman niveau 4 | 868 | 1400 | 62.0 % [59.4–64.5] |
+| pixelman niveau 5 | 1091 | 1400 | 77.9 % [75.7–80.0] |
+| dragon niveau 1 | 276 | 1400 | 19.7 % [17.7–21.9] |
+| dragon niveau 2 | 426 | 1400 | 30.4 % [28.1–32.9] |
+| dragon niveau 3 | 558 | 1400 | 39.9 % [37.3–42.4] |
+| dragon niveau 4 | 820 | 1400 | 58.6 % [56.0–61.1] |
+| dragon niveau 5 | 992 | 1400 | 70.9 % [68.4–73.2] |
+
+### Critères de réussite du design
+
+| Critère | Nouveau cerveau (avant patch) | Patch complet | Atteint ? |
+|---|---|---|---|
+| Dragon contre Pipou ≥ 40 % | 36,3 % | 37,6 % | non |
+| Dragon contre Pixelman ≥ 40 % | 41,6 % | 45,3 % | oui |
+| Chaque duel entre 40 et 60 % | Pipou-Dragon 63,4 % | Pipou-Dragon 62,3 %, les autres dans la fourchette | non (de peu) |
+| Pipou : phases sans coup utile < 12 % | 16,1 % | 14,5 % | non |
+| Cartes modifiées hors « trop forte » | — | Force Plasma +16 / +16 (dans les decks Pixelman) | non |
+| Force Plasma et .patch hors « morte » | — | Force Plasma jouable 23 %, .patch 35 % (valeur −13) | partiel |
+| Tours par partie : +2 au plus | 12,1 / 13,9 / 12,8 | 11,7 / 13,6 / 12,6 | oui |
+| Pas plus de parties sans vainqueur | 0 | **9** sur 10 500 | **non** |
+
+### Nouvelles cartes (valeur ajoutée, decks Drakon, hors miroir)
+
+| Carte | Valeur | Jouée / en main sans être jouée | Jouable |
+|---|---|---|---|
+| Drakon des Origines | **+23** (+26 contre Pipou, +21 contre Pixelman) | 293 / 558 | 12 % |
+| Ancestral Tempestu | +8 | 391 / 833 | 92 % |
+| Ancestral Ackos | +3 | 483 / 753 | 95 % |
+| Ancestral Feros | −5 | 150 / 462 | 90 % |
+| Ancestral Teros | −8 | 219 / 376 | 89 % |
+
+### Lecture
+
+- **Le monde Drakon a enfin une vraie progression** : 19,7 / 30,4 / 39,9 / 58,6 / 70,9 %, croissante, avec le boss en tête (62,0 % avant, avec l'Œuf Céleste). Le boss réussit à invoquer le Drakon des Origines dans environ un tiers des parties où il l'a en main, et cette carte fait gagner (+23 pts) : c'est un vrai boss.
+- **Dragon progresse contre Pixelman** (41,6 → 45,3 %) **mais pas contre Pipou** (36,3 → 37,6 %). Le Rapide du plan 2 (46 %) était trop optimiste : sur 3 graines seulement, l'écart avec le Standard (10 graines) dépasse la marge annoncée.
+- **Les cartes défensives restent négatives** : Bébé Teros −24, Sentinelle Gargouille −25, Œuf Céleste −29. La pioche à la destruction et le renvoi de dégâts ne suffisent pas à les rendre gagnantes.
+- **Les cartes trop fortes redescendent** : Tactique Gang Gang +8, Canon +9, Surcharge +11. Mais Force Plasma, désormais jouable avec n'importe quel Noyau, devient forte chez Pixelman (+16).
+- **La Relève est neutre** (Chatouille −4, Champion −5, Mastodonte −7) et Pipou étouffe encore (14,5 %).
+- **9 parties sans vainqueur** (aucune avant) : à examiner avant la mise en production, c'est sans doute un nouveau cas de blocage du moteur ou de l'IA.
+- Pixelman niveau 3 (Noyau Zeta) reste le deck le plus faible du jeu (19,4 %).
