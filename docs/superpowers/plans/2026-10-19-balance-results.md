@@ -452,7 +452,7 @@ Mesuré le 2026-10-23, branche `patch-garde-origines` : nouveau cerveau, plans 1
 | Cartes modifiées hors « trop forte » | — | Force Plasma +16 / +16 (dans les decks Pixelman) | non |
 | Force Plasma et .patch hors « morte » | — | Force Plasma jouable 23 %, .patch 35 % (valeur −13) | partiel |
 | Tours par partie : +2 au plus | 12,1 / 13,9 / 12,8 | 11,7 / 13,6 / 12,6 | oui |
-| Pas plus de parties sans vainqueur | 0 | **9** sur 10 500 | **non** |
+| Pas plus de parties sans vainqueur | 0 | 9 sur 10 500, toutes des égalités par double KO | oui (aucun blocage) |
 
 ### Nouvelles cartes (valeur ajoutée, decks Drakon, hors miroir)
 
@@ -471,5 +471,5 @@ Mesuré le 2026-10-23, branche `patch-garde-origines` : nouveau cerveau, plans 1
 - **Les cartes défensives restent négatives** : Bébé Teros −24, Sentinelle Gargouille −25, Œuf Céleste −29. La pioche à la destruction et le renvoi de dégâts ne suffisent pas à les rendre gagnantes.
 - **Les cartes trop fortes redescendent** : Tactique Gang Gang +8, Canon +9, Surcharge +11. Mais Force Plasma, désormais jouable avec n'importe quel Noyau, devient forte chez Pixelman (+16).
 - **La Relève est neutre** (Chatouille −4, Champion −5, Mastodonte −7) et Pipou étouffe encore (14,5 %).
-- **9 parties sans vainqueur** (aucune avant) : à examiner avant la mise en production, c'est sans doute un nouveau cas de blocage du moteur ou de l'IA.
+- **9 parties sans vainqueur** (aucune avant) : rejouées une à une, ce sont toutes des **égalités par double KO** (les deux joueurs prennent leur dernière Prime dans le même combat, règle existante), surtout entre petits decks Pipou. Aucun blocage du moteur ou de l'IA.
 - Pixelman niveau 3 (Noyau Zeta) reste le deck le plus faible du jeu (19,4 %).
