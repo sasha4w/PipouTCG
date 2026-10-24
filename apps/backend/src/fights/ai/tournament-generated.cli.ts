@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { formatDetail, formatMirror, formatSummary } from './report';
 import { SCALES, planJobs, planMirrorJobs, runJobs } from './tournament-jobs';
 import type { ThinkingProfile } from './planner';
+import type { Brain } from './tournament';
 import type { ScaleName } from './tournament-jobs';
 
 /** Lit `--nom <valeur>` dans argv. */
@@ -21,7 +22,8 @@ function num(name: string, fallback: number): number {
  * Tournoi sur decks générés en code à graine fixe, sans base.
  * `--scale rapide|standard|complet`, ou une seule graine avec
  * `--deck-seed`, `--games` ; `--seed` (parties), `--workers`,
- * `--brain plan|greedy` (plan par défaut), `--mirror` (nouveau contre ancien),
+ * `--brain max|niveau|greedy` (max par défaut : le plus fort, sans erreur ;
+ * niveau : le cerveau d'aventure de chaque niveau), `--mirror` (nouveau contre ancien),
  * `--thinking <json>` (essai de réglage du planificateur),
  * `--sans "Carte A,Carte B"` (cartes retirées du tirage des decks).
  */
@@ -39,10 +41,17 @@ async function main(): Promise<void> {
   const seed = num('seed', 42);
   const workers = num('workers', Math.max(1, cpus().length - 2));
   const mirror = process.argv.includes('--mirror');
-  const brain = raw('brain') ?? 'plan';
-  if (brain !== 'plan' && brain !== 'greedy')
-    throw new Error(`Cerveau inconnu « ${brain} » (plan, greedy)`);
-  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${!mirror && brain === 'greedy' ? '-glouton' : ''}${raw('sans') ? '-sans-cartes' : ''}`;
+  const brainName = raw('brain') ?? 'max';
+  const brains: Record<string, Brain> = {
+    max: 'plan',
+    niveau: 'level',
+    greedy: 'greedy',
+  };
+  const brain = brains[brainName];
+  if (!brain)
+    throw new Error(`Cerveau inconnu « ${brainName} » (max, niveau, greedy)`);
+  const suffix = { plan: '', level: '-niveau', greedy: '-glouton' }[brain];
+  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${mirror ? '' : suffix}${raw('sans') ? '-sans-cartes' : ''}`;
 
   const excluded = (raw('sans') ?? '')
     .split(',')

@@ -9,13 +9,32 @@ import { AiPlayer, aiMustAct } from './ai-player';
 import { STRONGEST } from './planner';
 import type { ThinkingProfile } from './planner';
 import type { AiLevel } from './ai-player';
+import { LEVEL_BRAINS } from './level-brains';
+import type { LevelBrain } from './level-brains';
 import { GameRecorder, emptyTelemetry, mergeTelemetry } from './telemetry';
 import type { Telemetry } from './telemetry';
 
 /** Garde-fou : une partie qui dépasse ce nombre d'actions n'a pas de vainqueur. */
 export const MAX_ACTIONS = 2000;
 
-export type Brain = 'greedy' | 'plan';
+/**
+ * Cerveau d'une entrée de tournoi. Jamais de plafond de temps : il
+ * dépend de la machine et rendrait le tournoi non reproductible.
+ */
+export function brainOf(e: TournamentEntry): LevelBrain {
+  if (e.brain === 'plan')
+    return { thinking: { ...STRONGEST, ...e.thinking }, mistakeRate: 0 };
+  if (e.brain === 'level') {
+    const { thinking, mistakeRate } = LEVEL_BRAINS[e.level];
+    if (thinking === 'greedy') return { thinking, mistakeRate };
+    const { timeLimitMs: _untimed, ...budgetOnly } = thinking;
+    return { thinking: budgetOnly, mistakeRate };
+  }
+  return { thinking: 'greedy', mistakeRate: 0 };
+}
+
+/** Glouton sans erreur, le plus fort (`plan`), ou le cerveau d'aventure du niveau. */
+export type Brain = 'greedy' | 'plan' | 'level';
 
 export interface TournamentEntry {
   name: string;
@@ -23,7 +42,7 @@ export interface TournamentEntry {
   level: AiLevel;
   /** Une entrée par exemplaire. */
   deck: Card[];
-  /** Cerveau : glouton (par défaut, comme en aventure) ou qui planifie. */
+  /** Cerveau : glouton par défaut. */
   brain?: Brain;
   /** Réglage du planificateur, par-dessus STRONGEST. */
   thinking?: Partial<ThinkingProfile>;
@@ -100,12 +119,11 @@ function playGame(
   Math.random = seeded(seed ^ 0x9e3779b9);
   try {
     const engine = createEngine(fixedRng());
-    const brainOf = (e: TournamentEntry) =>
-      e.brain === 'plan' ? { ...STRONGEST, ...e.thinking } : 'greedy';
-    const ais: Record<Seat, AiPlayer> = {
-      p1: new AiPlayer(engine, random, brainOf(p1)),
-      p2: new AiPlayer(engine, random, brainOf(p2)),
+    const aiFor = (e: TournamentEntry) => {
+      const { thinking, mistakeRate } = brainOf(e);
+      return new AiPlayer(engine, random, thinking, mistakeRate);
     };
+    const ais: Record<Seat, AiPlayer> = { p1: aiFor(p1), p2: aiFor(p2) };
     const game = createGameState(
       1,
       { userId: 1, username: p1.name, socketId: 's1' },

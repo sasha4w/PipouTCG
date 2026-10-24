@@ -5,12 +5,13 @@ import { LAUNCH_SIGNATURES } from '../../adventure/signatures';
 import { allRealCards } from '../testing/real-cards';
 import * as planner from './planner';
 import {
+  brainOf,
   formatTournament,
   planGames,
   playPlanned,
   runTournament,
 } from './tournament';
-import type { TournamentEntry } from './tournament';
+import type { Brain, TournamentEntry } from './tournament';
 
 jest.setTimeout(120_000);
 
@@ -110,5 +111,47 @@ describe('cerveaux au tournoi', () => {
     spy.mockRestore();
     expect(result.games).toBe(1);
     expect(result.telemetry.decks).toHaveLength(2);
+  });
+});
+
+describe('brainOf', () => {
+  const entry = (level: 1 | 5, brain?: Brain): TournamentEntry => ({
+    name: `pipou niveau ${level}`,
+    archetype: 'pipou',
+    level,
+    deck: [],
+    brain,
+  });
+
+  it('max (plan) : profil le plus fort, aucune erreur, même au niveau 1', () => {
+    expect(brainOf(entry(1, 'plan'))).toEqual({
+      thinking: planner.STRONGEST,
+      mistakeRate: 0,
+    });
+  });
+
+  it('plan : le réglage d’essai se pose sur STRONGEST', () => {
+    expect(
+      brainOf({ ...entry(1, 'plan'), thinking: { beamWidth: 4 } }).thinking,
+    ).toEqual({ ...planner.STRONGEST, beamWidth: 4 });
+  });
+
+  it('glouton par défaut, sans erreur', () => {
+    expect(brainOf(entry(1))).toEqual({ thinking: 'greedy', mistakeRate: 0 });
+  });
+
+  it('niveau : cerveau du niveau, sans plafond de temps', () => {
+    expect(brainOf(entry(1, 'level'))).toEqual({
+      thinking: 'greedy',
+      mistakeRate: 0.25,
+    });
+    const top = brainOf(entry(5, 'level'));
+    expect(top.mistakeRate).toBe(0);
+    expect(top.thinking).toEqual({
+      beamWidth: planner.STRONGEST.beamWidth,
+      depth: planner.STRONGEST.depth,
+      ripostes: planner.STRONGEST.ripostes,
+      budget: planner.STRONGEST.budget,
+    });
   });
 });
