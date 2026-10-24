@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import "./FightTabBar.css";
 import type { Tab } from "./fight.types";
 import DeckWidget from "../deck/DeckWidget";
@@ -16,30 +17,24 @@ const TAB_ICONS: Record<Tab, string> = {
   rules: "📖",
 };
 
-const TAB_LABELS: Record<Tab, string> = {
-  fight: "Combat",
-  history: "Historique",
-  leaderboard: "Classement",
-  rules: "Règles",
-};
-
 export default function FightTabBar({
   tab,
   onTabChange,
   selectedDeck,
   onSelectDeck,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <>
       <div className="ftb-bar">
-        {(["fight", "history", "leaderboard", "rules"] as Tab[]).map((t) => (
+        {(["fight", "history", "leaderboard", "rules"] as Tab[]).map((id) => (
           <button
-            key={t}
-            onClick={() => onTabChange(t)}
-            className={`ftb-tab${tab === t ? " ftb-tab--active" : ""}`}
+            key={id}
+            onClick={() => onTabChange(id)}
+            className={`ftb-tab${tab === id ? " ftb-tab--active" : ""}`}
           >
-            <span className="ftb-tab-icon">{TAB_ICONS[t]}</span>
-            <span className="ftb-tab-label">{TAB_LABELS[t]}</span>
+            <span className="ftb-tab-icon">{TAB_ICONS[id]}</span>
+            <span className="ftb-tab-label">{t(`fight.tabs.${id}`)}</span>
           </button>
         ))}
       </div>

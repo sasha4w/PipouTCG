@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { DECK_RULES } from "@pipou/shared";
 import {
   deckService,
@@ -15,12 +16,11 @@ import CardInspect from "../fight/CardInspect";
 import CardFilterBar from "../glossary/CardFilterBar";
 import CardEffectsText from "../glossary/CardEffectsText";
 import {
-  KIND_LABELS,
   NO_FILTERS,
   cardKind,
   matchesFilters,
-  setsOf,
   shortSetName,
+  sortCards,
   useCardCatalog,
 } from "../glossary/cardCatalog";
 import Button from "../../components/Button";
@@ -73,6 +73,7 @@ function maxCopies(c: PickableCard): number {
 }
 
 export default function DeckBuilder() {
+  const { t } = useTranslation();
   const [view, setView] = useState<View>("list");
   const queryClient = useQueryClient();
   const decksQuery = useQuery({
@@ -140,11 +141,16 @@ export default function DeckBuilder() {
 
   // L'inventaire n'a pas les effets : on les prend dans le catalogue.
   const catalogById = new Map(catalog.map((c) => [c.id, c]));
-  const fullCard = (c: PickableCard): Card => catalogById.get(c.id) ?? toCard(c);
+  const fullCard = (c: PickableCard): Card =>
+    catalogById.get(c.id) ?? toCard(c);
 
   const owned = Array.from(allCardsMap.values());
   const ownedCards = owned.map(fullCard);
-  const visible = owned.filter((c) => matchesFilters(fullCard(c), filters));
+  const visible = sortCards(
+    owned.filter((c) => matchesFilters(fullCard(c), filters)),
+    fullCard,
+    filters,
+  );
 
   const deckCards = cards
     .flatMap((entry) => {
@@ -152,7 +158,8 @@ export default function DeckBuilder() {
       return info ? [{ ...entry, info }] : [];
     })
     .sort(
-      (a, b) => a.info.cost - b.info.cost || a.info.name.localeCompare(b.info.name),
+      (a, b) =>
+        a.info.cost - b.info.cost || a.info.name.localeCompare(b.info.name),
     );
 
   const totalCards = cards.reduce((s, c) => s + c.quantity, 0);
@@ -205,7 +212,7 @@ export default function DeckBuilder() {
   };
 
   const removeDeck = async (id: number) => {
-    if (!confirm("Supprimer ce deck ?")) return;
+    if (!confirm(t("deck.confirmDelete"))) return;
     await deckService.deleteDeck(id);
     void refreshDecks();
   };
@@ -215,19 +222,19 @@ export default function DeckBuilder() {
     return (
       <div className="manager">
         <div className="manager__header">
-          <h2 className="manager__title">Mes Decks</h2>
+          <h2 className="manager__title">{t("deck.title")}</h2>
           <Button size="sm" onClick={openCreate}>
-            + Nouveau
+            {t("deck.new")}
           </Button>
         </div>
 
         {loading ? (
-          <p className="manager-empty">Chargement...</p>
+          <p className="manager-empty">{t("deck.loading")}</p>
         ) : decks.length === 0 ? (
           <div className="deck-empty-state">
             <IconCards size={48} className="deck-empty-icon" />
-            <p>Aucun deck créé</p>
-            <span>Construis ton premier deck !</span>
+            <p>{t("deck.none")}</p>
+            <span>{t("deck.noneHint")}</span>
           </div>
         ) : (
           <div className="manager-list">
@@ -243,7 +250,10 @@ export default function DeckBuilder() {
                       <span
                         className={`deck-badge ${isValidDeck ? "deck-badge--valid" : "deck-badge--invalid"}`}
                       >
-                        {total} / {DECK_RULES.MAX_CARDS} cartes
+                        {t("deck.cardCount", {
+                          count: total,
+                          max: DECK_RULES.MAX_CARDS,
+                        })}
                       </span>
                     </div>
                   </div>
@@ -251,7 +261,7 @@ export default function DeckBuilder() {
                     <Button
                       variant="ghost-bordeaux"
                       size="icon"
-                      aria-label="Modifier"
+                      aria-label={t("deck.edit")}
                       onClick={() => openEdit(d)}
                     >
                       <IconPencil size={16} />
@@ -259,7 +269,7 @@ export default function DeckBuilder() {
                     <Button
                       variant="danger"
                       size="icon"
-                      aria-label="Supprimer"
+                      aria-label={t("deck.delete")}
                       onClick={() => removeDeck(d.id)}
                     >
                       <IconTrash size={16} />
@@ -276,7 +286,7 @@ export default function DeckBuilder() {
 
   // ═════════════════ EDITOR ═════════════════
   if (catalogQuery.isPending)
-    return <Loading message="Chargement des cartes..." />;
+    return <Loading message={t("glossary.loading")} />;
 
   return (
     <div className="manager deck-editor">
@@ -285,7 +295,7 @@ export default function DeckBuilder() {
         <Button
           variant="ghost-bordeaux"
           size="icon"
-          aria-label="Retour"
+          aria-label={t("deck.back")}
           onClick={back}
         >
           <IconArrowLeft size={16} />
@@ -293,21 +303,19 @@ export default function DeckBuilder() {
         <input
           value={deckName}
           onChange={(e) => setDeckName(e.target.value)}
-          placeholder="Nom du deck"
-          aria-label="Nom du deck"
+          placeholder={t("deck.name")}
+          aria-label={t("deck.name")}
           className="manager-form__input deck-editor__name-input"
         />
       </div>
 
       {/* Bandeau du deck */}
-      <section className="deck-strip" aria-label="Mon deck">
+      <section className="deck-strip" aria-label={t("deck.mine")}>
         <div className="deck-strip__label">
-          Mon deck · {totalCards} / {DECK_RULES.MAX_CARDS}
+          {t("deck.mine")} · {totalCards} / {DECK_RULES.MAX_CARDS}
         </div>
         {deckCards.length === 0 ? (
-          <p className="deck-strip__empty">
-            Ajoute des cartes depuis ta collection
-          </p>
+          <p className="deck-strip__empty">{t("deck.stripEmpty")}</p>
         ) : (
           <ul className="deck-strip__list">
             {deckCards.map(({ userCardId, quantity, info }) => (
@@ -315,7 +323,10 @@ export default function DeckBuilder() {
                 <button
                   type="button"
                   className="deck-strip__card"
-                  aria-label={`Voir ${info.name} (x${quantity})`}
+                  aria-label={t("deck.viewQty", {
+                    name: info.name,
+                    qty: quantity,
+                  })}
                   onClick={() => inspect(fullCard(info))}
                 >
                   <CardFace card={fullCard(info)} size="xs" />
@@ -331,15 +342,15 @@ export default function DeckBuilder() {
       <div className="deck-tab-content">
         <CardFilterBar
           filters={filters}
-          sets={setsOf(ownedCards)}
+          cards={ownedCards}
           onChange={setFilters}
         />
 
         {visible.length === 0 && (
           <div className="cg__state">
             {owned.length === 0
-              ? "Ta collection est vide."
-              : "Aucune carte ne correspond."}
+              ? t("deck.collectionEmpty")
+              : t("glossary.empty")}
           </div>
         )}
 
@@ -356,7 +367,7 @@ export default function DeckBuilder() {
                 <button
                   type="button"
                   className="deck-row__main"
-                  aria-label={`Voir ${card.name}`}
+                  aria-label={t("glossary.view", { name: card.name })}
                   onClick={() => inspect(card)}
                 >
                   <div className="cg__thumb">
@@ -365,7 +376,7 @@ export default function DeckBuilder() {
                   <div className="cg__body">
                     <div className="cg__name">{card.name}</div>
                     <div className="cg__meta">
-                      {KIND_LABELS[cardKind(card)]} ·{" "}
+                      {t(`glossary.kind.${cardKind(card)}`)} ·{" "}
                       {shortSetName(card.cardSet.name)}
                     </div>
                     <CardEffectsText card={card} />
@@ -375,7 +386,7 @@ export default function DeckBuilder() {
                   <Button
                     variant="ghost-bordeaux"
                     size="icon"
-                    aria-label={`Ajouter ${card.name}`}
+                    aria-label={t("deck.add", { name: card.name })}
                     onClick={() => addCard(c.userCardId)}
                     disabled={inDeckQty >= maxCopies(c) || deckFull}
                   >
@@ -383,12 +394,12 @@ export default function DeckBuilder() {
                   </Button>
                   <span className="deck-row__count">{inDeckQty}</span>
                   <span className="deck-row__owned">
-                    / {c.quantity} possédé{c.quantity > 1 ? "s" : ""}
+                    {t("deck.owned", { count: c.quantity })}
                   </span>
                   <Button
                     variant="ghost-bordeaux"
                     size="icon"
-                    aria-label={`Retirer ${card.name}`}
+                    aria-label={t("deck.remove", { name: card.name })}
                     onClick={() => removeCard(c.userCardId)}
                     disabled={inDeckQty === 0}
                   >
@@ -419,8 +430,10 @@ export default function DeckBuilder() {
             {!isValid && totalCards > 0 && (
               <span className="deck-counter--hint">
                 {totalCards < DECK_RULES.MIN_CARDS
-                  ? ` · encore ${DECK_RULES.MIN_CARDS - totalCards}`
-                  : ` · trop de cartes`}
+                  ? t("deck.remaining", {
+                      count: DECK_RULES.MIN_CARDS - totalCards,
+                    })
+                  : t("deck.tooMany")}
               </span>
             )}
           </span>
@@ -429,7 +442,7 @@ export default function DeckBuilder() {
             disabled={!isValid || !deckName.trim()}
             className="deck-save-btn"
           >
-            Sauvegarder
+            {t("deck.save")}
           </Button>
         </div>
       </div>

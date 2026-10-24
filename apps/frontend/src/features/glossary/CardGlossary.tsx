@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Card } from "../../services/card.service";
 import { soundService } from "../../services/sound.service";
 import Button from "../../components/Button";
@@ -9,12 +10,11 @@ import CardInspect from "../fight/CardInspect";
 import CardFilterBar from "./CardFilterBar";
 import CardEffectsText from "./CardEffectsText";
 import {
-  KIND_LABELS,
   NO_FILTERS,
   cardKind,
   matchesFilters,
-  setsOf,
   shortSetName,
+  sortCards,
   useCardCatalog,
 } from "./cardCatalog";
 import "./CardGlossary.css";
@@ -23,17 +23,23 @@ interface Props {
   onBack: () => void;
 }
 
+const asCard = (c: Card) => c;
+
 /** Toutes les cartes du jeu, filtrables, avec leurs effets rédigés comme en combat. */
 export default function CardGlossary({ onBack }: Props) {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState(NO_FILTERS);
   const [inspected, setInspected] = useState<Card | null>(null);
 
   const cardsQuery = useCardCatalog();
   const cards = cardsQuery.data?.data ?? [];
-  const visible = cards.filter((c) => matchesFilters(c, filters));
+  const visible = sortCards(
+    cards.filter((c) => matchesFilters(c, filters)),
+    asCard,
+    filters,
+  );
 
-  if (cardsQuery.isPending)
-    return <Loading message="Chargement des cartes..." />;
+  if (cardsQuery.isPending) return <Loading message={t("glossary.loading")} />;
 
   return (
     <div className="cg">
@@ -41,7 +47,7 @@ export default function CardGlossary({ onBack }: Props) {
         <Button
           variant="ghost-bordeaux"
           size="icon"
-          aria-label="Retour"
+          aria-label={t("glossary.back")}
           onClick={() => {
             soundService.play("cancel");
             onBack();
@@ -49,25 +55,19 @@ export default function CardGlossary({ onBack }: Props) {
         >
           <IconArrowLeft size={16} />
         </Button>
-        <h2 className="cg__title">Glossaire</h2>
+        <h2 className="cg__title">{t("glossary.title")}</h2>
         <span className="cg__count">
-          {visible.length} carte{visible.length > 1 ? "s" : ""}
+          {t("glossary.count", { count: visible.length })}
         </span>
       </div>
 
-      <CardFilterBar
-        filters={filters}
-        sets={setsOf(cards)}
-        onChange={setFilters}
-      />
+      <CardFilterBar filters={filters} cards={cards} onChange={setFilters} />
 
       {cardsQuery.isError && (
-        <div className="cg__state cg__state--error">
-          Impossible de charger les cartes
-        </div>
+        <div className="cg__state cg__state--error">{t("glossary.error")}</div>
       )}
       {!cardsQuery.isError && visible.length === 0 && (
-        <div className="cg__state">Aucune carte ne correspond.</div>
+        <div className="cg__state">{t("glossary.empty")}</div>
       )}
 
       <ul className="cg__list">
@@ -76,7 +76,7 @@ export default function CardGlossary({ onBack }: Props) {
             <button
               type="button"
               className="cg__row"
-              aria-label={`Voir ${card.name}`}
+              aria-label={t("glossary.view", { name: card.name })}
               onClick={() => {
                 soundService.play("select");
                 setInspected(card);
@@ -88,7 +88,8 @@ export default function CardGlossary({ onBack }: Props) {
               <div className="cg__body">
                 <div className="cg__name">{card.name}</div>
                 <div className="cg__meta">
-                  {KIND_LABELS[cardKind(card)]} · {shortSetName(card.cardSet.name)}
+                  {t(`glossary.kind.${cardKind(card)}`)} ·{" "}
+                  {shortSetName(card.cardSet.name)}
                 </div>
                 <CardEffectsText card={card} />
               </div>

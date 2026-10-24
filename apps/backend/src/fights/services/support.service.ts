@@ -283,6 +283,8 @@ export class SupportService {
       candidates,
       count: 1,
       prompt: `Choisissez le Bébé ${lineageLabel} à récupérer (cimetière ou deck)`,
+      promptKey: 'baby_lineage',
+      promptParams: { lineage: lineageLabel },
       resolution: 'pick_to_hand',
     });
     return {};

@@ -41,6 +41,27 @@ describe('buildClientState — candidats de choix', () => {
     });
   });
 
+  it('transmet la clé de consigne et ses paramètres, pour la traduction', () => {
+    const inst = instanceOf(monsterCard('Gobelin'), P1_ID);
+    const game = scenario();
+    game.player1.hand.push(inst);
+    game.pendingChoices.push({
+      forUserId: P1_ID,
+      candidates: [{ ...inst, source: 'hand' }],
+      count: 2,
+      prompt: 'Choisissez 2 carte(s) à défausser',
+      promptKey: 'discard',
+      promptParams: { count: 2 },
+      resolution: 'discard',
+    });
+
+    expect(buildClientState(game, P1_ID).pendingChoice).toMatchObject({
+      prompt: 'Choisissez 2 carte(s) à défausser',
+      promptKey: 'discard',
+      promptParams: { count: 2 },
+    });
+  });
+
   it('transmet l’élément et le stade d’un Drakon', () => {
     const card = monsterCard('Bébé Feros', { element: 'fire', stage: 'baby' });
     const game = scenario();

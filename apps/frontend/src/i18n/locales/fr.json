@@ -686,6 +686,244 @@
       "confirm": "Relever",
       "hint_one": "Choisis {{count}} allié Pipou qui cède sa place",
       "hint_other": "Choisis {{count}} alliés Pipou qui cèdent leur place"
+    },
+    "phase": {
+      "waiting": "Attente",
+      "mulligan": "Mulligan",
+      "main": "Principale",
+      "battle": "Combat",
+      "end": "Fin de tour",
+      "finished": "Terminé"
+    },
+    "endPhase": {
+      "main": "Phase de Combat →",
+      "battle": "Fin de Tour →",
+      "end": "Terminer le Tour →",
+      "other": "Continuer →"
+    },
+    "bar": {
+      "summon": "Invoquer",
+      "summonFree": "Invoquer (gratuit)",
+      "play": "Jouer",
+      "terrainHint": "Clique sur une zone support vide",
+      "equipHint": "Clique sur un monstre allié à équiper",
+      "recycle": "Recycler (+1⚡)",
+      "discard_one": "Défausse {{count}} carte (clique sur la carte)",
+      "discard_other": "Défausse {{count}} cartes (clique sur la carte)",
+      "surrender": "Abandonner",
+      "confirmSurrender": "Abandonner ?"
+    },
+    "noTarget": "Aucune cible valide",
+    "targetAlly": "Choisir le monstre allié à cibler avec « {{name}} »",
+    "targetEnemy": "Choisir le monstre ennemi à cibler avec « {{name}} »",
+    "target": "Cibler",
+    "opponentChoosing": "{{name}} fait un choix…",
+    "zone": {
+      "oppSupports": "Adversaire — Supports",
+      "oppMonsters": "Adversaire — Monstres",
+      "myMonsters": "Mes Monstres",
+      "mySupports": "Mes Supports",
+      "me": "Moi"
+    },
+    "hud": {
+      "turn": "Tour {{count}}",
+      "deck_one": "{{count}} carte dans le deck",
+      "deck_other": "{{count}} cartes dans le deck",
+      "hand_one": "{{count}} carte en main",
+      "hand_other": "{{count}} cartes en main",
+      "primes_one": "{{count}} prime",
+      "primes_other": "{{count}} primes"
+    },
+    "graveyard": {
+      "title": "Cimetière ({{count}})",
+      "owner": "{{name}} — Cimetière ({{count}})",
+      "close": "Fermer"
+    },
+    "hand": {
+      "free": "GRATUIT",
+      "payCard": "Carte de paiement",
+      "discard": "défausser"
+    },
+    "pick": {
+      "source": {
+        "graveyard": "Cimetière",
+        "deck": "Deck",
+        "hand": "Main",
+        "board": "Terrain"
+      },
+      "confirm": {
+        "pick_to_hand": "Récupérer",
+        "discard": "Défausser",
+        "copy_effects": "Copier ce pouvoir"
+      },
+      "hintTarget": "Sélectionne le monstre cible",
+      "hint_one": "Sélectionne {{count}} carte",
+      "hint_other": "Sélectionne {{count}} cartes",
+      "cancel": "Annuler",
+      "prompt": {
+        "summon_card": "Choisis la carte à invoquer",
+        "hatch": "Choisis le Drakon qui éclot",
+        "copy_power": "Choisis le pouvoir élémentaire à copier",
+        "search_deck": "Cherche une carte dans ton deck",
+        "from_graveyard_one": "Choisis {{count}} carte à récupérer du cimetière",
+        "from_graveyard_other": "Choisis {{count}} cartes à récupérer du cimetière",
+        "from_graveyard_or_deck": "Choisis une carte à récupérer (cimetière ou deck)",
+        "discard_one": "Choisis {{count}} carte à défausser",
+        "discard_other": "Choisis {{count}} cartes à défausser",
+        "baby_lineage": "Choisis le Bébé {{lineage}} à récupérer (cimetière ou deck)"
+      }
+    },
+    "summon": {
+      "title": "Invoquer — {{name}}",
+      "evolveTitle": "Évolution — {{name}}",
+      "close": "Fermer",
+      "totalCost": "Coût total :",
+      "energy": "Énergie :",
+      "toDiscard": "Cartes à défausser :",
+      "hint_one": "Sélectionne {{count}} carte à recycler depuis ta main",
+      "hint_other": "Sélectionne {{count}} cartes à recycler depuis ta main",
+      "cancel": "Annuler",
+      "confirm": "Recycler & Invoquer",
+      "confirmEvolve": "Recycler & Évoluer"
+    },
+    "badge": {
+      "sleep": "Ne peut pas attaquer ce tour",
+      "attacksLeft_one": "Encore {{count}} attaque ce tour",
+      "attacksLeft_other": "Encore {{count}} attaques ce tour"
+    },
+    "mode": {
+      "attack": "Mode Attaque",
+      "guard": "Mode Garde"
+    },
+    "cardLabel": "{{name}}, {{atk}} ATK, {{hp}} PV",
+    "effectsSection": "Effets",
+    "lobby": {
+      "draw": "Match nul",
+      "win": "Victoire !",
+      "loss": "Défaite",
+      "replay": "Rejouer",
+      "found": "Adversaire trouvé !",
+      "facing": "Tu affrontes <b>{{name}}</b>",
+      "confirmDeck": "Confirme ton deck pour commencer",
+      "deckReady": "Deck #{{id}} prêt",
+      "pickDeck": "Sélectionne un deck via le widget « Decks »",
+      "start": "Lancer la partie",
+      "ready": "Prêt au combat ?",
+      "intro": "Rejoins la file d'attente et affronte un adversaire en 1v1",
+      "deckSelected": "Deck sélectionné",
+      "pickDeckFirst": "Sélectionne un deck via le widget « Decks » avant de combattre",
+      "search": "Rechercher une partie",
+      "waiting": "En attente d'un adversaire…",
+      "cancel": "Annuler"
+    },
+    "endReason": {
+      "primes_depleted": "Toutes les Primes récupérées",
+      "deck_empty": "Deck vide",
+      "surrender": "Abandon",
+      "disconnect": "Déconnexion",
+      "double_ko": "Double K.O."
+    },
+    "toast": {
+      "matched": "Adversaire trouvé : {{name}} !",
+      "resumed": "Partie en cours retrouvée",
+      "deckAccepted": "Deck accepté — en attente de l'adversaire…",
+      "draw": "Match nul ({{reason}})",
+      "win": "Victoire ! ({{reason}})",
+      "loss": "Défaite… ({{reason}})"
+    },
+    "mulligan": {
+      "title": "Ta main de départ",
+      "starting": "La partie commence…",
+      "waiting": "En attente de {{name}}…",
+      "keep": "Garder cette main",
+      "redraw": "Mulligan (1 fois)"
+    },
+    "tabs": {
+      "fight": "Combat",
+      "history": "Historique",
+      "leaderboard": "Classement",
+      "rules": "Règles"
+    },
+    "leaderboard": {
+      "title": "Classement ELO",
+      "loading": "Chargement…",
+      "empty": "Aucun joueur classé pour l'instant.",
+      "you": "vous",
+      "wins": "V {{count}}",
+      "losses": "D {{count}}",
+      "tier": {
+        "legendary": "Légendaire",
+        "diamond": "Diamant",
+        "gold": "Or",
+        "silver": "Argent",
+        "bronze": "Bronze"
+      }
+    },
+    "history": {
+      "title": "Historique des matchs",
+      "wins": "Victoires",
+      "losses": "Défaites",
+      "empty": "Aucun match joué.",
+      "turns_one": "{{count}} tour",
+      "turns_other": "{{count}} tours",
+      "draw": "Nul",
+      "win": "Victoire",
+      "loss": "Défaite"
+    },
+    "rules": {
+      "step": {
+        "goal": "But du jeu",
+        "setup": "Préparation",
+        "board": "Plateau",
+        "cards": "Types de cartes",
+        "status": "Status monstres",
+        "energy": "Énergie",
+        "combat": "Combat",
+        "primes": "Primes & Comeback",
+        "turn": "Structure du tour"
+      },
+      "winLabel": "Condition de victoire",
+      "winValue": "Récupérer ses {{count}} Cartes Primes en premier",
+      "goal1": "Le jeu se joue en <b>1 contre 1</b>.",
+      "goal2": "Si les deux joueurs récupèrent leur dernière Prime en même temps : <b>match nul</b>.",
+      "goal3": "Un joueur qui doit piocher avec un deck vide <b>perd</b>.",
+      "setup1": "<b>Deck :</b> {{min}} à {{max}} cartes, {{copies}} exemplaires max par carte.",
+      "setup2": "<b>Zone Prime :</b> les {{count}} premières cartes du deck mélangé, face cachée.",
+      "setup3": "<b>Main de départ :</b> {{count}} cartes. <b>Mulligan :</b> une fois, tu peux remélanger ta main dans le deck et repiocher {{count}} cartes.",
+      "setup4": "Le premier joueur est <b>tiré au sort</b>.",
+      "board1": "<b>3 Zones Monstre</b> pour les invocations.",
+      "board2": "<b>3 Zones Support</b> pour les Terrains.",
+      "board3": "<b>1 Zone Prime</b> avec {{count}} cartes face cachée.",
+      "monsters": "<b>Monstres :</b> ATK / PV, archétype, coût de 0 à 3 Énergies, effets passifs ou déclenchés. Un monstre peut attaquer dès son invocation, sauf si sa carte dit le contraire.",
+      "supports": "<b>Cartes Support :</b>",
+      "ephemeral": "Utilisation unique puis défausse. Certaines demandent de choisir un monstre cible.",
+      "terrain": "Permanent, agit sur tes monstres uniquement.",
+      "equipment": "Attaché à un de tes monstres ; certains effets ne s'activent que sur un monstre précis.",
+      "energy1": "<b>Générer :</b> recycle des cartes de ta main pendant la Main Phase. <b>1 carte = 1 Énergie.</b>",
+      "energy2": "Sans assez d'énergie, tu paies le reste en défaussant des cartes au moment d'invoquer.",
+      "energy3": "<b>Réinitialisation :</b> l'énergie retombe à 0 en fin de tour.",
+      "atkMode": "Mode ATK",
+      "atk1": "Une attaque par tour (sauf effet). Riposte s'il est attaqué.",
+      "atk2": "Si détruit → l'adversaire gagne <b>1 Prime</b>.",
+      "guardMode": "Mode Garde",
+      "guard1": "Ne peut pas attaquer ni riposter.",
+      "guard2": "Si détruit → <b>aucune Prime</b>, sauf contre un attaquant Perçant.",
+      "direct": "<b>Attaque directe</b> (pas au tour 1) si l'adversaire n'a aucun monstre : tu gagnes 1 Prime et l'adversaire pioche 1 carte.",
+      "primes1": "<b>Destruction :</b> quand un de tes monstres est détruit en combat ou par un effet adverse, tu pioches 1 carte.",
+      "primes2": "<b>Récupération :</b> une Prime gagnée rejoint ta main.",
+      "primes3": "<b>Double K.O :</b> deux monstres ATK se détruisent → chaque joueur pioche 1 carte et récupère 1 Prime.",
+      "phaseStart": "Début de tour",
+      "phaseStartDesc": "Effets de début de tour, puis pioche d'1 carte (tour 1 compris).",
+      "phaseMain": "Main Phase",
+      "phaseMainDesc": "Recycle pour l'Énergie, invoque, joue des Supports, change la position de tes monstres.",
+      "phaseBattle": "Battle Phase",
+      "phaseBattleDesc": "Attaque les monstres adverses, ou directement si le terrain adverse est vide.",
+      "phaseEnd": "Ending Phase",
+      "phaseEndDesc": "Effets de fin de tour, Énergie → 0, {{limit}} cartes max en main (défausse l'excédent).",
+      "timer": "90 s par phase : à l'expiration, la phase suivante commence automatiquement.",
+      "stepOf": "Étape {{n}} / {{total}}",
+      "prev": "Précédent",
+      "next": "Suivant"
     }
   },
   "achievements": {
@@ -898,5 +1136,79 @@
       "regenerate_confirm": "Régénérer le deck de cette IA ? Le deck actuel sera remplacé.",
       "no_cards": "Aucune carte dans ce set."
     }
+  },
+  "glossary": {
+    "title": "Glossaire",
+    "count_one": "{{count}} carte",
+    "count_other": "{{count}} cartes",
+    "back": "Retour",
+    "loading": "Chargement des cartes...",
+    "error": "Impossible de charger les cartes",
+    "empty": "Aucune carte ne correspond.",
+    "view": "Voir {{name}}",
+    "noEffect": "Aucun effet",
+    "search": "Rechercher une carte…",
+    "all": "Tous",
+    "kind": {
+      "monster": "Monstre",
+      "EQUIPMENT": "Équipement",
+      "TERRAIN": "Terrain",
+      "EPHEMERAL": "Éphémère"
+    },
+    "filters": "Filtres",
+    "rarity": "Rareté",
+    "archetype": "Archétype",
+    "cost": "Coût",
+    "sort": "Trier par",
+    "sortKey": {
+      "default": "Set",
+      "name": "Nom",
+      "cost": "Coût",
+      "atk": "ATK",
+      "hp": "HP",
+      "rarity": "Rareté"
+    },
+    "asc": "Ordre croissant",
+    "desc": "Ordre décroissant"
+  },
+  "deck": {
+    "title": "Mes Decks",
+    "new": "+ Nouveau",
+    "loading": "Chargement...",
+    "none": "Aucun deck créé",
+    "noneHint": "Construis ton premier deck !",
+    "cardCount": "{{count}} / {{max}} cartes",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirmDelete": "Supprimer ce deck ?",
+    "back": "Retour",
+    "name": "Nom du deck",
+    "mine": "Mon deck",
+    "stripEmpty": "Ajoute des cartes depuis ta collection",
+    "viewQty": "Voir {{name}} (x{{qty}})",
+    "collectionEmpty": "Ta collection est vide.",
+    "add": "Ajouter {{name}}",
+    "remove": "Retirer {{name}}",
+    "owned_one": "/ {{count}} possédé",
+    "owned_other": "/ {{count}} possédés",
+    "remaining": " · encore {{count}}",
+    "tooMany": " · trop de cartes",
+    "save": "Sauvegarder"
+  },
+  "arena": {
+    "title": "Arène",
+    "subtitle": "Construis ton deck, affronte des adversaires, grimpe dans le classement.",
+    "decksTitle": "Deck Builder",
+    "decksDesc": "Crée et gère tes decks. Choisis tes cartes, affine ta stratégie, prépare-toi au combat.",
+    "decksF1": "Jusqu'à {{max}} cartes par deck",
+    "decksF2": "Max {{copies}} exemplaires par carte",
+    "decksF3": "Bibliothèque complète filtrable",
+    "decksCta": "Gérer mes decks",
+    "fightTitle": "Combat (WIP)",
+    "fightDesc": "Affronte un adversaire en 1v1 en temps réel. Dépense tes Primes, vole celles de l'ennemi, et remporte la victoire.",
+    "fightF1": "Fonction Match non fonctionnelle",
+    "fightF2": "Classement ELO en direct",
+    "fightF3": "Historique des matchs",
+    "fightCta": "Rejoindre l'arène"
   }
 }

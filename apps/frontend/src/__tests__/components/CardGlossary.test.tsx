@@ -49,8 +49,19 @@ const cards: Card[] = [
     name: "Épée",
     type: "support",
     supportType: "EQUIPMENT",
+    rarity: "rare",
+    atk: 0,
+    hp: 0,
+    cost: 3,
   } as Partial<Card>),
-  card({ id: 3, name: "Œuf de Drakon", cardSet: drakon }),
+  card({
+    id: 3,
+    name: "Œuf de Drakon",
+    cardSet: drakon,
+    archetype: "dragon",
+    atk: 300,
+    cost: 0,
+  } as Partial<Card>),
 ];
 
 function renderGlossary() {
@@ -104,6 +115,76 @@ describe("CardGlossary", () => {
     await userEvent.type(screen.getByRole("searchbox"), "oeuf");
     expect(rows()).toHaveLength(1);
     expect(rows()[0]).toHaveAccessibleName("Voir Œuf de Drakon");
+  });
+
+  it("trie par coût, ATK ou nom, dans les deux sens", async () => {
+    renderGlossary();
+    await screen.findByRole("button", { name: "Voir Ogre" });
+    const names = () => rows().map((r) => r.getAttribute("aria-label"));
+    const sortBy = screen.getByRole("combobox", { name: "Trier par" });
+
+    await userEvent.selectOptions(sortBy, "cost");
+    expect(names()).toEqual(["Voir Œuf de Drakon", "Voir Ogre", "Voir Épée"]);
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Ordre croissant" }),
+    );
+    expect(names()).toEqual(["Voir Épée", "Voir Ogre", "Voir Œuf de Drakon"]);
+
+    await userEvent.selectOptions(sortBy, "atk");
+    expect(names()[0]).toBe("Voir Œuf de Drakon");
+
+    // Toujours décroissant : Z→A, accents et ligatures rangés à leur lettre
+    await userEvent.selectOptions(sortBy, "name");
+    expect(names()).toEqual(["Voir Ogre", "Voir Œuf de Drakon", "Voir Épée"]);
+  });
+
+  it("filtre par rareté, archétype et coût dans le panneau replié", async () => {
+    renderGlossary();
+    await screen.findByRole("button", { name: "Voir Ogre" });
+    await userEvent.click(screen.getByRole("button", { name: "Filtres" }));
+    const panel = screen.getByRole("group", { name: "Filtres" });
+
+    await userEvent.click(within(panel).getByRole("button", { name: "Rare" }));
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0]).toHaveAccessibleName("Voir Épée");
+    // Badge du nombre de filtres actifs
+    expect(screen.getByRole("button", { name: /Filtres/ })).toHaveTextContent(
+      "1",
+    );
+
+    await userEvent.click(
+      within(panel).getByRole("button", { name: "Réinitialiser" }),
+    );
+    expect(rows()).toHaveLength(3);
+
+    await userEvent.click(
+      within(panel).getByRole("button", { name: "Drakon" }),
+    );
+    expect(rows()).toHaveLength(1);
+    await userEvent.click(
+      within(panel).getByRole("button", { name: "Drakon" }),
+    );
+
+    await userEvent.click(within(panel).getByRole("button", { name: "1" }));
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0]).toHaveAccessibleName("Voir Ogre");
+  });
+
+  it("suit la langue choisie", async () => {
+    await i18n.changeLanguage("en");
+    try {
+      renderGlossary();
+      expect(
+        await screen.findByRole("button", { name: "View Ogre" }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Glossary" })).toBeVisible();
+      expect(screen.getByText("3 cards")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Equipment" })).toBeVisible();
+      expect(screen.getAllByText("No effect")).toHaveLength(2);
+    } finally {
+      await i18n.changeLanguage("fr");
+    }
   });
 
   it("ouvre la fiche du combat au toucher d'une carte", async () => {

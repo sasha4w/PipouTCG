@@ -45,21 +45,3 @@ export const RARITY_COLOR: Record<string, string> = {
   legendary: "#f39c12",
   secret: "#e74c3c",
 };
-
-export const PHASE_LABEL: Record<Phase, string> = {
-  waiting: "Attente",
-  mulligan: "Mulligan",
-  main: "Principale",
-  battle: "Combat",
-  end: "Fin de tour",
-  finished: "Terminé",
-};
-
-export const END_PHASE_LABEL: Record<string, string> = {
-  main: "Phase de Combat →",
-  battle: "Fin de Tour →",
-  end: "Terminer le Tour →",
-  waiting: "Continuer →",
-  mulligan: "Continuer →",
-  finished: "Continuer →",
-};

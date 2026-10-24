@@ -1,7 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import MonsterZoneContent from "../../features/fight/Zonerow/MonsterZoneContent";
 import { monster } from "../fixtures/monster";
+import i18n from "../../i18n";
+
+beforeAll(async () => {
+  await i18n.changeLanguage("fr");
+});
 
 describe("MonsterZoneContent", () => {
   afterEach(() => {
@@ -74,7 +79,7 @@ describe("MonsterZoneContent", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "🛡️" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mode Garde" }));
     expect(onModeChange).toHaveBeenCalledWith("m1", "guard");
 
     const card = screen.getByRole("button", { name: /Gobelin/ });

@@ -345,8 +345,8 @@ export default function FightBoard({
       count: 1,
       prompt:
         targetSide === "ally"
-          ? `Choisir le monstre allié à cibler avec « ${cardName} »`
-          : `Choisir le monstre ennemi à cibler avec « ${cardName} »`,
+          ? t("fight.targetAlly", { name: cardName })
+          : t("fight.targetEnemy", { name: cardName }),
       resolution: "pick_to_hand",
     });
   };
@@ -563,7 +563,7 @@ export default function FightBoard({
       selectedTargetSide,
       gs.me.hand[selectedCard ?? 0]?.baseCard.effects,
     ).length === 0
-      ? "Aucune cible valide"
+      ? t("fight.noTarget")
       : undefined;
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -609,14 +609,14 @@ export default function FightBoard({
         />
         <div className="fb-zones-col">
           <ZoneRow
-            label="Adversaire — Supports"
+            label={t("fight.zone.oppSupports")}
             zones={gs.opponent.supportZones}
             fx={fx.opponent.supports}
             isSupport
             dim
           />
           <ZoneRow
-            label="Adversaire — Monstres"
+            label={t("fight.zone.oppMonsters")}
             zones={gs.opponent.monsterZones}
             fx={fx.opponent.monsters}
             isOpponent
@@ -671,7 +671,7 @@ export default function FightBoard({
         />
         <div className="fb-zones-col">
           <ZoneRow
-            label="Mes Monstres"
+            label={t("fight.zone.myMonsters")}
             zones={gs.me.monsterZones}
             fx={fx.me.monsters}
             onZoneClick={gs.isMyTurn && !isZeta ? handleZoneClick : undefined}
@@ -695,7 +695,7 @@ export default function FightBoard({
           />
 
           <ZoneRow
-            label="Mes Supports"
+            label={t("fight.zone.mySupports")}
             zones={gs.me.supportZones}
             fx={fx.me.supports}
             isSupport
@@ -714,7 +714,7 @@ export default function FightBoard({
             }
           />
         </div>
-        <GraveyardPile graveyard={gs.me.graveyard} label="Moi" />
+        <GraveyardPile graveyard={gs.me.graveyard} label={t("fight.zone.me")} />
       </div>
 
       <FightHand
@@ -826,7 +826,7 @@ export default function FightBoard({
       {targetSupportChoice !== null && targetSupportHandIdx !== null && (
         <CardPickModal
           choice={targetSupportChoice}
-          confirmLabel="🎯 Cibler"
+          confirmLabel={`🎯 ${t("fight.target")}`}
           onConfirm={(instanceIds) => {
             const [targetId] = instanceIds;
             onPlaySupport(targetSupportHandIdx, undefined, targetId);

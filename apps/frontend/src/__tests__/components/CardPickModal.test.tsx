@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import CardPickModal from "../../features/fight/CardPickModal";
 import type { PendingChoice } from "../../features/fight/fight.types";
@@ -29,6 +29,9 @@ const choice: PendingChoice = {
 };
 
 describe("CardPickModal", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -69,5 +72,32 @@ describe("CardPickModal", () => {
     expect(
       screen.getByRole("button", { name: /^Invoquer \(0\/1\)$/ }),
     ).toBeInTheDocument();
+  });
+
+  it("traduit la consigne du serveur à partir de sa clé", async () => {
+    const discard: PendingChoice = {
+      ...choice,
+      count: 2,
+      prompt: "Choisissez 2 carte(s) à défausser",
+      promptKey: "discard",
+      promptParams: { count: 2 },
+      resolution: "discard",
+    };
+    await i18n.changeLanguage("en");
+    try {
+      render(<CardPickModal choice={discard} onConfirm={vi.fn()} />);
+      expect(screen.getByText(/Choose 2 cards to discard/)).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /Discard \(0\/2\)/ }),
+      ).toBeInTheDocument();
+      expect(screen.getAllByText(/Graveyard/)).toHaveLength(2);
+    } finally {
+      await i18n.changeLanguage("fr");
+    }
+  });
+
+  it("sans clé, affiche la consigne telle que reçue", () => {
+    render(<CardPickModal choice={choice} onConfirm={vi.fn()} />);
+    expect(screen.getByText(/Récupérer une carte/)).toBeInTheDocument();
   });
 });

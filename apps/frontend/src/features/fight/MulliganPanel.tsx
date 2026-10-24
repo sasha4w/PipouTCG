@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { CardInstance } from "@pipou/shared";
 import Button from "../../components/Button";
 import InspectableCard from "./InspectableCard";
@@ -21,11 +22,12 @@ export default function MulliganPanel({
   opponentName,
   onDecide,
 }: Props) {
+  const { t } = useTranslation();
   const [inspected, setInspected] = useState<CardInstance | null>(null);
 
   return (
     <div className="mull-root">
-      <h2 className="mull-title">Ta main de départ</h2>
+      <h2 className="mull-title">{t("fight.mulligan.title")}</h2>
       <div className="mull-hand">
         {hand.map((c) => (
           <InspectableCard
@@ -41,14 +43,16 @@ export default function MulliganPanel({
       {decided ? (
         <p className="mull-wait">
           {opponentDecided
-            ? "La partie commence…"
-            : `En attente de ${opponentName}…`}
+            ? t("fight.mulligan.starting")
+            : t("fight.mulligan.waiting", { name: opponentName })}
         </p>
       ) : (
         <div className="mull-actions">
-          <Button onClick={() => onDecide(false)}>Garder cette main</Button>
+          <Button onClick={() => onDecide(false)}>
+            {t("fight.mulligan.keep")}
+          </Button>
           <Button variant="ghost-bordeaux" onClick={() => onDecide(true)}>
-            Mulligan (1 fois)
+            {t("fight.mulligan.redraw")}
           </Button>
         </div>
       )}

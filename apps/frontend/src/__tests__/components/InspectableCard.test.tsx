@@ -1,7 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import InspectableCard from "../../features/fight/InspectableCard";
 import type { CardFaceCard } from "../../features/cards/CardFace";
+import i18n from "../../i18n";
+
+beforeAll(async () => {
+  await i18n.changeLanguage("fr");
+});
 
 const card: CardFaceCard = {
   id: 1,

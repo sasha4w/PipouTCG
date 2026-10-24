@@ -1,8 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { beforeAll, describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { CardInstance } from "@pipou/shared";
 import MulliganPanel from "../../features/fight/MulliganPanel";
+import i18n from "../../i18n";
+
+beforeAll(async () => {
+  await i18n.changeLanguage("fr");
+});
 
 const card = (name: string): CardInstance => ({
   instanceId: name,

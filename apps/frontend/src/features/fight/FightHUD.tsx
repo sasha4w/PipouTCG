@@ -1,7 +1,6 @@
 import { useTranslation } from "react-i18next";
 import "./FightHUD.css";
 import type { MyState, OppState, Phase } from "./fight.types";
-import { PHASE_LABEL } from "./fight.types";
 import { IconChest, IconCards, IconHand } from "../../components/Icons";
 
 interface Props {
@@ -15,10 +14,11 @@ interface Props {
 }
 
 function PrimesRow({ primes }: { primes: number }) {
+  const { t } = useTranslation();
   return (
     <span
       className="hud-primes"
-      title={`${primes} prime${primes > 1 ? "s" : ""}`}
+      title={t("fight.hud.primes", { count: primes })}
     >
       {Array.from({ length: 6 }).map((_, i) => (
         <span
@@ -46,19 +46,21 @@ export default function FightHUD({
       <div className="hud-row hud-row--opp">
         <span className="hud-name hud-name--opp">{opponent.username}</span>
         {opponent.title && (
-          <span className="hud-title">{t(`achievements.titles.${opponent.title}`)}</span>
+          <span className="hud-title">
+            {t(`achievements.titles.${opponent.title}`)}
+          </span>
         )}
         <PrimesRow primes={opponent.primes} />
         <span
           className="hud-stat"
-          title={`${opponent.deckCount} cartes dans le deck`}
+          title={t("fight.hud.deck", { count: opponent.deckCount })}
         >
           <IconCards size={12} color="currentColor" />
           {opponent.deckCount}
         </span>
         <span
           className="hud-stat"
-          title={`${opponent.handCount} cartes en main`}
+          title={t("fight.hud.hand", { count: opponent.handCount })}
         >
           <IconHand size={12} color="currentColor" />
           {opponent.handCount}
@@ -67,8 +69,10 @@ export default function FightHUD({
 
       {/* ── Ligne centrale : phase + tour + timer ── */}
       <div className="hud-center">
-        <span className="hud-phase-chip">{PHASE_LABEL[phase]}</span>
-        <span className="hud-turn-num">Tour {turnNumber}</span>
+        <span className="hud-phase-chip">{t(`fight.phase.${phase}`)}</span>
+        <span className="hud-turn-num">
+          {t("fight.hud.turn", { count: turnNumber })}
+        </span>
         {isMyTurn && timeLeft !== null && (
           <span
             className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
@@ -83,12 +87,14 @@ export default function FightHUD({
       <div className="hud-row hud-row--me">
         <span className="hud-name hud-name--me">{me.username}</span>
         {me.title && (
-          <span className="hud-title">{t(`achievements.titles.${me.title}`)}</span>
+          <span className="hud-title">
+            {t(`achievements.titles.${me.title}`)}
+          </span>
         )}
         <PrimesRow primes={me.primes} />
         <span
           className="hud-stat"
-          title={`${me.deckCount} cartes dans le deck`}
+          title={t("fight.hud.deck", { count: me.deckCount })}
         >
           <IconCards size={12} color="currentColor" />
           {me.deckCount}

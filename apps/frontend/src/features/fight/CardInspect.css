@@ -4,6 +4,8 @@
   z-index: 9999;
   display: flex;
   align-items: center;
+  /* Panneau plus haut que l'écran : centré, son haut serait inaccessible */
+  align-items: safe center;
   justify-content: center;
   padding: 16px;
   background: rgba(44, 26, 34, 0.55);
@@ -14,9 +16,23 @@
   width: min(280px, 100%);
   max-height: 100%;
   overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+/* La carte (overflow: hidden) se laisserait écraser par une longue liste
+   d'effets : chaque bloc garde sa hauteur, c'est le panneau qui défile. */
+.ci-panel > * {
+  flex-shrink: 0;
+}
+
+/* Hauteur visible réelle sur mobile (hors barre d'adresse) */
+@supports (height: 100dvh) {
+  .ci-overlay {
+    height: 100dvh;
+  }
 }
 
 @keyframes ci-in {

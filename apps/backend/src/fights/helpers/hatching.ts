@@ -41,6 +41,7 @@ export function hatchEgg(
     candidates,
     count: 1,
     prompt: 'Choisis le Drakon qui éclot',
+    promptKey: 'hatch',
     resolution: 'summon_to_zone',
     fromEgg: true,
     zoneIndex,

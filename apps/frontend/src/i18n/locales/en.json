@@ -684,6 +684,244 @@
       "confirm": "Relieve",
       "hint_one": "Choose {{count}} Pipou ally to step aside",
       "hint_other": "Choose {{count}} Pipou allies to step aside"
+    },
+    "phase": {
+      "waiting": "Waiting",
+      "mulligan": "Mulligan",
+      "main": "Main",
+      "battle": "Battle",
+      "end": "End of turn",
+      "finished": "Finished"
+    },
+    "endPhase": {
+      "main": "Battle Phase →",
+      "battle": "End of Turn →",
+      "end": "End the Turn →",
+      "other": "Continue →"
+    },
+    "bar": {
+      "summon": "Summon",
+      "summonFree": "Summon (free)",
+      "play": "Play",
+      "terrainHint": "Tap an empty support zone",
+      "equipHint": "Tap an allied monster to equip",
+      "recycle": "Recycle (+1⚡)",
+      "discard_one": "Discard {{count}} card (tap the card)",
+      "discard_other": "Discard {{count}} cards (tap the card)",
+      "surrender": "Surrender",
+      "confirmSurrender": "Surrender?"
+    },
+    "noTarget": "No valid target",
+    "targetAlly": "Choose the allied monster to target with “{{name}}”",
+    "targetEnemy": "Choose the enemy monster to target with “{{name}}”",
+    "target": "Target",
+    "opponentChoosing": "{{name}} is making a choice…",
+    "zone": {
+      "oppSupports": "Opponent — Supports",
+      "oppMonsters": "Opponent — Monsters",
+      "myMonsters": "My Monsters",
+      "mySupports": "My Supports",
+      "me": "Me"
+    },
+    "hud": {
+      "turn": "Turn {{count}}",
+      "deck_one": "{{count}} card in the deck",
+      "deck_other": "{{count}} cards in the deck",
+      "hand_one": "{{count}} card in hand",
+      "hand_other": "{{count}} cards in hand",
+      "primes_one": "{{count}} prime",
+      "primes_other": "{{count}} primes"
+    },
+    "graveyard": {
+      "title": "Graveyard ({{count}})",
+      "owner": "{{name}} — Graveyard ({{count}})",
+      "close": "Close"
+    },
+    "hand": {
+      "free": "FREE",
+      "payCard": "Payment card",
+      "discard": "discard"
+    },
+    "pick": {
+      "source": {
+        "graveyard": "Graveyard",
+        "deck": "Deck",
+        "hand": "Hand",
+        "board": "Board"
+      },
+      "confirm": {
+        "pick_to_hand": "Retrieve",
+        "discard": "Discard",
+        "copy_effects": "Copy this power"
+      },
+      "hintTarget": "Select the target monster",
+      "hint_one": "Select {{count}} card",
+      "hint_other": "Select {{count}} cards",
+      "cancel": "Cancel",
+      "prompt": {
+        "summon_card": "Choose the card to summon",
+        "hatch": "Choose the Drakon that hatches",
+        "copy_power": "Choose the elemental power to copy",
+        "search_deck": "Search your deck for a card",
+        "from_graveyard_one": "Choose {{count}} card to retrieve from the graveyard",
+        "from_graveyard_other": "Choose {{count}} cards to retrieve from the graveyard",
+        "from_graveyard_or_deck": "Choose a card to retrieve (graveyard or deck)",
+        "discard_one": "Choose {{count}} card to discard",
+        "discard_other": "Choose {{count}} cards to discard",
+        "baby_lineage": "Choose the Baby {{lineage}} to retrieve (graveyard or deck)"
+      }
+    },
+    "summon": {
+      "title": "Summon — {{name}}",
+      "evolveTitle": "Evolution — {{name}}",
+      "close": "Close",
+      "totalCost": "Total cost:",
+      "energy": "Energy:",
+      "toDiscard": "Cards to discard:",
+      "hint_one": "Select {{count}} card from your hand to recycle",
+      "hint_other": "Select {{count}} cards from your hand to recycle",
+      "cancel": "Cancel",
+      "confirm": "Recycle & Summon",
+      "confirmEvolve": "Recycle & Evolve"
+    },
+    "badge": {
+      "sleep": "Can't attack this turn",
+      "attacksLeft_one": "{{count}} attack left this turn",
+      "attacksLeft_other": "{{count}} attacks left this turn"
+    },
+    "mode": {
+      "attack": "Attack mode",
+      "guard": "Guard mode"
+    },
+    "cardLabel": "{{name}}, {{atk}} ATK, {{hp}} HP",
+    "effectsSection": "Effects",
+    "lobby": {
+      "draw": "Draw",
+      "win": "Victory!",
+      "loss": "Defeat",
+      "replay": "Play again",
+      "found": "Opponent found!",
+      "facing": "You're facing <b>{{name}}</b>",
+      "confirmDeck": "Confirm your deck to start",
+      "deckReady": "Deck #{{id}} ready",
+      "pickDeck": "Select a deck with the “Decks” widget",
+      "start": "Start the game",
+      "ready": "Ready to fight?",
+      "intro": "Join the queue and face an opponent 1v1",
+      "deckSelected": "Deck selected",
+      "pickDeckFirst": "Select a deck with the “Decks” widget before fighting",
+      "search": "Find a game",
+      "waiting": "Waiting for an opponent…",
+      "cancel": "Cancel"
+    },
+    "endReason": {
+      "primes_depleted": "All Primes taken",
+      "deck_empty": "Empty deck",
+      "surrender": "Surrender",
+      "disconnect": "Disconnection",
+      "double_ko": "Double K.O."
+    },
+    "toast": {
+      "matched": "Opponent found: {{name}}!",
+      "resumed": "Game in progress restored",
+      "deckAccepted": "Deck accepted — waiting for the opponent…",
+      "draw": "Draw ({{reason}})",
+      "win": "Victory! ({{reason}})",
+      "loss": "Defeat… ({{reason}})"
+    },
+    "mulligan": {
+      "title": "Your starting hand",
+      "starting": "The game is starting…",
+      "waiting": "Waiting for {{name}}…",
+      "keep": "Keep this hand",
+      "redraw": "Mulligan (once)"
+    },
+    "tabs": {
+      "fight": "Fight",
+      "history": "History",
+      "leaderboard": "Leaderboard",
+      "rules": "Rules"
+    },
+    "leaderboard": {
+      "title": "ELO Leaderboard",
+      "loading": "Loading…",
+      "empty": "No ranked player yet.",
+      "you": "you",
+      "wins": "W {{count}}",
+      "losses": "L {{count}}",
+      "tier": {
+        "legendary": "Legendary",
+        "diamond": "Diamond",
+        "gold": "Gold",
+        "silver": "Silver",
+        "bronze": "Bronze"
+      }
+    },
+    "history": {
+      "title": "Match history",
+      "wins": "Wins",
+      "losses": "Losses",
+      "empty": "No match played.",
+      "turns_one": "{{count}} turn",
+      "turns_other": "{{count}} turns",
+      "draw": "Draw",
+      "win": "Victory",
+      "loss": "Defeat"
+    },
+    "rules": {
+      "step": {
+        "goal": "Goal",
+        "setup": "Setup",
+        "board": "Board",
+        "cards": "Card types",
+        "status": "Monster statuses",
+        "energy": "Energy",
+        "combat": "Combat",
+        "primes": "Primes & Comeback",
+        "turn": "Turn structure"
+      },
+      "winLabel": "Victory condition",
+      "winValue": "Be the first to take your {{count}} Prime Cards",
+      "goal1": "The game is played <b>1 vs 1</b>.",
+      "goal2": "If both players take their last Prime at the same time: <b>draw</b>.",
+      "goal3": "A player who must draw from an empty deck <b>loses</b>.",
+      "setup1": "<b>Deck:</b> {{min}} to {{max}} cards, max {{copies}} copies per card.",
+      "setup2": "<b>Prime Zone:</b> the first {{count}} cards of the shuffled deck, face down.",
+      "setup3": "<b>Starting hand:</b> {{count}} cards. <b>Mulligan:</b> once, you may shuffle your hand into the deck and draw {{count}} new cards.",
+      "setup4": "The first player is <b>chosen at random</b>.",
+      "board1": "<b>3 Monster Zones</b> for summons.",
+      "board2": "<b>3 Support Zones</b> for Terrains.",
+      "board3": "<b>1 Prime Zone</b> with {{count}} face-down cards.",
+      "monsters": "<b>Monsters:</b> ATK / HP, archetype, cost from 0 to 3 Energy, passive or triggered effects. A monster can attack as soon as it is summoned, unless its card says otherwise.",
+      "supports": "<b>Support cards:</b>",
+      "ephemeral": "Single use, then discarded. Some require choosing a target monster.",
+      "terrain": "Permanent, affects your monsters only.",
+      "equipment": "Attached to one of your monsters; some effects only work on a specific monster.",
+      "energy1": "<b>Generate:</b> recycle cards from your hand during the Main Phase. <b>1 card = 1 Energy.</b>",
+      "energy2": "Without enough energy, you pay the rest by discarding cards when summoning.",
+      "energy3": "<b>Reset:</b> energy drops back to 0 at the end of the turn.",
+      "atkMode": "ATK mode",
+      "atk1": "One attack per turn (unless an effect says otherwise). Strikes back when attacked.",
+      "atk2": "If destroyed → the opponent gains <b>1 Prime</b>.",
+      "guardMode": "Guard mode",
+      "guard1": "Can neither attack nor strike back.",
+      "guard2": "If destroyed → <b>no Prime</b>, except against a Piercing attacker.",
+      "direct": "<b>Direct attack</b> (not on turn 1) if the opponent has no monster: you gain 1 Prime and the opponent draws 1 card.",
+      "primes1": "<b>Destruction:</b> when one of your monsters is destroyed in combat or by an opposing effect, you draw 1 card.",
+      "primes2": "<b>Recovery:</b> a Prime you gain goes to your hand.",
+      "primes3": "<b>Double K.O:</b> two ATK monsters destroy each other → each player draws 1 card and takes 1 Prime.",
+      "phaseStart": "Start of turn",
+      "phaseStartDesc": "Start-of-turn effects, then draw 1 card (turn 1 included).",
+      "phaseMain": "Main Phase",
+      "phaseMainDesc": "Recycle for Energy, summon, play Supports, change your monsters' position.",
+      "phaseBattle": "Battle Phase",
+      "phaseBattleDesc": "Attack the opposing monsters, or attack directly if the opposing board is empty.",
+      "phaseEnd": "Ending Phase",
+      "phaseEndDesc": "End-of-turn effects, Energy → 0, {{limit}} cards max in hand (discard the excess).",
+      "timer": "90 s per phase: when time runs out, the next phase starts automatically.",
+      "stepOf": "Step {{n}} / {{total}}",
+      "prev": "Previous",
+      "next": "Next"
     }
   },
   "achievements": {
@@ -897,5 +1135,79 @@
       "regenerate_confirm": "Regenerate this AI's deck? The current deck will be replaced.",
       "no_cards": "No card in this set."
     }
+  },
+  "glossary": {
+    "title": "Glossary",
+    "count_one": "{{count}} card",
+    "count_other": "{{count}} cards",
+    "back": "Back",
+    "loading": "Loading cards...",
+    "error": "Couldn't load the cards",
+    "empty": "No card matches.",
+    "view": "View {{name}}",
+    "noEffect": "No effect",
+    "search": "Search a card…",
+    "all": "All",
+    "kind": {
+      "monster": "Monster",
+      "EQUIPMENT": "Equipment",
+      "TERRAIN": "Terrain",
+      "EPHEMERAL": "Ephemeral"
+    },
+    "filters": "Filters",
+    "rarity": "Rarity",
+    "archetype": "Archetype",
+    "cost": "Cost",
+    "sort": "Sort by",
+    "sortKey": {
+      "default": "Set",
+      "name": "Name",
+      "cost": "Cost",
+      "atk": "ATK",
+      "hp": "HP",
+      "rarity": "Rarity"
+    },
+    "asc": "Ascending",
+    "desc": "Descending"
+  },
+  "deck": {
+    "title": "My Decks",
+    "new": "+ New",
+    "loading": "Loading...",
+    "none": "No deck yet",
+    "noneHint": "Build your first deck!",
+    "cardCount": "{{count}} / {{max}} cards",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this deck?",
+    "back": "Back",
+    "name": "Deck name",
+    "mine": "My deck",
+    "stripEmpty": "Add cards from your collection",
+    "viewQty": "View {{name}} (x{{qty}})",
+    "collectionEmpty": "Your collection is empty.",
+    "add": "Add {{name}}",
+    "remove": "Remove {{name}}",
+    "owned_one": "/ {{count}} owned",
+    "owned_other": "/ {{count}} owned",
+    "remaining": " · {{count}} more",
+    "tooMany": " · too many cards",
+    "save": "Save"
+  },
+  "arena": {
+    "title": "Arena",
+    "subtitle": "Build your deck, face opponents, climb the leaderboard.",
+    "decksTitle": "Deck Builder",
+    "decksDesc": "Create and manage your decks. Pick your cards, refine your strategy, get ready to fight.",
+    "decksF1": "Up to {{max}} cards per deck",
+    "decksF2": "Max {{copies}} copies per card",
+    "decksF3": "Full filterable library",
+    "decksCta": "Manage my decks",
+    "fightTitle": "Fight (WIP)",
+    "fightDesc": "Face an opponent 1v1 in real time. Spend your Primes, steal the enemy's, and claim victory.",
+    "fightF1": "Matchmaking not working yet",
+    "fightF2": "Live ELO leaderboard",
+    "fightF3": "Match history",
+    "fightCta": "Enter the arena"
   }
 }

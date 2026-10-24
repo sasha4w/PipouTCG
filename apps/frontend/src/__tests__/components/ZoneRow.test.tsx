@@ -1,7 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import ZoneRow from "../../features/fight/Zonerow/ZoneRow";
 import { monster } from "../fixtures/monster";
+import i18n from "../../i18n";
+
+beforeAll(async () => {
+  await i18n.changeLanguage("fr");
+});
 
 describe("ZoneRow inspection", () => {
   it("ne rouvre pas de grande carte quand la zone inspectée se vide puis se remplit", () => {

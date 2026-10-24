@@ -5,7 +5,8 @@ import {
   STARTING_HAND,
   STARTING_PRIMES,
 } from "@pipou/shared";
-import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
+import { Trans, useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
 import { KEYWORD_IDS } from "./effectText";
@@ -32,304 +33,234 @@ function StatusGrid() {
   );
 }
 
+/** Texte de règle traduit ; `<b>…</b>` dans la traduction devient du gras. */
+function RuleText({
+  k,
+  values,
+}: {
+  k: string;
+  values?: Record<string, string | number>;
+}) {
+  return (
+    <Trans
+      i18nKey={`fight.rules.${k}`}
+      values={values}
+      components={{ b: <strong /> }}
+    />
+  );
+}
+
+function Rule({
+  k,
+  values,
+}: {
+  k: string;
+  values?: Record<string, string | number>;
+}) {
+  return (
+    <div className="fr-rule">
+      <div className="fr-dot" />
+      <div className="fr-rule-text">
+        <RuleText k={k} values={values} />
+      </div>
+    </div>
+  );
+}
+
 type Step = { icon: string; label: string; content: React.ReactNode };
 
-const STEPS: Step[] = [
-  {
-    icon: "🏆",
-    label: "But du jeu",
-    content: (
-      <>
-        <div className="fr-win-banner">
-          <span className="fr-win-icon">🏆</span>
-          <div>
-            <div className="fr-win-sub">Condition de victoire</div>
-            <div className="fr-win-val">
-              Récupérer ses {STARTING_PRIMES} Cartes Primes en premier
+function buildSteps(t: TFunction): Step[] {
+  return [
+    {
+      icon: "🏆",
+      label: t("fight.rules.step.goal"),
+      content: (
+        <>
+          <div className="fr-win-banner">
+            <span className="fr-win-icon">🏆</span>
+            <div>
+              <div className="fr-win-sub">{t("fight.rules.winLabel")}</div>
+              <div className="fr-win-val">
+                {t("fight.rules.winValue", { count: STARTING_PRIMES })}
+              </div>
+            </div>
+          </div>
+          <div className="fr-rule-list">
+            <Rule k="goal1" />
+            <Rule k="goal2" />
+            <Rule k="goal3" />
+          </div>
+        </>
+      ),
+    },
+    {
+      icon: "🃏",
+      label: t("fight.rules.step.setup"),
+      content: (
+        <div className="fr-rule-list">
+          <Rule
+            k="setup1"
+            values={{
+              min: DECK_RULES.MIN_CARDS,
+              max: DECK_RULES.MAX_CARDS,
+              copies: DECK_RULES.MAX_COPIES,
+            }}
+          />
+          <Rule k="setup2" values={{ count: STARTING_PRIMES }} />
+          <Rule k="setup3" values={{ count: STARTING_HAND }} />
+          <Rule k="setup4" />
+        </div>
+      ),
+    },
+    {
+      icon: "🗺️",
+      label: t("fight.rules.step.board"),
+      content: (
+        <div className="fr-rule-list">
+          <Rule k="board1" />
+          <Rule k="board2" />
+          <Rule k="board3" values={{ count: STARTING_PRIMES }} />
+        </div>
+      ),
+    },
+    {
+      icon: "🎴",
+      label: t("fight.rules.step.cards"),
+      content: (
+        <div className="fr-rule-list">
+          <Rule k="monsters" />
+          <div className="fr-rule">
+            <div className="fr-dot" />
+            <div className="fr-rule-text">
+              <RuleText k="supports" />
+              <div className="fr-sub">
+                <div className="fr-rule-text">
+                  <span className="fr-tag fr-tag--support">
+                    {t("glossary.kind.EPHEMERAL")}
+                  </span>
+                  {t("fight.rules.ephemeral")}
+                </div>
+                <div className="fr-rule-text">
+                  <span className="fr-tag fr-tag--support">
+                    {t("glossary.kind.TERRAIN")}
+                  </span>
+                  {t("fight.rules.terrain")}
+                </div>
+                <div className="fr-rule-text">
+                  <span className="fr-tag fr-tag--support">
+                    {t("glossary.kind.EQUIPMENT")}
+                  </span>
+                  {t("fight.rules.equipment")}
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      ),
+    },
+    {
+      icon: "✨",
+      label: t("fight.rules.step.status"),
+      content: <StatusGrid />,
+    },
+    {
+      icon: "⚡",
+      label: t("fight.rules.step.energy"),
+      content: (
+        <div className="fr-rule-list">
+          <Rule k="energy1" />
+          <Rule k="energy2" />
+          <Rule k="energy3" />
+        </div>
+      ),
+    },
+    {
+      icon: "⚔️",
+      label: t("fight.rules.step.combat"),
+      content: (
         <div className="fr-rule-list">
           <div className="fr-rule">
             <div className="fr-dot" />
             <div className="fr-rule-text">
-              Le jeu se joue en <strong>1 contre 1</strong>.
+              <span className="fr-tag fr-tag--atk">
+                {t("fight.rules.atkMode")}
+              </span>
+              <div className="fr-sub">
+                <div className="fr-rule-text">{t("fight.rules.atk1")}</div>
+                <div className="fr-rule-text">
+                  <RuleText k="atk2" />
+                </div>
+              </div>
             </div>
           </div>
           <div className="fr-rule">
             <div className="fr-dot" />
             <div className="fr-rule-text">
-              Si les deux joueurs récupèrent leur dernière Prime en même temps :{" "}
-              <strong>match nul</strong>.
-            </div>
-          </div>
-          <div className="fr-rule">
-            <div className="fr-dot" />
-            <div className="fr-rule-text">
-              Un joueur qui doit piocher avec un deck vide <strong>perd</strong>
-              .
-            </div>
-          </div>
-        </div>
-      </>
-    ),
-  },
-  {
-    icon: "🃏",
-    label: "Préparation",
-    content: (
-      <div className="fr-rule-list">
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Deck :</strong> {DECK_RULES.MIN_CARDS} à{" "}
-            {DECK_RULES.MAX_CARDS} cartes, {DECK_RULES.MAX_COPIES} exemplaires
-            max par carte.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Zone Prime :</strong> les {STARTING_PRIMES} premières cartes
-            du deck mélangé, face cachée.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Main de départ :</strong> {STARTING_HAND} cartes.{" "}
-            <strong>Mulligan :</strong> une fois, tu peux remélanger ta main
-            dans le deck et repiocher {STARTING_HAND} cartes.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            Le premier joueur est <strong>tiré au sort</strong>.
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    icon: "🗺️",
-    label: "Plateau",
-    content: (
-      <div className="fr-rule-list">
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>3 Zones Monstre</strong> pour les invocations.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>3 Zones Support</strong> pour les Terrains.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>1 Zone Prime</strong> avec {STARTING_PRIMES} cartes face
-            cachée.
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    icon: "🎴",
-    label: "Types de cartes",
-    content: (
-      <div className="fr-rule-list">
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Monstres :</strong> ATK / PV, archétype, coût de 0 à 3
-            Énergies, effets passifs ou déclenchés. Un monstre peut attaquer dès
-            son invocation, sauf si sa carte dit le contraire.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Cartes Support :</strong>
-            <div className="fr-sub">
-              <div className="fr-rule-text">
-                <span className="fr-tag fr-tag--support">Éphémère</span>
-                Utilisation unique puis défausse. Certaines demandent de choisir
-                un monstre cible.
-              </div>
-              <div className="fr-rule-text">
-                <span className="fr-tag fr-tag--support">Terrain</span>
-                Permanent, agit sur tes monstres uniquement.
-              </div>
-              <div className="fr-rule-text">
-                <span className="fr-tag fr-tag--support">Équipement</span>
-                Attaché à un de tes monstres ; certains effets ne s'activent que
-                sur un monstre précis.
+              <span className="fr-tag fr-tag--guard">
+                {t("fight.rules.guardMode")}
+              </span>
+              <div className="fr-sub">
+                <div className="fr-rule-text">{t("fight.rules.guard1")}</div>
+                <div className="fr-rule-text">
+                  <RuleText k="guard2" />
+                </div>
               </div>
             </div>
           </div>
+          <Rule k="direct" />
         </div>
-      </div>
-    ),
-  },
-  {
-    icon: "✨",
-    label: "Status monstres",
-    content: <StatusGrid />,
-  },
-  {
-    icon: "⚡",
-    label: "Énergie",
-    content: (
-      <div className="fr-rule-list">
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Générer :</strong> recycle des cartes de ta main pendant la
-            Main Phase. <strong>1 carte = 1 Énergie.</strong>
-          </div>
+      ),
+    },
+    {
+      icon: "🔄",
+      label: t("fight.rules.step.primes"),
+      content: (
+        <div className="fr-rule-list">
+          <Rule k="primes1" />
+          <Rule k="primes2" />
+          <Rule k="primes3" />
         </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            Sans assez d'énergie, tu paies le reste en défaussant des cartes au
-            moment d'invoquer.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Réinitialisation :</strong> l'énergie retombe à 0 en fin de
-            tour.
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    icon: "⚔️",
-    label: "Combat",
-    content: (
-      <div className="fr-rule-list">
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <span className="fr-tag fr-tag--atk">Mode ATK</span>
-            <div className="fr-sub">
-              <div className="fr-rule-text">
-                Une attaque par tour (sauf effet). Riposte s'il est attaqué.
-              </div>
-              <div className="fr-rule-text">
-                Si détruit → l'adversaire gagne <strong>1 Prime</strong>.
+      ),
+    },
+    {
+      icon: "⏱️",
+      label: t("fight.rules.step.turn"),
+      content: (
+        <div className="fr-phase-list">
+          {(
+            [
+              ["phaseStart", "phaseStartDesc"],
+              ["phaseMain", "phaseMainDesc"],
+              ["phaseBattle", "phaseBattleDesc"],
+              ["phaseEnd", "phaseEndDesc"],
+            ] as const
+          ).map(([label, desc], i) => (
+            <div key={label} className="fr-phase">
+              <div className="fr-phase-num">{i + 1}</div>
+              <div className="fr-phase-text">
+                <strong>{t(`fight.rules.${label}`)}</strong> —{" "}
+                {t(`fight.rules.${desc}`, { limit: HAND_LIMIT })}
               </div>
             </div>
-          </div>
+          ))}
+          <p className="fr-rule-text">⏱ {t("fight.rules.timer")}</p>
         </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <span className="fr-tag fr-tag--guard">Mode Garde</span>
-            <div className="fr-sub">
-              <div className="fr-rule-text">
-                Ne peut pas attaquer ni riposter.
-              </div>
-              <div className="fr-rule-text">
-                Si détruit → <strong>aucune Prime</strong>, sauf contre un
-                attaquant Perçant.
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Attaque directe</strong> (pas au tour 1) si l'adversaire n'a
-            aucun monstre : tu gagnes 1 Prime et l'adversaire pioche 1 carte.
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    icon: "🔄",
-    label: "Primes & Comeback",
-    content: (
-      <div className="fr-rule-list">
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Destruction :</strong> quand un de tes monstres est détruit
-            en combat ou par un effet adverse, tu pioches 1 carte.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Récupération :</strong> une Prime gagnée rejoint ta main.
-          </div>
-        </div>
-        <div className="fr-rule">
-          <div className="fr-dot" />
-          <div className="fr-rule-text">
-            <strong>Double K.O :</strong> deux monstres ATK se détruisent →
-            chaque joueur pioche 1 carte et récupère 1 Prime.
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    icon: "⏱️",
-    label: "Structure du tour",
-    content: (
-      <div className="fr-phase-list">
-        {[
-          [
-            "Début de tour",
-            "Effets de début de tour, puis pioche d'1 carte (tour 1 compris).",
-          ],
-          [
-            "Main Phase",
-            "Recycle pour l'Énergie, invoque, joue des Supports, change la position de tes monstres.",
-          ],
-          [
-            "Battle Phase",
-            "Attaque les monstres adverses, ou directement si le terrain adverse est vide.",
-          ],
-          [
-            "Ending Phase",
-            `Effets de fin de tour, Énergie → 0, ${HAND_LIMIT} cartes max en main (défausse l'excédent).`,
-          ],
-        ].map(([label, desc], i) => (
-          <div key={i} className="fr-phase">
-            <div className="fr-phase-num">{i + 1}</div>
-            <div className="fr-phase-text">
-              <strong>{label}</strong> — {desc}
-            </div>
-          </div>
-        ))}
-        <p className="fr-rule-text">
-          ⏱ 90 s par phase : à l'expiration, la phase suivante commence
-          automatiquement.
-        </p>
-      </div>
-    ),
-  },
-];
+      ),
+    },
+  ];
+}
 
 export default function FightRules() {
+  const { t } = useTranslation();
   const [cur, setCur] = useState(0);
-  const step = STEPS[cur];
+  const steps = buildSteps(t);
+  const step = steps[cur];
 
   return (
     <div className="fr-root">
       {/* Fil d'ariane */}
       <div className="fr-breadcrumb">
-        {STEPS.map((s, i) => (
+        {steps.map((s, i) => (
           <span key={i} className="fr-bc-item">
             <button
               className={`fr-bc-step${i === cur ? " fr-bc-step--active" : i < cur ? " fr-bc-step--done" : ""}`}
@@ -340,7 +271,7 @@ export default function FightRules() {
               </span>
               <span className="fr-bc-label">{s.label}</span>
             </button>
-            {i < STEPS.length - 1 && <span className="fr-bc-sep">›</span>}
+            {i < steps.length - 1 && <span className="fr-bc-sep">›</span>}
           </span>
         ))}
       </div>
@@ -351,7 +282,7 @@ export default function FightRules() {
           <div className="fr-slide-icon">{step.icon}</div>
           <div>
             <div className="fr-slide-step">
-              Étape {cur + 1} / {STEPS.length}
+              {t("fight.rules.stepOf", { n: cur + 1, total: steps.length })}
             </div>
             <div className="fr-slide-title">{step.label}</div>
           </div>
@@ -367,16 +298,16 @@ export default function FightRules() {
           disabled={cur === 0}
         >
           <IconArrowLeft size={16} />
-          Précédent
+          {t("fight.rules.prev")}
         </Button>
         <span className="fr-nav-counter">
-          {cur + 1} / {STEPS.length}
+          {cur + 1} / {steps.length}
         </span>
         <Button
           onClick={() => setCur((c) => c + 1)}
-          disabled={cur === STEPS.length - 1}
+          disabled={cur === steps.length - 1}
         >
-          Suivant
+          {t("fight.rules.next")}
           <IconArrowRight size={16} />
         </Button>
       </div>

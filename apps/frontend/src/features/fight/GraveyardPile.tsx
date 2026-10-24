@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import InspectableCard from "./InspectableCard";
 import CardInspect from "./CardInspect";
 import "./GraveyardPile.css";
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export default function GraveyardPile({ graveyard, label }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [inspected, setInspected] = useState<CardInstance | null>(null);
 
@@ -20,43 +23,53 @@ export default function GraveyardPile({ graveyard, label }: Props) {
       <button
         className="gp-pile"
         onClick={() => setOpen(true)}
-        title={`Cimetière (${graveyard.length})`}
+        title={t("fight.graveyard.title", { count: graveyard.length })}
       >
         <span className="gp-icon">🪦</span>
         <span className="gp-count">{graveyard.length}</span>
       </button>
 
-      {open && (
-        <div className="gp-overlay" onClick={() => setOpen(false)}>
-          <div className="gp-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="gp-modal-header">
-              <span>
-                {label} — Cimetière ({graveyard.length})
-              </span>
-              <button className="gp-close" onClick={() => setOpen(false)}>
-                ✕
-              </button>
-            </div>
-            <div className="gp-list">
-              {[...graveyard].reverse().map((c) => (
-                <InspectableCard
-                  key={c.instanceId}
-                  card={c.baseCard}
-                  size="sm"
-                  onInspect={() => setInspected(c)}
-                  onInspectEnd={() => setInspected(null)}
+      {/* Hors du plateau : un ancêtre empilé y placerait la main et le HUD par-dessus */}
+      {open &&
+        createPortal(
+          <div className="gp-overlay" onClick={() => setOpen(false)}>
+            <div className="gp-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="gp-modal-header">
+                <span>
+                  {t("fight.graveyard.owner", {
+                    name: label,
+                    count: graveyard.length,
+                  })}
+                </span>
+                <button
+                  className="gp-close"
+                  aria-label={t("fight.graveyard.close")}
+                  onClick={() => setOpen(false)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="gp-list">
+                {[...graveyard].reverse().map((c) => (
+                  <InspectableCard
+                    key={c.instanceId}
+                    card={c.baseCard}
+                    size="sm"
+                    onInspect={() => setInspected(c)}
+                    onInspectEnd={() => setInspected(null)}
+                  />
+                ))}
+              </div>
+              {inspected && (
+                <CardInspect
+                  card={inspected.baseCard}
+                  onClose={() => setInspected(null)}
                 />
-              ))}
+              )}
             </div>
-            {inspected && (
-              <CardInspect
-                card={inspected.baseCard}
-                onClose={() => setInspected(null)}
-              />
-            )}
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

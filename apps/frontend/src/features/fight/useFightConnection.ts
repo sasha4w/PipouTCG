@@ -7,15 +7,13 @@ import {
   type GameOverPayload,
   type MatchFoundPayload,
 } from "@pipou/shared";
+// i18n plutôt que useTranslation : `t` relancerait la socket à chaque changement de langue
+import i18n from "../../i18n";
 import type { GameState, FightClientSocket } from "./fight.types";
 import { emitGameAction } from "./emitGameAction";
 
 export type FightStatus =
-  | "idle"
-  | "queued"
-  | "selecting"
-  | "playing"
-  | "finished";
+  "idle" | "queued" | "selecting" | "playing" | "finished";
 
 export interface FightToast {
   msg: string;
@@ -119,7 +117,10 @@ export function useFightConnection({
       setOpponentName(payload.opponentName);
       setStatus("selecting");
       if (!callbacksRef.current.silentMatch)
-        showToast(`⚔️ Adversaire trouvé : ${payload.opponentName} !`, "ok");
+        showToast(
+          `⚔️ ${i18n.t("fight.toast.matched", { name: payload.opponentName })}`,
+          "ok",
+        );
       callbacksRef.current.onMatched?.(payload);
     });
     socket.on("fight:resumed", (payload) => {
@@ -128,11 +129,11 @@ export function useFightConnection({
       // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
       setStatus((s) => (s === "playing" ? s : "selecting"));
       if (!callbacksRef.current.silentMatch)
-        showToast("🔌 Partie en cours retrouvée", "ok");
+        showToast(`🔌 ${i18n.t("fight.toast.resumed")}`, "ok");
       callbacksRef.current.onResumed?.(payload);
     });
     socket.on("fight:deck_accepted", () =>
-      showToast("Deck accepté — en attente de l'adversaire…"),
+      showToast(i18n.t("fight.toast.deckAccepted")),
     );
     socket.on("fight:state", (state: GameState) => {
       setGameState(state);
@@ -142,17 +143,20 @@ export function useFightConnection({
     });
     socket.on("fight:game_over", (payload) => {
       const { winner, endReason } = payload;
+      const reason = i18n.t(`fight.endReason.${endReason}`, {
+        defaultValue: endReason,
+      });
       setStatus("finished");
       if (timerRef.current) clearInterval(timerRef.current);
       callbacksRef.current.onGameOver?.(payload);
       if (callbacksRef.current.silentMatch) return;
       if (winner === null) {
-        showToast(`🤝 Match nul (${endReason})`, "ok");
+        showToast(`🤝 ${i18n.t("fight.toast.draw", { reason })}`, "ok");
       } else {
         showToast(
           winner === userId
-            ? `🎉 Victoire ! (${endReason})`
-            : `💀 Défaite… (${endReason})`,
+            ? `🎉 ${i18n.t("fight.toast.win", { reason })}`
+            : `💀 ${i18n.t("fight.toast.loss", { reason })}`,
           winner === userId ? "ok" : "err",
         );
       }
