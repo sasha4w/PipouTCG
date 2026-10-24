@@ -392,7 +392,8 @@
       "evolutionOnly": "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
       "title": "Effets",
       "keywords": "Mots-clés",
-      "status": "État actuel"
+      "status": "État actuel",
+      "evolutionOnlyAncestral": "Arrive en jeu uniquement par évolution d'un Adulte de sa lignée."
     },
     "trigger": {
       "ON_SUMMON": "À l'invocation",
@@ -410,6 +411,7 @@
       "PASSIVE_terrain": "Tant que ce terrain est en jeu",
       "ON_RECYCLE": "Quand tu recycles cette carte",
       "ON_BATTLE_PHASE_START": "Au début de ta phase de combat",
+      "ON_SELF_DESTRUCT": "À son autodestruction",
       "unknown": "Déclencheur spécial ({{type}})"
     },
     "condition": {
@@ -518,6 +520,15 @@
       "GAIN_RECYCLE_ENERGY_you_other": "Tu gagnes {{count}} Énergies de recyclage.",
       "SET_FREE_SUMMON": "Cette carte peut être invoquée gratuitement.",
       "SUMMONABLE_ON_ENEMY_SIDE": "Cette carte peut être invoquée sur le terrain adverse.",
+      "DUPLICATE_MONSTER_one": "{{target}} est copié sur ta première zone libre ; la copie ne peut pas attaquer pendant {{count}} tour.",
+      "DUPLICATE_MONSTER_other": "{{target}} est copié sur ta première zone libre ; la copie ne peut pas attaquer pendant {{count}} tours.",
+      "DUPLICATE_MONSTER_many_one": "{{target}} sont copiés sur tes premières zones libres ; les copies ne peuvent pas attaquer pendant {{count}} tour.",
+      "DUPLICATE_MONSTER_many_other": "{{target}} sont copiés sur tes premières zones libres ; les copies ne peuvent pas attaquer pendant {{count}} tours.",
+      "VIRUS_ATK_DEBUFF": "Les monstres adverses perdent {{value}} ATK.",
+      "RESET_TURN_COUNTER": "Remet le compteur de ton Zeta à {{value}}.",
+      "RESET_TURN_COUNTER_you": "Remet le compteur de ton Zeta à {{value}}.",
+      "SET_DISINFECT_IMMUNITY": "{{target}} ne peut pas être désinfecté jusqu'au prochain tour de son poseur.",
+      "SET_DISINFECT_IMMUNITY_many": "{{target}} ne peuvent pas être désinfectés jusqu'au prochain tour de leur poseur.",
       "SET_HATCH_COUNTER_one": "{{target}} éclot dans {{count}} tour en une carte{{filter}} de ton deck.",
       "SET_HATCH_COUNTER_other": "{{target}} éclot dans {{count}} tours en une carte{{filter}} de ton deck.",
       "SET_HATCH_COUNTER_many_one": "{{target}} éclosent dans {{count}} tour en une carte{{filter}} de ton deck.",
@@ -534,7 +545,13 @@
       "INSTANT_EVOLUTION_many": "{{target}} gagnent **{{kw}}**.",
       "ALLOW_EVOLUTION_THIS_TURN": "{{target}} peut évoluer ce tour.",
       "ALLOW_EVOLUTION_THIS_TURN_many": "{{target}} peuvent évoluer ce tour.",
-      "unknown": "Effet spécial ({{type}})."
+      "unknown": "Effet spécial ({{type}}).",
+      "REFLECT_DAMAGE": "{{target}} gagne **{{kw}}** : {{value}} % des dégâts de combat reçus sont renvoyés à l'attaquant.",
+      "REFLECT_DAMAGE_many": "{{target}} gagnent **{{kw}}** : {{value}} % des dégâts de combat reçus sont renvoyés à l'attaquant.",
+      "RELEVE": "**{{kw}}** ({{value}}) : peut être invoqué en envoyant {{value}} alliés Pipou de ton terrain au cimetière, à la place du coût.",
+      "SUMMON_IF_ALL_ELEMENTS": "Ne peut être invoqué qu'avec un Adulte ou un Ancestral de chaque élément (Terre, Feu, Eau, Vent) dans ton cimetière.",
+      "COPY_GRAVEYARD_EFFECTS": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
+      "COPY_GRAVEYARD_EFFECTS_you": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets."
     },
     "filter": {
       "name": "nom contenant « {{name}} »"
@@ -543,7 +560,8 @@
       "egg": "Œuf",
       "baby": "Bébé",
       "young": "Jeune",
-      "adult": "Adulte"
+      "adult": "Adulte",
+      "ancestral": "Ancestral"
     },
     "element": {
       "earth": "Terre",
@@ -566,7 +584,11 @@
       "countdown_other": "Détruit dans {{count}} tours",
       "hatch_one": "Éclot dans {{count}} tour",
       "hatch_other": "Éclot dans {{count}} tours",
-      "canEvolve": "Peut évoluer ce tour"
+      "canEvolve": "Peut évoluer ce tour",
+      "guard": "En Garde : {{turns}}/{{max}} tours adverses",
+      "counterOffensive": "Contre-offensive à la sortie : +{{value}} ATK",
+      "guardCooldown": "Retour en Garde possible au prochain tour",
+      "reflect": "Renvoie {{value}} % des dégâts de combat"
     }
   },
   "keywords": {
@@ -637,11 +659,34 @@
     "instantEvolution": {
       "name": "Évolution immédiate",
       "desc": "Peut évoluer dès le tour où il est posé."
+    },
+    "reflect": {
+      "name": "Renvoi",
+      "desc": "Une part des dégâts de combat reçus est renvoyée à l'attaquant. En Garde, un attaquant détruit ainsi ne rapporte pas de Prime."
+    },
+    "releve": {
+      "name": "Relève",
+      "desc": "Au lieu de payer son coût, ce monstre peut être invoqué en envoyant au cimetière le nombre indiqué d'alliés Pipou de ton terrain ; il prend la place de l'un d'eux."
     }
   },
   "fight": {
     "evolveHint": "Touche un de tes monstres pour évoluer",
-    "summonPick": "Invoquer"
+    "summonPick": "Invoquer",
+    "transform": "Transformer",
+    "transformTitle": "Défausse cette carte pour récupérer le Bébé de sa lignée",
+    "transformOncePerTurn": "Une seule transformation par tour",
+    "zetaProtected": "Protégé jusqu'au prochain tour adverse",
+    "zetaImplantHint": "Sélectionne une zone adverse vide pour implanter {{name}}",
+    "zetaAlreadyImplanted": "Un Zeta est déjà implanté chez l'adversaire",
+    "zetaDisinfectHint": "Attaque le Zeta implanté chez toi pour le désinfecter",
+    "releve": {
+      "stats": "{{atk}} ATK · {{hp}} PV",
+      "mode": "Relève",
+      "payMode": "Payer le coût",
+      "confirm": "Relever",
+      "hint_one": "Choisis {{count}} allié Pipou qui cède sa place",
+      "hint_other": "Choisis {{count}} alliés Pipou qui cèdent leur place"
+    }
   },
   "achievements": {
     "tab": "Succès",
@@ -837,7 +882,10 @@
       "farm_gold": "Or (farm)",
       "farm_xp": "XP (farm)",
       "farm_booster_pct": "Chance de booster en farm (%)",
-      "farm_legendary_pct": "Chance de légendaire en farm (%)"
+      "farm_legendary_pct": "Chance de légendaire en farm (%)",
+      "farm_card": "Carte précise en farm",
+      "farm_card_none": "Aucune",
+      "farm_card_pct": "Chance de la carte précise en farm (%)"
     },
     "deck": {
       "title": "Deck de {{name}}",

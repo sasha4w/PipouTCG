@@ -391,7 +391,8 @@
       "evolutionOnly": "진화 또는 알의 효과로만 필드에 나옵니다.",
       "title": "효과",
       "keywords": "키워드",
-      "status": "현재 상태"
+      "status": "현재 상태",
+      "evolutionOnlyAncestral": "같은 계통의 성체에서 진화해야만 등장합니다."
     },
     "trigger": {
       "ON_SUMMON": "소환 시",
@@ -409,6 +410,7 @@
       "PASSIVE_terrain": "이 필드 카드가 있는 동안",
       "ON_RECYCLE": "이 카드를 재활용할 때",
       "ON_BATTLE_PHASE_START": "내 배틀 페이즈 시작 시",
+      "ON_SELF_DESTRUCT": "자폭할 때",
       "unknown": "특수 발동 ({{type}})"
     },
     "condition": {
@@ -481,6 +483,11 @@
       "GAIN_RECYCLE_ENERGY_you_other": "재활용 에너지 {{count}} 획득.",
       "SET_FREE_SUMMON": "이 카드는 비용 없이 소환할 수 있습니다.",
       "SUMMONABLE_ON_ENEMY_SIDE": "이 카드는 상대 필드에 소환할 수 있습니다.",
+      "DUPLICATE_MONSTER_other": "{{target}}을(를) 첫 번째 빈 칸에 복사. 복사본은 {{count}}턴 동안 공격 불가.",
+      "VIRUS_ATK_DEBUFF": "상대 몬스터의 ATK {{value}} 감소.",
+      "RESET_TURN_COUNTER": "내 Zeta의 카운터를 {{value}}(으)로 되돌림.",
+      "RESET_TURN_COUNTER_you": "내 Zeta의 카운터를 {{value}}(으)로 되돌림.",
+      "SET_DISINFECT_IMMUNITY": "{{target}}은(는) 설치한 플레이어의 다음 턴까지 소독될 수 없음.",
       "SET_HATCH_COUNTER_other": "{{target}}: {{count}}턴 후 덱의 카드{{filter}}(으)로 부화.",
       "ADVANCE_HATCH_other": "{{target}}의 부화가 {{count}}턴 빨라짐.",
       "SUMMON_FROM_DECK": "{{target}}: 덱에서 카드{{filter}} 1장을 무료 소환.",
@@ -488,7 +495,13 @@
       "EVOLUTION_JOKER": "{{target}}에게 **{{kw}}** 부여.",
       "INSTANT_EVOLUTION": "{{target}}에게 **{{kw}}** 부여.",
       "ALLOW_EVOLUTION_THIS_TURN": "{{target}}: 이번 턴 진화 가능.",
-      "unknown": "특수 효과 ({{type}})."
+      "unknown": "특수 효과 ({{type}}).",
+      "REFLECT_DAMAGE": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
+      "REFLECT_DAMAGE_many": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
+      "RELEVE": "**{{kw}}** ({{value}}): 비용 대신 내 필드의 Pipou 아군 {{value}}명을 묘지로 보내 소환할 수 있습니다.",
+      "SUMMON_IF_ALL_ELEMENTS": "묘지에 각 원소(대지, 불, 물, 바람)의 성체 또는 고대종이 있어야만 소환할 수 있습니다.",
+      "COPY_GRAVEYARD_EFFECTS": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
+      "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다."
     },
     "filter": {
       "name": "이름에 '{{name}}' 포함"
@@ -497,7 +510,8 @@
       "egg": "알",
       "baby": "아기",
       "young": "청년",
-      "adult": "성체"
+      "adult": "성체",
+      "ancestral": "고대종"
     },
     "element": {
       "earth": "대지",
@@ -517,7 +531,11 @@
       "freeze_other": "{{count}}턴 더 빙결",
       "countdown_other": "{{count}}턴 후 파괴",
       "hatch_other": "{{count}}턴 후 부화",
-      "canEvolve": "이번 턴 진화 가능"
+      "canEvolve": "이번 턴 진화 가능",
+      "guard": "가드 중: 상대 턴 {{turns}}/{{max}}",
+      "counterOffensive": "가드 해제 시 반격: +{{value}} ATK",
+      "guardCooldown": "다음 턴에 다시 가드 가능",
+      "reflect": "전투 피해의 {{value}}% 반사"
     }
   },
   "keywords": {
@@ -588,11 +606,34 @@
     "instantEvolution": {
       "name": "즉시 진화",
       "desc": "놓인 턴에 바로 진화할 수 있습니다."
+    },
+    "reflect": {
+      "name": "반사",
+      "desc": "받은 전투 피해의 일부를 공격자에게 돌려줍니다. 가드 상태에서 이렇게 파괴된 공격자는 프라임을 주지 않습니다."
+    },
+    "releve": {
+      "name": "교대",
+      "desc": "비용 대신, 지정된 수의 Pipou 아군을 내 필드에서 묘지로 보내 이 몬스터를 소환할 수 있으며, 그중 한 자리를 차지합니다."
     }
   },
   "fight": {
     "evolveHint": "진화시킬 내 몬스터를 터치하세요",
-    "summonPick": "소환"
+    "summonPick": "소환",
+    "transform": "변환",
+    "transformTitle": "이 카드를 버리고 같은 계열의 베이비를 가져옵니다",
+    "transformOncePerTurn": "턴당 한 번만 변환할 수 있습니다",
+    "zetaProtected": "상대의 다음 턴까지 보호됨",
+    "zetaImplantHint": "{{name}}을(를) 이식할 상대의 빈 구역을 선택하세요",
+    "zetaAlreadyImplanted": "상대 진영에 이미 제타가 이식되어 있습니다",
+    "zetaDisinfectHint": "내 진영에 이식된 제타를 공격해 제거하세요",
+    "releve": {
+      "stats": "공격 {{atk}} · 체력 {{hp}}",
+      "mode": "교대",
+      "payMode": "비용 지불",
+      "confirm": "교대하기",
+      "hint_one": "자리를 내줄 Pipou 아군 {{count}}명을 고르세요",
+      "hint_other": "자리를 내줄 Pipou 아군 {{count}}명을 고르세요"
+    }
   },
   "achievements": {
     "tab": "업적",
@@ -788,7 +829,10 @@
       "farm_gold": "골드 (파밍)",
       "farm_xp": "XP (파밍)",
       "farm_booster_pct": "파밍 부스터 확률 (%)",
-      "farm_legendary_pct": "파밍 전설 확률 (%)"
+      "farm_legendary_pct": "파밍 전설 확률 (%)",
+      "farm_card": "파밍 지정 카드",
+      "farm_card_none": "없음",
+      "farm_card_pct": "파밍 지정 카드 확률 (%)"
     },
     "deck": {
       "title": "{{name}}의 덱",

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import type { CardInstance } from "@pipou/shared";
 import FightBoard from "../../features/fight/FightBoard";
@@ -47,6 +47,7 @@ function state(recycleEnergy: number, youngCost = 2): GameState {
       monsterZones: [base, monster({ instanceId: "gob" }), null],
       supportZones: [null, null, null],
       recycleEnergy,
+      transformUsedThisTurn: false,
       freeSummonInstanceIds: [],
       mulliganDone: true,
     },
@@ -68,7 +69,11 @@ function state(recycleEnergy: number, youngCost = 2): GameState {
   } as GameState;
 }
 
-function renderBoard(gs: GameState, onEvolve = vi.fn()) {
+function renderBoard(
+  gs: GameState,
+  onEvolve = vi.fn(),
+  extra: Partial<ComponentProps<typeof FightBoard>> = {},
+) {
   const props: ComponentProps<typeof FightBoard> = {
     gs,
     selectedCard: 0,
@@ -82,12 +87,15 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     onDirectAttack: vi.fn(),
     onSummon: vi.fn(),
     onSummonZeta: vi.fn(),
+    onSummonReleve: vi.fn(),
     onEvolve,
     onPlaySupport: vi.fn(),
     onChangeMode: vi.fn(),
     onRecycleSupport: vi.fn(),
+    onTransform: vi.fn(),
     onDiscardCard: vi.fn(),
     onEndPhase: vi.fn(),
+    ...extra,
   };
   const { rerender } = render(<FightBoard {...props} />);
   const row = screen.getByText("Mes Monstres").closest(".zr-wrap")!;
@@ -95,6 +103,36 @@ function renderBoard(gs: GameState, onEvolve = vi.fn()) {
     rerender(<FightBoard {...props} selectedCard={selectedCard} />);
   return { zones: row.querySelectorAll(".zr-zone"), onEvolve, select, props };
 }
+
+describe("FightBoard — transformation", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("carte Jeune sélectionnée : « Transformer » envoie la transformation", () => {
+    const { props } = renderBoard(state(0));
+    fireEvent.click(screen.getByRole("button", { name: /Transformer/ }));
+    expect(props.onTransform).toHaveBeenCalledWith(0);
+  });
+
+  it("grisé si la transformation est déjà utilisée ce tour", () => {
+    const gs = state(0);
+    gs.me.transformUsedThisTurn = true;
+    const { props } = renderBoard(gs);
+    const btn = screen.getByRole("button", { name: /Transformer/ });
+    expect(btn).toBeDisabled();
+    fireEvent.click(btn);
+    expect(props.onTransform).not.toHaveBeenCalled();
+  });
+
+  it("absent pour une carte non transformable", () => {
+    const { select } = renderBoard(state(0));
+    select(1);
+    expect(
+      screen.queryByRole("button", { name: /Transformer/ }),
+    ).not.toBeInTheDocument();
+  });
+});
 
 describe("FightBoard — évolution", () => {
   beforeAll(async () => {
@@ -148,5 +186,249 @@ describe("FightBoard — évolution", () => {
     const { zones, onEvolve } = renderBoard(state(5));
     fireEvent.click(zones[1]);
     expect(onEvolve).not.toHaveBeenCalled();
+  });
+});
+
+// ─── Noyau Zeta : implantation, désinfection, équipement ─────────────────────
+
+const zetaCard = (): CardInstance["baseCard"] => ({
+  ...monster().card.baseCard,
+  id: 99,
+  name: "Noyau Zeta",
+  cost: 0,
+  effects: [
+    {
+      trigger: "PASSIVE",
+      actions: [{ type: "SUMMONABLE_ON_ENEMY_SIDE" }],
+    },
+  ] as unknown as CardInstance["baseCard"]["effects"],
+});
+
+const equipmentCard = (): CardInstance["baseCard"] => ({
+  ...monster().card.baseCard,
+  id: 50,
+  name: "Épée",
+  type: "support",
+  supportType: "EQUIPMENT",
+  atk: 0,
+  hp: 0,
+});
+
+const PROTECTED = "Protégé jusqu'au prochain tour adverse";
+
+/** Mon terrain héberge un Zeta posé par l'adversaire (userId 2). */
+function zetaState(opts: {
+  phase?: GameState["phase"];
+  immune?: boolean;
+  hand?: CardInstance["baseCard"][];
+  mineOnOpp?: boolean;
+}): GameState {
+  const gs = state(0);
+  gs.phase = opts.phase ?? "battle";
+  gs.me.hand = (opts.hand ?? []).map((b, i) => ({
+    instanceId: `h${i}`,
+    ownerId: 1,
+    baseCard: b,
+  }));
+  gs.me.monsterZones = [
+    monster({ instanceId: "atk" }),
+    monster({
+      instanceId: "zeta",
+      ownerUserId: 2,
+      disinfectImmune: opts.immune ?? false,
+    }),
+    null,
+  ];
+  if (opts.mineOnOpp) {
+    gs.opponent.monsterZones = [
+      monster({ instanceId: "monZeta", ownerUserId: 1 }),
+      null,
+      null,
+    ];
+  }
+  return gs;
+}
+
+function renderZeta(
+  gs: GameState,
+  over: Partial<ComponentProps<typeof FightBoard>> = {},
+) {
+  const props: ComponentProps<typeof FightBoard> = {
+    gs,
+    selectedCard: null,
+    selectedZone: null,
+    payIndices: [],
+    timeLeft: null,
+    onSetSelectedCard: vi.fn(),
+    onSetSelectedZone: vi.fn(),
+    onSetPayIndices: vi.fn(),
+    onAttackMonster: vi.fn(),
+    onDirectAttack: vi.fn(),
+    onSummon: vi.fn(),
+    onSummonZeta: vi.fn(),
+    onSummonReleve: vi.fn(),
+    onEvolve: vi.fn(),
+    onPlaySupport: vi.fn(),
+    onChangeMode: vi.fn(),
+    onRecycleSupport: vi.fn(),
+    onTransform: vi.fn(),
+    onDiscardCard: vi.fn(),
+    onEndPhase: vi.fn(),
+    ...over,
+  };
+  render(<FightBoard {...props} />);
+  const mine = screen
+    .getByText("Mes Monstres")
+    .closest(".zr-wrap")!
+    .querySelectorAll(".zr-zone");
+  const theirs = screen
+    .getByText("Adversaire — Monstres")
+    .closest(".zr-wrap")!
+    .querySelectorAll(".zr-zone");
+  return { props, mine, theirs };
+}
+
+describe("FightBoard — Noyau Zeta", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("désinfecter : le Zeta implanté chez moi est une cible d'attaque", () => {
+    const { props, mine } = renderZeta(zetaState({}), { selectedZone: 0 });
+    expect(mine[1]).toHaveClass("zr-zone--attack-target");
+    fireEvent.click(mine[1]);
+    expect(props.onAttackMonster).toHaveBeenCalledWith("zeta");
+  });
+
+  it("désinfection refusée tant que le Zeta est protégé", () => {
+    const { props, mine } = renderZeta(zetaState({ immune: true }), {
+      selectedZone: 0,
+    });
+    expect(mine[1]).not.toHaveClass("zr-zone--attack-target");
+    expect(mine[1]).toHaveAttribute("aria-disabled", "true");
+    expect(mine[1]).toHaveAttribute("title", PROTECTED);
+    expect(screen.getByText(PROTECTED)).toBeInTheDocument();
+    fireEvent.click(mine[1]);
+    expect(props.onAttackMonster).not.toHaveBeenCalled();
+  });
+
+  it("sans attaquant sélectionné, le Zeta n'est pas une cible", () => {
+    const { mine } = renderZeta(zetaState({}));
+    expect(mine[1]).not.toHaveClass("zr-zone--attack-target");
+  });
+
+  it("le Zeta implanté chez moi ne peut pas être choisi comme attaquant", () => {
+    const { props, mine } = renderZeta(zetaState({}));
+    fireEvent.click(mine[1]);
+    expect(props.onSetSelectedZone).not.toHaveBeenCalled();
+    fireEvent.click(mine[0]);
+    expect(props.onSetSelectedZone).toHaveBeenCalledWith(0);
+  });
+
+  it("le Zeta implanté chez moi n'a pas de changement de mode", () => {
+    const { mine } = renderZeta(zetaState({ phase: "main" }));
+    expect(mine[0].querySelector(".zr-mode-btns")).not.toBeNull();
+    expect(mine[1].querySelector(".zr-mode-btns")).toBeNull();
+  });
+
+  it("avec un équipement, mon Zeta chez l'adversaire est une cible", () => {
+    const { props, mine, theirs } = renderZeta(
+      zetaState({ phase: "main", hand: [equipmentCard()], mineOnOpp: true }),
+      { selectedCard: 0 },
+    );
+    expect(theirs[0]).toHaveClass("zr-zone--pulse-equipment");
+    expect(theirs[1]).not.toHaveClass("zr-zone--pulse-equipment");
+    fireEvent.click(theirs[0]);
+    expect(props.onPlaySupport).toHaveBeenCalledWith(0, undefined, "monZeta");
+    // le Zeta implanté chez moi ne s'équipe pas
+    expect(mine[1]).not.toHaveClass("zr-zone--pulse-equipment");
+    fireEvent.click(mine[1]);
+    expect(props.onPlaySupport).toHaveBeenCalledTimes(1);
+  });
+
+  it("je n'attaque pas mon propre Zeta chez l'adversaire", () => {
+    const { props, theirs } = renderZeta(zetaState({ mineOnOpp: true }), {
+      selectedZone: 0,
+    });
+    fireEvent.click(theirs[0]);
+    expect(props.onAttackMonster).not.toHaveBeenCalled();
+  });
+
+  it("poser Zeta : zones adverses vides ciblables", () => {
+    const { props, theirs } = renderZeta(
+      zetaState({ phase: "main", hand: [zetaCard()] }),
+      { selectedCard: 0 },
+    );
+    expect(theirs[0]).toHaveClass("zr-zone--zeta-target");
+    fireEvent.click(theirs[0]);
+    expect(props.onSummonZeta).toHaveBeenCalledWith(0);
+  });
+
+  it("poser Zeta désactivé s'il y en a déjà un chez l'adversaire", () => {
+    const { props, theirs } = renderZeta(
+      zetaState({ phase: "main", hand: [zetaCard()], mineOnOpp: true }),
+      { selectedCard: 0 },
+    );
+    expect(theirs[1]).not.toHaveClass("zr-zone--zeta-target");
+    fireEvent.click(theirs[1]);
+    expect(props.onSummonZeta).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Un Zeta est déjà implanté chez l'adversaire/),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("FightBoard : Relève", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("zone occupée par un allié Pipou : son allié est sacrifié d'office", () => {
+    const soldat = (id: string) =>
+      monster({
+        instanceId: id,
+        card: {
+          instanceId: id,
+          ownerId: 1,
+          baseCard: {
+            ...monster().card.baseCard,
+            name: `Soldat ${id}`,
+            archetype: "pipou",
+          },
+        },
+      });
+    const gs = state(0);
+    gs.me.hand = [
+      {
+        instanceId: "chef",
+        ownerId: 1,
+        baseCard: {
+          ...monster().card.baseCard,
+          name: "Chef",
+          cost: 3,
+          archetype: "pipou",
+          effects: [
+            {
+              trigger: "PASSIVE",
+              condition: null,
+              actions: [{ type: "RELEVE", target: "SELF", value: 2 }],
+            },
+          ],
+        },
+      },
+    ];
+    gs.me.monsterZones = [soldat("A"), soldat("B"), soldat("C")];
+    const { zones, props } = renderBoard(gs, vi.fn(), { selectedZone: 1 });
+    fireEvent.click(zones[1]);
+    const modal = within(document.querySelector<HTMLElement>(".scm-modal")!);
+    expect(
+      modal.getByText(i18n.t("fight.releve.hint", { count: 2 })),
+    ).toBeInTheDocument();
+    // L'allié de la zone est déjà coché : un second suffit
+    fireEvent.click(modal.getByText("Soldat A"));
+    fireEvent.click(
+      modal.getByRole("button", { name: i18n.t("fight.releve.confirm") }),
+    );
+    expect(props.onSummonReleve).toHaveBeenCalledWith(1, ["B", "A"]);
   });
 });

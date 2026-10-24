@@ -6,7 +6,14 @@ import {
   describeCardEffects,
   effectPlainText,
 } from "../effectText";
-import { IconEgg, IconEvolve } from "../../../components/Icons";
+import {
+  IconEgg,
+  IconEvolve,
+  IconGuard,
+  IconReflect,
+  IconSwords,
+} from "../../../components/Icons";
+import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from "@pipou/shared";
 import KeywordIcon from "../KeywordIcon";
 import { buildStatRecap } from "./zoneRow.helpers";
 import type { CardInstance, MonsterOnBoard } from "../fight.types";
@@ -82,6 +89,33 @@ export function getMonsterStatusEntries(
     });
   if (zone.forcedAttackMode) keyword("forcedAttack", "debuff");
   if (zone.guardLocked) keyword("guardLock", "debuff");
+  // Garde limitée (miroir de phase.service) : tours tenus et contre-offensive à la sortie
+  if (zone.mode === "guard") {
+    const held = zone.guardTurns ?? 0;
+    entries.push({
+      icon: <IconGuard size={14} />,
+      label: t("effects.status.guard", { turns: held, max: GUARD_MAX_TURNS }),
+      type: "neutral",
+    });
+    const bonus = COUNTER_OFFENSIVE_PER_TURN * Math.min(held, GUARD_MAX_TURNS);
+    if (bonus > 0)
+      entries.push({
+        icon: <IconSwords size={14} />,
+        label: t("effects.status.counterOffensive", { value: bonus }),
+        type: "buff",
+      });
+  } else if (zone.guardCooldown)
+    entries.push({
+      icon: <IconGuard size={14} />,
+      label: t("effects.status.guardCooldown"),
+      type: "neutral",
+    });
+  if (zone.reflectPercent)
+    entries.push({
+      icon: <IconReflect size={14} />,
+      label: t("effects.status.reflect", { value: zone.reflectPercent }),
+      type: "buff",
+    });
   if (zone.blockAttackTurns && zone.blockAttackTurns > 0)
     entries.push({
       icon: KEYWORD_ICON.freeze,

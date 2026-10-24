@@ -43,6 +43,8 @@ export interface PlayerGameState {
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
+  /** Transformation d'un Jeune/Adulte de la main déjà utilisée ce tour. */
+  transformUsedThisTurn: boolean;
   hasDrawnThisTurn: boolean;
   handLimitEnforced: boolean;
   /** Cartes de la main invocables gratuitement (instanceId). */
@@ -65,6 +67,10 @@ export interface PendingChoice {
   count: number;
   prompt: string;
   resolution?: PendingChoiceResolution;
+  /** summon_to_zone : le monstre vient d'un œuf, il peut évoluer le tour même. */
+  fromEgg?: boolean;
+  /** copy_effects : le monstre qui copie les effets choisis. */
+  sourceInstanceId?: string;
   /** summon_to_zone : zone visée. */
   zoneIndex?: number;
 }

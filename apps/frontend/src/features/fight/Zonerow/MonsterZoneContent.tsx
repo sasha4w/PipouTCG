@@ -6,9 +6,9 @@ import {
   monsterFaceStats,
 } from "./zoneRow.helpers";
 import InspectableCard from "../InspectableCard";
-import { IconEgg } from "../../../components/Icons";
+import { IconEgg, IconGuard } from "../../../components/Icons";
 import type { MonsterOnBoard } from "../fight.types";
-import type { CombatMode } from "@pipou/shared";
+import { GUARD_MAX_TURNS, type CombatMode } from "@pipou/shared";
 import "./MonsterZoneContent.css";
 
 interface Props {
@@ -100,6 +100,25 @@ export default function MonsterZoneContent({
           title={`Ne peut pas attaquer encore ${zone.blockAttackTurns} tour(s)`}
         >
           🧊{zone.blockAttackTurns}
+        </span>
+      )}
+      {zone.mode === "guard" && (
+        <span
+          className={[
+            "zr-badge zr-badge--counter",
+            (zone.guardTurns ?? 0) + 1 >= GUARD_MAX_TURNS
+              ? "zr-badge--counter-urgent"
+              : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          title={t("effects.status.guard", {
+            turns: zone.guardTurns ?? 0,
+            max: GUARD_MAX_TURNS,
+          })}
+        >
+          <IconGuard size={11} />
+          {zone.guardTurns ?? 0}/{GUARD_MAX_TURNS}
         </span>
       )}
       {zone.guardLocked && (

@@ -138,3 +138,27 @@ describe('buildClientState — titres', () => {
     expect(view.me.title).toBeNull();
   });
 });
+
+describe('buildClientState — Zeta implanté', () => {
+  it('transmet le poseur et la protection de désinfection aux deux joueurs', () => {
+    const game = scenario({
+      p2: {
+        monsters: [
+          {
+            card: monsterCard('Zeta'),
+            patch: { ownerUserId: P1_ID, disinfectImmune: true },
+          },
+        ],
+      },
+    });
+
+    for (const viewer of [game.player1.userId, game.player2.userId]) {
+      const view = buildClientState(game, viewer);
+      const zones = viewer === P1_ID ? view.opponent : view.me;
+      expect(zones.monsterZones[0]).toMatchObject({
+        ownerUserId: P1_ID,
+        disinfectImmune: true,
+      });
+    }
+  });
+});

@@ -41,6 +41,7 @@ export const DrakonStage = {
   BABY: "baby",
   YOUNG: "young",
   ADULT: "adult",
+  ANCESTRAL: "ancestral",
 } as const;
 export type DrakonStage = (typeof DrakonStage)[keyof typeof DrakonStage];
 

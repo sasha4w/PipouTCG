@@ -1,6 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { DestroyCause, EffectTrigger, HAND_LIMIT } from '@pipou/shared';
-import { GameState, PlayerGameState } from '../interfaces/game-state.interface';
+import {
+  DestroyCause,
+  EffectTrigger,
+  COUNTER_OFFENSIVE_PER_TURN,
+  GUARD_MAX_TURNS,
+  HAND_LIMIT,
+  isImplanted,
+  isPlantedBy,
+} from '@pipou/shared';
+import {
+  GameState,
+  MonsterOnBoard,
+  PlayerGameState,
+} from '../interfaces/game-state.interface';
 import {
   addLog,
   drawCard,
@@ -8,6 +20,7 @@ import {
   getOpponentState,
   getPlayerState,
   isCurrentPlayer,
+  leaveGuard,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
 import { hatchEgg } from '../helpers/hatching';
@@ -85,6 +98,26 @@ export class PhaseService {
     const log: string[] = [];
     // L'immunité au combat dure jusqu'au début du tour de son propriétaire
     for (const m of player.monsterZones) if (m) m.combatImmune = false;
+    // Garde : un tour adverse de plus tenu ; au-delà de GUARD_MAX_TURNS, contre-offensive
+    // (le délai de retour en Garde d'une sortie précédente tombe d'abord)
+    for (const m of player.monsterZones) if (m) m.guardCooldown = false;
+    for (const m of player.monsterZones) {
+      if (!m || m.mode !== 'guard' || isImplanted(m, player.userId)) continue;
+      m.guardTurns = (m.guardTurns ?? 0) + 1;
+      if (m.guardTurns < GUARD_MAX_TURNS) continue;
+      leaveGuard(m);
+      log.push(
+        `⚔️ ${m.card.baseCard.name} sort de la Garde et contre-attaque (+${COUNTER_OFFENSIVE_PER_TURN * GUARD_MAX_TURNS} ATK ce tour)`,
+      );
+    }
+    // La protection d'un Zeta implanté tombe au début du tour de son poseur
+    for (const host of [player, getOpponentState(game, player.userId)])
+      for (const m of host.monsterZones)
+        if (
+          m?.disinfectImmune &&
+          (m.ownerUserId ?? host.userId) === player.userId
+        )
+          m.disinfectImmune = false;
     // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
     // pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);
@@ -141,25 +174,30 @@ export class PhaseService {
       }
     }
     player.recycleEnergy = 0;
+    player.transformUsedThisTurn = false;
     log.forEach((l) => addLog(game, l));
   }
 
-  /** Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et les terrains. */
+  /**
+   * Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et
+   * les terrains. Un monstre implanté (et ses équipements) se résout pour son
+   * poseur, au tour du poseur, et jamais pour son hôte.
+   */
   private resolveForBoard(
     game: GameState,
     player: PlayerGameState,
     trigger: EffectTrigger,
     log: string[],
   ): void {
-    for (const zone of player.monsterZones) {
-      if (!zone) continue;
+    const opponent = getOpponentState(game, player.userId);
+    const resolveMonster = (host: PlayerGameState, zone: MonsterOnBoard) => {
       this.effectsResolver.resolve(zone.card, trigger, {
         game,
         ownerUserId: player.userId,
         sourceMonster: zone,
         log,
       });
-      if (!player.monsterZones.includes(zone)) continue;
+      if (!host.monsterZones.includes(zone)) return;
       for (const equipment of zone.equipments) {
         this.effectsResolver.resolve(equipment, trigger, {
           game,
@@ -168,6 +206,14 @@ export class PhaseService {
           log,
         });
       }
+    };
+    for (const zone of player.monsterZones) {
+      if (!zone || isImplanted(zone, player.userId)) continue;
+      resolveMonster(player, zone);
+    }
+    for (const zone of opponent.monsterZones) {
+      if (!zone || !isPlantedBy(zone, player.userId)) continue;
+      resolveMonster(opponent, zone);
     }
     for (const terrain of player.supportZones) {
       if (!terrain) continue;
@@ -203,11 +249,25 @@ export class PhaseService {
         if (zone.turnCounter > 0) continue;
 
         log.push(`💀 ${zone.card.baseCard.name} s'autodétruit !`);
-        gainPrime(game, player.userId, zone.card.baseCard.name);
+        // Une copie token (DuplicateX) n'apporte jamais de Prime
+        if (!zone.card.token)
+          gainPrime(game, player.userId, zone.card.baseCard.name);
         this.effectsResolver.destroyMonster(game, host, zone.instanceId, log, {
           draw: false,
           cause: DestroyCause.SELF_DESTRUCT,
         });
+        // Zeta est déjà parti : ses dégâts ne le touchent pas, et ses cibles
+        // (ALL_ENEMIES) sont les monstres de l'hôte, du point de vue du poseur.
+        this.effectsResolver.resolve(
+          zone.card,
+          EffectTrigger.ON_SELF_DESTRUCT,
+          {
+            game,
+            ownerUserId: poser,
+            sourceMonster: zone,
+            log,
+          },
+        );
       }
     }
   }

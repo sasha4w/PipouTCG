@@ -26,12 +26,14 @@ const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "🔮",
   discard: "🗑️",
   summon_to_zone: "", // pas d'emoji pour les nouveaux écrans
+  copy_effects: "",
 };
 
 const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "✅ Récupérer",
   discard: "🗑️ Défausser",
   summon_to_zone: "", // traduit : fight.summonPick
+  copy_effects: "Copier ce pouvoir",
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
@@ -39,18 +41,21 @@ const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#fdf6f9",
   discard: "#fff5f5",
   summon_to_zone: "#f3faf5",
+  copy_effects: "#f4f1fb",
 };
 
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
   discard: "#c0392b",
   summon_to_zone: "#1f6b3a",
+  copy_effects: "#4b2a85",
 };
 
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
   discard: "#c0392b",
   summon_to_zone: "#1f6b3a",
+  copy_effects: "#4b2a85",
 };
 
 function sourceLabel(source: ClientChoiceCandidate["source"]): string {

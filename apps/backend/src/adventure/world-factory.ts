@@ -5,6 +5,7 @@ import { findByName, generateDeck, type DeckEntry } from './deck-generator';
 import { AdventureOpponentCard } from './entities/adventure-opponent-card.entity';
 import { AdventureOpponent } from './entities/adventure-opponent.entity';
 import { AdventureWorld } from './entities/adventure-world.entity';
+import { farmCardFor } from './farm-card';
 import type { Persona, Signature } from './signatures';
 
 export const LEVELS = [1, 2, 3, 4, 5] as const;
@@ -14,6 +15,8 @@ export interface OpponentPlan {
   signature: Signature;
   portrait: Card | undefined;
   deck: DeckEntry[];
+  /** Carte précise qui tombe en farm (Ancestral, Drakon des Origines). */
+  farm: { farmCardId: number | null; farmCardPct: number };
 }
 
 /**
@@ -32,7 +35,8 @@ export function planOpponents(
     const portrait = findByName(setCards, signature.cardName);
     if (!portrait) onMissingPortrait?.(signature);
     const deck = generateDeck(setCards, level, signature, random);
-    return { level, signature, portrait, deck };
+    const farm = farmCardFor(setCards, signature, level);
+    return { level, signature, portrait, deck, farm };
   });
 }
 
@@ -68,7 +72,7 @@ export async function persistWorld(
     }),
   );
 
-  for (const { level, signature, portrait, deck } of plans) {
+  for (const { level, signature, portrait, deck, farm } of plans) {
     const persona = personas[level - 1];
     const opponent = await manager.save(
       AdventureOpponent,
@@ -80,6 +84,7 @@ export async function persistWorld(
         portraitCardId: portrait?.id ?? null,
         signature: JSON.stringify(signature),
         ...ADVENTURE_LEVEL_DEFAULTS[level],
+        ...farm,
       }),
     );
     await manager.save(

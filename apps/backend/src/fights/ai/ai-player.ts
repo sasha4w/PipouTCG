@@ -9,24 +9,18 @@ import {
   seatPlayer,
 } from '../helpers/game-state.helper';
 import { activeChoice, listCandidates } from './candidate-actions';
+import { determinize } from './determinize';
 import { evaluate } from './evaluate';
+import { actionKey, planTurn, stateSignature } from './planner';
+import type { Plan, ThinkingProfile } from './planner';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
 
-/** Variante jouée par l'IA : archétype (heuristiques) et niveau (erreurs). */
+/** Variante jouée par l'IA : archétype (heuristiques) et niveau. */
 export interface AiProfile {
   archetype: AdventureArchetype;
   level: AiLevel;
 }
-
-/** Probabilité de jouer un coup valide au hasard au lieu du meilleur. */
-export const MISTAKE_RATE: Record<AiLevel, number> = {
-  1: 0.25,
-  2: 0.1,
-  3: 0,
-  4: 0,
-  5: 0,
-};
 
 /** Écart minimal pour préférer une action à la fin de phase. */
 const IMPROVEMENT_EPSILON = 1e-6;
@@ -60,24 +54,47 @@ interface Scored {
 export class AiPlayer {
   private readonly logger = new Logger(AiPlayer.name);
 
+  /** Plan en cours (cerveau qui planifie) : prochain coup à jouer = `next`. */
+  private plan: (Plan & { seat: Seat; next: number }) | null = null;
+  private visited: { turn: string; states: Set<string> } = {
+    turn: '',
+    states: new Set(),
+  };
+
   constructor(
     private readonly engine: GameEngine,
     private readonly random: () => number,
+    /** 'greedy' : un coup à l'avance (aventure) ; sinon, planifie son tour. */
+    private readonly thinking: ThinkingProfile | 'greedy' = 'greedy',
+    /** Probabilité de jouer un coup valide au hasard au lieu du meilleur. */
+    private readonly mistakeRate = 0,
   ) {}
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
   chooseAction(game: GameState, seat: Seat, profile: AiProfile): GameAction {
+    return this.chooseDetailed(game, seat, profile).action;
+  }
+
+  /** Comme `chooseAction`, avec les coups acceptés par le moteur ([] en repli). */
+  chooseDetailed(
+    game: GameState,
+    seat: Seat,
+    profile: AiProfile,
+  ): { action: GameAction; valid: GameAction[] } {
     const crashes: SimulationCrash[] = [];
     try {
       return (
-        this.decide(game, seat, profile, crashes) ?? fallbackAction(game, seat)
+        this.decide(game, seat, profile, crashes) ?? {
+          action: fallbackAction(game, seat),
+          valid: [],
+        }
       );
     } catch (err) {
       const fallback = safeFallback(game, seat);
       this.logger.warn(
         `Match ${game.matchId} (${seat}) : décision IA en échec, repli ${JSON.stringify(fallback)} — ${describe(err)}`,
       );
-      return fallback;
+      return { action: fallback, valid: [] };
     } finally {
       // Un seul message par décision, même si plusieurs simulations ont planté
       if (crashes.length > 0)
@@ -92,14 +109,21 @@ export class AiPlayer {
     seat: Seat,
     profile: AiProfile,
     crashes: SimulationCrash[],
-  ): GameAction | null {
+  ): { action: GameAction; valid: GameAction[] } | null {
+    // L'IA ne voit que ce qu'un joueur voit : cartes cachées redistribuées
+    const known = determinize(game, seat, this.random);
     const valid: Scored[] = [];
-    for (const action of listCandidates(game, seat)) {
-      const clone = cloneForSimulation(game);
+    for (const action of listCandidates(known, seat)) {
+      const clone = cloneForSimulation(known);
       try {
         if (this.engine.dispatch(clone, seat, action).error) continue;
       } catch (error) {
         crashes.push({ action, error });
+        continue;
+      }
+      // Le cerveau qui planifie trouve ces suites lui-même
+      if (this.thinking !== 'greedy') {
+        valid.push({ action, score: evaluate(clone, seat, profile.archetype) });
         continue;
       }
       valid.push({
@@ -113,26 +137,129 @@ export class AiPlayer {
             profile,
             crashes,
           ),
+          action.type === 'transform'
+            ? this.transformScore(clone, seat, profile, crashes)
+            : -Infinity,
         ),
       });
     }
     if (valid.length === 0) return null;
+    const result = (action: GameAction) => ({
+      action,
+      valid: valid.map((v) => v.action),
+    });
 
-    const rate = MISTAKE_RATE[profile.level] ?? 0;
-    if (rate > 0 && this.random() < rate)
-      return valid[Math.floor(this.random() * valid.length)].action;
+    if (this.mistakeRate > 0 && this.random() < this.mistakeRate) {
+      this.plan = null;
+      return result(valid[Math.floor(this.random() * valid.length)].action);
+    }
 
-    if (game.phase === 'mulligan') return mulliganChoice(game, seat, valid);
+    if (game.phase === 'mulligan')
+      return result(mulliganChoice(game, seat, valid));
+
+    if (this.thinking !== 'greedy') {
+      const planned = this.planned(game, seat, profile, valid);
+      if (planned) return result(planned);
+    }
 
     const endPhase = valid.find((v) => v.action.type === 'end_phase');
     const others = valid.filter((v) => v.action.type !== 'end_phase');
-    if (others.length === 0) return endPhase!.action;
+    if (others.length === 0) return result(endPhase!.action);
     const best = others.reduce((a, b) => (b.score > a.score ? b : a));
-    if (!endPhase) return best.action;
-    const current = evaluate(game, seat, profile.archetype);
-    return best.score > current + IMPROVEMENT_EPSILON
-      ? best.action
-      : endPhase.action;
+    if (!endPhase) return result(best.action);
+    const current = evaluate(known, seat, profile.archetype);
+    return result(
+      best.score > current + IMPROVEMENT_EPSILON
+        ? best.action
+        : endPhase.action,
+    );
+  }
+
+  /**
+   * Coup suivant du plan si l'état réel est celui prévu, sinon nouveau plan.
+   * null : pas de plan (le glouton décide).
+   */
+  private planned(
+    game: GameState,
+    seat: Seat,
+    profile: AiProfile,
+    valid: Scored[],
+  ): GameAction | null {
+    const thinking = this.thinking as ThinkingProfile;
+    // États réels traversés ce tour : un nouveau plan n'y ramène pas
+    const turn = `${seat}|${game.turnNumber}`;
+    if (this.visited.turn !== turn) this.visited = { turn, states: new Set() };
+    this.visited.states.add(stateSignature(game, seat));
+    // Coup réel valide qui a cette clé (les monstres posés ont d'autres identifiants)
+    const find = (key: string) =>
+      valid.find((v) => actionKey(game, v.action) === key)?.action;
+    const p = this.plan;
+    if (
+      p &&
+      p.seat === seat &&
+      p.next < p.keys.length &&
+      stateSignature(game, seat) === p.expected[p.next - 1]
+    ) {
+      const next = find(p.keys[p.next]);
+      if (next) {
+        p.next++;
+        return next;
+      }
+    }
+
+    const plan = planTurn(
+      this.engine,
+      game,
+      seat,
+      profile,
+      thinking,
+      this.random,
+      { used: 0 },
+      this.visited.states,
+    );
+    const first = plan && find(plan.keys[0]);
+    if (!plan || !first) {
+      this.plan = null;
+      return null;
+    }
+    this.plan = { ...plan, seat, next: 1 };
+    return first;
+  }
+
+  /**
+   * Transformer ne vaut que par ce qu'on fait du Bébé récupéré : meilleur
+   * score après le choix du Bébé, puis son invocation éventuelle.
+   * -Infinity sans objet.
+   */
+  private transformScore(
+    after: GameState,
+    seat: Seat,
+    profile: AiProfile,
+    crashes: SimulationCrash[],
+  ): number {
+    const play = (state: GameState, action: GameAction): GameState | null => {
+      const clone = cloneForSimulation(state);
+      try {
+        return this.engine.dispatch(clone, seat, action).error ? null : clone;
+      } catch (error) {
+        crashes.push({ action, error });
+        return null;
+      }
+    };
+    let best = -Infinity;
+    for (const pick of listCandidates(after, seat)) {
+      if (pick.type !== 'pick_cards') continue;
+      const picked = play(after, pick);
+      if (!picked) continue;
+      best = Math.max(best, evaluate(picked, seat, profile.archetype));
+      for (const next of listCandidates(picked, seat)) {
+        if (next.type !== 'summon') continue;
+        const summoned = play(picked, next);
+        if (summoned)
+          best = Math.max(best, evaluate(summoned, seat, profile.archetype));
+      }
+    }
+    return best;
   }
 
   /**

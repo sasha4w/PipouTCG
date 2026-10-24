@@ -42,12 +42,22 @@ export class PickService {
         player.graveyard.push(card);
         addLog(game, `🗑️ ${player.username} défausse ${card.baseCard.name}`);
       }
+    } else if (choice.resolution === 'copy_effects') {
+      for (const id of picked) {
+        const card = player.graveyard.find((c) => c.instanceId === id);
+        if (card)
+          this.summon.copyEffects(game, player, choice.sourceInstanceId, card);
+      }
     } else if (choice.resolution === 'summon_to_zone') {
       for (const id of picked) {
         const idx = player.deck.findIndex((c) => c.instanceId === id);
         if (idx === -1) continue;
         const [card] = player.deck.splice(idx, 1);
-        if (!this.summon.summonFromDeck(game, player, card, choice.zoneIndex)) {
+        if (
+          !this.summon.summonFromDeck(game, player, card, choice.zoneIndex, {
+            fromEgg: choice.fromEgg,
+          })
+        ) {
           player.deck.push(card);
           addLog(
             game,

@@ -4,6 +4,12 @@ import type { Card } from '../../cards/card.entity';
 import { CARD_EFFECT_PATCHES } from '../../database/card-effect-patches';
 import { CARD_REWORK_PATCHES } from '../../database/card-rework-patches';
 import {
+  BALANCE_NEW_CARDS,
+  BALANCE_PATCHES,
+} from '../../database/balance-2026-10-patches';
+import { DRAKON_ORIGINES_CARDS } from '../../database/drakon-origines-cards';
+import { GARDE_PATCHES } from '../../database/garde-2026-10-patches';
+import {
   DRAKON_NEW_CARDS,
   DRAKON_PATCHES,
 } from '../../database/drakon-set-patches';
@@ -34,8 +40,8 @@ export function allRealCardsBeforeRework(): Card[] {
   });
 }
 
-/** Cartes avec les effets attendus après toutes les migrations de cartes. */
-export function allRealCards(): Card[] {
+/** Cartes après le set Drakon, avant le rééquilibrage 2026-10. */
+export function allRealCardsBeforeBalance(): Card[] {
   const cards = allRealCardsBeforeRework()
     .map((c) => {
       const patch = CARD_REWORK_PATCHES.find((p) => p.before.name === c.name);
@@ -88,6 +94,46 @@ export function allRealCards(): Card[] {
   return [...cards, ...created];
 }
 
+/** Cartes après le rééquilibrage 2026-10, avant le patch Garde / Relève. */
+export function allRealCardsBeforeGarde(): Card[] {
+  const cards = allRealCardsBeforeBalance().map((c) => {
+    const patch = BALANCE_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          name: patch.after.name,
+          description: patch.after.description,
+          atk: patch.after.atk,
+          hp: patch.after.hp,
+          cost: patch.after.cost,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
+  const created = BALANCE_NEW_CARDS.map(
+    (c, i) =>
+      ({
+        id: 91_001 + i,
+        name: c.name,
+        rarity: c.rarity,
+        type: c.type,
+        atk: c.atk,
+        hp: c.hp,
+        cost: c.cost,
+        supportType: c.supportType,
+        archetype: c.archetype,
+        effects: c.effects,
+        description: c.description,
+        element: null,
+        lineage: null,
+        stage: null,
+        image: null,
+        cardSet: cards.find((x) => x.name === c.setOf)?.cardSet,
+      }) as Card,
+  );
+  return [...cards, ...created];
+}
+
 /** Vraie carte par son nom (comparaison normalisée), effets post-migration. */
 export function realCard(name: string): Card {
   const card = allRealCards().find(
@@ -95,4 +141,49 @@ export function realCard(name: string): Card {
   );
   if (!card) throw new Error(`Carte « ${name} » absente de l'instantané`);
   return card;
+}
+
+/** Cartes avec les effets attendus après toutes les migrations de cartes. */
+export function allRealCards(): Card[] {
+  const cards = allRealCardsBeforeGarde().map((c) => {
+    const patch = GARDE_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          name: patch.after.name,
+          description: patch.after.description,
+          atk: patch.after.atk,
+          hp: patch.after.hp,
+          cost: patch.after.cost,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
+  return [...cards, ...extensionCards(cards)];
+}
+
+/** Extension Drakon (Ancestraux, Drakon des Origines), après le patch Garde. */
+function extensionCards(cards: Card[]): Card[] {
+  const set = cards.find((c) => c.name === 'Bébé Teros')?.cardSet;
+  return DRAKON_ORIGINES_CARDS.map(
+    (c, i) =>
+      ({
+        id: 92_001 + i,
+        name: c.name,
+        rarity: c.rarity,
+        type: 'monster',
+        atk: c.atk,
+        hp: c.hp,
+        cost: c.cost,
+        supportType: null,
+        archetype: 'dragon',
+        effects: c.effects,
+        description: c.description,
+        element: c.element,
+        lineage: c.lineage,
+        stage: c.stage,
+        image: null,
+        cardSet: set,
+      }) as Card,
+  );
 }

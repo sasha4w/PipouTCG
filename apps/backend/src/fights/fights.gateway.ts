@@ -19,6 +19,7 @@ import type {
   PickCardsPayload,
   PlaySupportPayload,
   RecycleSupportPayload,
+  TransformPayload,
   SubmitDeckPayload,
   SummonPayload,
 } from '@pipou/shared';
@@ -184,6 +185,9 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       zoneIndex: data.zoneIndex,
       paymentHandIndices: data.paymentHandIndices ?? [],
       onOpponentSide: data.onOpponentSide ?? false,
+      ...(Array.isArray(data.releveInstanceIds) && {
+        releveInstanceIds: data.releveInstanceIds,
+      }),
     });
   }
 
@@ -220,6 +224,17 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     await this.play(client, data.matchId, {
       type: 'recycle',
+      handIndex: data.handIndex,
+    });
+  }
+
+  @SubscribeMessage('fight:transform')
+  async transformFromHand(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: TransformPayload,
+  ): Promise<void> {
+    await this.play(client, data.matchId, {
+      type: 'transform',
       handIndex: data.handIndex,
     });
   }

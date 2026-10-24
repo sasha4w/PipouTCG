@@ -35,7 +35,9 @@ import {
 import { finishGame } from './helpers/game-end.helper';
 import { emitGameState } from './helpers/client-state.builder';
 import { createGameState } from './helpers/game-factory';
-import { AiPlayer, aiMustAct } from './ai/ai-player';
+import { aiMustAct } from './ai/ai-player';
+import type { AiPlayer } from './ai/ai-player';
+import { createLevelAi } from './ai/level-brains';
 import {
   AI_ACTION_DELAY_MS,
   AI_MAX_ACTIONS_PER_TURN,
@@ -61,6 +63,8 @@ interface PveSession {
   aiTurn: number;
   /** Prochain coup de l'IA programmé. */
   aiTimer?: NodeJS.Timeout;
+  /** IA du combat, au cerveau du niveau de l'adversaire (plan propre au combat). */
+  ai: AiPlayer;
 }
 
 @Injectable()
@@ -73,7 +77,6 @@ export class FightsService {
   private pve = new Map<number, PveSession>();
   /** Joueurs dont le combat d'aventure est en cours de création. */
   private startingAdventure = new Set<number>();
-  private readonly ai: AiPlayer;
 
   constructor(
     private matchmaking: MatchmakingService,
@@ -82,9 +85,7 @@ export class FightsService {
     private gameEnd: GameEndService,
     private turnTimeout: TurnTimeoutService,
     @Optional() @Inject(PVE_HOOKS) private pveHooks?: PveHooks,
-  ) {
-    this.ai = new AiPlayer(engine, Math.random);
-  }
+  ) {}
 
   // ── Matchmaking ──────────────────────────────────────────────────────────
 
@@ -207,6 +208,7 @@ export class FightsService {
           aiActionsThisTurn: 0,
         },
         aiTurn: game.turnNumber,
+        ai: createLevelAi(this.engine, start.profile.level),
       });
       server.to(socketId).emit('fight:matched', {
         matchId,
@@ -487,7 +489,7 @@ export class FightsService {
         );
       } else {
         info.aiActionsThisTurn += 1;
-        const action = this.ai.chooseAction(game, seat, info.profile);
+        const action = session.ai.chooseAction(game, seat, info.profile);
         progressed = this.tryAiAction(game, seat, action);
       }
       if (!progressed) this.forceAiProgress(game, seat, info.aiUserId);

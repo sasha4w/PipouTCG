@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   canSummonFromHand,
+  graveyardHasAllElements,
+  canTransform,
   canEvolveNow,
   canEvolveOnto,
   evolutionCost,
+  canImplantOn,
   canSummonOnEnemySide,
+  isImplanted,
   ephemeralTargetSide,
   isTargetableByEphemeral,
 } from "./rules";
@@ -60,6 +64,23 @@ describe("canSummonOnEnemySide", () => {
       ]),
     ).toBe(true);
     expect(canSummonOnEnemySide(null)).toBe(false);
+  });
+});
+
+describe("isImplanted", () => {
+  it("vrai si le poseur n'est pas l'hôte", () => {
+    expect(isImplanted({ ownerUserId: 1 }, 2)).toBe(true);
+    expect(isImplanted({}, 2)).toBe(false);
+    expect(isImplanted({ ownerUserId: 2 }, 2)).toBe(false);
+  });
+});
+
+describe("canImplantOn", () => {
+  it("un seul monstre implanté par poseur sur un terrain", () => {
+    expect(canImplantOn([null, { ownerUserId: 1 }, null], 1)).toBe(false);
+    expect(canImplantOn([null, null, null], 1)).toBe(true);
+    expect(canImplantOn([null, { ownerUserId: 1 }, null], 2)).toBe(true);
+    expect(canImplantOn([{}, null, null], 1)).toBe(true);
   });
 });
 
@@ -152,6 +173,21 @@ describe("invocation depuis la main", () => {
   });
 });
 
+describe("canTransform", () => {
+  it("vrai pour un Jeune ou un Adulte avec lignée", () => {
+    expect(canTransform({ stage: "young", lineage: "feros" })).toBe(true);
+    expect(canTransform({ stage: "adult", lineage: "feros" })).toBe(true);
+  });
+
+  it("faux pour Bébé, Œuf, monstre non-Drakon et Jeune sans lignée", () => {
+    expect(canTransform({ stage: "baby", lineage: "feros" })).toBe(false);
+    expect(canTransform({ stage: "egg", lineage: "feros" })).toBe(false);
+    expect(canTransform({ stage: null, lineage: null })).toBe(false);
+    expect(canTransform({ stage: null })).toBe(false);
+    expect(canTransform({ stage: "young", lineage: null })).toBe(false);
+  });
+});
+
 describe("isTargetableByEphemeral — cibles qui profitent de l'effet", () => {
   // Incubation Rapide : avance l'éclosion ou autorise l'évolution ce tour
   const incubation: CardEffect[] = [
@@ -197,5 +233,55 @@ describe("isTargetableByEphemeral — cibles qui profitent de l'effet", () => {
       { trigger: "ON_PLAY", actions: [{ type: "HEAL", target: "TARGET_ALLY", value: 600 }] },
     ];
     expect(isTargetableByEphemeral(drakon(null), "ally", soin)).toBe(true);
+  });
+});
+
+describe("stade ancestral", () => {
+  const card = (stage: string, lineage: string, cost = 3) =>
+    ({ stage, lineage, cost }) as never;
+  const base = (stage: string, lineage: string) =>
+    ({ card: { baseCard: { stage, lineage, cost: 3 } } }) as never;
+
+  it("un Ancestral évolue sur l'Adulte de sa lignée seulement", () => {
+    expect(canEvolveOnto(card("ancestral", "feros", 4), base("adult", "feros"))).toBe(true);
+    expect(canEvolveOnto(card("ancestral", "feros", 4), base("adult", "teros"))).toBe(false);
+    expect(canEvolveOnto(card("ancestral", "feros", 4), base("young", "feros"))).toBe(false);
+  });
+
+  it("ne se pose pas depuis la main, mais se transforme", () => {
+    expect(canSummonFromHand({ stage: "ancestral" })).toBe(false);
+    expect(canTransform({ stage: "ancestral", lineage: "feros" })).toBe(true);
+  });
+});
+
+describe("graveyardHasAllElements", () => {
+  const c = (stage: string, element: string) => ({ stage, element }) as never;
+
+  it("vrai avec un Adulte ou un Ancestral de chaque élément", () => {
+    expect(
+      graveyardHasAllElements([
+        c("adult", "earth"),
+        c("ancestral", "fire"),
+        c("adult", "water"),
+        c("adult", "wind"),
+      ]),
+    ).toBe(true);
+  });
+
+  it("faux avec 3 éléments", () => {
+    expect(
+      graveyardHasAllElements([c("adult", "earth"), c("adult", "fire"), c("adult", "water")]),
+    ).toBe(false);
+  });
+
+  it("faux si l'élément manquant n'a qu'un Bébé", () => {
+    expect(
+      graveyardHasAllElements([
+        c("adult", "earth"),
+        c("adult", "fire"),
+        c("adult", "water"),
+        c("baby", "wind"),
+      ]),
+    ).toBe(false);
   });
 });

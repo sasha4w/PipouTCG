@@ -1,5 +1,5 @@
 import { ActionType, EffectTarget, EffectTrigger } from "../enums/effect";
-import type { DrakonStage } from "../enums/card";
+import type { DrakonElement, DrakonStage } from "../enums/card";
 import type { CardEffect } from "./effect";
 
 /** Règles de construction d'un deck (création et lancement de match). */
@@ -45,6 +45,30 @@ export function canSummonOnEnemySide(
       e.trigger === EffectTrigger.PASSIVE &&
       e.actions.some((a) => a.type === ActionType.SUMMONABLE_ON_ENEMY_SIDE),
   );
+}
+
+/** Monstre posé chez `hostUserId` par l'adversaire (Zeta). */
+export function isImplanted(
+  m: { ownerUserId?: number },
+  hostUserId: number,
+): boolean {
+  return m.ownerUserId !== undefined && m.ownerUserId !== hostUserId;
+}
+
+/** Monstre implanté par `posterUserId` (chez son adversaire). */
+export function isPlantedBy(
+  m: { ownerUserId?: number },
+  posterUserId: number,
+): boolean {
+  return m.ownerUserId === posterUserId;
+}
+
+/** Le poseur peut-il implanter un monstre sur ce terrain ? (un seul à la fois) */
+export function canImplantOn(
+  hostZones: readonly ({ ownerUserId?: number } | null)[],
+  posterUserId: number,
+): boolean {
+  return !hostZones.some((m) => !!m && m.ownerUserId === posterUserId);
 }
 
 /** Un effet adverse peut-il viser ce monstre ? (Maître Magouille : non.) */
@@ -128,7 +152,13 @@ export function isTargetableByEphemeral(
 const NEXT_STAGE: Partial<Record<DrakonStage, DrakonStage>> = {
   baby: "young",
   young: "adult",
+  adult: "ancestral",
 };
+
+/** Stades qui n'arrivent en jeu que par évolution : Jeune, Adulte, Ancestral. */
+function isEvolutionStage(stage: DrakonStage | null): boolean {
+  return stage === "young" || stage === "adult" || stage === "ancestral";
+}
 
 interface EvolvingCard {
   stage: DrakonStage | null;
@@ -142,7 +172,7 @@ interface EvolutionBase {
 
 /** `card` (en main) peut-il évoluer sur `base` (en jeu) ? */
 export function canEvolveOnto(card: EvolvingCard, base: EvolutionBase): boolean {
-  if (card.stage !== "young" && card.stage !== "adult") return false;
+  if (!isEvolutionStage(card.stage)) return false;
   if (base.evolutionJoker && card.stage === "young") return true;
   const b = base.card.baseCard;
   return (
@@ -163,7 +193,18 @@ export function evolutionCost(card: EvolvingCard, base: EvolutionBase): number {
  * l'effet d'un Œuf) : jamais posé directement depuis la main.
  */
 export function canSummonFromHand(card: { stage: DrakonStage | null }): boolean {
-  return card.stage !== "young" && card.stage !== "adult";
+  return !isEvolutionStage(card.stage);
+}
+
+/**
+ * Un Jeune ou un Adulte Drakon coincé en main peut être défaussé pour
+ * récupérer le Bébé de sa lignée (une fois par tour).
+ */
+export function canTransform(card: {
+  stage: DrakonStage | null;
+  lineage?: string | null;
+}): boolean {
+  return isEvolutionStage(card.stage) && !!card.lineage;
 }
 
 /** Délai : une base posée ce tour n'évolue pas, sauf accélérateur. */
@@ -173,4 +214,48 @@ export function canEvolveNow(base: {
   canEvolveThisTurn?: boolean;
 }): boolean {
   return !base.summonedThisTurn || !!base.instantEvolution || !!base.canEvolveThisTurn;
+}
+
+/** Les 4 éléments que le Drakon des Origines réclame au cimetière. */
+export const ORIGIN_ELEMENTS = ["earth", "fire", "water", "wind"] as const;
+
+/**
+ * Le cimetière contient-il un Adulte ou un Ancestral de chacun des 4
+ * éléments ? (condition d'invocation du Drakon des Origines)
+ */
+export function graveyardHasAllElements(
+  graveyard: { stage: DrakonStage | null; element: DrakonElement | null }[],
+): boolean {
+  return ORIGIN_ELEMENTS.every((element) =>
+    graveyard.some(
+      (c) =>
+        c.element === element &&
+        (c.stage === "adult" || c.stage === "ancestral"),
+    ),
+  );
+}
+
+/** Tours adverses qu'un monstre peut tenir en Garde d'affilée. */
+export const GUARD_MAX_TURNS = 2;
+/** Contre-offensive : ATK gagnée par tour adverse tenu, en sortant de la Garde. */
+export const COUNTER_OFFENSIVE_PER_TURN = 100;
+
+/** Relève (N) : nombre d'alliés Pipou à sacrifier à la place du coût, 0 sans Relève. */
+export function releveCount(effects: CardEffect[] | null | undefined): number {
+  for (const e of effects ?? [])
+    if (e.trigger === EffectTrigger.PASSIVE)
+      for (const a of e.actions)
+        if (a.type === ActionType.RELEVE) return a.value ?? 0;
+  return 0;
+}
+
+/** Carte invocable seulement avec un Adulte ou un Ancestral de chaque élément au cimetière. */
+export function requiresAllElements(
+  effects: CardEffect[] | null | undefined,
+): boolean {
+  return (effects ?? []).some(
+    (e) =>
+      e.trigger === EffectTrigger.PASSIVE &&
+      e.actions.some((a) => a.type === ActionType.SUMMON_IF_ALL_ELEMENTS),
+  );
 }

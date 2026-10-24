@@ -6,6 +6,7 @@ import {
   ChoiceCandidate,
   PendingChoice,
 } from '../interfaces/game-state.interface';
+import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from '@pipou/shared';
 import type { Seat } from '@pipou/shared';
 
 const LOG_MAX = 50;
@@ -111,9 +112,9 @@ export function applyDamage(
   return reduced;
 }
 
-/** ATK effective : base + bonus (permanents et passifs) + bonus temporaire. */
+/** ATK effective : base + bonus (permanents et passifs) + bonus temporaire, jamais négative. */
 export function effectiveAtk(m: MonsterOnBoard): number {
-  return m.card.baseCard.atk + m.atkBuff + (m.tempAtkBuff ?? 0);
+  return Math.max(0, m.card.baseCard.atk + m.atkBuff + (m.tempAtkBuff ?? 0));
 }
 
 export function gainPrime(
@@ -150,4 +151,34 @@ export function checkWinCondition(
   if (p1Done) return { winnerUserId: game.player1.userId };
   if (p2Done) return { winnerUserId: game.player2.userId };
   return null;
+}
+
+/**
+ * Envoie des cartes au cimetière d'un joueur. Les cartes `token` (copies
+ * créées en jeu) disparaissent au lieu de l'atteindre.
+ */
+export function sendToGraveyard(
+  player: PlayerGameState,
+  ...cards: CardInstance[]
+): void {
+  player.graveyard.push(...cards.filter((c) => !c.token));
+}
+
+/**
+ * Sortie de Garde (volontaire ou au bout de GUARD_MAX_TURNS) : le monstre
+ * repasse en Attaque, libéré de tout verrou, avec la contre-offensive
+ * (+COUNTER_OFFENSIVE_PER_TURN d'ATK par tour tenu, jusqu'à la fin du tour).
+ */
+export function leaveGuard(m: MonsterOnBoard): void {
+  m.tempAtkBuff +=
+    COUNTER_OFFENSIVE_PER_TURN * Math.min(m.guardTurns ?? 0, GUARD_MAX_TURNS);
+  m.guardTurns = 0;
+  m.guardLocked = false;
+  m.guardCooldown = true;
+  m.mode = 'attack';
+}
+
+/** Carte qui quitte le terrain avec le monstre : l'originale si ses effets ont été copiés. */
+export function boardCard(m: MonsterOnBoard): CardInstance {
+  return m.originalCard ?? m.card;
 }

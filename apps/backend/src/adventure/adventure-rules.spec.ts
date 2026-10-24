@@ -16,6 +16,8 @@ const cfg: AdventureRewardConfig = {
   farmXp: 10,
   farmBoosterPct: 3,
   farmLegendaryPct: 2,
+  farmCardId: null,
+  farmCardPct: 0,
 };
 
 const base = {
@@ -96,7 +98,14 @@ describe('farmWindowStart', () => {
 describe('rollLoot', () => {
   it('1re victoire non-boss : paie, booster, pas de légendaire, même plafond atteint', () => {
     expect(rollLoot({ ...base, firstWin: true, farmRewardsToday: 20 })).toEqual(
-      { gold: 100, xp: 50, booster: true, legendary: false, capped: false },
+      {
+        gold: 100,
+        xp: 50,
+        booster: true,
+        legendary: false,
+        card: false,
+        capped: false,
+      },
     );
   });
   it('1re victoire boss : légendaire', () => {
@@ -148,6 +157,7 @@ describe('rollLoot', () => {
       xp: 0,
       booster: false,
       legendary: false,
+      card: false,
       capped: true,
     });
   });
@@ -159,5 +169,36 @@ describe('countsAsPlayed', () => {
     expect(countsAsPlayed(false, 0)).toBe(false);
     expect(countsAsPlayed(false, 1)).toBe(false);
     expect(countsAsPlayed(false, 2)).toBe(true);
+  });
+});
+
+describe('rollLoot : carte précise', () => {
+  const withCard = { ...cfg, farmCardId: 950, farmCardPct: 5 };
+  it('farm : tirée si random*100 < pct', () => {
+    expect(
+      rollLoot({ ...base, config: withCard, random: () => 0.01 }).card,
+    ).toBe(true);
+    expect(
+      rollLoot({ ...base, config: withCard, random: () => 0.5 }).card,
+    ).toBe(false);
+  });
+  it('sans carte configurée : jamais, et aucun tirage de plus', () => {
+    const random = jest.fn(() => 0);
+    expect(rollLoot({ ...base, isBoss: true, random }).card).toBe(false);
+    expect(random).toHaveBeenCalledTimes(2);
+  });
+  it('ni en première victoire, ni au plafond', () => {
+    expect(
+      rollLoot({ ...base, config: withCard, firstWin: true, random: () => 0 })
+        .card,
+    ).toBe(false);
+    expect(
+      rollLoot({
+        ...base,
+        config: withCard,
+        farmRewardsToday: 20,
+        random: () => 0,
+      }).card,
+    ).toBe(false);
   });
 });

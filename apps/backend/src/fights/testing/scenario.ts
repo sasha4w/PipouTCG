@@ -103,6 +103,7 @@ function buildPlayer(
       c ? instanceOf(c, userId) : null,
     ),
     recycleEnergy: spec.recycleEnergy ?? 0,
+    transformUsedThisTurn: false,
     hasDrawnThisTurn: false,
     handLimitEnforced: false,
     ready: true,

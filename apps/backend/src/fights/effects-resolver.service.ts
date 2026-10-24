@@ -9,7 +9,12 @@ import {
 import type { EffectContext } from './effects/effect-context.interface';
 import { checkCondition } from './effects/effect-conditions';
 import { applyActions } from './effects/effect-actions.applier';
-import { drawCard } from './helpers/game-state.helper';
+import {
+  drawCard,
+  getPlayerState,
+  boardCard,
+  sendToGraveyard,
+} from './helpers/game-state.helper';
 
 export type { EffectContext };
 
@@ -35,27 +40,41 @@ export class EffectsResolverService {
     for (const effect of effects) {
       if (effect.trigger !== trigger) continue;
       if (!checkCondition(effect, effectCtx)) continue;
-      applyActions(effect, card, effectCtx, (host, instanceId, kind) => {
-        const target = host.monsterZones.find(
-          (m) => m?.instanceId === instanceId,
-        );
-        if (
-          kind === 'destroy' &&
-          card.baseCard.type === CardType.SUPPORT &&
-          target?.supportDestroyImmune
-        ) {
-          ctx.log.push(
-            `🧱 ${target.card.baseCard.name} résiste à la destruction`,
+      applyActions(
+        effect,
+        card,
+        effectCtx,
+        (host, instanceId, kind) => {
+          const target = host.monsterZones.find(
+            (m) => m?.instanceId === instanceId,
           );
-          return;
-        }
-        // Son propre monstre détruit par son propre effet : sacrifice, sans pioche
-        const sacrifice = host.userId === ctx.ownerUserId;
-        this.destroyMonster(ctx.game, host, instanceId, ctx.log, {
-          draw: !sacrifice,
-          cause: sacrifice ? DestroyCause.SACRIFICE : DestroyCause.EFFECT,
-        });
-      });
+          if (
+            kind === 'destroy' &&
+            card.baseCard.type === CardType.SUPPORT &&
+            target?.supportDestroyImmune
+          ) {
+            ctx.log.push(
+              `🧱 ${target.card.baseCard.name} résiste à la destruction`,
+            );
+            return;
+          }
+          // Son propre monstre détruit par son propre effet : sacrifice, sans pioche
+          const sacrifice = host.userId === ctx.ownerUserId;
+          this.destroyMonster(ctx.game, host, instanceId, ctx.log, {
+            draw: !sacrifice,
+            cause: sacrifice ? DestroyCause.SACRIFICE : DestroyCause.EFFECT,
+          });
+        },
+        (owner, monster) => {
+          // Copie apparue en jeu : son ON_SUMMON se déclenche comme à une invocation
+          this.resolve(monster.card, EffectTrigger.ON_SUMMON, {
+            game: ctx.game,
+            ownerUserId: owner.userId,
+            sourceMonster: monster,
+            log: ctx.log,
+          });
+        },
+      );
       changed = true;
     }
     return changed;
@@ -99,7 +118,20 @@ export class EffectsResolverService {
       (m) => m?.instanceId === instanceId,
     );
     if (idx !== -1) host.monsterZones[idx] = null;
-    host.graveyard.push(...monster.equipments, monster.card);
+    // Monstre implanté : la carte rejoint le cimetière de son poseur, et chaque
+    // équipement celui de son propriétaire (le poseur à défaut)
+    const poserId = monster.ownerUserId ?? host.userId;
+    if (poserId === host.userId) {
+      sendToGraveyard(host, ...monster.equipments, boardCard(monster));
+    } else {
+      const poser = getPlayerState(game, poserId);
+      sendToGraveyard(poser, boardCard(monster));
+      for (const equipment of monster.equipments)
+        sendToGraveyard(
+          equipment.ownerId === host.userId ? host : poser,
+          equipment,
+        );
+    }
     if (opts.draw) drawCard(game, host.userId);
     return monster;
   }

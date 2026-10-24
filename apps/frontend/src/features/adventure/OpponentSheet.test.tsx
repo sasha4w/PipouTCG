@@ -7,7 +7,9 @@ import i18n from "../../i18n";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import OpponentSheet from "./OpponentSheet";
 
-const opponent = (over: Partial<AdventureOpponentView> = {}): AdventureOpponentView => ({
+const opponent = (
+  over: Partial<AdventureOpponentView> = {},
+): AdventureOpponentView => ({
   id: 5,
   position: 5,
   level: 5,
@@ -17,8 +19,13 @@ const opponent = (over: Partial<AdventureOpponentView> = {}): AdventureOpponentV
   state: "available",
   wins: 0,
   isBoss: true,
-  firstWin: { gold: 500, xp: 300, boosterName: "Booster Brigade", legendary: true },
-  farm: { gold: 60, xp: 40, boosterPct: 10, legendaryPct: 2 },
+  firstWin: {
+    gold: 500,
+    xp: 300,
+    boosterName: "Booster Brigade",
+    legendary: true,
+  },
+  farm: { gold: 60, xp: 40, boosterPct: 10, legendaryPct: 2, card: null },
   ...over,
 });
 
@@ -28,6 +35,7 @@ interface RenderOptions {
   cap?: number;
   deckId?: number | null;
   onFight?: (deckId: number) => void;
+  farmCard?: AdventureOpponentView["farm"]["card"];
 }
 
 function renderSheet({
@@ -36,6 +44,7 @@ function renderSheet({
   cap = 20,
   deckId = null,
   onFight = () => {},
+  farmCard = null,
 }: RenderOptions = {}) {
   const client = new QueryClient({
     defaultOptions: { queries: { staleTime: Infinity, retry: false } },
@@ -47,7 +56,17 @@ function renderSheet({
     <QueryClientProvider client={client}>
       <MemoryRouter>
         <OpponentSheet
-          opponent={opponent({ wins, state: wins > 0 ? "beaten" : "available" })}
+          opponent={opponent({
+            wins,
+            state: wins > 0 ? "beaten" : "available",
+            farm: {
+              gold: 60,
+              xp: 40,
+              boosterPct: 10,
+              legendaryPct: 2,
+              card: farmCard,
+            },
+          })}
           farmRewardsToday={today}
           dailyCap={cap}
           deckId={deckId}
@@ -71,7 +90,9 @@ describe("OpponentSheet", () => {
     expect(screen.getByText("500")).toBeInTheDocument();
     expect(screen.getByText("Booster Brigade")).toBeInTheDocument();
     expect(screen.queryByText("Chances de drop")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Combattre" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Combattre" }),
+    ).toBeInTheDocument();
   });
 
   it("montre les gains de farm et les chances de drop une fois battue", () => {
@@ -81,7 +102,9 @@ describe("OpponentSheet", () => {
     expect(screen.getByText("Chances de drop")).toBeInTheDocument();
     expect(screen.getByText("10 %")).toBeInTheDocument();
     expect(screen.getByText("2 %")).toBeInTheDocument();
-    expect(screen.getByText("Récompenses du jour : 3 / 20")).toBeInTheDocument();
+    expect(
+      screen.getByText("Récompenses du jour : 3 / 20"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Battue 4 fois")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Rejouer" })).toBeInTheDocument();
     expect(
@@ -89,9 +112,23 @@ describe("OpponentSheet", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("montre la carte précise et son taux de drop", () => {
+    renderSheet({ wins: 1, farmCard: { name: "Ancestral Feros", pct: 5 } });
+    expect(screen.getByText("Ancestral Feros")).toBeInTheDocument();
+    expect(screen.getByText("5 %")).toBeInTheDocument();
+  });
+
+  it("n'affiche pas de carte précise quand il n'y en a pas", () => {
+    renderSheet({ wins: 1 });
+    expect(screen.queryByText("Ancestral Feros")).not.toBeInTheDocument();
+    expect(screen.getAllByText(/ %$/)).toHaveLength(2);
+  });
+
   it("signale le plafond du jour atteint", () => {
     renderSheet({ wins: 2, today: 20, cap: 20 });
-    expect(screen.getByText("Plus de récompenses aujourd'hui")).toBeInTheDocument();
+    expect(
+      screen.getByText("Plus de récompenses aujourd'hui"),
+    ).toBeInTheDocument();
   });
 
   it("désactive le combat sans deck", () => {
@@ -110,7 +147,9 @@ describe("OpponentSheet", () => {
   it("n'affiche aucun emoji", () => {
     for (const wins of [0, 3]) {
       const { unmount } = renderSheet({ wins, today: 20, cap: 20, deckId: 8 });
-      expect(document.body.textContent ?? "").not.toMatch(/\p{Extended_Pictographic}/u);
+      expect(document.body.textContent ?? "").not.toMatch(
+        /\p{Extended_Pictographic}/u,
+      );
       unmount();
     }
   });

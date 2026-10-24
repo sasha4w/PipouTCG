@@ -5,7 +5,7 @@ import type {
   MonsterOnBoard,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
-import { queueChoice } from './game-state.helper';
+import { queueChoice, sendToGraveyard } from './game-state.helper';
 
 /**
  * L'œuf quitte le terrain sans être détruit (pas d'ON_DEATH) ; le propriétaire
@@ -20,7 +20,7 @@ export function hatchEgg(
   const zoneIndex = owner.monsterZones.indexOf(egg);
   if (zoneIndex === -1) return;
   owner.monsterZones[zoneIndex] = null;
-  owner.graveyard.push(...egg.equipments, egg.card);
+  sendToGraveyard(owner, ...egg.equipments, egg.card);
 
   const stage: DrakonStage | undefined = egg.hatchStage;
   const candidates = owner.deck
@@ -42,6 +42,7 @@ export function hatchEgg(
     count: 1,
     prompt: 'Choisis le Drakon qui éclot',
     resolution: 'summon_to_zone',
+    fromEgg: true,
     zoneIndex,
   });
   log.push(`🥚 ${egg.card.baseCard.name} éclot !`);

@@ -339,3 +339,56 @@ describe('BoostersService', () => {
     });
   });
 });
+
+describe('BoostersService : cartes hors boosters', () => {
+  it('le Drakon des Origines ne sort jamais d’un booster', async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        BoostersService,
+        { provide: getRepositoryToken(Booster), useValue: mockBoosterRepo },
+        {
+          provide: getRepositoryToken(BoosterOpenHistory),
+          useValue: mockOpenHistoryRepo,
+        },
+        {
+          provide: getRepositoryToken(BoosterOpenCard),
+          useValue: mockOpenCardRepo,
+        },
+        { provide: getRepositoryToken(Card), useValue: mockCardRepo },
+        { provide: UsersService, useValue: mockUsersService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
+      ],
+    }).compile();
+    const service = module.get(BoostersService);
+    const origines = {
+      id: 99,
+      name: 'Drakon des Origines',
+      rarity: Rarity.SECRET,
+      effects: [
+        {
+          trigger: 'PASSIVE',
+          condition: null,
+          actions: [{ type: 'SUMMON_IF_ALL_ELEMENTS', target: 'SELF' }],
+        },
+      ],
+    } as unknown as Card;
+    mockBoosterRepo.findOne.mockResolvedValue({
+      ...fakeBooster,
+      cardNumber: CardNumber.TEN,
+    });
+    mockCardRepo.find.mockResolvedValue([...fakeCards, origines]);
+    mockUsersService.removeBoosterFromUser.mockResolvedValue(null);
+    mockUsersService.addCardToUser.mockResolvedValue(undefined);
+    mockUsersService.updatePostOpeningStats.mockResolvedValue(undefined);
+    mockUsersService.findOwnedCardIds.mockResolvedValue(new Set<number>());
+
+    // Hasard forcé tout en haut : la rareté la plus rare disponible sort à chaque tirage
+    const random = jest.spyOn(Math, 'random').mockReturnValue(0.9999);
+    for (let i = 0; i < 3; i++) {
+      const result = await service.openBooster(1, 1);
+      expect(result.cards.some((c) => c.id === 99)).toBe(false);
+      expect(result.cards.length).toBeGreaterThan(0);
+    }
+    random.mockRestore();
+  });
+});

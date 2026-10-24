@@ -25,6 +25,8 @@ export interface SummonPayload {
   paymentHandIndices: number[];
   /** Invocation sur une zone adverse libre (cartes SUMMONABLE_ON_ENEMY_SIDE). */
   onOpponentSide?: boolean;
+  /** Relève : alliés Pipou envoyés au cimetière à la place du coût. */
+  releveInstanceIds?: string[];
 }
 
 export interface PlaySupportPayload {
@@ -35,6 +37,11 @@ export interface PlaySupportPayload {
 }
 
 export interface RecycleSupportPayload {
+  matchId: number;
+  handIndex: number;
+}
+
+export interface TransformPayload {
   matchId: number;
   handIndex: number;
 }
@@ -90,6 +97,7 @@ export interface ClientToServerEvents {
   "fight:summon": (payload: SummonPayload) => void;
   "fight:play_support": (payload: PlaySupportPayload) => void;
   "fight:recycle_support": (payload: RecycleSupportPayload) => void;
+  "fight:transform": (payload: TransformPayload) => void;
   "fight:change_mode": (payload: ChangeModePayload) => void;
   "fight:attack": (payload: AttackPayload) => void;
   "fight:evolve": (payload: EvolvePayload) => void;

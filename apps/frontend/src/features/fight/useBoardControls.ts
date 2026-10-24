@@ -64,6 +64,18 @@ export function useBoardControls(
         if (selectedZone !== null)
           summonAt(selectedZone, paymentIndices, false);
       },
+      /** Relève : les alliés Pipou envoyés au cimetière remplacent le paiement. */
+      onSummonReleve: (zoneIndex: number, releveInstanceIds: string[]) => {
+        if (selectedCard === null) return;
+        send({
+          type: "summon",
+          handIndex: selectedCard,
+          zoneIndex,
+          paymentHandIndices: [],
+          releveInstanceIds,
+        });
+        clearSelection();
+      },
       onSummonZeta: (
         zoneIndex: number,
         paymentIndices: number[] = payIndices,
@@ -98,6 +110,8 @@ export function useBoardControls(
         send({ type: "change_mode", instanceId, mode }),
       onRecycleSupport: (handIndex: number) =>
         send({ type: "recycle", handIndex }),
+      onTransform: (handIndex: number) =>
+        send({ type: "transform", handIndex }),
       onDiscardCard: (handIndex: number) =>
         send({ type: "discard", handIndex }),
       onEndPhase: () => send({ type: "end_phase" }),

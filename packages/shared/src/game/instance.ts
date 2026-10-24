@@ -12,6 +12,8 @@ export interface CardInstance<C = ClientCard> {
   status?: string[];
   /** Ordre de pose d'un terrain en zone Support (croissant sur la partie). */
   placedSeq?: number;
+  /** Copie créée en jeu : disparaît au lieu d'aller au cimetière ou en main. */
+  token?: boolean;
 }
 
 export type CombatMode = "attack" | "guard";
@@ -55,8 +57,18 @@ export interface MonsterOnBoard<C = ClientCard> {
   ownerUserId?: number;
   blockAttackTurns?: number;
   guardLocked?: boolean;
+  /** Tours adverses tenus d'affilée en Garde (repasse en Attaque à GUARD_MAX_TURNS). */
+  guardTurns?: number;
+  /** Vient de sortir de la Garde : pas de retour en Garde avant le prochain tour de son propriétaire. */
+  guardCooldown?: boolean;
+  /** Part (en %) des dégâts de combat subis renvoyée à l'attaquant. */
+  reflectPercent?: number;
+  /** Drakon des Origines : la carte avant copie des effets, rendue à la sortie du terrain. */
+  originalCard?: CardInstance<C>;
   /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
   combatImmune?: boolean;
+  /** Zeta implanté : à l'abri de la désinfection jusqu'au prochain tour de son poseur. */
+  disinfectImmune?: boolean;
   /** Une destruction directe venant d'une carte Support n'a pas d'effet (passif). */
   supportDestroyImmune?: boolean;
   /** Peut attaquer n'importe quel monstre malgré une Provocation (passif). */

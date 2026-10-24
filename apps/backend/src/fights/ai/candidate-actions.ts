@@ -1,19 +1,29 @@
 import {
+  Archetype,
   CardType,
   DrakonStage,
   HAND_LIMIT,
   SupportType,
   canEvolveNow,
   canEvolveOnto,
+  canImplantOn,
   canSummonFromHand,
   canSummonOnEnemySide,
+  canTransform,
   ephemeralTargetSide,
   evolutionCost,
+  isImplanted,
+  isPlantedBy,
+  graveyardHasAllElements,
+  releveCount,
+  requiresAllElements,
 } from '@pipou/shared';
 import type { GameAction, Seat } from '@pipou/shared';
+import type { Card } from '../../cards/card.entity';
 import type {
   CardInstance,
   GameState,
+  MonsterOnBoard,
   PendingChoice,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
@@ -143,13 +153,23 @@ function mainCandidates(
   opp: PlayerGameState,
 ): GameAction[] {
   const out: GameAction[] = [];
-  const myMonsters = me.monsterZones.filter((m) => m !== null);
+  // Un Zeta implanté chez moi appartient à l'adversaire : ni mode, ni équipement, ni cible alliée
+  const myMonsters = me.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && !isImplanted(m, me.userId),
+  );
+  // Mon propre Zeta, chez l'adversaire : je peux l'équiper
+  const myPlanted = opp.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && isPlantedBy(m, me.userId),
+  );
+  const canPlant = canImplantOn(opp.monsterZones, me.userId);
 
   for (const handIndex of distinctHandIndices(me.hand)) {
     const card = me.hand[handIndex].baseCard;
 
     if (card.type === CardType.MONSTER) {
-      if (canSummonFromHand(card)) {
+      const summonable = canSummonFromHand(card) && elementsReady(me, card);
+      if (summonable) out.push(...releveCandidates(me, myMonsters, handIndex));
+      if (summonable) {
         const free = me.freeSummonInstanceIds.includes(
           me.hand[handIndex].instanceId,
         );
@@ -163,7 +183,7 @@ function mainCandidates(
               zoneIndex,
               paymentHandIndices: payment,
             });
-          if (canSummonOnEnemySide(card.effects))
+          if (canSummonOnEnemySide(card.effects) && canPlant)
             for (const zoneIndex of freeZones(opp.monsterZones))
               out.push({
                 type: 'summon',
@@ -174,7 +194,11 @@ function mainCandidates(
               });
         }
       }
-      if (card.stage === DrakonStage.YOUNG || card.stage === DrakonStage.ADULT)
+      if (
+        card.stage === DrakonStage.YOUNG ||
+        card.stage === DrakonStage.ADULT ||
+        card.stage === DrakonStage.ANCESTRAL
+      )
         for (const base of myMonsters) {
           if (!canEvolveOnto(card, base) || !canEvolveNow(base)) continue;
           const needed = Math.max(
@@ -194,7 +218,7 @@ function mainCandidates(
 
     if (card.type === CardType.SUPPORT) {
       if (card.supportType === SupportType.EQUIPMENT)
-        for (const m of myMonsters)
+        for (const m of [...myMonsters, ...myPlanted])
           out.push({
             type: 'play_support',
             handIndex,
@@ -207,8 +231,8 @@ function mainCandidates(
         const side = ephemeralTargetSide(card.effects);
         if (!side) out.push({ type: 'play_support', handIndex });
         else
-          for (const m of (side === 'ally' ? me : opp).monsterZones)
-            if (m)
+          for (const m of side === 'ally' ? myMonsters : opp.monsterZones)
+            if (m && (side === 'ally' || !isPlantedBy(m, me.userId)))
               out.push({
                 type: 'play_support',
                 handIndex,
@@ -216,6 +240,9 @@ function mainCandidates(
               });
       }
     }
+
+    if (!me.transformUsedThisTurn && canTransform(card))
+      out.push({ type: 'transform', handIndex });
 
     out.push({ type: 'recycle', handIndex });
   }
@@ -234,10 +261,23 @@ function attackCandidates(
   opp: PlayerGameState,
 ): GameAction[] {
   const out: GameAction[] = [];
-  const targets = opp.monsterZones.filter((m) => m !== null);
+  // Mon Zeta chez l'adversaire n'est pas une cible et ne bloque pas l'attaque directe
+  const targets = opp.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && !isPlantedBy(m, me.userId),
+  );
+  // Désinfection : un Zeta implanté chez moi se frappe sans riposte
+  const infected = me.monsterZones.filter(
+    (m): m is MonsterOnBoard => m !== null && isImplanted(m, me.userId),
+  );
   for (const m of me.monsterZones) {
-    if (!m || m.mode !== 'attack') continue;
+    if (!m || m.mode !== 'attack' || isImplanted(m, me.userId)) continue;
     if (m.card.baseCard.stage === DrakonStage.EGG) continue;
+    for (const z of infected)
+      out.push({
+        type: 'attack',
+        attackerInstanceId: m.instanceId,
+        targetInstanceId: z.instanceId,
+      });
     for (const t of targets)
       out.push({
         type: 'attack',
@@ -252,4 +292,43 @@ function attackCandidates(
       });
   }
   return out;
+}
+
+/** Relève (N) : chaque groupe de N alliés Pipou, posé dans la zone du premier. */
+function releveCandidates(
+  me: PlayerGameState,
+  myMonsters: MonsterOnBoard[],
+  handIndex: number,
+): GameAction[] {
+  const needed = releveCount(me.hand[handIndex].baseCard.effects);
+  if (needed === 0) return [];
+  const allies = myMonsters.filter(
+    (m) => m.card.baseCard.archetype === Archetype.PIPOU,
+  );
+  const out: GameAction[] = [];
+  const pick = (start: number, chosen: MonsterOnBoard[]) => {
+    if (out.length >= MAX_PICK_COMBOS) return;
+    if (chosen.length === needed) {
+      out.push({
+        type: 'summon',
+        handIndex,
+        zoneIndex: me.monsterZones.indexOf(chosen[0]),
+        paymentHandIndices: [],
+        releveInstanceIds: chosen.map((m) => m.instanceId),
+      });
+      return;
+    }
+    for (let i = start; i < allies.length; i++)
+      pick(i + 1, [...chosen, allies[i]]);
+  };
+  pick(0, []);
+  return out;
+}
+
+/** Drakon des Origines : invocable seulement avec les 4 éléments au cimetière. */
+function elementsReady(me: PlayerGameState, card: Card): boolean {
+  return (
+    !requiresAllElements(card.effects) ||
+    graveyardHasAllElements(me.graveyard.map((c) => c.baseCard))
+  );
 }

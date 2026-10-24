@@ -26,17 +26,23 @@ export function matchesFilter(
 /**
  * Cartes qu'une action « récupérer / chercher » propose au joueur
  * (cimetière, deck ou les deux selon l'action). Vide pour les autres actions.
+ * La carte qui porte l'effet (`effectCard`) ne se propose jamais elle-même.
  */
 export function pickCandidates(
   action: EffectAction,
   player: PlayerGameState,
+  effectCard?: CardInstance,
 ): ChoiceCandidate[] {
   const from = (
     pile: CardInstance[],
     source: 'graveyard' | 'deck',
   ): ChoiceCandidate[] =>
     pile
-      .filter((c) => matchesFilter(c, action.filter))
+      .filter(
+        (c) =>
+          c.instanceId !== effectCard?.instanceId &&
+          matchesFilter(c, action.filter),
+      )
       .map((c) => ({ instanceId: c.instanceId, baseCard: c.baseCard, source }));
 
   switch (action.type) {

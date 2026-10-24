@@ -4,7 +4,13 @@ import {
   MonsterOnBoard,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
-import { DestroyCause, DrakonStage, EffectTrigger } from '@pipou/shared';
+import {
+  DestroyCause,
+  DrakonStage,
+  EffectTrigger,
+  isImplanted,
+  isPlantedBy,
+} from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
@@ -17,14 +23,28 @@ import {
   drawCard,
 } from '../helpers/game-state.helper';
 
-/** Dégâts de combat : rien sur un monstre insensible au combat. */
+/** Dégâts de combat : rien sur un monstre insensible au combat. Renvoie les dégâts subis. */
 function combatDamage(
   target: MonsterOnBoard,
   dmg: number,
   opts: { ignoreReduction?: boolean },
+): number {
+  if (target.combatImmune) return 0;
+  return applyDamage(target, dmg, opts);
+}
+
+/** Renvoi de dégâts : `defender` renvoie une part des dégâts subis à `attacker`. */
+function reflectDamage(
+  defender: MonsterOnBoard,
+  attacker: MonsterOnBoard,
+  taken: number,
 ): void {
-  if (target.combatImmune) return;
-  applyDamage(target, dmg, opts);
+  if (!defender.reflectPercent || taken <= 0) return;
+  combatDamage(
+    attacker,
+    Math.floor((taken * defender.reflectPercent) / 100),
+    {},
+  );
 }
 
 @Injectable()
@@ -50,6 +70,10 @@ export class BattleService {
       (m) => m?.instanceId === attackerInstanceId,
     );
     if (!attacker) return { error: 'Attaquant introuvable' };
+    if (isImplanted(attacker, userId))
+      return {
+        error: `${attacker.card.baseCard.name} appartient à ton adversaire`,
+      };
     if (attacker.card.baseCard.stage === DrakonStage.EGG)
       return { error: 'Un Œuf ne peut pas attaquer' };
     if (attacker.mode !== 'attack') return { error: 'Monstre en mode Garde' };
@@ -71,11 +95,34 @@ export class BattleService {
         error: `${attacker.card.baseCard.name} ne peut pas attaquer (bloqué encore ${attacker.blockAttackTurns} tour(s))`,
       };
 
+    // Désinfection : cible implantée chez soi par l'adversaire
+    const infected =
+      !direct && targetInstanceId
+        ? player.monsterZones.find(
+            (m) => m?.instanceId === targetInstanceId && isImplanted(m, userId),
+          )
+        : undefined;
+    if (infected?.disinfectImmune)
+      return {
+        error: `${infected.card.baseCard.name} est protégé jusqu'au prochain tour de son poseur`,
+      };
+    if (
+      !direct &&
+      opponent.monsterZones.some(
+        (m) =>
+          !!m && m.instanceId === targetInstanceId && isPlantedBy(m, userId),
+      )
+    )
+      return { error: 'Tu ne peux pas attaquer ton propre Zeta' };
+
     // ── Validations spécifiques au mode ─────────────────────────────────────
-    if (direct) {
+    if (infected) {
+      // Ni Provocation ni cible adverse à vérifier : le Zeta est déjà chez soi
+    } else if (direct) {
       if (game.turnNumber === 1)
         return { error: 'Attaque directe interdite au premier tour' };
-      if (opponent.monsterZones.some((z) => z !== null))
+      // Un monstre que j'ai moi-même implanté ne protège pas l'adversaire
+      if (opponent.monsterZones.some((z) => z && !isPlantedBy(z, userId)))
         return {
           error:
             "Attaque directe impossible : détruisez d'abord les monstres adverses",
@@ -117,6 +164,33 @@ export class BattleService {
       log,
     });
     flush();
+
+    // ── Désinfection : pas de riposte, ni Prime ni pioche ────────────────────
+    if (infected) {
+      combatDamage(infected, effectiveAtk(attacker), {
+        ignoreReduction: attacker.hasPiercing,
+      });
+      if (infected.currentHp <= 0) {
+        addLog(
+          game,
+          `🧹 ${attacker.card.baseCard.name} désinfecte ${infected.card.baseCard.name}`,
+        );
+        this.effectsResolver.destroyMonster(
+          game,
+          player,
+          infected.instanceId,
+          log,
+          { draw: false, cause: DestroyCause.COMBAT },
+        );
+      } else {
+        addLog(
+          game,
+          `🧹 ${attacker.card.baseCard.name} attaque ${infected.card.baseCard.name} (${infected.currentHp}HP)`,
+        );
+      }
+      flush();
+      return {};
+    }
 
     // ── Attaque directe ──────────────────────────────────────────────────────
     if (direct) {
@@ -168,9 +242,10 @@ export class BattleService {
       combatDamage(attacker, targetAtk, {
         ignoreReduction: target.hasPiercing,
       });
-      combatDamage(target, attackerAtk, {
+      const taken = combatDamage(target, attackerAtk, {
         ignoreReduction: attacker.hasPiercing,
       });
+      reflectDamage(target, attacker, taken);
 
       const aDied = attacker.currentHp <= 0;
       const tDied = target.currentHp <= 0;
@@ -205,10 +280,19 @@ export class BattleService {
         );
       }
     } else {
-      // ATK contre Garde : pas de riposte
-      combatDamage(target, attackerAtk, {
+      // ATK contre Garde : pas de riposte, mais le renvoi de dégâts s'applique
+      const taken = combatDamage(target, attackerAtk, {
         ignoreReduction: attacker.hasPiercing,
       });
+      reflectDamage(target, attacker, taken);
+      if (attacker.currentHp <= 0) {
+        // Tué par le renvoi d'un monstre en Garde : aucune Prime
+        addLog(
+          game,
+          `🪞 ${target.card.baseCard.name} renvoie les coups : ${attacker.card.baseCard.name} est détruit`,
+        );
+        destroy(player, attacker);
+      }
 
       if (target.currentHp <= 0) {
         destroy(opponent, target);

@@ -18,7 +18,11 @@ export type GameEndReason = MatchEndReason;
  * - 'pick_to_hand' : récupère depuis le cimetière ou le deck
  * - 'discard'      : défausse depuis la main
  */
-export type PendingChoiceResolution = "pick_to_hand" | "discard" | "summon_to_zone";
+export type PendingChoiceResolution =
+  | "pick_to_hand"
+  | "discard"
+  | "summon_to_zone"
+  | "copy_effects";
 
 export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 
@@ -62,6 +66,8 @@ export interface MyClientState {
   monsterZones: (MonsterOnBoard | null)[];
   supportZones: (CardInstance | null)[];
   recycleEnergy: number;
+  /** Transformation d'un Jeune/Adulte de la main déjà utilisée ce tour. */
+  transformUsedThisTurn: boolean;
   /** Cartes de la main invocables gratuitement (instanceId). */
   freeSummonInstanceIds: string[];
   mulliganDone: boolean;

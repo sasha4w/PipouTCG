@@ -4,6 +4,7 @@ import {
   EffectTarget,
   EffectTrigger,
   SupportType,
+  isImplanted,
 } from '@pipou/shared';
 import type { CardEffect, EffectAction } from '@pipou/shared';
 import {
@@ -57,7 +58,11 @@ export class BuffsCalculatorService {
       m.ignoresTaunt = false;
       m.evolutionJoker = false;
       m.instantEvolution = false;
+      m.reflectPercent = undefined;
     }
+
+    // Un monstre implanté (Zeta) ne reçoit aucun bonus d'allié de son hôte
+    const allies = monsters.filter((m) => !isImplanted(m, player.userId));
 
     // 2. Terrains : uniquement les monstres de leur propriétaire
     for (const terrain of player.supportZones) {
@@ -66,7 +71,7 @@ export class BuffsCalculatorService {
       for (const eff of passiveEffects(terrain)) {
         if (!checkCondition(eff, ctx(terrain))) continue;
         for (const action of eff.actions) {
-          for (const m of terrainTargets(action, terrain, monsters))
+          for (const m of terrainTargets(action, terrain, allies))
             applyPassive(m, action);
         }
       }
@@ -90,19 +95,49 @@ export class BuffsCalculatorService {
       for (const eff of passiveEffects(source.card)) {
         if (!checkCondition(eff, ctx(source.card, source))) continue;
         for (const action of eff.actions) {
+          // Le Zeta implanté n'a pas d'alliés chez son hôte : seuls ses effets sur lui-même comptent
+          if (
+            isImplanted(source, player.userId) &&
+            action.target !== EffectTarget.SELF
+          )
+            continue;
           if (action.type === ActionType.BUFF_HP_PER_ADJACENT_ALLY) {
             const adjacent = [
               player.monsterZones[idx - 1],
               player.monsterZones[idx + 1],
-            ].filter(Boolean).length;
+            ].filter((m) => m && !isImplanted(m, player.userId)).length;
             source.hpBuff += (action.value ?? 0) * adjacent;
             continue;
           }
           for (const m of monsterTargets(action, source, player.monsterZones))
-            applyPassive(m, action);
+            if (m === source || !isImplanted(m, player.userId))
+              applyPassive(m, action);
         }
       }
     });
+
+    // 4 bis. Aura de virus : un monstre implanté retire de l'ATK à tous les autres
+    // monstres de son hôte (le plus fort virus l'emporte, sans cumul), sauf immunisés
+    let virus = 0;
+    for (const source of monsters) {
+      if (!isImplanted(source, player.userId)) continue;
+      const cards = [source.card, ...source.equipments];
+      for (const card of cards) {
+        for (const eff of passiveEffects(card)) {
+          if (!checkCondition(eff, ctx(card, source))) continue;
+          for (const action of eff.actions) {
+            if (action.type === ActionType.VIRUS_ATK_DEBUFF)
+              virus = Math.max(virus, action.value ?? 0);
+          }
+        }
+      }
+    }
+    if (virus > 0) {
+      for (const m of monsters) {
+        if (!isImplanted(m, player.userId) && !m.isImmuneToDebuffs)
+          m.atkBuff -= virus;
+      }
+    }
 
     // 5. Les PV courants suivent la variation des PV max, sans les dépasser
     for (const m of monsters) {
@@ -207,6 +242,9 @@ function applyPassive(m: MonsterOnBoard, action: EffectAction): void {
       break;
     case ActionType.SET_DAMAGE_REDUCTION:
       m.damageReduction = Math.max(m.damageReduction ?? 1, action.value ?? 2);
+      break;
+    case ActionType.REFLECT_DAMAGE:
+      m.reflectPercent = Math.max(m.reflectPercent ?? 0, action.value ?? 0);
       break;
     case ActionType.SET_ATTACKS_PER_TURN:
       m.attacksPerTurn = Math.max(m.attacksPerTurn, action.value ?? 1);

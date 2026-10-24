@@ -47,8 +47,8 @@ describe('LAUNCH_SIGNATURES', () => {
 describe('snapshot', () => {
   it('a la taille attendue des sets', () => {
     expect(setOf('pipou')).toHaveLength(27);
-    expect(setOf('pixelman')).toHaveLength(23);
-    expect(setOf('dragon')).toHaveLength(21);
+    expect(setOf('pixelman')).toHaveLength(26);
+    expect(setOf('dragon')).toHaveLength(28); // + 4 Ancestraux et le Drakon des Origines
   });
 });
 
@@ -195,7 +195,10 @@ describe('identité de chaque monde', () => {
         );
         if (level < 5) {
           const lineage = set.filter(
-            (c) => c.element === sig.element && c.stage !== null,
+            (c) =>
+              c.element === sig.element &&
+              c.stage !== null &&
+              c.stage !== 'ancestral',
           );
           expect(lineage).toHaveLength(3);
           for (const c of lineage) expect(inDeck.has(c.id)).toBe(true);
@@ -222,6 +225,80 @@ describe('identité de chaque monde', () => {
   });
 });
 
+describe('cartes clés du rééquilibrage', () => {
+  const qty = (set: Card[], deck: Entry[], name: string) => {
+    const c = set.find((x) => x.name === name);
+    if (!c) throw new Error(`Carte ${name} absente du set`);
+    return deck.find((e) => e.cardId === c.id)?.quantity ?? 0;
+  };
+  const deckOf = (a: AdventureArchetype, level: 1 | 2 | 3 | 4 | 5, s: number) =>
+    generateDeck(setOf(a), level, LAUNCH_SIGNATURES[a][level - 1], rng(s));
+
+  it('Drakon niveau 3-4 : 1 Mont Drakon et 1 Appel des ancêtres au moins', () => {
+    const set = setOf('dragon');
+    for (const seed of SEEDS)
+      for (const level of [3, 4] as const) {
+        const deck = deckOf('dragon', level, seed);
+        expect(qty(set, deck, 'Mont Drakon')).toBeGreaterThanOrEqual(1);
+        expect(qty(set, deck, 'Appel des ancêtres')).toBeGreaterThanOrEqual(1);
+      }
+  });
+
+  it('Drakon niveau 5 : 2 Mont Drakon et 2 Appel des ancêtres au moins', () => {
+    const set = setOf('dragon');
+    for (const seed of SEEDS) {
+      const deck = deckOf('dragon', 5, seed);
+      expect(qty(set, deck, 'Mont Drakon')).toBeGreaterThanOrEqual(2);
+      expect(qty(set, deck, 'Appel des ancêtres')).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  // Rien de forcé : sur 20 graines, au moins un deck sans la carte (le tirage
+  // seul l'amène parfois), alors que les niveaux forcés l'ont toujours.
+  it.each([1, 2] as const)(
+    'Drakon niveau %i : Mont Drakon et Appel des ancêtres non forcés',
+    (level) => {
+      const set = setOf('dragon');
+      const decks = SEEDS.map((seed) => deckOf('dragon', level, seed));
+      for (const name of ['Mont Drakon', 'Appel des ancêtres'])
+        expect(decks.some((d) => qty(set, d, name) === 0)).toBe(true);
+    },
+  );
+
+  it.each([1, 2, 3] as const)(
+    'Pixelman niveau %i : Restauration .bak et DuplicateX non forcés',
+    (level) => {
+      const set = setOf('pixelman');
+      const decks = SEEDS.map((seed) => deckOf('pixelman', level, seed));
+      for (const name of ['Restauration .bak', 'DuplicateX'])
+        expect(decks.some((d) => qty(set, d, name) === 0)).toBe(true);
+    },
+  );
+
+  it('Pixelman Noyau Zeta : 2 Mise à jour .patch, Firewall de Surcharge, Module Bluetooth', () => {
+    const set = setOf('pixelman');
+    for (const seed of SEEDS) {
+      const deck = deckOf('pixelman', 3, seed);
+      expect(qty(set, deck, 'Mise à jour .patch')).toBeGreaterThanOrEqual(2);
+      expect(
+        qty(set, deck, 'Firewall de Surcharge .sys'),
+      ).toBeGreaterThanOrEqual(1);
+      expect(qty(set, deck, 'Module Bluetooth .v2')).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('Pixelman niveaux 4-5 : 2 Restauration .bak ; niveau 5 : DuplicateX', () => {
+    const set = setOf('pixelman');
+    for (const seed of SEEDS)
+      for (const level of [4, 5] as const) {
+        const deck = deckOf('pixelman', level, seed);
+        expect(qty(set, deck, 'Restauration .bak')).toBeGreaterThanOrEqual(2);
+        if (level === 5)
+          expect(qty(set, deck, 'DuplicateX')).toBeGreaterThanOrEqual(1);
+      }
+  });
+});
+
 describe('petits sets', () => {
   it('atteint 30 cartes avec 10 cartes distinctes (3 exemplaires)', () => {
     const small = setOf('pipou').slice(0, 10);
@@ -242,5 +319,55 @@ describe('robustesse', () => {
   it('échoue clairement si la carte signature est absente du set', () => {
     const sig: Signature = { archetype: 'pipou', cardName: 'Inconnu' };
     expect(() => generateDeck(setOf('pipou'), 1, sig, rng(1))).toThrow();
+  });
+});
+
+describe('extension Drakon dans les decks', () => {
+  const set = setOf('dragon');
+  const cards = byId(set);
+  const ancestrals = (d: Entry[]) =>
+    d.filter((e) => cards.get(e.cardId)!.stage === 'ancestral');
+
+  it('niveaux 1 et 2 : aucun Ancestral', () => {
+    for (const level of [1, 2] as const)
+      for (const seed of SEEDS) {
+        const deck = generateDeck(
+          set,
+          level,
+          LAUNCH_SIGNATURES.dragon[level - 1],
+          rng(seed),
+        );
+        expect(ancestrals(deck)).toEqual([]);
+      }
+  });
+
+  it("niveau 3 : 1 Ancestral de l'élément de la signature", () => {
+    const sig = LAUNCH_SIGNATURES.dragon[2];
+    for (const seed of SEEDS) {
+      const found = ancestrals(generateDeck(set, 3, sig, rng(seed)));
+      expect(found).toHaveLength(1);
+      expect(cards.get(found[0].cardId)!.element).toBe(sig.element);
+      expect(found[0].quantity).toBe(1);
+    }
+  });
+
+  it('boss : le Drakon des Origines et un Adulte de chaque élément', () => {
+    const sig = LAUNCH_SIGNATURES.dragon[4];
+    expect(sig.cardName).toBe('Drakon des Origines');
+    for (const seed of SEEDS) {
+      const deck = generateDeck(set, 5, sig, rng(seed));
+      const names = deck.map((e) => cards.get(e.cardId)!.name);
+      expect(names).toContain('Drakon des Origines');
+      for (const el of ['earth', 'fire', 'water', 'wind'])
+        expect(
+          deck.some(
+            (e) =>
+              cards.get(e.cardId)!.stage === 'adult' &&
+              cards.get(e.cardId)!.element === el,
+          ),
+        ).toBe(true);
+      expect(total(deck)).toBeGreaterThanOrEqual(30);
+      expect(total(deck)).toBeLessThanOrEqual(40);
+    }
   });
 });

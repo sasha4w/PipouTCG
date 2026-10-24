@@ -14,7 +14,7 @@ import type { Card } from '../../cards/card.entity';
 import { createEngine } from '../testing/engine';
 import { monsterCard } from '../testing/cards';
 import { allRealCards } from '../testing/real-cards';
-import { monsterNamed, scenario } from '../testing/scenario';
+import { P1_ID, monsterNamed, scenario } from '../testing/scenario';
 import {
   SUPPORTED_ACTIONS,
   SUPPORTED_CONDITIONS,
@@ -66,10 +66,16 @@ describe('couverture des effets', () => {
       // Jeune / Adulte Drakon : il n'arrive que par évolution, sur le stade
       // précédent de sa lignée
       const evolvesOnly = !canSummonFromHand(card);
+      const allyName = card.name === 'Force Plasma' ? 'Noyau Delta' : 'Allié';
       const base = monsterCard('Base', {
         archetype: 'dragon',
         lineage: card.lineage,
-        stage: card.stage === 'adult' ? 'young' : 'baby',
+        stage:
+          card.stage === 'ancestral'
+            ? 'adult'
+            : card.stage === 'adult'
+              ? 'young'
+              : 'baby',
       });
       const game = scenario({
         p1: {
@@ -77,9 +83,11 @@ describe('couverture des effets', () => {
           // Cimetière et deck garnis : les cartes de récupération ont de quoi faire
           graveyard: allRealCards(),
           deck: allRealCards(),
-          recycleEnergy: 3,
+          // 4 : coût des Ancestraux et du Drakon des Origines
+          recycleEnergy: 4,
           monsters: [
-            monsterCard('Allié', { hp: 5000, archetype: 'dragon' }),
+            // Force Plasma exige un Noyau en jeu
+            monsterCard(allyName, { hp: 5000, archetype: 'dragon' }),
             // Drakon posé ce tour : cible utile pour les accélérateurs (Incubation)
             {
               card: monsterCard('Drakon posé', {
@@ -91,9 +99,22 @@ describe('couverture des effets', () => {
             ...(evolvesOnly ? [base] : []),
           ],
         },
-        p2: { monsters: [monsterCard('Ennemi', { hp: 5000 })] },
+        p2: {
+          monsters: [
+            monsterCard('Ennemi', { hp: 5000 }),
+            // Mise à jour .patch exige un Zeta implanté par p1, compteur en cours
+            ...(card.name === 'Mise à jour .patch'
+              ? [
+                  {
+                    card: monsterCard('Zeta implanté'),
+                    patch: { ownerUserId: P1_ID, turnCounter: 2 },
+                  },
+                ]
+              : []),
+          ],
+        },
       });
-      const ally = monsterNamed(game, 'p1', 'Allié');
+      const ally = monsterNamed(game, 'p1', allyName);
       const allyTarget = (c: Card) =>
         game.player1.monsterZones.find(
           (m) => !!m && isTargetableByEphemeral(m, 'ally', c.effects),

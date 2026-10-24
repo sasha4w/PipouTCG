@@ -37,6 +37,9 @@
     "e2e:db": "docker compose -f ../../docker-compose.yml up -d db",
     "e2e:api": "pnpm build && cross-env ENV_FILE=.env.e2e NODE_ENV=test node dist/main",
     "test:e2e:cucumber": "dotenv -e .env.e2e -- cucumber-js --config test/cucumber.cjs",
+    "tournament": "dotenv -e .env.e2e -- ts-node -r tsconfig-paths/register src/fights/ai/tournament.cli.ts",
+    "tournament:generated": "ts-node -r tsconfig-paths/register src/fights/ai/tournament-generated.cli.ts",
+    "ai:bench": "ts-node -r tsconfig-paths/register src/fights/ai/ai-bench.cli.ts",
     "e2e:copy-aiven": "node scripts/e2e-copy-aiven.mjs"
   },
   "dependencies": {

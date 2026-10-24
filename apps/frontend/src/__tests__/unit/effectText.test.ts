@@ -90,7 +90,11 @@ describe("describeCardEffects (fr)", () => {
       ]),
       t,
     );
-    expect(text.keywords).toEqual(["combatImmunity", "supportShield", "ignoreTaunt"]);
+    expect(text.keywords).toEqual([
+      "combatImmunity",
+      "supportShield",
+      "ignoreTaunt",
+    ]);
   });
 
   let t: TFunction;
@@ -247,7 +251,121 @@ describe("describeCardEffects (fr)", () => {
     expect(text.rules[0].lines[0].text).toBe(
       "Arrive en jeu uniquement par évolution ou par l'effet d'un Œuf.",
     );
-    expect(describeCardEffects({ ...monster([], "dragon"), stage: "baby" }, t).rules).toEqual([]);
+    expect(
+      describeCardEffects({ ...monster([], "dragon"), stage: "baby" }, t).rules,
+    ).toEqual([]);
+  });
+
+  describe("équilibrage Zeta / Pixelman", () => {
+    const all = (card: EffectSourceCard) =>
+      describeCardEffects(card, t).rules.flatMap((r) => [
+        r.trigger,
+        ...r.lines.map((l) => l.text),
+      ]);
+
+    it("Noyau Zeta : explosion et virus", () => {
+      const { rules } = describeCardEffects(
+        monster(
+          [
+            {
+              trigger: "PASSIVE",
+              actions: [
+                { type: "VIRUS_ATK_DEBUFF", target: "SELF", value: 300 },
+              ],
+            },
+            {
+              trigger: "ON_SELF_DESTRUCT",
+              actions: [
+                { type: "DEAL_DAMAGE", target: "ALL_ENEMIES", value: 500 },
+              ],
+            },
+          ],
+          "pixelman",
+        ),
+        t,
+      );
+      expect(rules[0].lines[0]).toEqual({
+        text: "Les monstres adverses perdent 300 ATK.",
+        tone: "debuff",
+      });
+      expect(rules[1].trigger).toBe("À son autodestruction");
+      expect(rules[1].lines[0].text).toBe(
+        "Tous les monstres adverses subissent 500 dégâts.",
+      );
+    });
+
+    it("DuplicateX : copie sans attaque pendant 2 tours", () => {
+      const texts = all(
+        support("EPHEMERAL", [
+          {
+            trigger: "ON_PLAY",
+            actions: [
+              { type: "DUPLICATE_MONSTER", target: "TARGET_ALLY", value: 2 },
+            ],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe(
+        "Le monstre allié ciblé est copié sur ta première zone libre ; la copie ne peut pas attaquer pendant 2 tours.",
+      );
+    });
+
+    it("Mise à jour .patch : remet le compteur du Zeta", () => {
+      const texts = all(
+        support("EPHEMERAL", [
+          {
+            trigger: "ON_PLAY",
+            actions: [
+              { type: "RESET_TURN_COUNTER", target: "PLAYER", value: 3 },
+            ],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe("Remet le compteur de ton Zeta à 3.");
+    });
+
+    it("Firewall de Surcharge sur Zeta : protection contre la désinfection", () => {
+      const texts = all(
+        support("EQUIPMENT", [
+          {
+            trigger: "ON_PLAY",
+            condition: { type: "EQUIPPED_ON", value: "Noyau Zeta" },
+            actions: [{ type: "SET_DISINFECT_IMMUNITY", target: "SELF" }],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe(
+        "Le monstre équipé ne peut pas être désinfecté jusqu'au prochain tour de son poseur.",
+      );
+    });
+
+    it("Module Bluetooth .v2 sur Zeta : virus d'équipement", () => {
+      const texts = all(
+        support("EQUIPMENT", [
+          {
+            trigger: "PASSIVE",
+            actions: [{ type: "VIRUS_ATK_DEBUFF", target: "SELF", value: 600 }],
+          },
+        ]),
+      );
+      expect(texts[1]).toBe("Les monstres adverses perdent 600 ATK.");
+    });
+
+    it("aucune ligne inconnue", () => {
+      for (const type of [
+        ActionType.DUPLICATE_MONSTER,
+        ActionType.VIRUS_ATK_DEBUFF,
+        ActionType.RESET_TURN_COUNTER,
+        ActionType.SET_DISINFECT_IMMUNITY,
+      ])
+        expect(
+          all(
+            support("EPHEMERAL", [
+              { trigger: "ON_PLAY", actions: [{ type, target: "SELF" }] },
+            ]),
+          ).join(),
+        ).not.toContain("Effet spécial");
+    });
   });
 
   it("effectPlainText retire les marqueurs de mots-clés", () => {
@@ -372,3 +490,68 @@ describe.each(Object.keys(LOCALES) as Lng[])(
     });
   },
 );
+
+describe("describeCardEffects : patch Garde, Relève et Origines (fr)", () => {
+  let t: TFunction;
+  beforeAll(async () => {
+    t = await makeT("fr");
+  });
+  const fx = (trigger: string, type: string, target: string, value?: number) =>
+    ({
+      trigger,
+      condition: null,
+      actions: [{ type, target, value }],
+    }) as CardEffect;
+  const linesOf = (card: EffectSourceCard) =>
+    describeCardEffects(card, t).rules.flatMap((r) =>
+      r.lines.map((l) => l.text),
+    );
+  const unknown = (type: string) => t("effects.action.unknown", { type });
+
+  it("Jeune Teros : renvoi de 40 %", () => {
+    const card = monster(
+      [fx("PASSIVE", "REFLECT_DAMAGE", "SELF", 40)],
+      "dragon",
+    );
+    const { keywords } = describeCardEffects(card, t);
+    expect(linesOf(card).some((l) => l.includes("40 %"))).toBe(true);
+    expect(keywords).toContain("reflect");
+  });
+
+  it("Général Chatouille : Relève (2)", () => {
+    const card = monster([fx("PASSIVE", "RELEVE", "SELF", 2)]);
+    const { keywords } = describeCardEffects(card, t);
+    expect(linesOf(card).join(" ")).toContain("2 alliés Pipou");
+    expect(keywords).toContain("releve");
+  });
+
+  it("Ancestral : règle de pose par évolution d'un Adulte", () => {
+    const card = { ...monster([], "dragon"), stage: "ancestral" };
+    expect(linesOf(card)).toContain(t("effects.ui.evolutionOnlyAncestral"));
+  });
+
+  it("Drakon des Origines : 4 éléments et copie", () => {
+    const card = monster(
+      [
+        fx("PASSIVE", "SUMMON_IF_ALL_ELEMENTS", "SELF"),
+        fx("ON_SUMMON", "COPY_GRAVEYARD_EFFECTS", "PLAYER"),
+      ],
+      "dragon",
+    );
+    const text = linesOf(card).join(" ");
+    expect(text).toContain("chaque élément");
+    expect(text).toContain("copie");
+  });
+
+  it("aucun « Effet spécial » pour les nouvelles actions", () => {
+    for (const type of [
+      "REFLECT_DAMAGE",
+      "RELEVE",
+      "SUMMON_IF_ALL_ELEMENTS",
+      "COPY_GRAVEYARD_EFFECTS",
+    ])
+      expect(linesOf(monster([fx("PASSIVE", type, "SELF", 1)]))).not.toContain(
+        unknown(type),
+      );
+  });
+});

@@ -22,6 +22,7 @@ import {
   graveyardNames,
   handNames,
   monsterNamed,
+  passTurn,
   scenario,
 } from '../testing/scenario';
 
@@ -269,5 +270,168 @@ describe('GameEngine — supports Éphémères ciblés', () => {
         "Cette carte n'aurait aucun effet pour l'instant",
       );
     });
+  });
+});
+
+describe('GameEngine — DuplicateX (DUPLICATE_MONSTER)', () => {
+  const engine = createEngine();
+  const duplicateX = () =>
+    ephemeralCard('DuplicateX', [
+      effect(ON_PLAY, [act(A.DUPLICATE_MONSTER, T.TARGET_ALLY, { value: 2 })]),
+    ]);
+  const play = (game: GameState, target: MonsterOnBoard) =>
+    engine.dispatch(game, 'p1', {
+      type: 'play_support',
+      handIndex: 0,
+      targetInstanceId: target.instanceId,
+    });
+
+  it('copie un allié abîmé et équipé : monstre token bloqué 2 tours', () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [
+          {
+            card: monsterCard('Drakon', { hp: 1800 }),
+            currentHp: 1200,
+            equipments: [equipmentCard('Casque', [])],
+          },
+        ],
+      },
+    });
+
+    expect(play(game, monsterNamed(game, 'p1', 'Drakon'))).toEqual({});
+
+    const copie = game.player1.monsterZones[1]!;
+    expect(copie.card.baseCard.name).toBe('Drakon');
+    expect(copie.currentHp).toBe(1200);
+    expect(copie.card.token).toBe(true);
+    expect(copie.equipments).toHaveLength(1);
+    expect(copie.equipments[0].token).toBe(true);
+    expect(copie.equipments[0].baseCard.name).toBe('Casque');
+    expect(copie.blockAttackTurns).toBe(2);
+    expect(game.pendingEvents).toContainEqual(
+      expect.objectContaining({ kind: 'monster_summoned', zoneIndex: 1 }),
+    );
+    // l'original reste intact
+    expect(game.player1.monsterZones[0]!.card.token).toBeUndefined();
+    expect(game.player1.monsterZones[0]!.equipments[0].token).toBeUndefined();
+  });
+
+  it("la copie n'hérite pas du ownerUserId de l'original", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [
+          { card: monsterCard('Implanté'), patch: { ownerUserId: 1 } },
+        ],
+      },
+    });
+
+    play(game, monsterNamed(game, 'p1', 'Implanté'));
+
+    expect(game.player1.monsterZones[1]!.ownerUserId).toBeUndefined();
+  });
+
+  it('déclenche le ON_SUMMON de la copie', () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [
+          monsterCard('Gardien', {
+            effects: [
+              effect(EffectTrigger.ON_SUMMON, [act(A.SET_TAUNT, T.SELF)]),
+            ],
+          }),
+        ],
+      },
+    });
+    const original = monsterNamed(game, 'p1', 'Gardien');
+
+    play(game, original);
+
+    expect(game.player1.monsterZones[1]!.hasTaunt).toBe(true);
+    expect(original.hasTaunt).toBe(false);
+  });
+
+  it("la copie d'un monstre avec Taunt garde le Taunt", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [monsterCard('Gardien')],
+      },
+    });
+    const original = monsterNamed(game, 'p1', 'Gardien');
+    original.perm.taunt = true;
+
+    play(game, original);
+
+    expect(game.player1.monsterZones[1]!.hasTaunt).toBe(true);
+  });
+
+  it('la copie ne peut pas attaquer le tour de pose ni le tour suivant, puis le peut', () => {
+    const game = scenario({
+      p1: { hand: [duplicateX()], monsters: [monsterCard('Drakon')] },
+      p2: { monsters: [monsterCard('Cible', { hp: 9000 })] },
+    });
+    play(game, monsterNamed(game, 'p1', 'Drakon'));
+    const copie = game.player1.monsterZones[1]!;
+    const attack = () =>
+      engine.dispatch(game, 'p1', {
+        type: 'attack',
+        attackerInstanceId: copie.instanceId,
+        targetInstanceId: monsterNamed(game, 'p2', 'Cible').instanceId,
+      });
+
+    game.phase = 'battle';
+    expect(attack().error).toBeDefined();
+    passTurn(engine, game); // fin du tour de pose
+    passTurn(engine, game); // tour adverse
+    game.phase = 'battle';
+    expect(attack().error).toBeDefined(); // tour suivant du propriétaire
+    passTurn(engine, game);
+    passTurn(engine, game);
+    game.phase = 'battle';
+    expect(attack()).toEqual({});
+  });
+
+  it('est injouable sans case libre', () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [monsterCard('A'), monsterCard('B'), monsterCard('C')],
+      },
+    });
+
+    expect(play(game, monsterNamed(game, 'p1', 'A')).error).toBe(
+      "Cette carte n'aurait aucun effet pour l'instant",
+    );
+    expect(handNames(game, 'p1')).toEqual(['DuplicateX']);
+  });
+
+  it("détruire la copie rapporte une Prime à l'adversaire, cimetière inchangé", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [monsterCard('Drakon', { hp: 300 })],
+      },
+      p2: { monsters: [monsterCard('Ogre', { atk: 900 })] },
+    });
+    play(game, monsterNamed(game, 'p1', 'Drakon'));
+    const copie = game.player1.monsterZones[1]!;
+    const graveyardBefore = graveyardNames(game, 'p1');
+    passTurn(engine, game);
+    game.phase = 'battle';
+
+    const res = engine.dispatch(game, 'p2', {
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Ogre').instanceId,
+      targetInstanceId: copie.instanceId,
+    });
+
+    expect(res.error).toBeUndefined();
+    expect(game.player1.monsterZones[1]).toBeNull();
+    expect(game.player2.primes).toBe(5);
+    expect(graveyardNames(game, 'p1')).toEqual(graveyardBefore);
   });
 });

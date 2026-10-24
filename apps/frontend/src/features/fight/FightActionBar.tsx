@@ -1,6 +1,6 @@
-import { HAND_LIMIT } from "@pipou/shared";
+import { HAND_LIMIT, canTransform } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
-import { IconEvolve } from "../../components/Icons";
+import { IconEvolve, IconTransform } from "../../components/Icons";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
 import { END_PHASE_LABEL } from "./fight.types";
@@ -24,6 +24,9 @@ interface Props {
   /** Absent : pas de bouton d'abandon. */
   onSurrender?: () => void;
   onRecycleFromHand: (handIndex: number) => void;
+  onTransformFromHand: (handIndex: number) => void;
+  /** Transformation déjà utilisée ce tour. */
+  transformUsed?: boolean;
   /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
   playBlockedReason?: string;
   /** La carte sélectionnée (Jeune/Adulte) peut évoluer sur un monstre allié. */
@@ -43,6 +46,8 @@ export default function FightActionBar({
   onEndPhase,
   onSurrender,
   onRecycleFromHand,
+  onTransformFromHand,
+  transformUsed = false,
   playBlockedReason,
   canEvolve = false,
 }: Props) {
@@ -109,6 +114,25 @@ export default function FightActionBar({
               🔧 Clique sur un monstre allié à équiper
             </span>
           )}
+
+          {card.type === "monster" &&
+            canTransform({
+              stage: card.stage ?? null,
+              lineage: card.lineage,
+            }) && (
+              <button
+                onClick={() => onTransformFromHand(selectedCard!)}
+                className="fab-btn"
+                disabled={transformUsed}
+                title={
+                  transformUsed
+                    ? t("fight.transformOncePerTurn")
+                    : t("fight.transformTitle")
+                }
+              >
+                <IconTransform size={14} /> {t("fight.transform")}
+              </button>
+            )}
 
           <button
             onClick={() => onRecycleFromHand(selectedCard!)}

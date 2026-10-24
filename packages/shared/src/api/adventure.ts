@@ -23,7 +23,14 @@ export interface AdventureOpponentView {
   wins: number;
   isBoss: boolean;
   firstWin: { gold: number; xp: number; boosterName: string | null; legendary: boolean };
-  farm: { gold: number; xp: number; boosterPct: number; legendaryPct: number };
+  farm: {
+    gold: number;
+    xp: number;
+    boosterPct: number;
+    legendaryPct: number;
+    /** Carte précise qui peut tomber, ou null. */
+    card: { name: string; pct: number } | null;
+  };
 }
 
 export interface AdventureWorldView {

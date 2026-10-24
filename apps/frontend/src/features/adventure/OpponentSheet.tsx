@@ -7,6 +7,7 @@ import Button from "../../components/Button";
 import DeckWidget from "../deck/DeckWidget";
 import {
   IconBooster,
+  IconCards,
   IconCheck,
   IconCrown,
   IconGift,
@@ -66,10 +67,16 @@ export default function OpponentSheet({
   const iconProps = { size: 16, className: "adv-sheet__icon" };
 
   return (
-    <BottomSheet title={opponent.name} closeLabel={t("adventure.sheet.close")} onClose={onClose}>
+    <BottomSheet
+      title={opponent.name}
+      closeLabel={t("adventure.sheet.close")}
+      onClose={onClose}
+    >
       <div className="adv-sheet">
         <div className="adv-sheet__head">
-          <div className={`adv-sheet__portrait${opponent.isBoss ? " adv-sheet__portrait--boss" : ""}`}>
+          <div
+            className={`adv-sheet__portrait${opponent.isBoss ? " adv-sheet__portrait--boss" : ""}`}
+          >
             {opponent.portrait.imageUrl ? (
               <img
                 src={opponent.portrait.imageUrl}
@@ -82,9 +89,14 @@ export default function OpponentSheet({
           <div className="adv-sheet__id">
             <span className="adv-sheet__level">
               {opponent.isBoss && <IconCrown size={13} />}
-              {t(opponent.isBoss ? "adventure.sheet.level_boss" : "adventure.sheet.level", {
-                level: opponent.level,
-              })}
+              {t(
+                opponent.isBoss
+                  ? "adventure.sheet.level_boss"
+                  : "adventure.sheet.level",
+                {
+                  level: opponent.level,
+                },
+              )}
             </span>
             {!neverBeaten && (
               <span className="adv-sheet__wins">
@@ -100,47 +112,94 @@ export default function OpponentSheet({
 
         {neverBeaten ? (
           <section>
-            <h4 className="adv-sheet__section">{t("adventure.sheet.first_win")}</h4>
+            <h4 className="adv-sheet__section">
+              {t("adventure.sheet.first_win")}
+            </h4>
             <ul className="adv-sheet__rows">
-              {rewardRow(<IconGold {...iconProps} />, t("adventure.sheet.gold"), <b>{firstWin.gold}</b>)}
-              {rewardRow(<IconSparkles {...iconProps} />, t("adventure.sheet.xp"), <b>{firstWin.xp}</b>)}
+              {rewardRow(
+                <IconGold {...iconProps} />,
+                t("adventure.sheet.gold"),
+                <b>{firstWin.gold}</b>,
+              )}
+              {rewardRow(
+                <IconSparkles {...iconProps} />,
+                t("adventure.sheet.xp"),
+                <b>{firstWin.xp}</b>,
+              )}
               {firstWin.boosterName &&
-                rewardRow(<IconBooster {...iconProps} />, firstWin.boosterName, <b>×1</b>)}
+                rewardRow(
+                  <IconBooster {...iconProps} />,
+                  firstWin.boosterName,
+                  <b>×1</b>,
+                )}
               {firstWin.legendary &&
-                rewardRow(<IconStar {...iconProps} />, t("adventure.sheet.legendary"), <b>×1</b>)}
+                rewardRow(
+                  <IconStar {...iconProps} />,
+                  t("adventure.sheet.legendary"),
+                  <b>×1</b>,
+                )}
             </ul>
           </section>
         ) : (
           <>
             <section>
-              <h4 className="adv-sheet__section">{t("adventure.sheet.farm")}</h4>
+              <h4 className="adv-sheet__section">
+                {t("adventure.sheet.farm")}
+              </h4>
               <ul className="adv-sheet__rows">
-                {rewardRow(<IconGold {...iconProps} />, t("adventure.sheet.gold"), <b>{farm.gold}</b>)}
-                {rewardRow(<IconSparkles {...iconProps} />, t("adventure.sheet.xp"), <b>{farm.xp}</b>)}
+                {rewardRow(
+                  <IconGold {...iconProps} />,
+                  t("adventure.sheet.gold"),
+                  <b>{farm.gold}</b>,
+                )}
+                {rewardRow(
+                  <IconSparkles {...iconProps} />,
+                  t("adventure.sheet.xp"),
+                  <b>{farm.xp}</b>,
+                )}
               </ul>
             </section>
             <section>
-              <h4 className="adv-sheet__section">{t("adventure.sheet.drops")}</h4>
+              <h4 className="adv-sheet__section">
+                {t("adventure.sheet.drops")}
+              </h4>
               <ul className="adv-sheet__rows">
                 {farm.boosterPct > 0 &&
                   rewardRow(
                     <IconBooster {...iconProps} />,
                     firstWin.boosterName ?? t("adventure.sheet.booster"),
-                    <span className="adv-sheet__pill">{t("adventure.sheet.pct", { pct: farm.boosterPct })}</span>,
+                    <span className="adv-sheet__pill">
+                      {t("adventure.sheet.pct", { pct: farm.boosterPct })}
+                    </span>,
                   )}
                 {farm.legendaryPct > 0 &&
                   rewardRow(
                     <IconStar {...iconProps} />,
                     t("adventure.sheet.legendary"),
-                    <span className="adv-sheet__pill">{t("adventure.sheet.pct", { pct: farm.legendaryPct })}</span>,
+                    <span className="adv-sheet__pill">
+                      {t("adventure.sheet.pct", { pct: farm.legendaryPct })}
+                    </span>,
+                  )}
+                {farm.card &&
+                  rewardRow(
+                    <IconCards {...iconProps} />,
+                    farm.card.name,
+                    <span className="adv-sheet__pill">
+                      {t("adventure.sheet.pct", { pct: farm.card.pct })}
+                    </span>,
                   )}
               </ul>
             </section>
             <p className="adv-sheet__today">
               <IconGift size={13} />
-              {t("adventure.sheet.today", { count: farmRewardsToday, cap: dailyCap })}
+              {t("adventure.sheet.today", {
+                count: farmRewardsToday,
+                cap: dailyCap,
+              })}
             </p>
-            {capped && <p className="adv-sheet__capped">{t("adventure.sheet.capped")}</p>}
+            {capped && (
+              <p className="adv-sheet__capped">{t("adventure.sheet.capped")}</p>
+            )}
           </>
         )}
 
@@ -154,7 +213,10 @@ export default function OpponentSheet({
               t("adventure.sheet.no_deck")
             )}
           </p>
-          <DeckWidget selectedDeckId={deckId ?? undefined} onSelectDeck={onSelectDeck} />
+          <DeckWidget
+            selectedDeckId={deckId ?? undefined}
+            onSelectDeck={onSelectDeck}
+          />
         </div>
 
         <Button
@@ -164,7 +226,9 @@ export default function OpponentSheet({
           onClick={() => deckId !== null && onFight(deckId)}
         >
           <IconSwords size={18} />
-          {neverBeaten ? t("adventure.sheet.fight") : t("adventure.sheet.replay")}
+          {neverBeaten
+            ? t("adventure.sheet.fight")
+            : t("adventure.sheet.replay")}
         </Button>
       </div>
     </BottomSheet>

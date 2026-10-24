@@ -1,4 +1,9 @@
-import { CardEffect, ActionType } from '@pipou/shared';
+import {
+  CardEffect,
+  ActionType,
+  DrakonStage,
+  isPlantedBy,
+} from '@pipou/shared';
 import {
   CardInstance,
   MonsterOnBoard,
@@ -7,9 +12,16 @@ import {
 import { EffectContext } from './effect-context.interface';
 import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
-import { drawCard, queueChoice } from '../helpers/game-state.helper';
+import {
+  boardCard,
+  drawCard,
+  getOpponentState,
+  queueChoice,
+} from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
 import { hatchEgg } from '../helpers/hatching';
+import { createMonsterOnBoard } from '../helpers/monster.factory';
+import { v4 as uuidv4 } from 'uuid';
 
 export type DestroyKind = 'destroy' | 'damage';
 
@@ -22,6 +34,9 @@ export function applyActions(
     instanceId: string,
     kind: DestroyKind,
   ) => void,
+  /** Résout l'ON_SUMMON d'un monstre apparu en jeu (copie). */
+  summoned: (owner: PlayerGameState, monster: MonsterOnBoard) => void = () =>
+    undefined,
 ): void {
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
@@ -104,6 +119,14 @@ export function applyActions(
           destroy(targets.ownerOfMonster(target), target.instanceId, 'destroy');
         break;
 
+      case ActionType.DUPLICATE_MONSTER:
+        for (const target of targets.monsters) {
+          const owner = targets.ownerOfMonster(target);
+          const copy = duplicateMonster(target, owner, action.value ?? 2, ctx);
+          if (copy) summoned(owner, copy);
+        }
+        break;
+
       case ActionType.RETURN_TO_HAND:
         for (const target of targets.monsters)
           returnMonsterToHand(
@@ -126,10 +149,25 @@ export function applyActions(
         }
         break;
 
+      // Remet le compteur des monstres que le joueur a implantés chez l'adversaire.
+      case ActionType.RESET_TURN_COUNTER: {
+        const opponent = getOpponentState(ctx.game, ctx.ownerUserId);
+        for (const m of opponent.monsterZones) {
+          if (!m || m.turnCounter === undefined) continue;
+          if (!isPlantedBy(m, ctx.ownerUserId)) continue;
+          m.turnCounter = action.value ?? 3;
+          ctx.log.push(
+            `⏳ ${m.card.baseCard.name} repart pour ${m.turnCounter} tour(s)`,
+          );
+        }
+        break;
+      }
+
       case ActionType.FORCE_ATTACK_MODE_ENEMY:
         for (const m of targets.monsters) {
           m.forcedAttackMode = true;
           m.mode = 'attack';
+          m.guardTurns = 0;
           ctx.log.push(
             `🔒 ${card.baseCard.name} force ${m.card.baseCard.name} en mode Attaque`,
           );
@@ -182,6 +220,7 @@ export function applyActions(
         for (const m of targets.monsters) {
           m.forcedAttackMode = true;
           m.mode = 'attack';
+          m.guardTurns = 0;
           ctx.log.push(`⚔️ ${m.card.baseCard.name} est forcé en mode Attaque`);
         }
         break;
@@ -202,6 +241,15 @@ export function applyActions(
           m.combatImmune = true;
           ctx.log.push(
             `🌀 ${m.card.baseCard.name} est insensible aux dégâts de combat jusqu'à son prochain tour`,
+          );
+        }
+        break;
+
+      case ActionType.SET_DISINFECT_IMMUNITY:
+        for (const m of targets.monsters) {
+          m.disinfectImmune = true;
+          ctx.log.push(
+            `🛡️ ${m.card.baseCard.name} est protégé de la désinfection jusqu'au prochain tour de son poseur`,
           );
         }
         break;
@@ -250,7 +298,7 @@ export function applyActions(
 
       case ActionType.SUMMON_FROM_DECK:
         for (const p of targets.players) {
-          const candidates = pickCandidates(action, p);
+          const candidates = pickCandidates(action, p, ctx.sourceCard);
           if (candidates.length === 0) continue;
           const zone = ctx.sourceMonster
             ? p.monsterZones.indexOf(ctx.sourceMonster)
@@ -262,6 +310,7 @@ export function applyActions(
             prompt: 'Choisis la carte à invoquer',
             resolution: 'summon_to_zone',
             zoneIndex: zone === -1 ? undefined : zone,
+            fromEgg: ctx.sourceMonster?.card.baseCard.stage === 'egg',
           });
         }
         break;
@@ -275,6 +324,38 @@ export function applyActions(
         }
         break;
 
+      // Drakon des Origines : choisir un Adulte ou un Ancestral du cimetière
+      // dont il copie les effets (résolu par PickService, « copy_effects »)
+      case ActionType.COPY_GRAVEYARD_EFFECTS:
+        for (const p of targets.players) {
+          const candidates = p.graveyard
+            .filter(
+              (c) =>
+                c.baseCard.stage === DrakonStage.ADULT ||
+                c.baseCard.stage === DrakonStage.ANCESTRAL,
+            )
+            .map((c) => ({
+              instanceId: c.instanceId,
+              baseCard: c.baseCard,
+              source: 'graveyard' as const,
+            }));
+          if (candidates.length === 0) {
+            ctx.log.push(
+              `🐉 ${card.baseCard.name} — aucun Adulte ni Ancestral au cimetière à copier`,
+            );
+            continue;
+          }
+          queueChoice(ctx.game, {
+            forUserId: p.userId,
+            candidates,
+            count: 1,
+            prompt: 'Choisis le pouvoir élémentaire à copier',
+            resolution: 'copy_effects',
+            sourceInstanceId: ctx.sourceMonster?.instanceId,
+          });
+        }
+        break;
+
       // ── Interactive picks ─────────────────────────────────────────────────
       case ActionType.RETURN_FROM_GRAVEYARD:
       case ActionType.RETURN_FROM_GRAVEYARD_OR_DECK:
@@ -283,7 +364,7 @@ export function applyActions(
           action.type === ActionType.RETURN_FROM_GRAVEYARD;
         const count = fromGraveyardOnly ? (action.value ?? 1) : 1;
         for (const p of targets.players) {
-          const candidates = pickCandidates(action, p);
+          const candidates = pickCandidates(action, p, ctx.sourceCard);
           if (candidates.length === 0) {
             ctx.log.push(
               `📥 ${card.baseCard.name} — aucune carte récupérable pour ${p.username}`,
@@ -321,6 +402,7 @@ export function applyActions(
       case ActionType.FORCE_GUARD_LOCK_ENEMY:
         for (const m of targets.monsters) {
           m.guardLocked = true;
+          m.guardTurns = 0;
           m.mode = 'guard';
           ctx.log.push(
             `🔒 ${card.baseCard.name} verrouille ${m.card.baseCard.name} en mode Garde`,
@@ -361,6 +443,52 @@ export function applyActions(
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
+/**
+ * Copie un monstre (PV, bonus, mode, équipements) dans la première zone libre
+ * de son propriétaire. La copie et ses équipements sont des tokens, bloqués
+ * en attaque pendant `blockTurns` tours. Retourne null s'il n'y a pas de place.
+ */
+function duplicateMonster(
+  source: MonsterOnBoard,
+  owner: PlayerGameState,
+  blockTurns: number,
+  ctx: EffectContext,
+): MonsterOnBoard | null {
+  const zone = owner.monsterZones.findIndex((z) => z === null);
+  if (zone === -1) return null;
+
+  // Sans ownerUserId : la copie n'est jamais un monstre « implanté »
+  const copy = createMonsterOnBoard({
+    instanceId: uuidv4(),
+    baseCard: source.card.baseCard,
+    ownerId: owner.userId,
+    token: true,
+  });
+  copy.perm = { ...source.perm };
+  copy.atkBuff = source.atkBuff;
+  copy.hpBuff = source.hpBuff;
+  copy.currentHp = source.currentHp;
+  copy.mode = source.mode;
+  copy.equipments = source.equipments.map((eq) => ({
+    instanceId: uuidv4(),
+    baseCard: eq.baseCard,
+    ownerId: owner.userId,
+    token: true,
+  }));
+  copy.blockAttackTurns = blockTurns;
+  owner.monsterZones[zone] = copy;
+
+  ctx.game.pendingEvents.push({
+    kind: 'monster_summoned',
+    ownerId: owner.userId,
+    zoneIndex: zone,
+    instanceId: copy.instanceId,
+    rarity: copy.card.baseCard.rarity,
+  });
+  ctx.log.push(`🪞 ${source.card.baseCard.name} est copié`);
+  return copy;
+}
+
 function returnMonsterToHand(
   monster: MonsterOnBoard,
   owner: PlayerGameState,
@@ -372,10 +500,11 @@ function returnMonsterToHand(
   );
   if (idx === -1) return;
 
-  for (const eq of monster.equipments) {
+  // Les copies token disparaissent au lieu de rejoindre la main
+  for (const eq of monster.equipments.filter((e) => !e.token)) {
     owner.hand.push(eq);
   }
-  owner.hand.push(monster.card);
+  if (!monster.card.token) owner.hand.push(boardCard(monster));
   owner.monsterZones[idx] = null;
 
   ctx.log.push(

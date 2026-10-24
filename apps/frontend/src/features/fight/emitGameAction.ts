@@ -21,6 +21,9 @@ export function emitGameAction(
         zoneIndex: action.zoneIndex,
         paymentHandIndices: action.paymentHandIndices,
         ...(action.onOpponentSide && { onOpponentSide: true }),
+        ...(action.releveInstanceIds && {
+          releveInstanceIds: action.releveInstanceIds,
+        }),
       });
       return;
     case "evolve":
@@ -43,6 +46,12 @@ export function emitGameAction(
       return;
     case "recycle":
       socket.emit("fight:recycle_support", {
+        matchId,
+        handIndex: action.handIndex,
+      });
+      return;
+    case "transform":
+      socket.emit("fight:transform", {
         matchId,
         handIndex: action.handIndex,
       });

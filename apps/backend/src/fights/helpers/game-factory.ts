@@ -28,6 +28,7 @@ export function createPlayerState(entry: SeatEntry): PlayerGameState {
     monsterZones: [null, null, null],
     supportZones: [null, null, null],
     recycleEnergy: 0,
+    transformUsedThisTurn: false,
     hasDrawnThisTurn: false,
     handLimitEnforced: false,
     ready: false,

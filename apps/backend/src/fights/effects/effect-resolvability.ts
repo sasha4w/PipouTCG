@@ -1,8 +1,9 @@
-import { ActionType, EffectTarget } from '@pipou/shared';
+import { ActionType, EffectTarget, isPlantedBy } from '@pipou/shared';
 import type { EffectAction } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
 import { pickCandidates } from './pick-candidates';
+import { getOpponentState, getPlayerState } from '../helpers/game-state.helper';
 
 /** Cibles choisies par le joueur : leur validité est contrôlée à part. */
 const CHOSEN_TARGETS = new Set<EffectTarget>([
@@ -23,11 +24,24 @@ export function canResolveAction(
   action: EffectAction,
   ctx: EffectContext,
 ): boolean {
+  // La copie apparaît chez le propriétaire de la cible (soi, pour un Éphémère)
+  if (action.type === ActionType.DUPLICATE_MONSTER)
+    return getPlayerState(ctx.game, ctx.ownerUserId).monsterZones.some(
+      (z) => z === null,
+    );
+  // Il faut un Zeta implanté par le joueur, avec un compteur en cours
+  if (action.type === ActionType.RESET_TURN_COUNTER)
+    return getOpponentState(ctx.game, ctx.ownerUserId).monsterZones.some(
+      (z) =>
+        !!z && z.turnCounter !== undefined && isPlantedBy(z, ctx.ownerUserId),
+    );
   if (CHOSEN_TARGETS.has(action.target)) return true;
 
   const targets = resolveTargets(action.target, ctx, action.archetype);
   if (PICK_ACTIONS.has(action.type))
-    return targets.players.some((p) => pickCandidates(action, p).length > 0);
+    return targets.players.some(
+      (p) => pickCandidates(action, p, ctx.sourceCard).length > 0,
+    );
 
   switch (action.type) {
     case ActionType.DRAW:

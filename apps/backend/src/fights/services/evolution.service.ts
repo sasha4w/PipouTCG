@@ -3,6 +3,7 @@ import {
   EffectTrigger,
   canEvolveNow,
   canEvolveOnto,
+  isImplanted,
   evolutionCost,
 } from '@pipou/shared';
 import { GameState } from '../interfaces/game-state.interface';
@@ -12,6 +13,8 @@ import {
   addLog,
   getPlayerState,
   isCurrentPlayer,
+  boardCard,
+  sendToGraveyard,
 } from '../helpers/game-state.helper';
 
 @Injectable()
@@ -38,6 +41,10 @@ export class EvolutionService {
     );
     const base = player.monsterZones[zoneIndex];
     if (!base) return { error: 'Monstre à faire évoluer introuvable' };
+    if (isImplanted(base, userId))
+      return {
+        error: `${base.card.baseCard.name} appartient à ton adversaire`,
+      };
     if (!canEvolveOnto(card.baseCard, base))
       return {
         error: `${card.baseCard.name} ne peut pas évoluer depuis ${base.card.baseCard.name}`,
@@ -74,12 +81,16 @@ export class EvolutionService {
     });
     evolved.equipments = base.equipments;
     evolved.mode = base.mode;
+    // La Garde continue : même compteur, même verrou, même délai de retour
+    evolved.guardTurns = base.guardTurns;
+    evolved.guardLocked = base.guardLocked;
+    evolved.guardCooldown = base.guardCooldown;
     // Compte comme posé ce tour : pas de réévolution immédiate (n'empêche pas d'attaquer)
     evolved.summonedThisTurn = true;
     evolved.attacksUsedThisTurn = base.attacksUsedThisTurn;
     evolved.hasAttackedThisTurn = base.hasAttackedThisTurn;
 
-    player.graveyard.push(base.card);
+    sendToGraveyard(player, boardCard(base));
     player.monsterZones[zoneIndex] = evolved;
     game.pendingEvents.push({
       kind: 'monster_summoned',

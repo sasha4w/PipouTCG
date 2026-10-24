@@ -11,7 +11,7 @@ import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
 import { Card } from '../cards/card.entity';
-import { CardNumber, Rarity } from '@pipou/shared';
+import { CardNumber, Rarity, requiresAllElements } from '@pipou/shared';
 import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
@@ -198,10 +198,13 @@ export class BoostersService {
     const totalCards = resolveCardNumber(booster.cardNumber);
     const guarantees = BOOSTER_GUARANTEES[totalCards] ?? [];
 
-    const cards = await this.cardRepository.find({
-      where: { cardSet: { id: booster.cardSet.id } },
-      relations: { image: true },
-    });
+    // Le Drakon des Origines (4 éléments au cimetière) ne s'obtient qu'en aventure
+    const cards = (
+      await this.cardRepository.find({
+        where: { cardSet: { id: booster.cardSet.id } },
+        relations: { image: true },
+      })
+    ).filter((c) => !requiresAllElements(c.effects));
     if (!cards.length)
       throw new BadRequestException(`No cards in set ${booster.cardSet.name}`);
 

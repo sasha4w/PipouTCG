@@ -182,7 +182,10 @@ describe('cartes retravaillées', () => {
   describe('Maître Magouille', () => {
     const magouilleSeule = (hand: ReturnType<typeof realCard>[]) =>
       scenario({
-        p1: { hand, monsters: [realCard('Noyau Beta')] },
+        p1: {
+          hand,
+          monsters: [realCard('Noyau Beta'), realCard('Noyau Delta')],
+        },
         p2: {
           monsters: [
             {
@@ -204,7 +207,7 @@ describe('cartes retravaillées', () => {
       });
 
     it.each([
-      'Force Delta',
+      'Force Plasma',
       'Rootkit de Transmission',
       'Protocole de Gel .frz',
       'Verrou de Position .lock',
@@ -280,13 +283,16 @@ describe('cartes retravaillées', () => {
       expect(handNames(game, 'p1')).toEqual(['Recyclage .bat']);
     });
 
-    it('Force Delta ne peut pas viser un Beta ennemi protégé', () => {
+    it('Force Plasma inflige 1500 dégâts, même à un monstre protégé des destructions', () => {
       const game = scenario({
-        p1: { hand: [realCard('Force Delta')] },
+        p1: {
+          hand: [realCard('Force Plasma')],
+          monsters: [realCard('Noyau Delta')],
+        },
         p2: {
           monsters: [
             {
-              card: realCard('Noyau Beta'),
+              card: monsterCard('Mur', { hp: 3000 }),
               patch: { supportDestroyImmune: true },
             },
           ],
@@ -295,9 +301,10 @@ describe('cartes retravaillées', () => {
       const res = engine.dispatch(game, 'p1', {
         type: 'play_support',
         handIndex: 0,
-        targetInstanceId: monsterNamed(game, 'p2', 'Noyau Beta').instanceId,
+        targetInstanceId: monsterNamed(game, 'p2', 'Mur').instanceId,
       });
-      expect(res.error).toBe('Aucune cible valide pour cette carte');
+      expect(res.error).toBeUndefined();
+      expect(monsterNamed(game, 'p2', 'Mur').currentHp).toBe(1500);
     });
   });
 });

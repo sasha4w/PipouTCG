@@ -46,7 +46,8 @@ export const LAUNCH_SIGNATURES: Record<AdventureArchetype, FiveSignatures> = {
     dragon('Adulte Feros', 'fire'),
     dragon('Adulte Ackos', 'water'),
     dragon('Adulte Tempestu', 'wind'),
-    dragon('Œuf Céleste'),
+    // Boss : il réclame un Adulte ou un Ancestral de chaque élément au cimetière
+    dragon('Drakon des Origines'),
   ],
 };
 

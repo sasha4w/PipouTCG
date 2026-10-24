@@ -2,14 +2,19 @@ import { Injectable } from '@nestjs/common';
 import {
   GameState,
   CardInstance,
+  ChoiceCandidate,
   MonsterOnBoard,
 } from '../interfaces/game-state.interface';
 import {
   CardType,
+  DrakonStage,
   SupportType,
+  canTransform,
   EffectTrigger,
   ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
+  isImplanted,
+  isPlantedBy,
   isTargetableByEphemeral,
 } from '@pipou/shared';
 import { checkCondition } from '../effects/effect-conditions';
@@ -20,6 +25,8 @@ import {
   getPlayerState,
   getOpponentState,
   isCurrentPlayer,
+  leaveGuard,
+  queueChoice,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
 
@@ -53,11 +60,18 @@ export class SupportService {
 
       const side = ephemeralTargetSide(card.baseCard.effects);
       if (side) {
+        // Un monstre implanté n'est jamais « allié » de son hôte, ni « ennemi » de son poseur
         const pool = (
           side === 'ally'
             ? player.monsterZones
             : getOpponentState(game, userId).monsterZones
-        ).filter((m): m is MonsterOnBoard => m !== null);
+        ).filter(
+          (m): m is MonsterOnBoard =>
+            m !== null &&
+            (side === 'ally'
+              ? !isImplanted(m, userId)
+              : !isPlantedBy(m, userId)),
+        );
         const targetable = pool.filter((m) =>
           isTargetableByEphemeral(m, side, card.baseCard.effects),
         );
@@ -106,9 +120,13 @@ export class SupportService {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Cible requise pour un Équipement' };
         }
-        const target = player.monsterZones.find(
-          (m) => m?.instanceId === targetInstanceId,
-        );
+        // Mes monstres (hors implantés chez moi) ou ceux que j'ai implantés chez l'adversaire
+        const target = [
+          ...player.monsterZones.filter((m) => m && !isImplanted(m, userId)),
+          ...getOpponentState(game, userId).monsterZones.filter(
+            (m) => m && isPlantedBy(m, userId),
+          ),
+        ].find((m) => m?.instanceId === targetInstanceId);
         if (!target) {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Monstre cible introuvable' };
@@ -136,6 +154,15 @@ export class SupportService {
         if (player.supportZones[zoneIndex]) {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Zone de support occupée' };
+        }
+        // Un seul exemplaire d'un même terrain en jeu par joueur
+        if (
+          player.supportZones.some(
+            (z) => z?.baseCard.name === support.baseCard.name,
+          )
+        ) {
+          player.hand.splice(handIndex, 0, support);
+          return { error: 'Ce terrain est déjà en jeu' };
         }
         support.placedSeq = ++game.terrainSeq;
         player.supportZones[zoneIndex] = support;
@@ -199,6 +226,68 @@ export class SupportService {
     return {};
   }
 
+  /**
+   * Défausse un Jeune/Adulte coincé en main pour récupérer le Bébé de sa
+   * lignée (deck ou cimetière, au choix). Gratuit, une fois par tour.
+   */
+  transformFromHand(
+    game: GameState,
+    userId: number,
+    handIndex: number,
+  ): { error?: string } {
+    if (!isCurrentPlayer(game, userId))
+      return { error: "Ce n'est pas ton tour" };
+    if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
+
+    const player = getPlayerState(game, userId);
+    if (handIndex < 0 || handIndex >= player.hand.length)
+      return { error: 'Index main invalide' };
+
+    const card = player.hand[handIndex];
+    if (!canTransform(card.baseCard))
+      return { error: 'Seul un Jeune ou un Adulte peut se transformer' };
+    if (player.transformUsedThisTurn)
+      return { error: 'Une seule transformation par tour' };
+
+    const lineage = card.baseCard.lineage;
+    const lineageLabel = lineage
+      ? lineage.charAt(0).toUpperCase() + lineage.slice(1)
+      : '';
+    const isBaby = (c: CardInstance) =>
+      c.baseCard.stage === DrakonStage.BABY && c.baseCard.lineage === lineage;
+    const toCandidates = (
+      pile: CardInstance[],
+      source: 'graveyard' | 'deck',
+    ): ChoiceCandidate[] =>
+      pile.filter(isBaby).map((c) => ({
+        instanceId: c.instanceId,
+        baseCard: c.baseCard,
+        source,
+      }));
+    const candidates = [
+      ...toCandidates(player.graveyard, 'graveyard'),
+      ...toCandidates(player.deck, 'deck'),
+    ];
+    if (candidates.length === 0)
+      return { error: `Aucun Bébé ${lineageLabel} à récupérer` };
+
+    player.hand.splice(handIndex, 1);
+    player.graveyard.push(card);
+    player.transformUsedThisTurn = true;
+    addLog(
+      game,
+      `🔁 ${player.username} défausse ${card.baseCard.name} pour récupérer un Bébé ${lineageLabel}`,
+    );
+    queueChoice(game, {
+      forUserId: userId,
+      candidates,
+      count: 1,
+      prompt: `Choisissez le Bébé ${lineageLabel} à récupérer (cimetière ou deck)`,
+      resolution: 'pick_to_hand',
+    });
+    return {};
+  }
+
   changeMode(
     game: GameState,
     userId: number,
@@ -215,6 +304,10 @@ export class SupportService {
       (m) => m?.instanceId === instanceId,
     );
     if (!monster) return { error: 'Monstre introuvable' };
+    if (isImplanted(monster, userId))
+      return {
+        error: `${monster.card.baseCard.name} appartient à ton adversaire`,
+      };
 
     if (monster.forcedAttackMode && mode === 'guard')
       return { error: 'Ce monstre ne peut pas passer en mode Garde' };
@@ -225,6 +318,14 @@ export class SupportService {
       };
     }
 
+    // Le temps s'achète, il ne s'accumule pas : pas de retour en Garde le tour de la sortie
+    if (mode === 'guard' && monster.guardCooldown)
+      return {
+        error: `${monster.card.baseCard.name} vient de sortir de la Garde : retour possible au prochain tour`,
+      };
+    // Sortir de la Garde : contre-offensive ; y entrer : le compteur repart de zéro
+    if (mode === 'attack' && monster.mode === 'guard') leaveGuard(monster);
+    else if (mode === 'guard') monster.guardTurns = 0;
     monster.mode = mode;
     addLog(
       game,

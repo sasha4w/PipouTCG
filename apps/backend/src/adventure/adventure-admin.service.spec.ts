@@ -383,6 +383,8 @@ describe('AdventureAdminService.updateOpponent', () => {
     farmXp: 2,
     farmBoosterPct: 12.5,
     farmLegendaryPct: 0,
+    farmCardId: null,
+    farmCardPct: 0,
     ...over,
   });
 
@@ -399,6 +401,29 @@ describe('AdventureAdminService.updateOpponent', () => {
     expect(opponents.find((o) => o.id === id)).toMatchObject({
       quote: 'Nouvelle réplique',
     });
+  });
+
+  it('carte de farm du set : enregistrée avec son taux', async () => {
+    const { service, opponents } = setup();
+    const w = await service.createWorld(worldBody());
+    const id = w.opponents[0].id;
+    const farmCardId = BASE.filter((c) => c.archetype === 'pipou')[1].id;
+    const u = await service.updateOpponent(
+      id,
+      body({ farmCardId, farmCardPct: 5 }),
+    );
+    expect(u.opponents[0]).toMatchObject({ farmCardId, farmCardPct: 5 });
+    expect(opponents.find((o) => o.id === id)).toMatchObject({ farmCardId });
+  });
+
+  it('carte de farm d un autre set : 400', async () => {
+    const { service } = setup();
+    const w = await service.createWorld(worldBody());
+    const other = BASE.find((c) => c.archetype === 'dragon')!.id;
+    await rejects(
+      service.updateOpponent(w.opponents[0].id, body({ farmCardId: other })),
+      /carte de farm/i,
+    );
   });
 
   it('portrait d un autre set : 400', async () => {
@@ -553,8 +578,12 @@ describe('DTOs admin', () => {
       farmXp: 0,
       farmBoosterPct: 100,
       farmLegendaryPct: 0,
+      farmCardId: null,
+      farmCardPct: 0,
     };
     expect(await errs(AdminOpponentDto, ok)).toBe(0);
+    expect(await errs(AdminOpponentDto, { ...ok, farmCardPct: 101 })).toBe(1);
+    expect(await errs(AdminOpponentDto, { ...ok, farmCardId: 0 })).toBe(1);
     expect(await errs(AdminOpponentDto, { ...ok, farmBoosterPct: 100.5 })).toBe(
       1,
     );
