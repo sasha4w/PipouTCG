@@ -188,9 +188,11 @@ export function planTurn(
     const children = new Map<string, Node>();
     for (const node of beam) {
       for (const action of listCandidates(node.state, seat)) {
+        // Le plafond de temps épargne la profondeur 0 : tous les premiers
+        // coups sont comparés, sinon le plan ferait pire que le glouton
         if (
           counter.used >= thinking.budget ||
-          (deadline !== undefined && performance.now() >= deadline)
+          (depth > 0 && deadline !== undefined && performance.now() >= deadline)
         ) {
           exhausted = true;
           break;

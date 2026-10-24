@@ -3,7 +3,7 @@ import type { GameState } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
 import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
 import { act, effect, ephemeralCard, monsterCard } from '../testing/cards';
-import { P1_ID, P2_ID, scenario } from '../testing/scenario';
+import { P1_ID, P2_ID, monsterNamed, scenario } from '../testing/scenario';
 import { AiPlayer } from './ai-player';
 import type { AiProfile } from './ai-player';
 import { listCandidates } from './candidate-actions';
@@ -103,19 +103,43 @@ describe('planTurn', () => {
     );
   });
 
-  it('plafond de temps atteint avant toute simulation : pas de plan', () => {
-    const counter = { used: 0 };
+  it('plafond de temps dépassé : tous les premiers coups sont quand même comparés', () => {
+    // Lame tue Moucheron (dernière Prime) : ce n'est pas le premier candidat
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: {
+        monsters: [
+          monsterCard('Colosse', { atk: 50, hp: 5000 }),
+          monsterCard('Moucheron', { atk: 0, hp: 100 }),
+        ],
+      },
+      p2: {
+        primes: 1,
+        monsters: [monsterCard('Lame', { atk: 200, hp: 500 })],
+      },
+    });
+    const first = listCandidates(game, 'p2')[0];
+    const winning = {
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Lame').instanceId,
+      targetInstanceId: monsterNamed(game, 'p1', 'Moucheron').instanceId,
+    };
+    expect(first).not.toEqual(winning);
+    // L'horloge saute de 1 s à chaque lecture : échéance dépassée dès la 1re simulation
+    let t = 0;
+    jest.spyOn(performance, 'now').mockImplementation(() => (t += 1000));
     const plan = planTurn(
       engine,
-      lonelyRecruit(),
-      'p1',
+      game,
+      'p2',
       pipou,
-      { ...STRONGEST, timeLimitMs: 0 },
+      { ...STRONGEST, timeLimitMs: 1 },
       seeded(1),
-      counter,
+      { used: 0 },
     );
-    expect(plan).toBeNull();
-    expect(counter.used).toBe(0);
+    jest.restoreAllMocks();
+    expect(plan!.actions[0]).toEqual(winning);
   });
 
   it('plafond de temps à 0 : l’IA joue quand même un coup valide', () => {
