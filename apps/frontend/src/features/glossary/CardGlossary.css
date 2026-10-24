@@ -105,6 +105,11 @@
   flex-direction: column;
   gap: 4px;
 }
+/* Dans le panneau, les puces passent à la ligne : aucune ne reste cachée */
+.cg__panel .cg__chips {
+  flex-wrap: wrap;
+  overflow: visible;
+}
 .cg__group-label {
   font-size: 0.66rem;
   font-weight: 800;

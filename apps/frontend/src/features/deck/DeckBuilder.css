@@ -114,63 +114,53 @@
   min-height: 0;
 }
 
-/* ─── Ligne de collection (style glossaire) ── */
-.deck-row {
-  display: flex;
-  align-items: stretch;
-  gap: 6px;
-  padding: 8px;
-  border: 1.5px solid rgba(61, 16, 32, 0.1);
-  border-radius: 14px;
-  background: #fffaf4;
-}
-.deck-row--in {
-  border-color: #f27aaa;
-  background: #fff4f8;
+/* ─── Grille de collection : un tap ouvre la fiche ── */
+.deck-grid {
+  display: grid;
+  /* 4 colonnes sur mobile, davantage quand la place le permet */
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 4px 0 0;
+  list-style: none;
 }
 
-.deck-row__main {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
+.deck-grid__card {
+  position: relative;
+  display: block;
+  width: 100%;
   padding: 0;
   border: none;
+  border-radius: 10px;
   background: none;
-  font-family: inherit;
-  text-align: left;
-  color: #3d1020;
   cursor: pointer;
   transition: transform 0.12s;
 }
-.deck-row__main:active {
-  transform: scale(0.98);
+.deck-grid__card:active {
+  transform: scale(0.95);
+}
+.deck-grid__card .card-face {
+  pointer-events: none;
+}
+/* Déjà dans le deck : contour rose */
+.deck-grid__card--in {
+  box-shadow: 0 0 0 2.5px #f27aaa;
 }
 
-.deck-row__qty {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 58px;
-}
-
-.deck-row__count {
-  font-size: 1rem;
+.deck-grid__qty {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #7a1c3b;
+  color: #fdf6f0;
+  font-size: 0.72rem;
   font-weight: 800;
-  color: #7a1c3b;
-  line-height: 1.1;
-}
-
-.deck-row__owned {
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: #a08070;
-  text-align: center;
-  line-height: 1.2;
+  line-height: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 /* ─── Barre bottom sticky ─────────────────── */

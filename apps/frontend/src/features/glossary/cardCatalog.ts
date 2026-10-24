@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  Archetype,
-  Rarity,
-  cardService,
-  type Card,
-} from "../../services/card.service";
+import { Rarity, cardService, type Card } from "../../services/card.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 
 /** Toutes les cartes tiennent en une page (plafond du back : 500). */
@@ -14,7 +9,6 @@ export type Kind = "monster" | "EQUIPMENT" | "TERRAIN" | "EPHEMERAL";
 export const KINDS: Kind[] = ["monster", "EQUIPMENT", "TERRAIN", "EPHEMERAL"];
 
 export const RARITIES = Object.values(Rarity);
-export const ARCHETYPES = Object.values(Archetype);
 
 /** « default » garde l'ordre du catalogue (set puis id). */
 export type SortKey = "default" | "name" | "cost" | "atk" | "hp" | "rarity";
@@ -54,7 +48,6 @@ export interface CardFilters {
   setId: number | null;
   kind: Kind | null;
   rarity: Rarity | null;
-  archetype: Archetype | null;
   cost: number | null;
   sort: SortKey;
   /** Ordre décroissant. */
@@ -66,15 +59,25 @@ export const NO_FILTERS: CardFilters = {
   setId: null,
   kind: null,
   rarity: null,
-  archetype: null,
   cost: null,
   sort: "default",
   desc: false,
 };
 
-/** Filtres repliés (rareté, archétype, coût) actifs : pour le badge du bouton. */
-export function advancedFilterCount(filters: CardFilters): number {
-  return [filters.rarity, filters.archetype, filters.cost].filter(
+/** Les filtres du panneau, tous désactivés. */
+export const NO_PANEL_FILTERS = {
+  setId: null,
+  kind: null,
+  rarity: null,
+  cost: null,
+} satisfies Partial<CardFilters>;
+
+/**
+ * Filtres du panneau actifs : pour le badge du bouton.
+ * Pas d'archétype : il recoupe le set (PipouSquad, Drakon, SquareWorld).
+ */
+export function activeFilterCount(filters: CardFilters): number {
+  return [filters.setId, filters.kind, filters.rarity, filters.cost].filter(
     (v) => v !== null,
   ).length;
 }
@@ -91,18 +94,11 @@ export function costsOf(cards: readonly Card[]): number[] {
   return [...new Set(cards.map((c) => c.cost))].sort((a, b) => a - b);
 }
 
-/** Archétypes présents parmi les cartes, dans l'ordre de l'enum. */
-export function archetypesOf(cards: readonly Card[]): Archetype[] {
-  const present = new Set(cards.map((c) => c.archetype));
-  return ARCHETYPES.filter((a) => present.has(a));
-}
-
 export function matchesFilters(card: Card, filters: CardFilters): boolean {
   return (
     (filters.setId === null || card.cardSet.id === filters.setId) &&
     (filters.kind === null || cardKind(card) === filters.kind) &&
     (filters.rarity === null || card.rarity === filters.rarity) &&
-    (filters.archetype === null || card.archetype === filters.archetype) &&
     (filters.cost === null || card.cost === filters.cost) &&
     normalize(card.name).includes(normalize(filters.search.trim()))
   );

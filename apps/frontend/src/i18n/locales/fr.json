@@ -1148,7 +1148,6 @@
     "view": "Voir {{name}}",
     "noEffect": "Aucun effet",
     "search": "Rechercher une carte…",
-    "all": "Tous",
     "kind": {
       "monster": "Monstre",
       "EQUIPMENT": "Équipement",
@@ -1157,7 +1156,6 @@
     },
     "filters": "Filtres",
     "rarity": "Rareté",
-    "archetype": "Archétype",
     "cost": "Coût",
     "sort": "Trier par",
     "sortKey": {
@@ -1169,7 +1167,9 @@
       "rarity": "Rareté"
     },
     "asc": "Ordre croissant",
-    "desc": "Ordre décroissant"
+    "desc": "Ordre décroissant",
+    "set": "Set",
+    "type": "Type"
   },
   "deck": {
     "title": "Mes Decks",
@@ -1187,13 +1187,17 @@
     "stripEmpty": "Ajoute des cartes depuis ta collection",
     "viewQty": "Voir {{name}} (x{{qty}})",
     "collectionEmpty": "Ta collection est vide.",
-    "add": "Ajouter {{name}}",
-    "remove": "Retirer {{name}}",
-    "owned_one": "/ {{count}} possédé",
-    "owned_other": "/ {{count}} possédés",
     "remaining": " · encore {{count}}",
     "tooMany": " · trop de cartes",
-    "save": "Sauvegarder"
+    "save": "Sauvegarder",
+    "sheet": {
+      "close": "Fermer",
+      "owned_one": "{{count}} possédé",
+      "owned_other": "{{count}} possédés",
+      "qty": "Exemplaires dans le deck",
+      "prev": "Carte précédente",
+      "next": "Carte suivante"
+    }
   },
   "arena": {
     "title": "Arène",
