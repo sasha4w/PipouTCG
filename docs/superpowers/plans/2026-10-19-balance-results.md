@@ -514,3 +514,38 @@ Mesuré le 2026-10-24, commit 3d0d798 : Force Plasma à 1 000 dégâts, Sentinel
 - Pixelman tombe à 37 % contre Pipou : Force Plasma est l'une de ses rares réponses aux murs Pipou.
 - Pipou ne se débloque pas (phases sans coup utile 9 / 14 / 16 / 17 / 24 %, moyenne 16,0 %) : la Sentinelle n'en est pas la cause ; à traiter côté IA (choix de zone et paiement).
 - **Annulé** : on garde le réglage 73c255d, validé en Standard.
+
+## Mesures : Pipou bloqué et valeur réelle des murs (Rapide)
+
+Mesuré le 2026-10-24, branche `ai-mesures` (cartes du réglage 73c255d). Deux tournois Rapide aux mêmes graines (decks 1 à 3, 4 parties par paire, 1 260 parties chacun, ± 5 points) : la référence, puis les mêmes decks tirés **sans** Sentinelle Gargouille, Bébé Teros ni Œuf Céleste (`--sans`), remplacés par d'autres cartes du set.
+
+### Les murs : la « valeur ajoutée » les pénalisait à tort
+
+| Mesure | Avec les murs | Sans les murs | Écart |
+|---|---|---|---|
+| dragon contre pipou | 45,0 % | 30,7 % | **−14,3** |
+| dragon contre pixelman | 51,3 % | 44,7 % | −6,6 |
+| pipou contre pixelman | 60,3 % | 63,0 % | +2,7 (bruit) |
+| dragon niveau 1 / niveau 5 | 22,6 % / 83,9 % | 7,1 % / 67,9 % | −15,5 / −16,0 |
+
+- Retirer les murs fait **s'effondrer Dragon** : ils portent l'archétype, alors que leur « valeur ajoutée » sortait entre −14 et −39.
+- La valeur ajoutée compare les parties où la carte est jouée à celles où elle reste en main ; un mur est posé quand on est en difficulté, et reste en main quand on gagne déjà. Pour ces cartes, la mesure dit l'inverse de la réalité.
+- Pour Pipou, la Sentinelle semble neutre (écart dans le bruit).
+
+### Pipou bloqué : structurel, pas une faute de l'IA
+
+Une phase « sans coup utile » est une phase où **aucun** coup utile n'était possible : l'IA n'y refuse rien. Nouvelle colonne « phases passives » : un coup utile existait, l'IA a fini sa phase sans en jouer.
+
+| Archétype | Phases sans coup utile (niv. 1 à 5) | Phases passives (niv. 1 à 5) |
+|---|---|---|
+| pipou | 11 / 14 / 16 / 17 / 23 % | 8 / 12 / 15 / 10 / 12 % |
+| pixelman | 12 / 8 / 8 / 7 / 10 % | 11 / 13 / 13 / 11 / 14 % |
+| dragon | 15 / 7 / 8 / 9 / 4 % | 17 / 13 / 14 / 15 / 19 % |
+
+- Pipou n'est pas plus passif que les autres ; le deck le plus fort du tournoi (dragon niveau 5, 84 %) est même le plus passif (19 %) : garder ses cartes est souvent le bon choix (elles servent à payer).
+- Les blocages de Pipou viennent du terrain plein (« pas de zone libre ») : c'est la nature d'un deck qui inonde le terrain, et Pipou gagne 55 à 60 % de ses duels.
+
+### Conséquences
+
+- Le critère « Pipou < 12 % de phases sans coup utile » ne mesure pas une faute : à abandonner, ou à remplacer par les phases passives si l'on veut suivre l'IA.
+- Les alertes de cartes défensives « trop faibles » sont à lire avec prudence ; pour juger une carte, le tournoi `--sans` est la mesure fiable.
