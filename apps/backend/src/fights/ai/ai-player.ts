@@ -16,20 +16,11 @@ import type { Plan, ThinkingProfile } from './planner';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
 
-/** Variante jouée par l'IA : archétype (heuristiques) et niveau (erreurs). */
+/** Variante jouée par l'IA : archétype (heuristiques) et niveau. */
 export interface AiProfile {
   archetype: AdventureArchetype;
   level: AiLevel;
 }
-
-/** Probabilité de jouer un coup valide au hasard au lieu du meilleur. */
-export const MISTAKE_RATE: Record<AiLevel, number> = {
-  1: 0.25,
-  2: 0.1,
-  3: 0,
-  4: 0,
-  5: 0,
-};
 
 /** Écart minimal pour préférer une action à la fin de phase. */
 const IMPROVEMENT_EPSILON = 1e-6;
@@ -75,6 +66,8 @@ export class AiPlayer {
     private readonly random: () => number,
     /** 'greedy' : un coup à l'avance (aventure) ; sinon, planifie son tour. */
     private readonly thinking: ThinkingProfile | 'greedy' = 'greedy',
+    /** Probabilité de jouer un coup valide au hasard au lieu du meilleur. */
+    private readonly mistakeRate = 0,
   ) {}
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
@@ -156,8 +149,7 @@ export class AiPlayer {
       valid: valid.map((v) => v.action),
     });
 
-    const rate = MISTAKE_RATE[profile.level] ?? 0;
-    if (rate > 0 && this.random() < rate) {
+    if (this.mistakeRate > 0 && this.random() < this.mistakeRate) {
       this.plan = null;
       return result(valid[Math.floor(this.random() * valid.length)].action);
     }

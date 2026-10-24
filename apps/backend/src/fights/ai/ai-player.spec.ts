@@ -12,7 +12,7 @@ import {
   scenario,
   seatState,
 } from '../testing/scenario';
-import { AiPlayer, MISTAKE_RATE, aiMustAct } from './ai-player';
+import { AiPlayer, aiMustAct } from './ai-player';
 import { listCandidates } from './candidate-actions';
 import { evaluate } from './evaluate';
 import type { AiProfile } from './ai-player';
@@ -22,10 +22,6 @@ const ai = new AiPlayer(engine, () => 0.99);
 const profile: AiProfile = { archetype: 'pipou', level: 3 };
 
 describe('AiPlayer', () => {
-  it('niveaux : 25 % / 10 % puis aucune erreur volontaire', () => {
-    expect(MISTAKE_RATE).toEqual({ 1: 0.25, 2: 0.1, 3: 0, 4: 0, 5: 0 });
-  });
-
   it('phase de combat : choisit l’attaque qui fait gagner', () => {
     const game = scenario({
       turn: 'p2',

@@ -21,6 +21,8 @@ export interface ThinkingProfile {
   ripostes: number;
   /** Appels à `engine.dispatch` au plus par recherche. */
   budget: number;
+  /** Plafond de temps d'une recherche, en ms (aventure) ; absent = aucun. */
+  timeLimitMs?: number;
 }
 
 /** Réglage retenu après 3 essais en miroir Standard (voir 2026-10-19-balance-results.md). */
@@ -176,12 +178,20 @@ export function planTurn(
     if (!old || node.score > old.score) map.set(sig, node);
   };
 
+  // Sans plafond, aucune lecture d'horloge : le tournoi reste reproductible
+  const deadline =
+    thinking.timeLimitMs === undefined
+      ? undefined
+      : performance.now() + thinking.timeLimitMs;
   let exhausted = false;
   for (let depth = 0; depth < thinking.depth && beam.length > 0; depth++) {
     const children = new Map<string, Node>();
     for (const node of beam) {
       for (const action of listCandidates(node.state, seat)) {
-        if (counter.used >= thinking.budget) {
+        if (
+          counter.used >= thinking.budget ||
+          (deadline !== undefined && performance.now() >= deadline)
+        ) {
           exhausted = true;
           break;
         }

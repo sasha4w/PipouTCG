@@ -103,6 +103,30 @@ describe('planTurn', () => {
     );
   });
 
+  it('plafond de temps atteint avant toute simulation : pas de plan', () => {
+    const counter = { used: 0 };
+    const plan = planTurn(
+      engine,
+      lonelyRecruit(),
+      'p1',
+      pipou,
+      { ...STRONGEST, timeLimitMs: 0 },
+      seeded(1),
+      counter,
+    );
+    expect(plan).toBeNull();
+    expect(counter.used).toBe(0);
+  });
+
+  it('plafond de temps à 0 : l’IA joue quand même un coup valide', () => {
+    const game = lonelyRecruit();
+    const action = new AiPlayer(engine, seeded(1), {
+      ...STRONGEST,
+      timeLimitMs: 0,
+    }).chooseAction(game, 'p1', pipou);
+    expect(engine.dispatch(game, 'p1', action).error).toBeUndefined();
+  });
+
   it('budget respecté, plan jouable', () => {
     const game = lonelyRecruit();
     const counter = { used: 0 };
