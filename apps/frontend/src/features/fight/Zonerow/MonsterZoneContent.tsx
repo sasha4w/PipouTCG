@@ -32,24 +32,33 @@ export default function MonsterZoneContent({
   const badges = (
     <>
       {zone.hasTaunt && (
-        <span className="zr-badge zr-badge--taunt" title="Provocation">
+        <span
+          className="zr-badge zr-badge--taunt"
+          title={t("keywords.taunt.name")}
+        >
           🛡
         </span>
       )}
       {zone.hasPiercing && (
-        <span className="zr-badge zr-badge--piercing" title="Perçant">
+        <span
+          className="zr-badge zr-badge--piercing"
+          title={t("keywords.piercing.name")}
+        >
           🗡
         </span>
       )}
       {zone.isImmuneToDebuffs && (
-        <span className="zr-badge zr-badge--immune" title="Immunité débuffs">
+        <span
+          className="zr-badge zr-badge--immune"
+          title={t("keywords.debuffImmunity.name")}
+        >
           ✨
         </span>
       )}
       {blocked && (
         <span
           className="zr-badge zr-badge--sleep"
-          title="Ne peut pas attaquer ce tour"
+          title={t("fight.badge.sleep")}
         >
           💤
         </span>
@@ -57,13 +66,18 @@ export default function MonsterZoneContent({
       {zone.doubleAtkNextTurn && (
         <span
           className="zr-badge zr-badge--charge"
-          title="Double attaque au prochain tour"
+          title={t("effects.status.doubleAttack")}
         >
           ⚡
         </span>
       )}
       {zone.attacksPerTurn > 1 && !blocked && (
-        <span className="zr-badge zr-badge--multi" title="Double attaque">
+        <span
+          className="zr-badge zr-badge--multi"
+          title={t("fight.badge.attacksLeft", {
+            count: zone.attacksPerTurn - zone.attacksUsedThisTurn,
+          })}
+        >
           ×{zone.attacksPerTurn - zone.attacksUsedThisTurn}
         </span>
       )}
@@ -75,7 +89,7 @@ export default function MonsterZoneContent({
           ]
             .filter(Boolean)
             .join(" ")}
-          title={`S'autodétruit dans ${zone.turnCounter} tour(s)`}
+          title={t("effects.status.countdown", { count: zone.turnCounter })}
         >
           ⏳{zone.turnCounter}
         </span>
@@ -97,7 +111,9 @@ export default function MonsterZoneContent({
       {(zone.blockAttackTurns ?? 0) > 0 && (
         <span
           className="zr-badge zr-badge--sleep"
-          title={`Ne peut pas attaquer encore ${zone.blockAttackTurns} tour(s)`}
+          title={t("effects.status.freeze", {
+            count: zone.blockAttackTurns,
+          })}
         >
           🧊{zone.blockAttackTurns}
         </span>
@@ -124,7 +140,7 @@ export default function MonsterZoneContent({
       {zone.guardLocked && (
         <span
           className="zr-badge zr-badge--taunt"
-          title="Verrouillé en mode Garde jusqu'à être attaqué"
+          title={t("keywords.guardLock.desc")}
         >
           🔒
         </span>
@@ -175,6 +191,8 @@ export default function MonsterZoneContent({
               onModeChange(zone.instanceId, "attack");
             }}
             className={`zr-mode-btn${zone.mode === "attack" ? " zr-mode-btn--active" : ""}`}
+            aria-label={t("fight.mode.attack")}
+            title={t("fight.mode.attack")}
           >
             ⚔️
           </button>
@@ -184,6 +202,8 @@ export default function MonsterZoneContent({
               onModeChange(zone.instanceId, "guard");
             }}
             className={`zr-mode-btn${zone.mode === "guard" ? " zr-mode-btn--active" : ""}`}
+            aria-label={t("fight.mode.guard")}
+            title={t("fight.mode.guard")}
           >
             🛡️
           </button>

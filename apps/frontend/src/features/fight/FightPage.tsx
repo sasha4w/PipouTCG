@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
@@ -28,6 +29,7 @@ export default function FightPage({
   username: string;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("fight");
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
@@ -94,7 +96,7 @@ export default function FightPage({
   };
 
   const surrender = () => {
-    if (!matchId || !window.confirm("Abandonner ?")) return;
+    if (!matchId || !window.confirm(t("fight.bar.confirmSurrender"))) return;
     emit("fight:surrender", { matchId });
   };
 

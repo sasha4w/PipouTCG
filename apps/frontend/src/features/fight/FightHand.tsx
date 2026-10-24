@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
@@ -31,6 +32,7 @@ export default function FightHand({
   freeSummonInstanceIds,
   onCardClick,
 }: Props) {
+  const { t } = useTranslation();
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
   const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
@@ -93,15 +95,21 @@ export default function FightHand({
             onInspect={() => setInspectedId(card.instanceId)}
             onInspectEnd={() => setInspectedId(null)}
           >
-            {isFree && <span className="fhand-free-label">GRATUIT ⚡</span>}
+            {isFree && (
+              <span className="fhand-free-label">
+                {t("fight.hand.free")} ⚡
+              </span>
+            )}
             {isPaying && (
-              <div className="fhand-pay-badge" title="Carte de paiement">
+              <div className="fhand-pay-badge" title={t("fight.hand.payCard")}>
                 💰
               </div>
             )}
             {isSelected && <div className="fhand-selected-badge">✓</div>}
             {mustDiscard && (
-              <div className="fhand-discard-label">défausser</div>
+              <div className="fhand-discard-label">
+                {t("fight.hand.discard")}
+              </div>
             )}
           </InspectableCard>
         );

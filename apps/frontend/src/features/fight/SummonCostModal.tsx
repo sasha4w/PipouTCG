@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import { IconClose, IconReleve } from "../../components/Icons";
@@ -71,17 +72,23 @@ export default function SummonCostModal({
   const handPaid = payIndices.length;
   const canConfirm = handPaid >= stillNeeded;
 
-  return (
+  // Hors du plateau : un ancêtre empilé y placerait la main et le HUD par-dessus
+  return createPortal(
     <div className="scm-overlay" onClick={onClose}>
       <div className="scm-modal" onClick={(e) => e.stopPropagation()}>
         <div className="scm-header">
           <span className="scm-title">
-            {isEvolution ? "Évolution" : "Invoquer"} — {card.name}
+            {t(
+              isEvolution ? "fight.summon.evolveTitle" : "fight.summon.title",
+              {
+                name: card.name,
+              },
+            )}
           </span>
           <Button
             variant="ghost-bordeaux"
             size="icon"
-            aria-label="Fermer"
+            aria-label={t("fight.summon.close")}
             onClick={onClose}
           >
             <IconClose size={16} />
@@ -127,7 +134,9 @@ export default function SummonCostModal({
                     onClick={() => toggleAlly(a.instanceId)}
                   >
                     <div className="scm-card-name">{a.name}</div>
-                    <div className="scm-card-sub">{t("fight.releve.stats", { atk: a.atk, hp: a.hp })}</div>
+                    <div className="scm-card-sub">
+                      {t("fight.releve.stats", { atk: a.atk, hp: a.hp })}
+                    </div>
                   </div>
                 );
               })}
@@ -138,7 +147,7 @@ export default function SummonCostModal({
                 className="scm-btn-cancel"
                 onClick={onClose}
               >
-                Annuler
+                {t("fight.summon.cancel")}
               </Button>
               <Button
                 className="scm-btn-confirm"
@@ -153,15 +162,15 @@ export default function SummonCostModal({
           <>
             <div className="scm-cost-row">
               <span className="scm-cost-item">
-                Coût total : <strong>{totalCost}⚡</strong>
+                {t("fight.summon.totalCost")} <strong>{totalCost}⚡</strong>
               </span>
               <span className="scm-cost-item">
-                Énergie : <strong>{fromEnergy}⚡</strong>
+                {t("fight.summon.energy")} <strong>{fromEnergy}⚡</strong>
               </span>
               <span
                 className={`scm-cost-item ${handPaid >= stillNeeded ? "scm-cost-ok" : "scm-cost-missing"}`}
               >
-                Cartes à défausser :{" "}
+                {t("fight.summon.toDiscard")}{" "}
                 <strong>
                   {handPaid}/{stillNeeded}
                 </strong>
@@ -169,8 +178,7 @@ export default function SummonCostModal({
             </div>
 
             <p className="scm-hint">
-              Sélectionne {stillNeeded} carte{stillNeeded > 1 ? "s" : ""} à
-              recycler depuis ta main
+              {t("fight.summon.hint", { count: stillNeeded })}
             </p>
 
             <div className="scm-hand-grid">
@@ -194,7 +202,7 @@ export default function SummonCostModal({
                     <div className="scm-card-sub">
                       {c.type === "monster"
                         ? `${c.atk}⚔ ${c.hp}❤`
-                        : (c.supportType ?? c.type)}
+                        : t(`glossary.kind.${c.supportType ?? "EPHEMERAL"}`)}
                     </div>
                   </div>
                 );
@@ -207,19 +215,22 @@ export default function SummonCostModal({
                 className="scm-btn-cancel"
                 onClick={onClose}
               >
-                Annuler
+                {t("fight.summon.cancel")}
               </Button>
               <Button
                 className="scm-btn-confirm"
                 disabled={!canConfirm}
                 onClick={onConfirm}
               >
-                {isEvolution ? "Recycler & Évoluer" : "⬆️ Recycler & Invoquer"}
+                {isEvolution
+                  ? t("fight.summon.confirmEvolve")
+                  : `⬆️ ${t("fight.summon.confirm")}`}
               </Button>
             </div>
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

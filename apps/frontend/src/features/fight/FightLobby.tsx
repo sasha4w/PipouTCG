@@ -1,4 +1,5 @@
 import { MatchEndReason } from "@pipou/shared";
+import { Trans, useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import { IconArrowRight } from "../../components/Icons";
 import "./FightLobby.css";
@@ -30,6 +31,7 @@ export default function FightLobby({
   onSubmitDeck,
   onReplay,
 }: Props) {
+  const { t } = useTranslation();
   if (status === "finished") {
     const draw = endReason === MatchEndReason.DOUBLE_KO;
     const won = !draw && winner === userId;
@@ -41,11 +43,21 @@ export default function FightLobby({
         <h2
           className={`lobby-hero-title ${draw ? "" : won ? "lobby-hero-title--win" : "lobby-hero-title--loss"}`}
         >
-          {draw ? "Match nul" : won ? "Victoire !" : "Défaite"}
+          {t(
+            draw
+              ? "fight.lobby.draw"
+              : won
+                ? "fight.lobby.win"
+                : "fight.lobby.loss",
+          )}
         </h2>
-        <p className="lobby-muted">{endReason}</p>
+        {endReason && (
+          <p className="lobby-muted">
+            {t(`fight.endReason.${endReason}`, { defaultValue: endReason })}
+          </p>
+        )}
         <Button size="lg" onClick={onReplay}>
-          Rejouer
+          {t("fight.lobby.replay")}
         </Button>
       </div>
     );
@@ -54,20 +66,24 @@ export default function FightLobby({
   if (status === "selecting") {
     return (
       <div className="lobby-center">
-        <h2 className="lobby-hero-title">⚔️ Adversaire trouvé !</h2>
+        <h2 className="lobby-hero-title">⚔️ {t("fight.lobby.found")}</h2>
         <p className="lobby-hero-sub">
-          Tu affrontes <strong>{opponentName}</strong>
+          <Trans
+            i18nKey="fight.lobby.facing"
+            values={{ name: opponentName }}
+            components={{ b: <strong /> }}
+          />
         </p>
-        <p className="lobby-muted">Confirme ton deck pour commencer</p>
+        <p className="lobby-muted">{t("fight.lobby.confirmDeck")}</p>
         {selectedDeck ? (
-          <div className="lobby-deck-chosen">Deck #{selectedDeck} prêt</div>
+          <div className="lobby-deck-chosen">
+            {t("fight.lobby.deckReady", { id: selectedDeck })}
+          </div>
         ) : (
-          <p className="lobby-deck-warning">
-            Sélectionne un deck via le widget « Decks »
-          </p>
+          <p className="lobby-deck-warning">{t("fight.lobby.pickDeck")}</p>
         )}
         <Button size="lg" onClick={onSubmitDeck} disabled={!selectedDeck}>
-          Lancer la partie
+          {t("fight.lobby.start")}
           <IconArrowRight size={16} />
         </Button>
       </div>
@@ -77,25 +93,23 @@ export default function FightLobby({
   // idle | queued
   return (
     <div className="lobby-center">
-      <h2 className="lobby-hero-title">⚔️ Prêt au combat ?</h2>
-      <p className="lobby-hero-sub">
-        Rejoins la file d'attente et affronte un adversaire en 1v1
-      </p>
+      <h2 className="lobby-hero-title">⚔️ {t("fight.lobby.ready")}</h2>
+      <p className="lobby-hero-sub">{t("fight.lobby.intro")}</p>
 
       {selectedDeck ? (
         <div className="lobby-deck-chosen">
-          ✓ Deck sélectionné{" "}
+          ✓ {t("fight.lobby.deckSelected")}{" "}
           <span className="lobby-deck-id">#{selectedDeck}</span>
         </div>
       ) : (
         <p className="lobby-muted lobby-muted--mb">
-          Sélectionne un deck via le widget « Decks » avant de combattre
+          {t("fight.lobby.pickDeckFirst")}
         </p>
       )}
 
       {status === "idle" ? (
         <Button size="lg" onClick={onJoinQueue} disabled={!selectedDeck}>
-          🔍 Rechercher une partie
+          🔍 {t("fight.lobby.search")}
         </Button>
       ) : (
         <>
@@ -104,9 +118,9 @@ export default function FightLobby({
             <span className="lobby-dot" />
             <span className="lobby-dot" />
           </div>
-          <p className="lobby-muted">En attente d'un adversaire…</p>
+          <p className="lobby-muted">{t("fight.lobby.waiting")}</p>
           <Button variant="danger" onClick={onLeaveQueue}>
-            Annuler
+            {t("fight.lobby.cancel")}
           </Button>
         </>
       )}

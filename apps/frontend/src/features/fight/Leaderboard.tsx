@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { fightService } from "../../services/fight.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import "./Leaderboard.css";
@@ -12,11 +13,11 @@ interface LeaderboardEntry {
 }
 
 const TIER_CONFIG = [
-  { min: 1800, label: "Légendaire", color: "#f39c12", icon: "👑" },
-  { min: 1600, label: "Diamant", color: "#4fc1a6", icon: "💎" },
-  { min: 1400, label: "Or", color: "#f1c40f", icon: "🥇" },
-  { min: 1200, label: "Argent", color: "#95a5a6", icon: "🥈" },
-  { min: 0, label: "Bronze", color: "#cd7f32", icon: "🥉" },
+  { min: 1800, id: "legendary", color: "#f39c12", icon: "👑" },
+  { min: 1600, id: "diamond", color: "#4fc1a6", icon: "💎" },
+  { min: 1400, id: "gold", color: "#f1c40f", icon: "🥇" },
+  { min: 1200, id: "silver", color: "#95a5a6", icon: "🥈" },
+  { min: 0, id: "bronze", color: "#cd7f32", icon: "🥉" },
 ];
 
 function getTier(elo: number) {
@@ -26,6 +27,7 @@ function getTier(elo: number) {
 }
 
 export default function Leaderboard({ myUserId }: { myUserId?: number }) {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery<LeaderboardEntry[]>({
     queryKey: QUERY_KEYS.leaderboard,
     queryFn: () => fightService.getLeaderboard(),
@@ -34,18 +36,19 @@ export default function Leaderboard({ myUserId }: { myUserId?: number }) {
 
   return (
     <div className="wrapper">
-      <h2 className="title">🏆 Classement ELO</h2>
+      <h2 className="title">🏆 {t("fight.leaderboard.title")}</h2>
 
       {isLoading ? (
-        <p className="muted">Chargement…</p>
+        <p className="muted">{t("fight.leaderboard.loading")}</p>
       ) : !data?.length ? (
-        <p className="muted">Aucun joueur classé pour l'instant.</p>
+        <p className="muted">{t("fight.leaderboard.empty")}</p>
       ) : (
         <div className="tableWrap">
           <table className="table">
             <tbody>
               {data.map((entry, idx) => {
                 const tier = getTier(entry.elo);
+                const tierLabel = t(`fight.leaderboard.tier.${tier.id}`);
                 const total = entry.wins + entry.losses;
                 const winrate = total
                   ? Math.round((entry.wins / total) * 100)
@@ -81,11 +84,15 @@ export default function Leaderboard({ myUserId }: { myUserId?: number }) {
                           <div className="playerInfos">
                             <div className="player-name">
                               {entry.user.username}
-                              {isMe && <span className="meBadge">vous</span>}
+                              {isMe && (
+                                <span className="meBadge">
+                                  {t("fight.leaderboard.you")}
+                                </span>
+                              )}
                             </div>
 
                             <div className="tierLabel">
-                              {tier.icon} {tier.label}
+                              {tier.icon} {tierLabel}
                             </div>
                           </div>
                         </div>
@@ -106,13 +113,21 @@ export default function Leaderboard({ myUserId }: { myUserId?: number }) {
                                 color: tier.color,
                               }}
                             >
-                              {tier.label}
+                              {tierLabel}
                             </span>
                           </div>
 
                           <div className="miniStats">
-                            <span className="wins">V {entry.wins}</span>
-                            <span className="losses">D {entry.losses}</span>
+                            <span className="wins">
+                              {t("fight.leaderboard.wins", {
+                                count: entry.wins,
+                              })}
+                            </span>
+                            <span className="losses">
+                              {t("fight.leaderboard.losses", {
+                                count: entry.losses,
+                              })}
+                            </span>
                           </div>
 
                           <div className="winrateWrap">

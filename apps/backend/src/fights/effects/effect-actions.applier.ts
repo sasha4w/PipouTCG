@@ -308,6 +308,7 @@ export function applyActions(
             candidates,
             count: 1,
             prompt: 'Choisis la carte à invoquer',
+            promptKey: 'summon_card',
             resolution: 'summon_to_zone',
             zoneIndex: zone === -1 ? undefined : zone,
             fromEgg: ctx.sourceMonster?.card.baseCard.stage === 'egg',
@@ -350,6 +351,7 @@ export function applyActions(
             candidates,
             count: 1,
             prompt: 'Choisis le pouvoir élémentaire à copier',
+            promptKey: 'copy_power',
             resolution: 'copy_effects',
             sourceInstanceId: ctx.sourceMonster?.instanceId,
           });
@@ -382,6 +384,13 @@ export function applyActions(
                 : fromGraveyardOnly
                   ? `Choisissez ${picked} carte(s) à récupérer du cimetière`
                   : 'Choisissez une carte à récupérer (cimetière ou deck)',
+            promptKey:
+              action.type === ActionType.SEARCH_DECK
+                ? 'search_deck'
+                : fromGraveyardOnly
+                  ? 'from_graveyard'
+                  : 'from_graveyard_or_deck',
+            promptParams: { count: picked },
             resolution: 'pick_to_hand',
           });
           ctx.log.push(`📥 ${p.username} doit choisir une carte…`);
@@ -431,6 +440,8 @@ export function applyActions(
             })),
             count,
             prompt: `Choisissez ${count} carte(s) à défausser`,
+            promptKey: 'discard',
+            promptParams: { count },
             resolution: 'discard',
           });
           ctx.log.push(`🗑️ ${p.username} doit défausser ${count} carte(s)…`);

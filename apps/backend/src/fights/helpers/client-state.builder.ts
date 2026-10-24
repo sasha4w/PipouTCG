@@ -38,6 +38,8 @@ export function buildClientState(
           })),
           count: choice.count,
           prompt: choice.prompt,
+          promptKey: choice.promptKey,
+          promptParams: choice.promptParams,
           resolution: choice.resolution,
         }
       : undefined;

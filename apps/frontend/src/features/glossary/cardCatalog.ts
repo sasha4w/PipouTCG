@@ -1,19 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
-import { cardService, type Card } from "../../services/card.service";
+import {
+  Archetype,
+  Rarity,
+  cardService,
+  type Card,
+} from "../../services/card.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 
 /** Toutes les cartes tiennent en une page (plafond du back : 500). */
 const CATALOG_LIMIT = 500;
 
 export type Kind = "monster" | "EQUIPMENT" | "TERRAIN" | "EPHEMERAL";
+export const KINDS: Kind[] = ["monster", "EQUIPMENT", "TERRAIN", "EPHEMERAL"];
 
-export const KIND_LABELS: Record<Kind, string> = {
-  monster: "Monstre",
-  EQUIPMENT: "Équipement",
-  TERRAIN: "Terrain",
-  EPHEMERAL: "Éphémère",
-};
-export const KINDS = Object.keys(KIND_LABELS) as Kind[];
+export const RARITIES = Object.values(Rarity);
+export const ARCHETYPES = Object.values(Archetype);
+
+/** « default » garde l'ordre du catalogue (set puis id). */
+export type SortKey = "default" | "name" | "cost" | "atk" | "hp" | "rarity";
+export const SORT_KEYS: SortKey[] = [
+  "default",
+  "name",
+  "cost",
+  "atk",
+  "hp",
+  "rarity",
+];
 
 type KindSource = Pick<Card, "type" | "supportType">;
 
@@ -41,23 +53,89 @@ export interface CardFilters {
   search: string;
   setId: number | null;
   kind: Kind | null;
+  rarity: Rarity | null;
+  archetype: Archetype | null;
+  cost: number | null;
+  sort: SortKey;
+  /** Ordre décroissant. */
+  desc: boolean;
 }
 
-export const NO_FILTERS: CardFilters = { search: "", setId: null, kind: null };
+export const NO_FILTERS: CardFilters = {
+  search: "",
+  setId: null,
+  kind: null,
+  rarity: null,
+  archetype: null,
+  cost: null,
+  sort: "default",
+  desc: false,
+};
+
+/** Filtres repliés (rareté, archétype, coût) actifs : pour le badge du bouton. */
+export function advancedFilterCount(filters: CardFilters): number {
+  return [filters.rarity, filters.archetype, filters.cost].filter(
+    (v) => v !== null,
+  ).length;
+}
 
 /** Sets présents parmi les cartes, dans l'ordre de leur id. */
 export function setsOf(cards: readonly Card[]): Card["cardSet"][] {
-  return [...new Map(cards.map((c) => [c.cardSet.id, c.cardSet])).values()].sort(
-    (a, b) => a.id - b.id,
-  );
+  return [
+    ...new Map(cards.map((c) => [c.cardSet.id, c.cardSet])).values(),
+  ].sort((a, b) => a.id - b.id);
+}
+
+/** Coûts présents parmi les cartes, croissants. */
+export function costsOf(cards: readonly Card[]): number[] {
+  return [...new Set(cards.map((c) => c.cost))].sort((a, b) => a - b);
+}
+
+/** Archétypes présents parmi les cartes, dans l'ordre de l'enum. */
+export function archetypesOf(cards: readonly Card[]): Archetype[] {
+  const present = new Set(cards.map((c) => c.archetype));
+  return ARCHETYPES.filter((a) => present.has(a));
 }
 
 export function matchesFilters(card: Card, filters: CardFilters): boolean {
   return (
     (filters.setId === null || card.cardSet.id === filters.setId) &&
     (filters.kind === null || cardKind(card) === filters.kind) &&
+    (filters.rarity === null || card.rarity === filters.rarity) &&
+    (filters.archetype === null || card.archetype === filters.archetype) &&
+    (filters.cost === null || card.cost === filters.cost) &&
     normalize(card.name).includes(normalize(filters.search.trim()))
   );
+}
+
+const SORT_VALUE: Record<
+  Exclude<SortKey, "default" | "name">,
+  (c: Card) => number
+> = {
+  cost: (c) => c.cost,
+  atk: (c) => c.atk,
+  hp: (c) => c.hp,
+  rarity: (c) => RARITIES.indexOf(c.rarity),
+};
+
+/**
+ * Trie sans muter. Égalités départagées par le nom (toujours A→Z), pour un
+ * ordre stable quand on change de critère.
+ */
+export function sortCards<T>(
+  items: readonly T[],
+  toCard: (item: T) => Card,
+  { sort, desc }: Pick<CardFilters, "sort" | "desc">,
+): T[] {
+  if (sort === "default") return desc ? [...items].reverse() : [...items];
+  const byName = (a: Card, b: Card) => a.name.localeCompare(b.name);
+  const sign = desc ? -1 : 1;
+  return [...items].sort((x, y) => {
+    const a = toCard(x);
+    const b = toCard(y);
+    if (sort === "name") return sign * byName(a, b);
+    return sign * (SORT_VALUE[sort](a) - SORT_VALUE[sort](b)) || byName(a, b);
+  });
 }
 
 /** Toutes les cartes du jeu, avec leurs effets. */

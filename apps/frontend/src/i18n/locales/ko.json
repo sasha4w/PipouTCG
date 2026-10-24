@@ -633,6 +633,234 @@
       "confirm": "교대하기",
       "hint_one": "자리를 내줄 Pipou 아군 {{count}}명을 고르세요",
       "hint_other": "자리를 내줄 Pipou 아군 {{count}}명을 고르세요"
+    },
+    "phase": {
+      "waiting": "대기",
+      "mulligan": "멀리건",
+      "main": "메인",
+      "battle": "배틀",
+      "end": "턴 종료",
+      "finished": "종료"
+    },
+    "endPhase": {
+      "main": "배틀 페이즈 →",
+      "battle": "턴 종료 →",
+      "end": "턴 마치기 →",
+      "other": "계속 →"
+    },
+    "bar": {
+      "summon": "소환",
+      "summonFree": "소환 (무료)",
+      "play": "사용",
+      "terrainHint": "빈 서포트 구역을 터치하세요",
+      "equipHint": "장착할 아군 몬스터를 터치하세요",
+      "recycle": "재활용 (+1⚡)",
+      "discard": "카드 {{count}}장을 버리세요 (카드를 터치)",
+      "surrender": "항복",
+      "confirmSurrender": "항복할까요?"
+    },
+    "noTarget": "유효한 대상 없음",
+    "targetAlly": "「{{name}}」(으)로 지정할 아군 몬스터를 고르세요",
+    "targetEnemy": "「{{name}}」(으)로 지정할 적 몬스터를 고르세요",
+    "target": "지정",
+    "opponentChoosing": "{{name}}님이 선택 중…",
+    "zone": {
+      "oppSupports": "상대 — 서포트",
+      "oppMonsters": "상대 — 몬스터",
+      "myMonsters": "내 몬스터",
+      "mySupports": "내 서포트",
+      "me": "나"
+    },
+    "hud": {
+      "turn": "{{count}}턴",
+      "deck": "덱에 카드 {{count}}장",
+      "hand": "손패 {{count}}장",
+      "primes": "프라임 {{count}}개"
+    },
+    "graveyard": {
+      "title": "묘지 ({{count}})",
+      "owner": "{{name}} — 묘지 ({{count}})",
+      "close": "닫기"
+    },
+    "hand": {
+      "free": "무료",
+      "payCard": "지불 카드",
+      "discard": "버리기"
+    },
+    "pick": {
+      "source": {
+        "graveyard": "묘지",
+        "deck": "덱",
+        "hand": "손패",
+        "board": "필드"
+      },
+      "confirm": {
+        "pick_to_hand": "가져오기",
+        "discard": "버리기",
+        "copy_effects": "이 능력 복사"
+      },
+      "hintTarget": "대상 몬스터를 선택하세요",
+      "hint": "카드 {{count}}장을 선택하세요",
+      "cancel": "취소",
+      "prompt": {
+        "summon_card": "소환할 카드를 고르세요",
+        "hatch": "부화할 드라콘을 고르세요",
+        "copy_power": "복사할 원소 능력을 고르세요",
+        "search_deck": "덱에서 카드 1장을 찾으세요",
+        "from_graveyard": "묘지에서 가져올 카드 {{count}}장을 고르세요",
+        "from_graveyard_or_deck": "가져올 카드 1장을 고르세요 (묘지 또는 덱)",
+        "discard": "버릴 카드 {{count}}장을 고르세요",
+        "baby_lineage": "가져올 베이비 {{lineage}}을(를) 고르세요 (묘지 또는 덱)"
+      }
+    },
+    "summon": {
+      "title": "소환 — {{name}}",
+      "evolveTitle": "진화 — {{name}}",
+      "close": "닫기",
+      "totalCost": "총 비용:",
+      "energy": "에너지:",
+      "toDiscard": "버릴 카드:",
+      "hint": "손패에서 재활용할 카드 {{count}}장을 선택하세요",
+      "cancel": "취소",
+      "confirm": "재활용 후 소환",
+      "confirmEvolve": "재활용 후 진화"
+    },
+    "badge": {
+      "sleep": "이번 턴 공격 불가",
+      "attacksLeft": "이번 턴 남은 공격 {{count}}회"
+    },
+    "mode": {
+      "attack": "공격 모드",
+      "guard": "가드 모드"
+    },
+    "cardLabel": "{{name}}, ATK {{atk}}, HP {{hp}}",
+    "effectsSection": "효과",
+    "lobby": {
+      "draw": "무승부",
+      "win": "승리!",
+      "loss": "패배",
+      "replay": "다시 하기",
+      "found": "상대를 찾았습니다!",
+      "facing": "상대: <b>{{name}}</b>",
+      "confirmDeck": "시작하려면 덱을 확인하세요",
+      "deckReady": "덱 #{{id}} 준비 완료",
+      "pickDeck": "「덱」 위젯에서 덱을 선택하세요",
+      "start": "게임 시작",
+      "ready": "전투 준비됐나요?",
+      "intro": "대기열에 참가해 1대1로 상대와 대결하세요",
+      "deckSelected": "덱 선택됨",
+      "pickDeckFirst": "전투 전에 「덱」 위젯에서 덱을 선택하세요",
+      "search": "게임 찾기",
+      "waiting": "상대를 기다리는 중…",
+      "cancel": "취소"
+    },
+    "endReason": {
+      "primes_depleted": "프라임을 모두 획득",
+      "deck_empty": "덱 소진",
+      "surrender": "항복",
+      "disconnect": "연결 끊김",
+      "double_ko": "더블 K.O."
+    },
+    "toast": {
+      "matched": "상대를 찾았습니다: {{name}}!",
+      "resumed": "진행 중인 게임을 불러왔습니다",
+      "deckAccepted": "덱 확인 완료 — 상대를 기다리는 중…",
+      "draw": "무승부 ({{reason}})",
+      "win": "승리! ({{reason}})",
+      "loss": "패배… ({{reason}})"
+    },
+    "mulligan": {
+      "title": "시작 손패",
+      "starting": "게임이 시작됩니다…",
+      "waiting": "{{name}}님을 기다리는 중…",
+      "keep": "이 손패 유지",
+      "redraw": "멀리건 (1회)"
+    },
+    "tabs": {
+      "fight": "전투",
+      "history": "기록",
+      "leaderboard": "랭킹",
+      "rules": "규칙"
+    },
+    "leaderboard": {
+      "title": "ELO 랭킹",
+      "loading": "불러오는 중…",
+      "empty": "아직 랭킹에 오른 플레이어가 없습니다.",
+      "you": "나",
+      "wins": "승 {{count}}",
+      "losses": "패 {{count}}",
+      "tier": {
+        "legendary": "레전드",
+        "diamond": "다이아몬드",
+        "gold": "골드",
+        "silver": "실버",
+        "bronze": "브론즈"
+      }
+    },
+    "history": {
+      "title": "매치 기록",
+      "wins": "승리",
+      "losses": "패배",
+      "empty": "플레이한 매치가 없습니다.",
+      "turns": "{{count}}턴",
+      "draw": "무승부",
+      "win": "승리",
+      "loss": "패배"
+    },
+    "rules": {
+      "step": {
+        "goal": "게임 목표",
+        "setup": "준비",
+        "board": "필드",
+        "cards": "카드 종류",
+        "status": "몬스터 상태",
+        "energy": "에너지",
+        "combat": "전투",
+        "primes": "프라임 & 역전",
+        "turn": "턴 구조"
+      },
+      "winLabel": "승리 조건",
+      "winValue": "자신의 프라임 카드 {{count}}장을 먼저 모두 획득",
+      "goal1": "게임은 <b>1대1</b>로 진행됩니다.",
+      "goal2": "두 플레이어가 동시에 마지막 프라임을 획득하면 <b>무승부</b>입니다.",
+      "goal3": "빈 덱에서 카드를 뽑아야 하는 플레이어는 <b>패배</b>합니다.",
+      "setup1": "<b>덱:</b> {{min}}~{{max}}장, 카드당 최대 {{copies}}장.",
+      "setup2": "<b>프라임 구역:</b> 섞은 덱의 맨 위 카드 {{count}}장, 뒷면으로.",
+      "setup3": "<b>시작 손패:</b> {{count}}장. <b>멀리건:</b> 한 번, 손패를 덱에 섞고 {{count}}장을 다시 뽑을 수 있습니다.",
+      "setup4": "선공은 <b>무작위</b>로 정해집니다.",
+      "board1": "소환용 <b>몬스터 구역 3칸</b>.",
+      "board2": "필드 카드용 <b>서포트 구역 3칸</b>.",
+      "board3": "뒷면 카드 {{count}}장이 놓인 <b>프라임 구역 1칸</b>.",
+      "monsters": "<b>몬스터:</b> ATK / HP, 아키타입, 0~3 에너지 비용, 지속 또는 발동 효과. 카드에 따로 적혀 있지 않으면 소환 즉시 공격할 수 있습니다.",
+      "supports": "<b>서포트 카드:</b>",
+      "ephemeral": "한 번 사용 후 버려집니다. 일부는 대상 몬스터를 골라야 합니다.",
+      "terrain": "지속되며, 내 몬스터에게만 작용합니다.",
+      "equipment": "내 몬스터 하나에 장착됩니다. 일부 효과는 특정 몬스터에서만 발동합니다.",
+      "energy1": "<b>생성:</b> 메인 페이즈에 손패의 카드를 재활용합니다. <b>카드 1장 = 에너지 1.</b>",
+      "energy2": "에너지가 부족하면 소환할 때 나머지를 카드를 버려 지불합니다.",
+      "energy3": "<b>초기화:</b> 턴 종료 시 에너지가 0이 됩니다.",
+      "atkMode": "공격 모드",
+      "atk1": "턴당 1회 공격 (효과 제외). 공격받으면 반격합니다.",
+      "atk2": "파괴되면 → 상대가 <b>프라임 1개</b>를 획득합니다.",
+      "guardMode": "가드 모드",
+      "guard1": "공격도 반격도 할 수 없습니다.",
+      "guard2": "파괴되어도 → <b>프라임 없음</b>. 단, 관통 공격자에게는 예외입니다.",
+      "direct": "상대에게 몬스터가 없으면 <b>직접 공격</b> (1턴 제외): 프라임 1개를 얻고 상대는 카드 1장을 뽑습니다.",
+      "primes1": "<b>파괴:</b> 내 몬스터가 전투나 상대 효과로 파괴되면 카드 1장을 뽑습니다.",
+      "primes2": "<b>획득:</b> 얻은 프라임은 손패로 들어갑니다.",
+      "primes3": "<b>더블 K.O:</b> 공격 모드 몬스터 둘이 서로 파괴되면 → 각 플레이어가 카드 1장을 뽑고 프라임 1개를 획득합니다.",
+      "phaseStart": "턴 시작",
+      "phaseStartDesc": "턴 시작 효과 후 카드 1장 뽑기 (1턴 포함).",
+      "phaseMain": "메인 페이즈",
+      "phaseMainDesc": "재활용으로 에너지 확보, 소환, 서포트 사용, 몬스터 포지션 변경.",
+      "phaseBattle": "배틀 페이즈",
+      "phaseBattleDesc": "상대 몬스터를 공격하거나, 상대 필드가 비어 있으면 직접 공격합니다.",
+      "phaseEnd": "엔딩 페이즈",
+      "phaseEndDesc": "턴 종료 효과, 에너지 → 0, 손패 최대 {{limit}}장 (초과분은 버림).",
+      "timer": "페이즈당 90초: 시간이 다 되면 다음 페이즈가 자동으로 시작됩니다.",
+      "stepOf": "{{n}} / {{total}} 단계",
+      "prev": "이전",
+      "next": "다음"
     }
   },
   "achievements": {
@@ -845,5 +1073,77 @@
       "regenerate_confirm": "이 AI의 덱을 재생성할까요? 현재 덱이 교체됩니다.",
       "no_cards": "이 세트에 카드가 없습니다."
     }
+  },
+  "glossary": {
+    "title": "카드 도감",
+    "count": "{{count}}장",
+    "back": "뒤로",
+    "loading": "카드를 불러오는 중...",
+    "error": "카드를 불러올 수 없습니다",
+    "empty": "조건에 맞는 카드가 없습니다.",
+    "view": "{{name}} 보기",
+    "noEffect": "효과 없음",
+    "search": "카드 검색…",
+    "all": "전체",
+    "kind": {
+      "monster": "몬스터",
+      "EQUIPMENT": "장비",
+      "TERRAIN": "필드",
+      "EPHEMERAL": "일회성"
+    },
+    "filters": "필터",
+    "rarity": "희귀도",
+    "archetype": "아키타입",
+    "cost": "코스트",
+    "sort": "정렬",
+    "sortKey": {
+      "default": "세트",
+      "name": "이름",
+      "cost": "코스트",
+      "atk": "ATK",
+      "hp": "HP",
+      "rarity": "희귀도"
+    },
+    "asc": "오름차순",
+    "desc": "내림차순"
+  },
+  "deck": {
+    "title": "내 덱",
+    "new": "+ 새 덱",
+    "loading": "불러오는 중...",
+    "none": "만든 덱이 없습니다",
+    "noneHint": "첫 덱을 만들어 보세요!",
+    "cardCount": "{{count}} / {{max}}장",
+    "edit": "수정",
+    "delete": "삭제",
+    "confirmDelete": "이 덱을 삭제할까요?",
+    "back": "뒤로",
+    "name": "덱 이름",
+    "mine": "내 덱",
+    "stripEmpty": "컬렉션에서 카드를 추가하세요",
+    "viewQty": "{{name}} 보기 (x{{qty}})",
+    "collectionEmpty": "컬렉션이 비어 있습니다.",
+    "add": "{{name}} 추가",
+    "remove": "{{name}} 빼기",
+    "owned": "/ {{count}}장 보유",
+    "remaining": " · {{count}}장 더 필요",
+    "tooMany": " · 카드가 너무 많습니다",
+    "save": "저장"
+  },
+  "arena": {
+    "title": "아레나",
+    "subtitle": "덱을 만들고, 상대와 대결하고, 랭킹을 올리세요.",
+    "decksTitle": "덱 빌더",
+    "decksDesc": "덱을 만들고 관리하세요. 카드를 고르고 전략을 다듬어 전투를 준비하세요.",
+    "decksF1": "덱당 최대 {{max}}장",
+    "decksF2": "카드당 최대 {{copies}}장",
+    "decksF3": "필터 가능한 전체 카드 목록",
+    "decksCta": "내 덱 관리",
+    "fightTitle": "전투 (개발 중)",
+    "fightDesc": "실시간 1대1로 상대와 대결하세요. 프라임을 쓰고, 상대의 프라임을 빼앗아 승리하세요.",
+    "fightF1": "매치메이킹 아직 미작동",
+    "fightF2": "실시간 ELO 랭킹",
+    "fightF3": "매치 기록",
+    "fightCta": "아레나 입장"
   }
 }

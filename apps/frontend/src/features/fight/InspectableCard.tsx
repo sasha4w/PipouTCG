@@ -1,4 +1,5 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import CardFace, { type CardFaceProps } from "../cards/CardFace";
 import { useLongPress } from "../../hooks/useLongPress";
 import "./InspectableCard.css";
@@ -23,6 +24,7 @@ export default function InspectableCard({
   children,
   ...face
 }: InspectableCardProps) {
+  const { t } = useTranslation();
   const longPress = useLongPress({
     onLongPress: onInspect,
     onLongPressEnd: onInspectEnd,
@@ -31,7 +33,11 @@ export default function InspectableCard({
   const label =
     face.card.type === "support"
       ? face.card.name
-      : `${face.card.name}, ${stats.atk} ATK, ${stats.hp} PV`;
+      : t("fight.cardLabel", {
+          name: face.card.name,
+          atk: stats.atk,
+          hp: stats.hp,
+        });
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" && onClick) {

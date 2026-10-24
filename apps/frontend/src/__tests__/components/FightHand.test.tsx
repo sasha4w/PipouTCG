@@ -1,7 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import FightHand from "../../features/fight/FightHand";
 import type { HandCard } from "../../features/fight/handCard";
+import i18n from "../../i18n";
+
+beforeAll(async () => {
+  await i18n.changeLanguage("fr");
+});
 
 const handCard = (name: string): HandCard => ({
   instanceId: `${name}#1`,

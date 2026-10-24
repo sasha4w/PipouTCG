@@ -26,6 +26,17 @@ export type PendingChoiceResolution =
 
 export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 
+/** Consigne d'un choix, traduite par le client (`prompt` reste le texte français). */
+export type ChoicePromptKey =
+  | "summon_card"
+  | "hatch"
+  | "copy_power"
+  | "search_deck"
+  | "from_graveyard"
+  | "from_graveyard_or_deck"
+  | "discard"
+  | "baby_lineage";
+
 export interface ClientChoiceCandidate {
   instanceId: string;
   baseCard: Pick<
@@ -50,6 +61,9 @@ export interface ClientPendingChoice {
   candidates: ClientChoiceCandidate[];
   count: number;
   prompt: string;
+  promptKey?: ChoicePromptKey;
+  /** Valeurs interpolées dans la consigne (`count`, `lineage`…). */
+  promptParams?: Record<string, string | number>;
   resolution?: PendingChoiceResolution;
 }
 

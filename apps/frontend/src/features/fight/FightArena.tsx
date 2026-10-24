@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import FightBoard from "./FightBoard";
 import CardPickModal from "./CardPickModal";
 import MulliganPanel from "./MulliganPanel";
@@ -18,6 +19,7 @@ export default function FightArena({
   controls,
   onSurrender,
 }: FightArenaProps) {
+  const { t } = useTranslation();
   if (gameState.phase === "mulligan") {
     return (
       <MulliganPanel
@@ -34,7 +36,10 @@ export default function FightArena({
     <>
       {gameState.opponentChoosing && (
         <div className="fp-waiting-choice">
-          ⏳ {gameState.opponent.username} fait un choix…
+          ⏳{" "}
+          {t("fight.opponentChoosing", {
+            name: gameState.opponent.username,
+          })}
         </div>
       )}
       <FightBoard

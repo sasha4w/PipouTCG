@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { DECK_RULES } from "@pipou/shared";
 import { IconMap } from "../components/Icons";
 import "./FightHub.css";
 
@@ -15,11 +16,8 @@ export default function FightHub() {
 
       <div className="fh-content">
         <div className="fh-header">
-          <h1 className="fh-title">Arène</h1>
-          <p className="fh-subtitle">
-            Construis ton deck, affronte des adversaires, grimpe dans le
-            classement.
-          </p>
+          <h1 className="fh-title">{t("arena.title")}</h1>
+          <p className="fh-subtitle">{t("arena.subtitle")}</p>
         </div>
 
         <div className="fh-cards">
@@ -31,19 +29,18 @@ export default function FightHub() {
             <div className="fh-card__glow" />
             <div className="fh-card__icon">🃏</div>
             <div className="fh-card__body">
-              <h2 className="fh-card__title">Deck Builder</h2>
-              <p className="fh-card__desc">
-                Crée et gère tes decks. Choisis tes cartes, affine ta stratégie,
-                prépare-toi au combat.
-              </p>
+              <h2 className="fh-card__title">{t("arena.decksTitle")}</h2>
+              <p className="fh-card__desc">{t("arena.decksDesc")}</p>
               <ul className="fh-card__features">
-                <li>✦ Jusqu'à 40 cartes par deck</li>
-                <li>✦ Max 3 exemplaires par carte</li>
-                <li>✦ Bibliothèque complète filtrable</li>
+                <li>✦ {t("arena.decksF1", { max: DECK_RULES.MAX_CARDS })}</li>
+                <li>
+                  ✦ {t("arena.decksF2", { copies: DECK_RULES.MAX_COPIES })}
+                </li>
+                <li>✦ {t("arena.decksF3")}</li>
               </ul>
             </div>
             <div className="fh-card__cta">
-              Gérer mes decks <span className="fh-arrow">→</span>
+              {t("arena.decksCta")} <span className="fh-arrow">→</span>
             </div>
           </button>
 
@@ -55,19 +52,16 @@ export default function FightHub() {
             <div className="fh-card__glow" />
             <div className="fh-card__icon">⚔️</div>
             <div className="fh-card__body">
-              <h2 className="fh-card__title">Combat (WIP)</h2>
-              <p className="fh-card__desc">
-                Affronte un adversaire en 1v1 en temps réel. Dépense tes Primes,
-                vole celles de l'ennemi, et remporte la victoire.
-              </p>
+              <h2 className="fh-card__title">{t("arena.fightTitle")}</h2>
+              <p className="fh-card__desc">{t("arena.fightDesc")}</p>
               <ul className="fh-card__features">
-                <li>✦ Fonction Match non fonctionnelle</li>
-                <li>✦ Classement ELO en direct</li>
-                <li>✦ Historique des matchs</li>
+                <li>✦ {t("arena.fightF1")}</li>
+                <li>✦ {t("arena.fightF2")}</li>
+                <li>✦ {t("arena.fightF3")}</li>
               </ul>
             </div>
             <div className="fh-card__cta">
-              Rejoindre l'arène <span className="fh-arrow">→</span>
+              {t("arena.fightCta")} <span className="fh-arrow">→</span>
             </div>
           </button>
           {/* ── Aventure (PvE) ───────────────────────────────────────── */}

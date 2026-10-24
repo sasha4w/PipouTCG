@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { IconEvolve, IconTransform } from "../../components/Icons";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
-import { END_PHASE_LABEL } from "./fight.types";
 import type { HandCard } from "./handCard";
 
 interface Props {
@@ -81,7 +80,9 @@ export default function FightActionBar({
         <>
           {card.type === "monster" && selectedZone !== null && (
             <button onClick={handleSummonClick} className="fab-btn">
-              {isFreeCard ? "⚡ Invoquer (gratuit)" : "⬆️ Invoquer"}
+              {isFreeCard
+                ? `⚡ ${t("fight.bar.summonFree")}`
+                : `⬆️ ${t("fight.bar.summon")}`}
             </button>
           )}
 
@@ -99,20 +100,17 @@ export default function FightActionBar({
               disabled={playBlockedReason !== undefined}
               title={playBlockedReason}
             >
-              ✨ Jouer{playBlockedReason ? ` — ${playBlockedReason}` : ""}
+              ✨ {t("fight.bar.play")}
+              {playBlockedReason ? ` — ${playBlockedReason}` : ""}
             </button>
           )}
 
           {/* Rappel visuel pour TERRAIN et EQUIPMENT (action sur la zone) */}
           {card.type === "support" && card.supportType === "TERRAIN" && (
-            <span className="fab-hint">
-              🌍 Clique sur une zone support vide
-            </span>
+            <span className="fab-hint">🌍 {t("fight.bar.terrainHint")}</span>
           )}
           {card.type === "support" && card.supportType === "EQUIPMENT" && (
-            <span className="fab-hint">
-              🔧 Clique sur un monstre allié à équiper
-            </span>
+            <span className="fab-hint">🔧 {t("fight.bar.equipHint")}</span>
           )}
 
           {card.type === "monster" &&
@@ -138,15 +136,14 @@ export default function FightActionBar({
             onClick={() => onRecycleFromHand(selectedCard!)}
             className="fab-btn fab-btn--recycle"
           >
-            ♻️ Recycler (+1⚡)
+            ♻️ {t("fight.bar.recycle")}
           </button>
         </>
       )}
 
       {overhandLimit && (
         <span className="fab-discard-warning">
-          ⚠️ Défausse {hand.length - HAND_LIMIT} carte
-          {hand.length - HAND_LIMIT > 1 ? "s" : ""} (clique sur la carte)
+          ⚠️ {t("fight.bar.discard", { count: hand.length - HAND_LIMIT })}
         </span>
       )}
 
@@ -155,12 +152,18 @@ export default function FightActionBar({
         disabled={overhandLimit}
         className={`fab-btn-phase${overhandLimit ? " fab-btn-phase--disabled" : ""}`}
       >
-        {END_PHASE_LABEL[phase ?? "main"] ?? "Continuer →"}
+        {t(
+          phase === "main" || phase === "battle" || phase === "end"
+            ? `fight.endPhase.${phase}`
+            : phase === undefined
+              ? "fight.endPhase.main"
+              : "fight.endPhase.other",
+        )}
       </button>
 
       {onSurrender && (
         <button onClick={onSurrender} className="fab-btn-surrender">
-          🏳️ Abandonner
+          🏳️ {t("fight.bar.surrender")}
         </button>
       )}
     </div>

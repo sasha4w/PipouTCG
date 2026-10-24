@@ -1,6 +1,7 @@
 import type {
   AchievementFamily,
   CardInstance as SharedCardInstance,
+  ChoicePromptKey,
   ChoiceSource,
   FightEvent,
   GameEndReason,
@@ -65,7 +66,10 @@ export interface PendingChoice {
   forUserId: number;
   candidates: ChoiceCandidate[];
   count: number;
+  /** Texte français ; le client traduit `promptKey` s'il est présent. */
   prompt: string;
+  promptKey?: ChoicePromptKey;
+  promptParams?: Record<string, string | number>;
   resolution?: PendingChoiceResolution;
   /** summon_to_zone : le monstre vient d'un œuf, il peut évoluer le tour même. */
   fromEgg?: boolean;

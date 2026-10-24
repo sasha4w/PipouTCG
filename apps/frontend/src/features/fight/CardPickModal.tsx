@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { CSSProperties } from "react";
 import type {
   PendingChoice,
@@ -29,11 +31,11 @@ const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
   copy_effects: "",
 };
 
-const RESOLUTION_CONFIRM: Record<PendingChoiceResolution, string> = {
-  pick_to_hand: "✅ Récupérer",
-  discard: "🗑️ Défausser",
-  summon_to_zone: "", // traduit : fight.summonPick
-  copy_effects: "Copier ce pouvoir",
+const RESOLUTION_CONFIRM_ICON: Record<PendingChoiceResolution, string> = {
+  pick_to_hand: "✅",
+  discard: "🗑️",
+  summon_to_zone: "",
+  copy_effects: "",
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
@@ -58,11 +60,20 @@ const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   copy_effects: "#4b2a85",
 };
 
-function sourceLabel(source: ClientChoiceCandidate["source"]): string {
-  if (source === "graveyard") return "🪦 Cimetière";
-  if (source === "deck") return "📚 Deck";
-  if (source === "hand") return "🖐 Main";
-  return "🎴 Terrain";
+const SOURCE_ICON: Record<ClientChoiceCandidate["source"], string> = {
+  graveyard: "🪦",
+  deck: "📚",
+  hand: "🖐",
+  board: "🎴",
+};
+
+/** Consigne traduite si le serveur fournit sa clé, sinon son texte. */
+function promptText(choice: PendingChoice, t: TFunction): string {
+  if (!choice.promptKey) return choice.prompt;
+  return t(`fight.pick.prompt.${choice.promptKey}`, {
+    ...choice.promptParams,
+    defaultValue: choice.prompt,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,25 +110,32 @@ export default function CardPickModal({
     confirmLabel ??
     (resolution === "summon_to_zone"
       ? t("fight.summonPick")
-      : RESOLUTION_CONFIRM[resolution]);
+      : [
+          RESOLUTION_CONFIRM_ICON[resolution],
+          t(`fight.pick.confirm.${resolution}`),
+        ]
+          .filter(Boolean)
+          .join(" "));
+  const picks = Math.min(choice.count, choice.candidates.length);
   const headerBg = RESOLUTION_HEADER_BG[resolution];
   const headerColor = RESOLUTION_HEADER_COLOR[resolution];
   const btnBg = RESOLUTION_BTN_BG[resolution];
 
-  return (
+  // Hors du plateau : un ancêtre empilé y placerait la main et le HUD par-dessus
+  return createPortal(
     <div className="cpm-overlay">
       <div className="cpm-modal">
         {/* ── Header ── */}
         <div className="cpm-header" style={{ background: headerBg }}>
           <span className="cpm-title" style={{ color: headerColor }}>
-            {icon} {choice.prompt}
+            {icon} {promptText(choice, t)}
           </span>
         </div>
 
         <p className="cpm-hint">
           {isBoardPick
-            ? `Sélectionne le monstre cible`
-            : `Sélectionne ${Math.min(choice.count, choice.candidates.length)} carte${choice.count > 1 ? "s" : ""}`}
+            ? t("fight.pick.hintTarget")
+            : t("fight.pick.hint", { count: picks })}
         </p>
 
         {/* ── Grille de cartes ── */}
@@ -145,7 +163,9 @@ export default function CardPickModal({
                     {icon}
                   </span>
                 )}
-                <div className="cpm-source">{sourceLabel(c.source)}</div>
+                <div className="cpm-source">
+                  {SOURCE_ICON[c.source]} {t(`fight.pick.source.${c.source}`)}
+                </div>
               </InspectableCard>
             );
           })}
@@ -155,7 +175,7 @@ export default function CardPickModal({
         <div className="cpm-actions">
           {onCancel && (
             <Button variant="danger" onClick={onCancel}>
-              Annuler
+              {t("fight.pick.cancel")}
             </Button>
           )}
           <button
@@ -164,8 +184,7 @@ export default function CardPickModal({
             disabled={!canConfirm}
             onClick={() => onConfirm(selected)}
           >
-            {confirmText} ({selected.length}/
-            {Math.min(choice.count, choice.candidates.length)})
+            {confirmText} ({selected.length}/{picks})
           </button>
         </div>
 
@@ -176,6 +195,7 @@ export default function CardPickModal({
           />
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

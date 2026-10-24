@@ -9,7 +9,9 @@ export default function CardEffectsText({ card }: { card: Card }) {
   const { t } = useTranslation();
   const { rules } = describeCardEffects(card, t);
   if (rules.length === 0)
-    return <p className="cg__effects cg__effects--none">Aucun effet</p>;
+    return (
+      <p className="cg__effects cg__effects--none">{t("glossary.noEffect")}</p>
+    );
   return (
     <p className="cg__effects">
       {rules.map((rule, i) => (

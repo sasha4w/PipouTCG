@@ -1,7 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { CardInstance } from "@pipou/shared";
 import GraveyardPile from "../../features/fight/GraveyardPile";
+import i18n from "../../i18n";
+
+beforeAll(async () => {
+  await i18n.changeLanguage("fr");
+});
 
 const dead: CardInstance = {
   instanceId: "d1",
