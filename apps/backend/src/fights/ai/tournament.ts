@@ -89,7 +89,7 @@ export function seeded(seed: number): () => number {
 }
 
 /** Instancie et mélange le deck (le moteur ne mélange pas : fixedRng). */
-function instances(
+export function instances(
   deck: Card[],
   ownerId: number,
   random: () => number,

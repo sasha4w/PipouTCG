@@ -549,3 +549,33 @@ Une phase « sans coup utile » est une phase où **aucun** coup utile n'était 
 
 - Le critère « Pipou < 12 % de phases sans coup utile » ne mesure pas une faute : à abandonner, ou à remplacer par les phases passives si l'on veut suivre l'IA.
 - Les alertes de cartes défensives « trop faibles » sont à lire avec prudence ; pour juger une carte, le tournoi `--sans` est la mesure fiable.
+
+## Cascade vers l'aventure (étape 3 de l'IA)
+
+Mesuré le 2026-10-24, branche `ai-cascade-aventure`. Chaque niveau d'aventure a son cerveau : 1 et 2 gloutons à 25 % et 10 % d'erreurs ; 3 (faisceau 3, profondeur 6), 4 (6, 9) et 5 (`STRONGEST`) planifient, avec un plafond de 50 ms par décision.
+
+### Temps de décision (`pnpm --filter @pipou/backend ai:bench`, sans processus parallèles)
+
+| Niveau | Décisions | Médiane | 95e centile | Maximum | Au plafond |
+|---|---|---|---|---|---|
+| 1 | 386 | 2.0 ms | 6.2 ms | 14.0 ms | - |
+| 2 | 230 | 1.9 ms | 7.8 ms | 21.7 ms | - |
+| 3 | 430 | 2.4 ms | 53.5 ms | 59.7 ms | 5.6 % |
+| 4 | 220 | 1.8 ms | 55.3 ms | 57.6 ms | 10.5 % |
+| 5 | 343 | 2.7 ms | 55.8 ms | 59.8 ms | 22.4 % |
+
+- 95e centile du niveau 5 sous 100 ms : **pas besoin de `worker_threads`**.
+- Le boss est coupé par le plafond dans 22 % de ses décisions : en aventure, il joue un peu moins bien qu'au tournoi (où seul le budget en simulations compte).
+
+### Difficulté réelle de l'aventure (Rapide, `--brain niveau`, sans plafond de temps)
+
+| Monde | Niveau 1 | Niveau 2 | Niveau 3 | Niveau 4 | Niveau 5 |
+|---|---|---|---|---|---|
+| pipou | 17,9 % | 31,5 % | 62,5 % | 67,9 % | 85,7 % |
+| pixelman | 32,1 % | 62,5 % | **17,9 %** | 52,4 % | 75,0 % |
+| dragon | 20,2 % | 32,7 % | 45,2 % | 60,1 % | 85,7 % |
+
+Archétype contre archétype : pipou-pixelman 56,3 %, pipou-dragon 52,3 %, pixelman-dragon 51,0 % — tous dans la fourchette.
+
+- Les mondes Pipou et Dragon montent régulièrement, avec le boss nettement au-dessus (86 %).
+- Le monde Pixelman a un trou au niveau 3 (deck du Noyau Zeta, déjà le plus faible du jeu, 18 à 20 % quel que soit le cerveau) : c'est un problème du deck, pas du cerveau.
