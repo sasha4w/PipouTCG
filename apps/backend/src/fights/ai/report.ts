@@ -253,8 +253,8 @@ export function formatDetail(r: TournamentResult): string {
   lines.push(
     '## Decks',
     '',
-    '| Deck | Parties | Tours / partie | Phases sans coup utile | Raisons | Défaites par cause |',
-    '|---|---|---|---|---|---|',
+    '| Deck | Parties | Tours / partie | Phases sans coup utile | Raisons | Phases passives | Défaites par cause |',
+    '|---|---|---|---|---|---|---|',
     ...r.telemetry.decks.map((d) => {
       const reasons = (Object.keys(REASON_TEXT) as IdleReason[])
         .filter((k) => d.idleReasons[k] > 0)
@@ -263,7 +263,7 @@ export function formatDetail(r: TournamentResult): string {
       const ends = Object.entries(d.endReasons)
         .map(([k, n]) => `${k} ${n}`)
         .join(', ');
-      return `| ${d.name} | ${d.games} | ${perGame(d.turns, d.games)} | ${d.mainPhases === 0 ? '-' : pct(d.idlePhases / d.mainPhases)} | ${reasons || '-'} | ${ends || '-'} |`;
+      return `| ${d.name} | ${d.games} | ${perGame(d.turns, d.games)} | ${d.mainPhases === 0 ? '-' : pct(d.idlePhases / d.mainPhases)} | ${reasons || '-'} | ${d.mainPhases === 0 ? '-' : pct(d.passivePhases / d.mainPhases)} | ${ends || '-'} |`;
     }),
   );
   return lines.join('\n');

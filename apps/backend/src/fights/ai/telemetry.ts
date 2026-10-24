@@ -56,6 +56,8 @@ export interface DeckStats {
   /** Phases principales sans coup utile. */
   idlePhases: number;
   idleReasons: Record<IdleReason, number>;
+  /** Phases principales où un coup utile existait mais où l'IA n'en a joué aucun. */
+  passivePhases: number;
   /** Défaites, par `game.endReason`. */
   endReasons: Record<string, number>;
   turns: number;
@@ -223,6 +225,8 @@ interface Phase {
   /** Dernière raison de blocage vue, par carte. */
   reasons: Map<string, BlockReason>;
   useful: boolean;
+  /** L'IA a joué au moins un coup utile. */
+  acted: boolean;
   handEmpty: boolean;
 }
 
@@ -257,6 +261,7 @@ export class GameRecorder {
       mainPhases: 0,
       idlePhases: 0,
       idleReasons: { main_vide: 0, ...zeroReasons() },
+      passivePhases: 0,
       endReasons: {},
       turns: 0,
       games: 0,
@@ -291,11 +296,13 @@ export class GameRecorder {
         chosen: new Set(),
         reasons: new Map(),
         useful: false,
+        acted: false,
         handEmpty: true,
       };
     }
     const phase = this.phase;
     phase.handEmpty &&= me.hand.length === 0;
+    if (!USELESS.has(chosen.type)) phase.acted = true;
 
     const playableNow = new Set<string>();
     for (const a of valid) {
@@ -442,7 +449,10 @@ export class GameRecorder {
       r.blocked[reason] += 1;
       counts[reason] += 1;
     }
-    if (phase.useful) return;
+    if (phase.useful) {
+      if (!phase.acted) deck.passivePhases += 1;
+      return;
+    }
     deck.idlePhases += 1;
     const reason: IdleReason = phase.handEmpty
       ? 'main_vide'

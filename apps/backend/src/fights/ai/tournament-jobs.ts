@@ -32,18 +32,24 @@ export interface Job {
   mirror?: number;
   /** Réglage du planificateur (essais), par-dessus STRONGEST. */
   thinking?: Partial<ThinkingProfile>;
+  /** Cartes retirées du tirage des decks (hors miroir). */
+  excluded?: string[];
 }
 
 let cards: Card[] | undefined;
-const entriesBySeed = new Map<number, TournamentEntry[]>();
+const entriesBySeed = new Map<string, TournamentEntry[]>();
 
 /** Les 15 decks générés d'une graine (mis en cache dans le processus). */
-function entriesFor(deckSeed: number): TournamentEntry[] {
-  let entries = entriesBySeed.get(deckSeed);
+function entriesFor(
+  deckSeed: number,
+  excluded: readonly string[] = [],
+): TournamentEntry[] {
+  const key = `${deckSeed}|${excluded.join(',')}`;
+  let entries = entriesBySeed.get(key);
   if (!entries) {
     cards ??= allRealCards();
-    entries = buildGeneratedEntries(cards, deckSeed);
-    entriesBySeed.set(deckSeed, entries);
+    entries = buildGeneratedEntries(cards, deckSeed, excluded);
+    entriesBySeed.set(key, entries);
   }
   return entries;
 }
@@ -110,7 +116,7 @@ export function runJob(job: Job): TournamentResult {
       mirrorEntries(job.deckSeed, job.mirror, job.thinking),
       job.games,
     );
-  const entries = entriesFor(job.deckSeed).map((e) => ({
+  const entries = entriesFor(job.deckSeed, job.excluded).map((e) => ({
     ...e,
     brain: job.brain,
     thinking: job.thinking,

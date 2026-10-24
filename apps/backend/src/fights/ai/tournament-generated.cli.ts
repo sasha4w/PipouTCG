@@ -22,7 +22,8 @@ function num(name: string, fallback: number): number {
  * `--scale rapide|standard|complet`, ou une seule graine avec
  * `--deck-seed`, `--games` ; `--seed` (parties), `--workers`,
  * `--brain plan|greedy` (plan par défaut), `--mirror` (nouveau contre ancien),
- * `--thinking <json>` (essai de réglage du planificateur).
+ * `--thinking <json>` (essai de réglage du planificateur),
+ * `--sans "Carte A,Carte B"` (cartes retirées du tirage des decks).
  */
 async function main(): Promise<void> {
   const scaleName = raw('scale') as ScaleName | undefined;
@@ -41,8 +42,12 @@ async function main(): Promise<void> {
   const brain = raw('brain') ?? 'plan';
   if (brain !== 'plan' && brain !== 'greedy')
     throw new Error(`Cerveau inconnu « ${brain} » (plan, greedy)`);
-  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${!mirror && brain === 'greedy' ? '-glouton' : ''}`;
+  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${!mirror && brain === 'greedy' ? '-glouton' : ''}${raw('sans') ? '-sans-cartes' : ''}`;
 
+  const excluded = (raw('sans') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   // Essai de réglage du planificateur : --thinking '{"beamWidth":6}'
   const rawThinking = raw('thinking');
   const thinking = rawThinking
@@ -52,7 +57,7 @@ async function main(): Promise<void> {
     mirror
       ? planMirrorJobs(deckSeeds, games, seed)
       : planJobs(deckSeeds, games, seed, brain)
-  ).map((j) => ({ ...j, thinking }));
+  ).map((j) => ({ ...j, thinking, ...(excluded.length > 0 && { excluded }) }));
   const total = jobs.reduce((n, j) => n + j.games.length, 0);
   console.log(
     `${label} : graines de decks ${deckSeeds[0]} à ${deckSeeds.at(-1)}, ${games} parties par paire, graine ${seed}, ${total} parties, ${workers} processus`,

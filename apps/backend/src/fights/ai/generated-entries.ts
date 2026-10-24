@@ -13,11 +13,14 @@ const LEVELS: AiLevel[] = [1, 2, 3, 4, 5];
  * Génère les 15 decks d'aventure en code (sans base), à graine fixe : le set
  * de chaque archétype est celui de sa carte signature, comme en production.
  * Même `deckSeed` => mêmes tirages, quelle que soit la version des cartes.
+ * `excluded` : noms retirés du tirage (mesure de la valeur d'une carte).
  */
 export function buildGeneratedEntries(
-  cards: Card[],
+  allCards: Card[],
   deckSeed: number,
+  excluded: readonly string[] = [],
 ): TournamentEntry[] {
+  const cards = allCards.filter((c) => !excluded.includes(c.name));
   const entries: TournamentEntry[] = [];
   let offset = 0;
   for (const archetype of ARCHETYPES) {

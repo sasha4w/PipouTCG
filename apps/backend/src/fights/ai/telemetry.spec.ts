@@ -95,6 +95,41 @@ describe('GameRecorder', () => {
     expect(deck!.idleReasons.main_vide).toBe(1);
   });
 
+  it("phase passive : un coup utile existait, l'IA a fini sa phase", () => {
+    const game = scenario({ p1: { hand: [monsterCard('Lame')] } });
+    const rec = recorder();
+    play(rec, game, 'p1', endPhase);
+    const deck = rec
+      .finish(game, 'p1')
+      .decks.find((d) => d.archetype === 'pipou');
+    expect(deck).toMatchObject({
+      mainPhases: 1,
+      idlePhases: 0,
+      passivePhases: 1,
+    });
+  });
+
+  it("pas de phase passive quand l'IA joue un coup utile", () => {
+    const game = scenario({ p1: { hand: [monsterCard('Lame')] } });
+    const rec = recorder();
+    play(rec, game, 'p1', summon);
+    play(rec, game, 'p1', endPhase);
+    const deck = rec
+      .finish(game, 'p1')
+      .decks.find((d) => d.archetype === 'pipou');
+    expect(deck).toMatchObject({ passivePhases: 0 });
+  });
+
+  it('phase sans coup utile : ni passive ni jouée', () => {
+    const game = scenario({ p1: { hand: [] } });
+    const rec = recorder();
+    play(rec, game, 'p1', endPhase);
+    const deck = rec
+      .finish(game, 'p1')
+      .decks.find((d) => d.archetype === 'pipou');
+    expect(deck).toMatchObject({ idlePhases: 1, passivePhases: 0 });
+  });
+
   it('impact : un monstre adverse détruit dans la fenêtre', () => {
     const game = scenario({
       p1: { hand: [monsterCard('Lame', { atk: 300, hp: 500 })] },
