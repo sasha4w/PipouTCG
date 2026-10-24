@@ -500,3 +500,17 @@ Cartes défensives dans leur archétype (contre dragon / pipou / pixelman) : Œu
 - **Les duels sont tous dans la fourchette** : Dragon gagne 3 points contre Pipou et 4 contre Pixelman. Les renforts Dragon (Œuf, Bébé Teros) et la Force Plasma moins brutale contre les Adultes y suffisent.
 - **Pipou étouffe davantage** : la hausse vient surtout de « pas de zone libre » ; une Sentinelle à 1 300 PV reste plus longtemps sur le terrain et occupe une zone.
 - **Force Plasma reste forte chez Pixelman** sur un petit échantillon ; la piste suivante serait de baisser les dégâts (1 000) ou de lui faire coûter des PV au Noyau.
+
+### Deuxième réglage, essayé puis annulé (Rapide)
+
+Mesuré le 2026-10-24, commit 3d0d798 : Force Plasma à 1 000 dégâts, Sentinelle Gargouille revenue à 1 000 PV. Graines de decks 1 à 3, 4 parties par paire, 1 260 parties, 522 s (± 5 points).
+
+| Ligne contre colonne | pipou | pixelman | dragon |
+|---|---|---|---|
+| pipou | 49.6 % [43.3–55.9] | 63.0 % [57.4–68.3] | 54.0 % [48.3–59.6] |
+| pixelman | 37.0 % [31.7–42.6] | 50.0 % [43.7–56.3] | 48.0 % [42.4–53.6] |
+| dragon | 46.0 % [40.4–51.7] | 52.0 % [46.4–57.6] | 50.0 % [43.7–56.3] |
+
+- Pixelman tombe à 37 % contre Pipou : Force Plasma est l'une de ses rares réponses aux murs Pipou.
+- Pipou ne se débloque pas (phases sans coup utile 9 / 14 / 16 / 17 / 24 %, moyenne 16,0 %) : la Sentinelle n'en est pas la cause ; à traiter côté IA (choix de zone et paiement).
+- **Annulé** : on garde le réglage 73c255d, validé en Standard.
