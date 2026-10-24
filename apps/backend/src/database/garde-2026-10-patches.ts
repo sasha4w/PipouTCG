@@ -187,9 +187,9 @@ export const GARDE_PATCHES: BalancePatch[] = [
   tweak(FORCE_DELTA, {
     name: 'Force Plasma',
     description:
-      'Frappe de suppression. Jouable seulement si vous contrôlez un Noyau : inflige 1000 dégâts à un monstre adverse de votre choix.',
+      'Frappe de suppression. Jouable seulement si vous contrôlez un Noyau : inflige 1500 dégâts à un monstre adverse de votre choix.',
     effects: [
-      fx('ON_PLAY', [a('DEAL_DAMAGE', 'ENEMY_MONSTER', { value: 1000 })], {
+      fx('ON_PLAY', [a('DEAL_DAMAGE', 'ENEMY_MONSTER', { value: 1500 })], {
         type: 'SPECIFIC_CARD_ON_BOARD',
         value: 'Noyau',
         match: 'contains',
@@ -261,6 +261,7 @@ export const GARDE_PATCHES: BalancePatch[] = [
   tweak(SENTINELLE, {
     description:
       'Veille sur la brigade sans jamais ciller. Provocation. Détruite : vous piochez 1 carte.',
+    hp: 1300,
     effects: add(SENTINELLE, drawOnDeath),
   }),
   tweak(GRIBOUILLE, {
