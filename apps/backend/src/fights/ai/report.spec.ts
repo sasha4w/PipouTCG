@@ -47,6 +47,7 @@ function deck(
     mainPhases: 0,
     idlePhases: 0,
     idleReasons: { main_vide: 0, paiement: 0, zone: 0, cible: 0, condition: 0 },
+    passivePhases: 0,
     endReasons: {},
     turns: 0,
     games: 0,
