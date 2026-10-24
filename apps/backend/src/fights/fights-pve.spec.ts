@@ -14,6 +14,7 @@ import type { DecksService } from '../decks/decks.service';
 import type { Card } from '../cards/card.entity';
 import type { GameState } from './interfaces/game-state.interface';
 import { AiPlayer } from './ai/ai-player';
+import * as levelBrains from './ai/level-brains';
 import { createEngine } from './testing/engine';
 import { fakeServer, type Emitted } from './testing/fake-server';
 import { fillerCard, monsterCard } from './testing/cards';
@@ -272,6 +273,43 @@ describe('FightsService — parties PvE', () => {
     // Le joueur peut réessayer
     ctx.decks.loadDeckForMatch.mockResolvedValue(humanDeck());
     await expect(ctx.begin()).resolves.toEqual({});
+  });
+
+  it('chaque combat a sa propre IA, au cerveau de son niveau', async () => {
+    const ctx = setup();
+    const created = jest.spyOn(levelBrains, 'createLevelAi');
+    // Sans implémentation de remplacement : le vrai coup est joué
+    const choose = jest.spyOn(AiPlayer.prototype, 'chooseAction');
+    ctx.hooks.prepareStart.mockResolvedValueOnce({
+      ...(await ctx.hooks.prepareStart()),
+      profile: { archetype: 'pipou', level: 5 },
+    });
+    await ctx.begin();
+    ctx.hooks.prepareStart.mockResolvedValueOnce({
+      ...(await ctx.hooks.prepareStart()),
+      adventureMatchId: ADVENTURE_MATCH + 1,
+      profile: { archetype: 'dragon', level: 1 },
+    });
+    await ctx.service.startAdventure(
+      HUMAN + 1,
+      'Bob',
+      'socket-bob',
+      { opponentId: OPPONENT, deckId: 3 },
+      ctx.server,
+    );
+
+    expect(created.mock.calls.map((c) => c[1])).toEqual([5, 1]);
+    const [first, second] = created.mock.results.map(
+      (r) => r.value as AiPlayer,
+    );
+    expect(first).not.toBe(second);
+    // Le mulligan de l'IA du premier combat passe par sa propre instance
+    await ctx.act({ type: 'mulligan', redraw: false });
+    await advanceUntil(() => choose.mock.contexts.length > 0, 10_000);
+    const used = choose.mock.contexts;
+    expect(used.length).toBeGreaterThan(0);
+    expect(used.every((ai) => ai === first || ai === second)).toBe(true);
+    expect(used).toContain(first);
   });
 
   it("l'IA joue seule son mulligan puis son tour, et rend la main", async () => {
