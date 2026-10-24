@@ -108,9 +108,19 @@ describe("CardInspect", () => {
     render(<CardInspect card={card} onClose={onClose} />);
 
     fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.pointerDown(screen.getByRole("dialog"));
     fireEvent.click(screen.getByRole("dialog"));
 
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it("ignore le clic du doigt qui relâche l'appui long d'ouverture", () => {
+    const onClose = vi.fn();
+    render(<CardInspect card={card} onClose={onClose} />);
+
+    fireEvent.click(screen.getByRole("dialog"));
+
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("ne se ferme pas sur un tap dans le panneau", () => {

@@ -8,7 +8,11 @@ export const LONG_PRESS_MOVE_PX = 8;
 
 export interface LongPressOptions {
   onLongPress: () => void;
-  /** Relâchement d'un appui long déclenché (pas appelé pour le menu contextuel). */
+  /**
+   * Relâchement d'un appui long déclenché à la souris ou au stylet. Pas appelé
+   * au toucher (tenir le doigt immobile est peu fiable : l'inspection reste
+   * ouverte) ni pour le menu contextuel.
+   */
   onLongPressEnd?: () => void;
 }
 
@@ -29,6 +33,7 @@ export function useLongPress({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const firedRef = useRef(false);
+  const touchRef = useRef(false);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -47,13 +52,14 @@ export function useLongPress({
 
   const release = () => {
     clearTimer();
-    if (firedRef.current) onLongPressEnd?.();
+    if (firedRef.current && !touchRef.current) onLongPressEnd?.();
   };
 
   return {
     onPointerDown: (e) => {
       firedRef.current = false;
       if (e.button !== 0) return;
+      touchRef.current = e.pointerType === "touch";
       startRef.current = { x: e.clientX, y: e.clientY };
       // Le relâchement revient à cet élément même si un overlay s'ouvre dessus
       e.currentTarget.setPointerCapture?.(e.pointerId);
