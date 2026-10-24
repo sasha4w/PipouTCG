@@ -51,6 +51,26 @@ describe("useLongPress", () => {
     expect(onClick).not.toHaveBeenCalled();
   });
 
+  it("au toucher, l'inspection reste ouverte au relâchement ou à l'annulation", () => {
+    const { el, onLongPress, onLongPressEnd, onClick } = setup();
+
+    fireEvent.pointerDown(el, {
+      clientX: 10,
+      clientY: 10,
+      button: 0,
+      pointerType: "touch",
+    });
+    act(() => vi.advanceTimersByTime(400));
+    // Le navigateur reprend le geste (léger glissement du doigt)
+    fireEvent.pointerCancel(el);
+    fireEvent.pointerUp(el);
+    fireEvent.click(el);
+
+    expect(onLongPress).toHaveBeenCalledTimes(1);
+    expect(onLongPressEnd).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
   it("un tap court reste un clic", () => {
     const { el, onLongPress, onLongPressEnd, onClick } = setup();
 

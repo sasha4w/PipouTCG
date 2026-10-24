@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { CardEffect } from "@pipou/shared";
 import CardFace, {
@@ -39,6 +39,7 @@ export default function CardInspect({
 }: Props) {
   // Stats déjà sur la grande carte : seuls les statuts actifs sont listés.
   const statuses = status.filter((e) => !e.variant);
+  const pressedRef = useRef(false);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -54,10 +55,15 @@ export default function CardInspect({
       role="dialog"
       aria-modal="true"
       aria-label={card.name}
+      onPointerDown={() => {
+        pressedRef.current = true;
+      }}
       onClick={(e) => {
         // Le portail propage les événements React aux ancêtres : on s'arrête ici
         e.stopPropagation();
-        onClose();
+        // Le clic du doigt qui relâche l'appui long ouvrant l'inspection n'a pas
+        // commencé ici : on l'ignore, sinon la fenêtre se referme aussitôt.
+        if (pressedRef.current) onClose();
       }}
     >
       <div className="ci-panel" onClick={(e) => e.stopPropagation()}>
