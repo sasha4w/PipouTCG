@@ -1147,7 +1147,6 @@
     "view": "View {{name}}",
     "noEffect": "No effect",
     "search": "Search a card…",
-    "all": "All",
     "kind": {
       "monster": "Monster",
       "EQUIPMENT": "Equipment",
@@ -1156,7 +1155,6 @@
     },
     "filters": "Filters",
     "rarity": "Rarity",
-    "archetype": "Archetype",
     "cost": "Cost",
     "sort": "Sort by",
     "sortKey": {
@@ -1168,7 +1166,9 @@
       "rarity": "Rarity"
     },
     "asc": "Ascending",
-    "desc": "Descending"
+    "desc": "Descending",
+    "set": "Set",
+    "type": "Type"
   },
   "deck": {
     "title": "My Decks",
@@ -1186,13 +1186,17 @@
     "stripEmpty": "Add cards from your collection",
     "viewQty": "View {{name}} (x{{qty}})",
     "collectionEmpty": "Your collection is empty.",
-    "add": "Add {{name}}",
-    "remove": "Remove {{name}}",
-    "owned_one": "/ {{count}} owned",
-    "owned_other": "/ {{count}} owned",
     "remaining": " · {{count}} more",
     "tooMany": " · too many cards",
-    "save": "Save"
+    "save": "Save",
+    "sheet": {
+      "close": "Close",
+      "owned_one": "{{count}} owned",
+      "owned_other": "{{count}} owned",
+      "qty": "Copies in the deck",
+      "prev": "Previous card",
+      "next": "Next card"
+    }
   },
   "arena": {
     "title": "Arena",

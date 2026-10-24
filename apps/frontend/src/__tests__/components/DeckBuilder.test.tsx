@@ -1,15 +1,12 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import i18n from "../../i18n";
 import DeckBuilder from "../../features/deck/DeckBuilder";
 import { cardService, type Card } from "../../services/card.service";
 import { deckService } from "../../services/deck.service";
-import {
-  userService,
-  type UserInventory,
-} from "../../services/user.service";
+import { userService, type UserInventory } from "../../services/user.service";
 
 vi.mock("../../services/card.service", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../services/card.service")>()),
@@ -113,19 +110,22 @@ describe("DeckBuilder — éditeur", () => {
     vi.clearAllMocks();
   });
 
-  it("montre les effets des cartes possédées, pris dans le catalogue", async () => {
+  it("montre la collection en grille, les effets dans la fiche de la carte", async () => {
     await openEditor();
     expect(rows()).toHaveLength(2);
-    expect(
-      screen.getByText("Provocation", { selector: "strong" }),
-    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Voir Ogre" }));
+    const sheet = screen.getByRole("dialog", { name: "Ogre" });
+    // Effets pris dans le catalogue (l'inventaire n'en a pas)
+    expect(within(sheet).getAllByText(/Provocation/).length).toBeGreaterThan(0);
+    expect(within(sheet).getByText("2 possédés")).toBeInTheDocument();
   });
 
   it("filtre la collection par set, par type et par nom", async () => {
     await openEditor();
+    await userEvent.click(screen.getByRole("button", { name: "Filtres" }));
     await userEvent.click(screen.getByRole("button", { name: "Drakon" }));
     expect(rows()).toHaveLength(1);
-    await userEvent.click(screen.getByRole("button", { name: "Tous" }));
+    await userEvent.click(screen.getByRole("button", { name: "Drakon" }));
 
     await userEvent.click(screen.getByRole("button", { name: "Équipement" }));
     expect(screen.getByText("Aucune carte ne correspond.")).toBeInTheDocument();
@@ -136,27 +136,88 @@ describe("DeckBuilder — éditeur", () => {
     expect(rows()[0]).toHaveAccessibleName("Voir Œuf de Drakon");
   });
 
-  it("ajoute au bandeau jusqu'au nombre d'exemplaires possédés", async () => {
+  it("règle le nombre d'exemplaires d'un tap, dans la limite possédée", async () => {
     await openEditor();
-    const add = screen.getByRole("button", { name: "Ajouter Ogre" });
-    await userEvent.click(add);
-    await userEvent.click(add);
-    expect(add).toBeDisabled();
+    await userEvent.click(screen.getByRole("button", { name: "Voir Ogre" }));
+    const sheet = screen.getByRole("dialog", { name: "Ogre" });
+    const qty = (n: string) => within(sheet).getByRole("radio", { name: n });
+
+    expect(qty("0")).toBeChecked();
+    // Ogre possédé en 2 exemplaires : 3 est hors d'atteinte
+    expect(qty("3")).toBeDisabled();
+    await userEvent.click(qty("2"));
+    expect(qty("2")).toBeChecked();
 
     const strip = screen.getByRole("region", { name: "Mon deck" });
     expect(
       within(strip).getByRole("button", { name: "Voir Ogre (x2)" }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/^2 \/ 40/)).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "Retirer Ogre" }));
+    await userEvent.click(qty("1"));
     expect(
       within(strip).getByRole("button", { name: "Voir Ogre (x1)" }),
     ).toBeInTheDocument();
+
+    await userEvent.click(qty("0"));
+    expect(
+      within(strip).queryByRole("button", { name: /Ogre/ }),
+    ).not.toBeInTheDocument();
   });
 
-  it("ouvre la fiche de la carte au toucher d'une ligne", async () => {
+  it("passe à la carte suivante sans fermer la fiche", async () => {
     await openEditor();
     await userEvent.click(screen.getByRole("button", { name: "Voir Ogre" }));
+    let sheet = screen.getByRole("dialog", { name: "Ogre" });
+    expect(within(sheet).getByText("1 / 2")).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Carte précédente" }),
+    ).toBeDisabled();
+
+    await userEvent.click(
+      within(sheet).getByRole("button", { name: "Carte suivante" }),
+    );
+    sheet = screen.getByRole("dialog", { name: "Œuf de Drakon" });
+    expect(within(sheet).getByText("2 / 2")).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Carte suivante" }),
+    ).toBeDisabled();
+
+    // Glisser vers la droite revient à la carte précédente
+    const swipeArea = within(sheet).getByRole("radiogroup").closest(".dcs")!;
+    fireEvent.touchStart(swipeArea, {
+      touches: [{ clientX: 100, clientY: 0 }],
+    });
+    fireEvent.touchEnd(swipeArea, {
+      changedTouches: [{ clientX: 220, clientY: 10 }],
+    });
     expect(screen.getByRole("dialog", { name: "Ogre" })).toBeInTheDocument();
+  });
+
+  it("depuis le bandeau, la fiche permet de retirer la carte du deck", async () => {
+    await openEditor();
+    await userEvent.click(screen.getByRole("button", { name: "Voir Ogre" }));
+    await userEvent.click(
+      within(screen.getByRole("dialog", { name: "Ogre" })).getByRole("radio", {
+        name: "1",
+      }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Fermer" }));
+
+    const strip = screen.getByRole("region", { name: "Mon deck" });
+    await userEvent.click(
+      within(strip).getByRole("button", { name: "Voir Ogre (x1)" }),
+    );
+    const sheet = screen.getByRole("dialog", { name: "Ogre" });
+    await userEvent.click(within(sheet).getByRole("radio", { name: "0" }));
+
+    // La carte a quitté le bandeau : la fiche reste ouverte, sans ‹ ›
+    expect(
+      screen.getByText("Ajoute des cartes depuis ta collection"),
+    ).toBeInTheDocument();
+    expect(within(sheet).getByRole("radio", { name: "0" })).toBeChecked();
+    expect(
+      within(sheet).getByRole("button", { name: "Carte suivante" }),
+    ).toBeDisabled();
   });
 });

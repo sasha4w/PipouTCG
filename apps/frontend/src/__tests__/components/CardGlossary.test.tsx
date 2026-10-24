@@ -103,10 +103,15 @@ describe("CardGlossary", () => {
   it("filtre par set, par type et par nom (sans accents)", async () => {
     renderGlossary();
     await screen.findByRole("button", { name: "Voir Ogre" });
+    // Les filtres restent repliés derrière le bouton
+    expect(
+      screen.queryByRole("button", { name: "Drakon" }),
+    ).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Filtres" }));
 
     await userEvent.click(screen.getByRole("button", { name: "Drakon" }));
     expect(rows()).toHaveLength(1);
-    await userEvent.click(screen.getByRole("button", { name: "Tous" }));
+    await userEvent.click(screen.getByRole("button", { name: "Drakon" }));
 
     await userEvent.click(screen.getByRole("button", { name: "Équipement" }));
     expect(rows()).toHaveLength(1);
@@ -139,7 +144,7 @@ describe("CardGlossary", () => {
     expect(names()).toEqual(["Voir Ogre", "Voir Œuf de Drakon", "Voir Épée"]);
   });
 
-  it("filtre par rareté, archétype et coût dans le panneau replié", async () => {
+  it("filtre par rareté et coût dans le panneau replié", async () => {
     renderGlossary();
     await screen.findByRole("button", { name: "Voir Ogre" });
     await userEvent.click(screen.getByRole("button", { name: "Filtres" }));
@@ -158,13 +163,10 @@ describe("CardGlossary", () => {
     );
     expect(rows()).toHaveLength(3);
 
-    await userEvent.click(
-      within(panel).getByRole("button", { name: "Drakon" }),
-    );
-    expect(rows()).toHaveLength(1);
-    await userEvent.click(
-      within(panel).getByRole("button", { name: "Drakon" }),
-    );
+    // L'archétype recoupe le set : un seul filtre « Drakon », celui du set
+    expect(
+      within(panel).getAllByRole("button", { name: "Drakon" }),
+    ).toHaveLength(1);
 
     await userEvent.click(within(panel).getByRole("button", { name: "1" }));
     expect(rows()).toHaveLength(1);
@@ -180,6 +182,7 @@ describe("CardGlossary", () => {
       ).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: "Glossary" })).toBeVisible();
       expect(screen.getByText("3 cards")).toBeInTheDocument();
+      await userEvent.click(screen.getByRole("button", { name: "Filters" }));
       expect(screen.getByRole("button", { name: "Equipment" })).toBeVisible();
       expect(screen.getAllByText("No effect")).toHaveLength(2);
     } finally {

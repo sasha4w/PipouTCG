@@ -1,0 +1,94 @@
+/* Fiche du deck builder, posée dans le BottomSheet (fond bordeaux). */
+.dcs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+
+.dcs__top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.dcs__face {
+  flex: none;
+  width: 110px;
+}
+.dcs__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dcs__meta {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+}
+.dcs__owned {
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Nombre d'exemplaires : un tap règle la valeur ── */
+.dcs__qty {
+  display: flex;
+  margin-top: 4px;
+  border: 1.5px solid rgba(238, 188, 119, 0.5);
+  border-radius: 10px;
+  overflow: hidden;
+  width: max-content;
+}
+.dcs__qty-btn {
+  width: 44px;
+  height: 40px;
+  border: none;
+  border-right: 1px solid rgba(238, 188, 119, 0.3);
+  background: transparent;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #eebc77;
+  cursor: pointer;
+}
+.dcs__qty-btn:last-child {
+  border-right: none;
+}
+.dcs__qty-btn[aria-checked="true"] {
+  background: #eebc77;
+  color: #3d1020;
+}
+.dcs__qty-btn:disabled {
+  color: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+}
+
+/* ── Carte précédente / suivante ── */
+.dcs__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dcs__nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(238, 188, 119, 0.5);
+  background: transparent;
+  color: #eebc77;
+  cursor: pointer;
+}
+.dcs__nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.dcs__pos {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+}

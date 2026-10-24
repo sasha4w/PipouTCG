@@ -6,8 +6,8 @@ import {
   KINDS,
   RARITIES,
   SORT_KEYS,
-  advancedFilterCount,
-  archetypesOf,
+  NO_PANEL_FILTERS,
+  activeFilterCount,
   costsOf,
   setsOf,
   shortSetName,
@@ -84,7 +84,8 @@ interface Props {
 export default function CardFilterBar({ filters, cards, onChange }: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const advanced = advancedFilterCount(filters);
+  const active = activeFilterCount(filters);
+  const sets = setsOf(cards);
 
   const choose = (patch: Partial<CardFilters>) => {
     soundService.play("select");
@@ -135,14 +136,14 @@ export default function CardFilterBar({ filters, cards, onChange }: Props) {
           className="cg__tool"
           aria-expanded={open}
           aria-label={t("glossary.filters")}
-          data-active={advanced > 0 || undefined}
+          data-active={active > 0 || undefined}
           onClick={() => {
             soundService.play("select");
             setOpen((o) => !o);
           }}
         >
           <IconSliders />
-          {advanced > 0 && <span className="cg__badge">{advanced}</span>}
+          {active > 0 && <span className="cg__badge">{active}</span>}
         </button>
       </div>
 
@@ -171,47 +172,26 @@ export default function CardFilterBar({ filters, cards, onChange }: Props) {
         </button>
       </div>
 
-      <div className="cg__chips">
-        <button
-          type="button"
-          className="cg__chip"
-          aria-pressed={filters.setId === null}
-          onClick={() => choose({ setId: null })}
-        >
-          {t("glossary.all")}
-        </button>
-        {setsOf(cards).map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            className="cg__chip"
-            aria-pressed={filters.setId === s.id}
-            onClick={() => choose({ setId: s.id })}
-          >
-            {shortSetName(s.name)}
-          </button>
-        ))}
-      </div>
-      <div className="cg__chips">
-        {KINDS.map((k) => (
-          <button
-            key={k}
-            type="button"
-            className="cg__chip"
-            aria-pressed={filters.kind === k}
-            onClick={() => choose({ kind: filters.kind === k ? null : k })}
-          >
-            {t(`glossary.kind.${k}`)}
-          </button>
-        ))}
-      </div>
-
       {open && (
         <div
           className="cg__panel"
           role="group"
           aria-label={t("glossary.filters")}
         >
+          {chipRow(
+            t("glossary.set"),
+            sets.map((s) => s.id),
+            filters.setId,
+            (id) => shortSetName(sets.find((s) => s.id === id)?.name ?? ""),
+            (setId) => ({ setId }),
+          )}
+          {chipRow(
+            t("glossary.type"),
+            KINDS,
+            filters.kind,
+            (k) => t(`glossary.kind.${k}`),
+            (kind) => ({ kind }),
+          )}
           {chipRow(
             t("glossary.rarity"),
             RARITIES,
@@ -220,26 +200,17 @@ export default function CardFilterBar({ filters, cards, onChange }: Props) {
             (rarity) => ({ rarity }),
           )}
           {chipRow(
-            t("glossary.archetype"),
-            archetypesOf(cards),
-            filters.archetype,
-            (a) => t(`effects.archetype.${a}`),
-            (archetype) => ({ archetype }),
-          )}
-          {chipRow(
             t("glossary.cost"),
             costsOf(cards),
             filters.cost,
             String,
             (cost) => ({ cost }),
           )}
-          {advanced > 0 && (
+          {active > 0 && (
             <button
               type="button"
               className="cg__reset"
-              onClick={() =>
-                choose({ rarity: null, archetype: null, cost: null })
-              }
+              onClick={() => choose(NO_PANEL_FILTERS)}
             >
               {t("filter.reset")}
             </button>

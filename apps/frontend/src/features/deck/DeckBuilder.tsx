@@ -12,25 +12,20 @@ import { userService } from "../../services/user.service";
 import { soundService } from "../../services/sound.service";
 import type { Card } from "../../services/card.service";
 import CardFace from "../cards/CardFace";
-import CardInspect from "../fight/CardInspect";
 import CardFilterBar from "../glossary/CardFilterBar";
-import CardEffectsText from "../glossary/CardEffectsText";
 import {
   NO_FILTERS,
-  cardKind,
   matchesFilters,
-  shortSetName,
   sortCards,
   useCardCatalog,
 } from "../glossary/cardCatalog";
+import DeckCardSheet from "./DeckCardSheet";
 import Button from "../../components/Button";
 import Loading from "../../components/Loading";
 import {
   IconArrowLeft,
   IconCards,
-  IconMinus,
   IconPencil,
-  IconPlus,
   IconTrash,
 } from "../../components/Icons";
 import "../../components/manager.css";
@@ -38,6 +33,12 @@ import { QUERY_KEYS } from "../../utils/querykeys";
 import "./DeckBuilder.css";
 
 type View = "list" | "editor";
+
+/** Fiche ouverte : la carte, et la liste où elle a été touchée (pour ‹ ›). */
+interface SheetTarget {
+  userCardId: number;
+  from: "grid" | "deck";
+}
 
 /** Carte proposée dans l'éditeur : issue de l'inventaire ou du deck édité. */
 type PickableCard = CardInDeck & {
@@ -94,7 +95,7 @@ export default function DeckBuilder() {
   const [deckName, setDeckName] = useState("");
   const [cards, setCards] = useState<DeckCardEntry[]>([]);
   const [filters, setFilters] = useState(NO_FILTERS);
-  const [inspected, setInspected] = useState<Card | null>(null);
+  const [sheet, setSheet] = useState<SheetTarget | null>(null);
 
   const refreshDecks = () =>
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.decks });
@@ -124,6 +125,7 @@ export default function DeckBuilder() {
   const back = () => {
     setView("list");
     setEditing(null);
+    setSheet(null);
   };
 
   // ─── CARTE MAP ────────────────────────────────
@@ -163,42 +165,74 @@ export default function DeckBuilder() {
     );
 
   const totalCards = cards.reduce((s, c) => s + c.quantity, 0);
-  const deckFull = totalCards >= DECK_RULES.MAX_CARDS;
   const isValid =
     totalCards >= DECK_RULES.MIN_CARDS && totalCards <= DECK_RULES.MAX_CARDS;
 
   // ─── LOGIC CARTES ─────────────────────────────
-  const addCard = (userCardId: number) => {
+  const qtyOf = (userCardId: number) =>
+    cards.find((c) => c.userCardId === userCardId)?.quantity ?? 0;
+
+  /** Exemplaires possibles : possédés, plafond par carte et place restante. */
+  const maxQtyOf = (c: PickableCard) =>
+    Math.min(
+      maxCopies(c),
+      qtyOf(c.userCardId) + DECK_RULES.MAX_CARDS - totalCards,
+    );
+
+  const setQuantity = (userCardId: number, qty: number) => {
     setCards((prev) => {
+      const info = allCardsMap.get(userCardId);
+      if (!info) return prev;
       const total = prev.reduce((s, c) => s + c.quantity, 0);
-      if (total >= DECK_RULES.MAX_CARDS) return prev;
-      const inventoryCard = allCardsMap.get(userCardId);
-      const maxAllowed = inventoryCard ? maxCopies(inventoryCard) : 0;
-      const found = prev.find((c) => c.userCardId === userCardId);
-      if (found) {
-        if (found.quantity >= maxAllowed) return prev;
-        return prev.map((c) =>
-          c.userCardId === userCardId ? { ...c, quantity: c.quantity + 1 } : c,
-        );
-      }
-      if (maxAllowed === 0) return prev;
-      return [...prev, { userCardId, quantity: 1 }];
+      const current =
+        prev.find((c) => c.userCardId === userCardId)?.quantity ?? 0;
+      const max = Math.min(
+        maxCopies(info),
+        current + DECK_RULES.MAX_CARDS - total,
+      );
+      const next = Math.max(0, Math.min(qty, max));
+      const others = prev.filter((c) => c.userCardId !== userCardId);
+      if (next === 0) return others;
+      return current === 0
+        ? [...prev, { userCardId, quantity: next }]
+        : prev.map((c) =>
+            c.userCardId === userCardId ? { ...c, quantity: next } : c,
+          );
     });
   };
 
-  const removeCard = (userCardId: number) => {
-    setCards((prev) =>
-      prev
-        .map((c) =>
-          c.userCardId === userCardId ? { ...c, quantity: c.quantity - 1 } : c,
-        )
-        .filter((c) => c.quantity > 0),
-    );
+  const openSheet = (target: SheetTarget) => {
+    soundService.play("select");
+    setSheet(target);
   };
 
-  const inspect = (card: Card) => {
-    soundService.play("select");
-    setInspected(card);
+  /** Fiche de la carte ; ‹ › parcourent la liste où elle a été touchée. */
+  const renderSheet = ({ userCardId, from }: SheetTarget) => {
+    const info = allCardsMap.get(userCardId);
+    if (!info) return null;
+    const order =
+      from === "grid"
+        ? visible.map((c) => c.userCardId)
+        : deckCards.map((d) => d.userCardId);
+    // La carte a pu quitter sa liste (retirée du deck) : plus de ‹ ›
+    const index = order.indexOf(userCardId);
+    const goTo = (i: number) =>
+      index === -1 || i < 0 || i >= order.length
+        ? undefined
+        : () => setSheet({ userCardId: order[i], from });
+    return (
+      <DeckCardSheet
+        card={fullCard(info)}
+        owned={info.quantity}
+        inDeck={qtyOf(userCardId)}
+        maxQty={maxQtyOf(info)}
+        onSetQty={(qty) => setQuantity(userCardId, qty)}
+        onPrev={goTo(index - 1)}
+        onNext={goTo(index + 1)}
+        position={index === -1 ? undefined : { index, total: order.length }}
+        onClose={() => setSheet(null)}
+      />
+    );
   };
 
   // ─── SAVE ─────────────────────────────────────
@@ -327,7 +361,7 @@ export default function DeckBuilder() {
                     name: info.name,
                     qty: quantity,
                   })}
-                  onClick={() => inspect(fullCard(info))}
+                  onClick={() => openSheet({ userCardId, from: "deck" })}
                 >
                   <CardFace card={fullCard(info)} size="xs" />
                   <span className="deck-strip__qty">{quantity}</span>
@@ -354,58 +388,29 @@ export default function DeckBuilder() {
           </div>
         )}
 
-        <ul className="cg__list">
+        <ul className="deck-grid">
           {visible.map((c) => {
             const card = fullCard(c);
-            const inDeckQty =
-              cards.find((x) => x.userCardId === c.userCardId)?.quantity ?? 0;
+            const inDeckQty = qtyOf(c.userCardId);
             return (
-              <li
-                key={c.userCardId}
-                className={`deck-row${inDeckQty > 0 ? " deck-row--in" : ""}`}
-              >
+              <li key={c.userCardId}>
                 <button
                   type="button"
-                  className="deck-row__main"
-                  aria-label={t("glossary.view", { name: card.name })}
-                  onClick={() => inspect(card)}
+                  className={`deck-grid__card${inDeckQty > 0 ? " deck-grid__card--in" : ""}`}
+                  aria-label={
+                    inDeckQty > 0
+                      ? t("deck.viewQty", { name: card.name, qty: inDeckQty })
+                      : t("glossary.view", { name: card.name })
+                  }
+                  onClick={() =>
+                    openSheet({ userCardId: c.userCardId, from: "grid" })
+                  }
                 >
-                  <div className="cg__thumb">
-                    <CardFace card={card} size="xs" />
-                  </div>
-                  <div className="cg__body">
-                    <div className="cg__name">{card.name}</div>
-                    <div className="cg__meta">
-                      {t(`glossary.kind.${cardKind(card)}`)} ·{" "}
-                      {shortSetName(card.cardSet.name)}
-                    </div>
-                    <CardEffectsText card={card} />
-                  </div>
+                  <CardFace card={card} size="xs" />
+                  {inDeckQty > 0 && (
+                    <span className="deck-grid__qty">{inDeckQty}</span>
+                  )}
                 </button>
-                <div className="deck-row__qty">
-                  <Button
-                    variant="ghost-bordeaux"
-                    size="icon"
-                    aria-label={t("deck.add", { name: card.name })}
-                    onClick={() => addCard(c.userCardId)}
-                    disabled={inDeckQty >= maxCopies(c) || deckFull}
-                  >
-                    <IconPlus size={14} />
-                  </Button>
-                  <span className="deck-row__count">{inDeckQty}</span>
-                  <span className="deck-row__owned">
-                    {t("deck.owned", { count: c.quantity })}
-                  </span>
-                  <Button
-                    variant="ghost-bordeaux"
-                    size="icon"
-                    aria-label={t("deck.remove", { name: card.name })}
-                    onClick={() => removeCard(c.userCardId)}
-                    disabled={inDeckQty === 0}
-                  >
-                    <IconMinus size={14} />
-                  </Button>
-                </div>
               </li>
             );
           })}
@@ -447,9 +452,7 @@ export default function DeckBuilder() {
         </div>
       </div>
 
-      {inspected && (
-        <CardInspect card={inspected} onClose={() => setInspected(null)} />
-      )}
+      {sheet && renderSheet(sheet)}
     </div>
   );
 }

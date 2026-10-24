@@ -1084,7 +1084,6 @@
     "view": "{{name}} 보기",
     "noEffect": "효과 없음",
     "search": "카드 검색…",
-    "all": "전체",
     "kind": {
       "monster": "몬스터",
       "EQUIPMENT": "장비",
@@ -1093,7 +1092,6 @@
     },
     "filters": "필터",
     "rarity": "희귀도",
-    "archetype": "아키타입",
     "cost": "코스트",
     "sort": "정렬",
     "sortKey": {
@@ -1105,7 +1103,9 @@
       "rarity": "희귀도"
     },
     "asc": "오름차순",
-    "desc": "내림차순"
+    "desc": "내림차순",
+    "set": "세트",
+    "type": "종류"
   },
   "deck": {
     "title": "내 덱",
@@ -1123,12 +1123,16 @@
     "stripEmpty": "컬렉션에서 카드를 추가하세요",
     "viewQty": "{{name}} 보기 (x{{qty}})",
     "collectionEmpty": "컬렉션이 비어 있습니다.",
-    "add": "{{name}} 추가",
-    "remove": "{{name}} 빼기",
-    "owned": "/ {{count}}장 보유",
     "remaining": " · {{count}}장 더 필요",
     "tooMany": " · 카드가 너무 많습니다",
-    "save": "저장"
+    "save": "저장",
+    "sheet": {
+      "close": "닫기",
+      "owned": "{{count}}장 보유",
+      "qty": "덱에 넣을 장수",
+      "prev": "이전 카드",
+      "next": "다음 카드"
+    }
   },
   "arena": {
     "title": "아레나",
