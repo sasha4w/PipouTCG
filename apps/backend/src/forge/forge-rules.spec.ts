@@ -110,11 +110,8 @@ describe('validateForge', () => {
   it('additionne les lignes de même carte pour usable', () => {
     const c = card(1);
     expect(
-      validateForge(
-        [input(c, 6, 10), input(c, 6, 10), input(card(2), 0)],
-        target(),
-      ),
-    ).not.toBeNull();
+      validateForge([input(c, 6, 8), input(c, 4, 8)], target()),
+    ).toBe("Tu ne possèdes pas assez d'exemplaires disponibles");
     expect(
       validateForge([input(c, 6, 10), input(c, 4, 10)], target()),
     ).toBeNull();

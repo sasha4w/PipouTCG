@@ -14,7 +14,7 @@ export interface ForgeCardInfo {
   effects: CardEffect[] | null;
 }
 
-export interface ForgeInput {
+export interface ForgeInputCheck {
   card: ForgeCardInfo;
   quantity: number;
   /** Exemplaires disponibles (hors deck verrouillé, en vente, etc.). */
@@ -23,7 +23,7 @@ export interface ForgeInput {
 
 /** Message d'erreur si la forge est invalide, sinon null. */
 export function validateForge(
-  inputs: ForgeInput[],
+  inputs: ForgeInputCheck[],
   target: ForgeCardInfo,
 ): string | null {
   if (inputs.length === 0) return 'Aucune carte sélectionnée pour la forge';
