@@ -13,6 +13,7 @@ import {
 } from "../../components/Icons";
 import Button from "../../components/Button";
 import DestroyDialog from "../forge/DestroyDialog";
+import { useUsableByCard } from "../forge/useForge";
 import type { Rarity } from "@pipou/shared";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
@@ -50,6 +51,7 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
   const { filterValues, setFilter, resetFilters, hasActiveFilters } =
     useFilters(filterConfig);
 
+  const usableByCard = useUsableByCard();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [showMissing, setShowMissing] = useState(true);
@@ -195,7 +197,7 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
                     ×{item.quantity}
                   </span>
                 )}
-                {item.owned && item.quantity > 0 && (
+                {item.owned && (usableByCard.get(item.id) ?? 0) > 0 && (
                   <Button
                     size="sm"
                     variant="danger"

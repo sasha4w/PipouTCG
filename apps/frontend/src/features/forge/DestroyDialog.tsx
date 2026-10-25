@@ -7,7 +7,7 @@ import Button from "../../components/Button";
 import { IconDust } from "../../components/Icons";
 import { forgeService } from "../../services/forge.service";
 import { apiErrorMessage } from "../../utils/errors";
-import { useInvalidateAfterForge, useUsableByCard } from "./useForge";
+import { useInvalidateAfterForge, useUsableState } from "./useForge";
 import "./Forge.css";
 
 interface Props {
@@ -17,7 +17,8 @@ interface Props {
 
 export default function DestroyDialog({ card, onClose }: Props) {
   const { t } = useTranslation();
-  const usable = useUsableByCard().get(card.id) ?? 0;
+  const { usableByCard, isPending: usableLoading } = useUsableState();
+  const usable = usableByCard.get(card.id) ?? 0;
   const invalidate = useInvalidateAfterForge();
   const [choice, setChoice] = useState(1);
   const quantity = Math.min(Math.max(choice, 1), Math.max(usable, 1));
@@ -39,7 +40,7 @@ export default function DestroyDialog({ card, onClose }: Props) {
     >
       <div className="forge">
         <p className="forge__card-name">{card.name}</p>
-        {usable === 0 ? (
+        {usableLoading ? null : usable === 0 ? (
           <p className="forge__empty">{t("forge.none_usable")}</p>
         ) : (
           <>
