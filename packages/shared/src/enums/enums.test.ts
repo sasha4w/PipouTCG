@@ -39,7 +39,7 @@ describe("enum values match the backend database values", () => {
     [
       "QuestConditionType",
       QuestConditionType,
-      ["OPEN_BOOSTER", "BUY_CARD", "SELL_CARD", "BUY_BOOSTER", "SELL_BOOSTER", "OWN_CARD", "COMPLETE_SET", "REACH_LEVEL", "WIN_FIGHT", "PLAY_FIGHT", "OBTAIN_CARD", "CLAIM_DAILY_REWARD", "LIST_CARD", "EARN_GOLD", "COMPLETE_QUEST", "WIN_PVP_FIGHT", "WIN_PVE_FIGHT", "PLAY_PVP_FIGHT", "PLAY_PVE_FIGHT"],
+      ["OPEN_BOOSTER", "BUY_CARD", "SELL_CARD", "BUY_BOOSTER", "SELL_BOOSTER", "OWN_CARD", "COMPLETE_SET", "REACH_LEVEL", "WIN_FIGHT", "PLAY_FIGHT", "OBTAIN_CARD", "CLAIM_DAILY_REWARD", "LIST_CARD", "EARN_GOLD", "COMPLETE_QUEST", "WIN_PVP_FIGHT", "WIN_PVE_FIGHT", "PLAY_PVP_FIGHT", "PLAY_PVE_FIGHT", "FORGE_CARD", "DESTROY_CARD"],
     ],
     ["ConditionOperator", ConditionOperator, ["AND", "OR"]],
     ["DailyRewardType", DailyRewardType, ["gold", "card", "booster", "bundle"]],

@@ -72,6 +72,7 @@ export const QUEST_POOL: readonly PoolQuest[] = [
   daily('d_pvp_play_1', { type: C.PLAY_PVP_FIGHT, amount: 1 }, gold(150)),
   daily('d_buy_card_1', { type: C.BUY_CARD, amount: 1 }, gold(100)),
   daily('d_sell_card_1', { type: C.SELL_CARD, amount: 1 }, gold(100)),
+  daily('d_destroy_card_5', { type: C.DESTROY_CARD, amount: 5 }, gold(100)),
   daily('d_list_card_1', { type: C.LIST_CARD, amount: 1 }, gold(100)),
   daily('d_buy_booster_1', { type: C.BUY_BOOSTER, amount: 1 }, gold(100)),
   daily('d_obtain_10', { type: C.OBTAIN_CARD, amount: 10 }, gold(100)),
@@ -89,6 +90,7 @@ export const QUEST_POOL: readonly PoolQuest[] = [
   weekly('w_pvp_win_5', { type: C.WIN_PVP_FIGHT, amount: 5 }, booster),
   weekly('w_buy_card_10', { type: C.BUY_CARD, amount: 10 }, gold(500)),
   weekly('w_sell_card_10', { type: C.SELL_CARD, amount: 10 }, gold(500)),
+  weekly('w_forge_card_3', { type: C.FORGE_CARD, amount: 3 }, gold(400)),
   weekly('w_earn_1000', { type: C.EARN_GOLD, amount: 1000 }, gold(500)),
   weekly('w_obtain_100', { type: C.OBTAIN_CARD, amount: 100 }, gold(500)),
   weekly(

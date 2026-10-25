@@ -12,7 +12,7 @@ import type { AchievementProgress } from "../api/achievements";
 import { Rarity, rarityAtLeast } from "../enums/card";
 
 describe("catalogue des succès", () => {
-  it("couvre les 15 familles, 3 paliers chacune", () => {
+  it("couvre les 17 familles, 3 paliers chacune", () => {
     expect(ACHIEVEMENTS.map((a) => a.family).sort()).toEqual(
       Object.values(AchievementFamily).sort(),
     );
@@ -23,7 +23,7 @@ describe("catalogue des succès", () => {
         AchievementTier.GOLD,
       ]);
     }
-    expect(ACHIEVEMENT_TOTAL).toBe(45);
+    expect(ACHIEVEMENT_TOTAL).toBe(51);
   });
 
   it("a des seuils numériques strictement croissants", () => {
@@ -54,6 +54,12 @@ describe("catalogue des succès", () => {
     expect(th(AchievementFamily.PVE_WON)).toEqual([5, 50, 200]);
     expect(th(AchievementFamily.PVE_PLAYED)).toEqual([10, 100, 300]);
     expect(th(AchievementFamily.ADVENTURE_WORLDS)).toEqual([1, 3, ALL_WORLDS]);
+  });
+
+  it("définit les seuils de forge et de destruction", () => {
+    const th = (f: string) => ACHIEVEMENTS.find((a) => a.family === f)!.tiers.map((t) => t.threshold);
+    expect(th(AchievementFamily.CARDS_FORGED)).toEqual([1, 10, 50]);
+    expect(th(AchievementFamily.CARDS_DESTROYED)).toEqual([10, 100, 500]);
   });
 });
 

@@ -853,6 +853,22 @@ describe('QuestService', () => {
       ]);
     });
 
+    it('forge.done : FORGE_CARD du montant', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleForgeDone({ userId: 4, amount: 2 });
+      expect(track).toHaveBeenCalledWith(4, ConditionType.FORGE_CARD, {
+        amount: 2,
+      });
+    });
+
+    it('destroy.done : DESTROY_CARD du montant', async () => {
+      const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
+      await service.handleDestroyDone({ userId: 4, amount: 2 });
+      expect(track).toHaveBeenCalledWith(4, ConditionType.DESTROY_CARD, {
+        amount: 2,
+      });
+    });
+
     it('listing.sold : EARN_GOLD du montant pour le vendeur', async () => {
       const track = jest.spyOn(service, 'track').mockResolvedValue(undefined);
       await service.handleListingSold({ sellerId: 3, totalPrice: 450 });

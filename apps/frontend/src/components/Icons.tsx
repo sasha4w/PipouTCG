@@ -1388,3 +1388,24 @@ export function IconGuard({
     </svg>
   );
 }
+
+export function IconForge(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M4 10h13a3 3 0 0 0 3-3V6h-6l-2 2H4v2Z" />
+      <path d="M8 10v4h8v-4" />
+      <path d="M6 20l2-6M18 20l-2-6M5 20h14" />
+    </StrokeIcon>
+  );
+}
+
+export function IconDust(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Z" />
+      <circle cx="19" cy="17" r="1" />
+      <circle cx="5.5" cy="18" r="1" />
+      <circle cx="17.5" cy="4.5" r="0.6" />
+    </StrokeIcon>
+  );
+}

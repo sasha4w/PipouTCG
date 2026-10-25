@@ -40,6 +40,8 @@ export const QuestConditionType = {
   WIN_PVE_FIGHT: "WIN_PVE_FIGHT",
   PLAY_PVP_FIGHT: "PLAY_PVP_FIGHT",
   PLAY_PVE_FIGHT: "PLAY_PVE_FIGHT",
+  FORGE_CARD: "FORGE_CARD",
+  DESTROY_CARD: "DESTROY_CARD",
 } as const;
 export type QuestConditionType =
   (typeof QuestConditionType)[keyof typeof QuestConditionType];

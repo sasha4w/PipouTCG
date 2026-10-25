@@ -516,6 +516,22 @@ export class QuestService {
     });
   }
 
+  // ✅ Forge de cartes
+  @OnEvent('forge.done')
+  async handleForgeDone(payload: { userId: number; amount: number }) {
+    await this.track(payload.userId, ConditionType.FORGE_CARD, {
+      amount: payload.amount,
+    });
+  }
+
+  // ✅ Destruction de cartes
+  @OnEvent('destroy.done')
+  async handleDestroyDone(payload: { userId: number; amount: number }) {
+    await this.track(payload.userId, ConditionType.DESTROY_CARD, {
+      amount: payload.amount,
+    });
+  }
+
   // ✅ Achat de booster sur le marché
   @OnEvent('market.booster.bought')
   async handleMarketBoosterBought(payload: { userId: number; amount: number }) {

@@ -44,7 +44,7 @@ describe('buildAchievementsResponse', () => {
     ]);
     expect(res).toMatchObject({
       unlocked: 1,
-      total: 45,
+      total: 51,
       equippedTitle: AchievementFamily.LEVEL,
     });
   });

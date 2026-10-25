@@ -51,6 +51,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   { family: AchievementFamily.BOOSTERS_OPENED, tiers: tiers(10, 100, 500) },
   { family: AchievementFamily.CARDS_BOUGHT, tiers: tiers(5, 50, 250) },
   { family: AchievementFamily.CARDS_SOLD, tiers: tiers(5, 50, 250) },
+  { family: AchievementFamily.CARDS_FORGED, tiers: tiers(1, 10, 50) },
+  { family: AchievementFamily.CARDS_DESTROYED, tiers: tiers(10, 100, 500) },
   { family: AchievementFamily.SETS_COMPLETED, tiers: tiers(1, 3, ALL_SETS) },
   { family: AchievementFamily.DUELS_WON, tiers: tiers(1, 25, 100) },
   { family: AchievementFamily.DUELS_PLAYED, tiers: tiers(10, 50, 200) },

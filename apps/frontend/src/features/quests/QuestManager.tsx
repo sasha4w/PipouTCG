@@ -59,6 +59,8 @@ const CONDITION_LABELS: Record<ConditionType, string> = {
   WIN_PVE_FIGHT: "Gagner combat PvE",
   PLAY_PVP_FIGHT: "Jouer un combat PvP",
   PLAY_PVE_FIGHT: "Jouer un combat PvE",
+  FORGE_CARD: "Forger une carte",
+  DESTROY_CARD: "Détruire une carte",
 };
 
 const STEPS = [
