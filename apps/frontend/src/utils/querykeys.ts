@@ -14,6 +14,9 @@ export const QUERY_KEYS = {
     list: (tab: string) => ["notifications", tab] as const,
   },
 
+  // ── Forge ─────────────────────────────────────────────────────────────────
+  forgeUsable: ["forge", "usable"] as const,
+
   // ── Marketplace ───────────────────────────────────────────────────────────
   offers: ["listings", "offers"] as const,
   myListings: ["listings", "me"] as const,

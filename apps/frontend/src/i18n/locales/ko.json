@@ -1158,5 +1158,31 @@
     "fightF2": "실시간 ELO 랭킹",
     "fightF3": "매치 기록",
     "fightCta": "아레나 입장"
+  },
+  "forge": {
+    "title": "대장간",
+    "destroy_title": "카드 파괴",
+    "open": "제작",
+    "destroy": "파괴",
+    "dust": "가루",
+    "close": "닫기",
+    "set": "세트",
+    "rarity": "제출할 카드 희귀도",
+    "cards_to_give": "제출할 카드",
+    "counter": "{{n}} / {{cost}}",
+    "usable": "사용 가능 {{count}}장",
+    "add": "{{name}} 한 장 추가",
+    "remove": "{{name}} 한 장 제거",
+    "target": "받을 카드",
+    "target_placeholder": "카드 선택",
+    "target_missing": "{{name}} (미보유)",
+    "confirm": "제작",
+    "confirming": "제작 중...",
+    "no_forgeable": "이 세트에는 제작 가능한 카드가 없습니다.",
+    "quantity": "파괴할 수량",
+    "gain": "획득 가루: {{count}}",
+    "destroy_confirm": "파괴",
+    "none_usable": "사용 가능한 카드가 없습니다 (덱의 카드는 보호됩니다).",
+    "error": "실행할 수 없습니다."
   }
 }

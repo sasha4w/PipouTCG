@@ -1223,5 +1223,31 @@
     "fightF2": "Classement ELO en direct",
     "fightF3": "Historique des matchs",
     "fightCta": "Rejoindre l'arène"
+  },
+  "forge": {
+    "title": "Forge",
+    "destroy_title": "Détruire des cartes",
+    "open": "Forger",
+    "destroy": "Détruire",
+    "dust": "Poussière",
+    "close": "Fermer",
+    "set": "Set",
+    "rarity": "Rareté des cartes à fournir",
+    "cards_to_give": "Cartes à fournir",
+    "counter": "{{n}} / {{cost}}",
+    "usable": "{{count}} utilisable(s)",
+    "add": "Ajouter une copie de {{name}}",
+    "remove": "Retirer une copie de {{name}}",
+    "target": "Carte à obtenir",
+    "target_placeholder": "Choisir une carte",
+    "target_missing": "{{name}} (non obtenue)",
+    "confirm": "Forger",
+    "confirming": "Forge en cours...",
+    "no_forgeable": "Aucune carte forgeable dans ce set.",
+    "quantity": "Quantité à détruire",
+    "gain": "Poussière gagnée : {{count}}",
+    "destroy_confirm": "Détruire",
+    "none_usable": "Aucune copie utilisable (les cartes des decks sont protégées).",
+    "error": "Action impossible."
   }
 }

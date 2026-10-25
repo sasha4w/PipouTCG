@@ -9,8 +9,11 @@ import {
   IconUnknown,
   IconArrowLeft,
   IconArrowRight,
+  IconDust,
 } from "../../components/Icons";
 import Button from "../../components/Button";
+import DestroyDialog from "../forge/DestroyDialog";
+import type { Rarity } from "@pipou/shared";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
 import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
@@ -51,6 +54,11 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
   const [search, setSearch] = useState("");
   const [showMissing, setShowMissing] = useState(true);
   const [filterSet, setFilterSet] = useState<number | "all">("all");
+  const [destroying, setDestroying] = useState<{
+    id: number;
+    name: string;
+    rarity: Rarity;
+  } | null>(null);
 
   const allCards = useMemo(() => {
     const sets =
@@ -187,10 +195,31 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
                     ×{item.quantity}
                   </span>
                 )}
+                {item.owned && item.quantity > 0 && (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    className="own-cardlist__destroy"
+                    onClick={() =>
+                      setDestroying({
+                        id: item.id,
+                        name: item.name,
+                        rarity: item.rarity as Rarity,
+                      })
+                    }
+                  >
+                    <IconDust size={12} color="currentColor" />
+                    {t("forge.destroy")}
+                  </Button>
+                )}
               </div>
             ))}
           </div>
         </div>
+      )}
+
+      {destroying && (
+        <DestroyDialog card={destroying} onClose={() => setDestroying(null)} />
       )}
 
       {/* Pagination */}

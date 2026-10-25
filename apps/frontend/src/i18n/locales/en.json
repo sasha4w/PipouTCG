@@ -1222,5 +1222,31 @@
     "fightF2": "Live ELO leaderboard",
     "fightF3": "Match history",
     "fightCta": "Enter the arena"
+  },
+  "forge": {
+    "title": "Forge",
+    "destroy_title": "Destroy cards",
+    "open": "Forge",
+    "destroy": "Destroy",
+    "dust": "Dust",
+    "close": "Close",
+    "set": "Set",
+    "rarity": "Rarity of cards to give",
+    "cards_to_give": "Cards to give",
+    "counter": "{{n}} / {{cost}}",
+    "usable": "{{count}} usable",
+    "add": "Add a copy of {{name}}",
+    "remove": "Remove a copy of {{name}}",
+    "target": "Card to obtain",
+    "target_placeholder": "Choose a card",
+    "target_missing": "{{name}} (not owned)",
+    "confirm": "Forge",
+    "confirming": "Forging...",
+    "no_forgeable": "No forgeable card in this set.",
+    "quantity": "Quantity to destroy",
+    "gain": "Dust gained: {{count}}",
+    "destroy_confirm": "Destroy",
+    "none_usable": "No usable copy (cards in decks are protected).",
+    "error": "Action not possible."
   }
 }

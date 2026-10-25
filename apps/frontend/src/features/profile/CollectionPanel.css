@@ -243,3 +243,11 @@
   color: #a08070;
   font-weight: 600;
 }
+
+.collection-panel__forge-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
