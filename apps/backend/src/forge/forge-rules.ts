@@ -31,8 +31,7 @@ export function validateForge(
     return 'Quantité invalide';
 
   const first = inputs[0].card;
-  if (!isForgeable(first.rarity))
-    return 'Cette rareté ne peut pas être forgée';
+  if (!isForgeable(first.rarity)) return 'Cette rareté ne peut pas être forgée';
   if (inputs.some((i) => i.card.rarity !== first.rarity))
     return 'Toutes les cartes doivent avoir la même rareté';
   if (first.setId === null || inputs.some((i) => i.card.setId !== first.setId))

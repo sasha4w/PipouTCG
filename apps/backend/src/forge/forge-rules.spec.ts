@@ -1,9 +1,4 @@
-import {
-  ActionType,
-  CardEffect,
-  EffectTrigger,
-  Rarity,
-} from '@pipou/shared';
+import { ActionType, CardEffect, EffectTrigger, Rarity } from '@pipou/shared';
 import { ForgeCardInfo, validateForge } from './forge-rules';
 
 const card = (
@@ -109,9 +104,9 @@ describe('validateForge', () => {
 
   it('additionne les lignes de même carte pour usable', () => {
     const c = card(1);
-    expect(
-      validateForge([input(c, 6, 8), input(c, 4, 8)], target()),
-    ).toBe("Tu ne possèdes pas assez d'exemplaires disponibles");
+    expect(validateForge([input(c, 6, 8), input(c, 4, 8)], target())).toBe(
+      "Tu ne possèdes pas assez d'exemplaires disponibles",
+    );
     expect(
       validateForge([input(c, 6, 10), input(c, 4, 10)], target()),
     ).toBeNull();
