@@ -69,6 +69,21 @@ export class User {
   @Column({ name: 'boosters_sold', default: 0 }) // Ajout du name
   boostersSold!: number;
 
+  // =========================
+  // FORGE
+  // =========================
+  @Column({ type: 'bigint', default: 0 })
+  dust!: number;
+
+  @Column({ name: 'dust_earned', type: 'bigint', default: 0 })
+  dustEarned!: number;
+
+  @Column({ name: 'cards_forged', default: 0 })
+  cardsForged!: number;
+
+  @Column({ name: 'cards_destroyed', default: 0 })
+  cardsDestroyed!: number;
+
   @Column({ name: 'bundles_sold', default: 0 }) // Ajout du name
   bundlesSold!: number;
 

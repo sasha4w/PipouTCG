@@ -13,6 +13,8 @@ export interface AchievementSources {
     boostersOpened: number;
     cardsBought: number;
     cardsSold: number;
+    cardsForged: number;
+    cardsDestroyed: number;
     moneyEarned: number | string;
     questsCompleted: number;
   };
@@ -33,6 +35,8 @@ export function toAchievementValues(
     [AchievementFamily.BOOSTERS_OPENED]: src.user.boostersOpened,
     [AchievementFamily.CARDS_BOUGHT]: src.user.cardsBought,
     [AchievementFamily.CARDS_SOLD]: src.user.cardsSold,
+    [AchievementFamily.CARDS_FORGED]: src.user.cardsForged,
+    [AchievementFamily.CARDS_DESTROYED]: src.user.cardsDestroyed,
     [AchievementFamily.SETS_COMPLETED]: src.sets.filter(
       (s) => s.total > 0 && s.owned >= s.total,
     ).length,

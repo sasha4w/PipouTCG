@@ -1,10 +1,20 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import type {
   UserInventory,
   UserCollection,
 } from "../../services/user.service";
-import { IconCards, IconBooster, IconBundle } from "../../components/Icons";
+import {
+  IconCards,
+  IconBooster,
+  IconBundle,
+  IconForge,
+} from "../../components/Icons";
+import Button from "../../components/Button";
+import { userService } from "../../services/user.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
+import ForgeDialog, { DustBalance } from "../forge/ForgeDialog";
 import OwnCardList from "./OwnCardList";
 import OwnBoosterList from "../boosters/OwnerBoosterList";
 import OwnBundleList from "../bundles/OwnerBundleList";
@@ -46,6 +56,12 @@ export default function CollectionPanel({
 }: CollectionPanelProps) {
   const { t } = useTranslation();
   const [active, setActive] = useState<ActiveSection>(null);
+  const [forgeOpen, setForgeOpen] = useState(false);
+  const { data: me } = useQuery({
+    queryKey: QUERY_KEYS.profile,
+    queryFn: () => userService.getMe(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const toggle = (section: ActiveSection) =>
     setActive((prev) => (prev === section ? null : section));
@@ -104,7 +120,16 @@ export default function CollectionPanel({
                       {t("collection.no_cards")}
                     </p>
                   ) : (
-                    <OwnCardList collection={collection} />
+                    <>
+                      <div className="collection-panel__forge-bar">
+                        <DustBalance dust={me?.dust ?? 0} />
+                        <Button size="sm" onClick={() => setForgeOpen(true)}>
+                          <IconForge size={14} color="currentColor" />
+                          {t("forge.open")}
+                        </Button>
+                      </div>
+                      <OwnCardList collection={collection} />
+                    </>
                   ))}
                 {s.key === "boosters" &&
                   (inventory.boosters.data.length === 0 ? (
@@ -133,6 +158,13 @@ export default function CollectionPanel({
           </div>
         ))}
       </div>
+
+      {forgeOpen && collection && (
+        <ForgeDialog
+          collection={collection}
+          onClose={() => setForgeOpen(false)}
+        />
+      )}
     </div>
   );
 }

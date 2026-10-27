@@ -25,6 +25,7 @@ import { validateEnv } from './config/env.validation';
 import { Buffer } from 'buffer';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DecksModule } from './decks/decks.module';
+import { ForgeModule } from './forge/forge.module';
 import { FightsModule } from './fights/fights.module';
 import { SandboxModule } from './sandbox/sandbox.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -83,6 +84,7 @@ import { shouldSynchronize } from './database/synchronize';
     ShopModule,
     DailyRewardModule,
     DecksModule,
+    ForgeModule,
     FightsModule,
     SandboxModule,
     NotificationsModule,

@@ -6,3 +6,4 @@ export * from "./daily-reward";
 export * from "./achievements";
 export * from "./quests";
 export * from "./adventure";
+export * from "./forge";

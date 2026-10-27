@@ -107,12 +107,13 @@ export class UsersService {
         'cardsSold',
         'moneyEarned',
         'setsCompleted',
+        'dust',
       ],
     });
     if (!user) throw new NotFoundException('User not found');
 
     const levelData = this.calculateLevelData(user.experience);
-    return { ...user, ...levelData };
+    return { ...user, dust: Number(user.dust), ...levelData };
   }
 
   async findByEmail(email: string) {
@@ -621,6 +622,9 @@ export class UsersService {
         'boostersOpened',
         'cardsBought',
         'cardsSold',
+        'cardsForged',
+        'cardsDestroyed',
+        'dustEarned',
         'moneyEarned',
         'moneySpent',
         'setsCompleted',
@@ -649,6 +653,9 @@ export class UsersService {
         boostersOpened: user.boostersOpened,
         cardsBought: user.cardsBought,
         cardsSold: user.cardsSold,
+        cardsForged: user.cardsForged,
+        cardsDestroyed: user.cardsDestroyed,
+        dustEarned: Number(user.dustEarned),
         moneyEarned: Number(user.moneyEarned),
         moneySpent: Number(user.moneySpent),
         setsCompleted: user.setsCompleted,

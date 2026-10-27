@@ -16,7 +16,7 @@ const profile = (equippedTitle: UserProfile["equippedTitle"]): UserProfile => ({
   progressPercent: 33,
   gold: 500,
   stats: {
-    boostersOpened: 0, cardsBought: 0, cardsSold: 0, moneyEarned: 0, moneySpent: 0,
+    boostersOpened: 0, cardsBought: 0, cardsSold: 0, cardsForged: 0, cardsDestroyed: 0, dustEarned: 0, moneyEarned: 0, moneySpent: 0,
     setsCompleted: 0, boostersBought: 0, bundlesBought: 0, boostersSold: 0, bundlesSold: 0,
   },
 });

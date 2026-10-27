@@ -8,3 +8,4 @@ export * from "./rules";
 export * from "./events";
 export * from "./achievements";
 export * from "./adventure";
+export * from "./forge";

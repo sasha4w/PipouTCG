@@ -39,6 +39,9 @@ export interface UserProfile {
     boostersOpened: number;
     cardsBought: number;
     cardsSold: number;
+    cardsForged: number;
+    cardsDestroyed: number;
+    dustEarned: number;
     moneyEarned: number;
     moneySpent: number;
     setsCompleted: number;
@@ -55,6 +58,7 @@ export interface UserMe {
   email: string;
   is_admin: boolean;
   gold: number;
+  dust: number;
   experience: number;
   isPrivate: boolean;
   level: number;
