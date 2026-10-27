@@ -521,6 +521,34 @@ describe('QuestService', () => {
       });
     });
 
+    it('émet quests.updated une fois la progression enregistrée', async () => {
+      mockUserQuestRepo.find.mockResolvedValue([
+        structuredClone(fakeUserQuest),
+      ]);
+      await service.track(7, ConditionType.OPEN_BOOSTER, { amount: 1 });
+
+      expect(mockEmitter.emit).toHaveBeenCalledWith('quests.updated', {
+        userId: 7,
+      });
+      const emitOrder = mockEmitter.emit.mock.calls.findIndex(
+        ([name]) => name === 'quests.updated',
+      );
+      expect(
+        mockEmitter.emit.mock.invocationCallOrder[emitOrder],
+      ).toBeGreaterThan(mockUserQuestRepo.save.mock.invocationCallOrder[0]);
+    });
+
+    it("n'émet pas quests.updated si aucune quête n'a bougé", async () => {
+      mockUserQuestRepo.find.mockResolvedValue([
+        structuredClone(fakeUserQuest),
+      ]);
+      await service.track(7, ConditionType.SELL_CARD, { amount: 1 });
+      expect(mockEmitter.emit).not.toHaveBeenCalledWith(
+        'quests.updated',
+        expect.anything(),
+      );
+    });
+
     it("n'émet rien tant que la quête n'est pas terminée", async () => {
       mockUserQuestRepo.find.mockResolvedValue([
         structuredClone(fakeUserQuest),

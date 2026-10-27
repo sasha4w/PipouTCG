@@ -24,7 +24,7 @@ export const useMarkNotificationsRead = () => {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-/** SSE privé : un nouveau message arrive, on recharge la boîte. */
+/** SSE privé : un nouveau message arrive ou les quêtes progressent, on recharge. */
 export function useNotificationEvents() {
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -33,6 +33,11 @@ export function useNotificationEvents() {
     });
     es.addEventListener("notification.created", () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.all });
+    });
+    // La progression est enregistrée après la réponse de l'action : sans ce
+    // signal, le refetch qui suit l'action relit l'ancienne progression.
+    es.addEventListener("quests.updated", () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
     });
     es.onerror = (err) => console.error("SSE notifications disconnected", err);
     return () => es.close();

@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Observable, Subject } from 'rxjs';
+import { merge, Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import type { NotificationsResponse } from '@pipou/shared';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
@@ -30,9 +30,16 @@ export class NotificationsController {
 
   constructor(private readonly service: NotificationsService) {}
 
+  private readonly questsUpdated = new Subject<{ userId: number }>();
+
   @OnEvent('notification.created')
   onCreated(payload: { userId: number | null }): void {
     this.created.next(payload);
+  }
+
+  @OnEvent('quests.updated')
+  onQuestsUpdated(payload: { userId: number }): void {
+    this.questsUpdated.next(payload);
   }
 
   @Get()
@@ -49,13 +56,20 @@ export class NotificationsController {
     await this.service.markAllRead(req.user.userId);
   }
 
-  // 📡 SSE privé : prévient le front d'un nouveau message (il refetch ensuite)
+  // 📡 SSE privé : prévient le front d'un nouveau message ou d'une progression
+  // de quête (il refetch ensuite)
   @Sse('events')
   events(@Req() req: AuthenticatedRequest): Observable<MessageEvent> {
     const userId = req.user.userId;
-    return this.created.asObservable().pipe(
-      filter((e) => e.userId === null || e.userId === userId),
-      map((): MessageEvent => ({ type: 'notification.created', data: '{}' })),
+    return merge(
+      this.created.asObservable().pipe(
+        filter((e) => e.userId === null || e.userId === userId),
+        map((): MessageEvent => ({ type: 'notification.created', data: '{}' })),
+      ),
+      this.questsUpdated.asObservable().pipe(
+        filter((e) => e.userId === userId),
+        map((): MessageEvent => ({ type: 'quests.updated', data: '{}' })),
+      ),
     );
   }
 }
