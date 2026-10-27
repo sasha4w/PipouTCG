@@ -40,6 +40,8 @@
     "tournament": "dotenv -e .env.e2e -- ts-node -r tsconfig-paths/register src/fights/ai/tournament.cli.ts",
     "tournament:generated": "ts-node -r tsconfig-paths/register src/fights/ai/tournament-generated.cli.ts",
     "ai:bench": "ts-node -r tsconfig-paths/register src/fights/ai/ai-bench.cli.ts",
+    "ai:review": "ts-node -r tsconfig-paths/register src/fights/ai/ai-review.cli.ts",
+    "ai:selfplay-log": "ts-node -r tsconfig-paths/register src/fights/ai/ai-selfplay-log.cli.ts",
     "e2e:copy-aiven": "node scripts/e2e-copy-aiven.mjs"
   },
   "dependencies": {

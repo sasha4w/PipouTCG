@@ -5,6 +5,7 @@ import type { ClientToServerEvents, ServerToClientEvents } from '@pipou/shared';
 export interface FightSocketData {
   userId: number;
   username: string;
+  isAdmin?: boolean;
 }
 
 /** Serveur du namespace /fight : événements typés par le contrat partagé. */

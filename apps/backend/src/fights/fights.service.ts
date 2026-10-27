@@ -37,6 +37,8 @@ import { emitGameState } from './helpers/client-state.builder';
 import { createGameState } from './helpers/game-factory';
 import { aiMustAct } from './ai/ai-player';
 import type { AiPlayer } from './ai/ai-player';
+import { AI_DECISION_RECORDER } from '../ai-review/decision-recorder';
+import type { DecisionRecorder } from '../ai-review/decision-recorder';
 import { createLevelAi } from './ai/level-brains';
 import {
   AI_ACTION_DELAY_MS,
@@ -85,6 +87,9 @@ export class FightsService {
     private gameEnd: GameEndService,
     private turnTimeout: TurnTimeoutService,
     @Optional() @Inject(PVE_HOOKS) private pveHooks?: PveHooks,
+    @Optional()
+    @Inject(AI_DECISION_RECORDER)
+    private decisionRecorder?: DecisionRecorder,
   ) {}
 
   // ── Matchmaking ──────────────────────────────────────────────────────────
@@ -135,6 +140,8 @@ export class FightsService {
     socketId: string,
     payload: AdventureStartPayload,
     server: FightServer,
+    /** Admin : les décisions de l'IA sont journalisées pour la revue. */
+    isAdmin = false,
   ): Promise<{ error?: string }> {
     const hooks = this.pveHooks;
     if (!hooks) return { error: 'Mode Aventure indisponible' };
@@ -197,6 +204,9 @@ export class FightsService {
         return { error: 'Impossible de lancer ce combat' };
       }
 
+      const ai = createLevelAi(this.engine, start.profile.level);
+      const sink = this.decisionRecorder?.sinkFor(userId, isAdmin) ?? null;
+      if (sink) ai.setDecisionSink(sink, `pve${Date.now()}`);
       this.adopt(game);
       this.pve.set(matchId, {
         info: {
@@ -208,7 +218,7 @@ export class FightsService {
           aiActionsThisTurn: 0,
         },
         aiTurn: game.turnNumber,
-        ai: createLevelAi(this.engine, start.profile.level),
+        ai,
       });
       server.to(socketId).emit('fight:matched', {
         matchId,
