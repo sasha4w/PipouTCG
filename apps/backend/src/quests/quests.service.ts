@@ -426,12 +426,14 @@ export class QuestService {
       relations: { quest: true },
     });
 
+    let progressed = 0;
     let completed = 0;
     let dailyCompleted = 0;
     for (const uq of userQuests) {
       const updated = this.updateProgress(uq, eventType, meta);
       if (!updated) continue;
       await this.userQuestRepository.save(uq);
+      progressed++;
       // track() ne charge que des quêtes non terminées : terminée ici = vient de l'être
       if (uq.isCompleted) {
         completed++;
@@ -452,6 +454,9 @@ export class QuestService {
         'questsCompleted',
         completed,
       );
+    // track() tourne après la réponse HTTP de l'action : le front attend ce
+    // signal (SSE) pour recharger les quêtes, sinon il relit l'ancienne progression.
+    if (progressed > 0) this.eventEmitter.emit('quests.updated', { userId });
     // COMPLETE_QUEST n'existe que dans des quêtes WEEKLY : la récursion s'arrête au 2e appel
     if (dailyCompleted > 0)
       await this.track(userId, ConditionType.COMPLETE_QUEST, {
