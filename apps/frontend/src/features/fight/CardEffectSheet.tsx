@@ -5,6 +5,7 @@ import {
   type KeywordId,
 } from "./effectText";
 import KeywordIcon from "./KeywordIcon";
+import { IconWrench } from "../../components/Icons";
 import { renderEffectText } from "./renderEffectText";
 import type { BuffEntry } from "./BuffDebuffSections";
 import "./CardEffectSheet.css";
@@ -35,7 +36,9 @@ export default function CardEffectSheet({ sources, statuses = [] }: Props) {
     <section className="ces" aria-label={t("effects.ui.title")}>
       {described.map((d, i) => (
         <div key={i} className="ces-source">
-          {d.title && <h4 className="ces-source-title">🔧 {d.title}</h4>}
+          {d.title && <h4 className="ces-source-title">
+            <IconWrench size={12} /> {d.title}
+          </h4>}
           {d.rules.map((rule, j) => (
             <div key={j} className="ces-rule">
               <div className="ces-trigger">

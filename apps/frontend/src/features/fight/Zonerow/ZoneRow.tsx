@@ -14,7 +14,7 @@ import type { CombatMode } from "@pipou/shared";
 import { IconLock, IconVirus } from "../../../components/Icons";
 import { useAnimationPrefs } from "../../../contexts/useAnimationPrefs";
 import type { ZoneFxMap } from "../fightEvents";
-import { statusFlags } from "../statusFx";
+import { overlayFx, statusFlags } from "../statusFx";
 
 interface Props {
   label: string;
@@ -67,7 +67,7 @@ export default function ZoneRow({
   damagedZones,
   fx,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { reduced } = useAnimationPrefs();
   const { summoningZones, flippingZones, dyingZones, statusBurstZones } =
     useZoneAnimations(zones, isSupport, fx, reduced);
@@ -165,9 +165,9 @@ export default function ZoneRow({
               {summonTier && summonTier >= 3 && (
                 <span className="zr-summon-beam" aria-hidden />
               )}
-              {statusOverlay && statusOverlay.size > 0 && (
+              {statusOverlay && overlayFx(statusOverlay).length > 0 && (
                 <span className="zr-status-layer" aria-hidden>
-                  {[...statusOverlay].map((id) => (
+                  {overlayFx(statusOverlay).map((id) => (
                     <span
                       key={id}
                       className={`zr-status-fx zr-status-fx--${id}`}
@@ -251,7 +251,7 @@ export default function ZoneRow({
           guard={isMonsterZone(inspected) && inspected.mode === "guard"}
           status={
             isMonsterZone(inspected)
-              ? getMonsterStatusEntries(inspected, t)
+              ? getMonsterStatusEntries(inspected, t, i18n.language)
               : undefined
           }
           equipments={

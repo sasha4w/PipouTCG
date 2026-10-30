@@ -601,7 +601,14 @@
       "guard": "En Garde : {{turns}}/{{max}} tours adverses",
       "counterOffensive": "Contre-offensive à la sortie : +{{value}} ATK",
       "guardCooldown": "Retour en Garde possible au prochain tour",
-      "reflect": "Renvoie {{value}} % des dégâts de combat"
+      "reflect": "Renvoie {{value}} % des dégâts de combat",
+      "immunities": "Insensible à : {{list}}"
+    },
+    "immunity": {
+      "SUPPORT_DESTRUCTION": "la destruction par Support",
+      "SUPPORT_DEBUFF": "les malus de Support",
+      "MONSTER_DEBUFF": "les malus de Monstre",
+      "MONSTER_STATUS": "les statuts de Monstre (gel, étourdissement…)"
     }
   },
   "keywords": {
@@ -818,7 +825,9 @@
     "badge": {
       "sleep": "Ne peut pas attaquer ce tour",
       "attacksLeft_one": "Encore {{count}} attaque ce tour",
-      "attacksLeft_other": "Encore {{count}} attaques ce tour"
+      "attacksLeft_other": "Encore {{count}} attaques ce tour",
+      "more_one": "Et {{count}} autre effet (inspecter la carte)",
+      "more_other": "Et {{count}} autres effets (inspecter la carte)"
     },
     "mode": {
       "attack": "Mode Attaque",

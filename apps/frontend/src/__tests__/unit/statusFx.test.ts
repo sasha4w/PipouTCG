@@ -1,7 +1,11 @@
 import { EFFECT_IMMUNITIES, Immunity } from "@pipou/shared";
 import { describe, expect, it } from "vitest";
 import { monster } from "../fixtures/monster";
-import { statusFlags, statusRisingEdges } from "../../features/fight/statusFx";
+import {
+  overlayFx,
+  statusFlags,
+  statusRisingEdges,
+} from "../../features/fight/statusFx";
 
 describe("statusFlags", () => {
   it("vide sur un monstre sans état", () => {
@@ -83,5 +87,30 @@ describe("statusRisingEdges", () => {
 
   it("zone vide : rien", () => {
     expect(statusRisingEdges(monster({ hasTaunt: true }), null)).toEqual([]);
+  });
+});
+
+describe("overlayFx", () => {
+  it("garde Provocation, Bouclier et un seul état bloquant, par priorité", () => {
+    expect(
+      overlayFx(
+        new Set([
+          "guardLock",
+          "stun",
+          "freeze",
+          "taunt",
+          "combatShield",
+          "piercing",
+          "reflect",
+        ]),
+      ),
+    ).toEqual(["taunt", "combatShield", "freeze"]);
+    expect(overlayFx(new Set(["guardLock", "forcedAttack"]))).toEqual([
+      "guardLock",
+    ]);
+  });
+
+  it("rien à dessiner pour les effets passés en badges", () => {
+    expect(overlayFx(new Set(["hatch", "evolve", "countdown"]))).toEqual([]);
   });
 });

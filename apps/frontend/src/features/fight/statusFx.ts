@@ -98,3 +98,20 @@ export function statusRisingEdges(
     (id) => nextFlags.has(id) && !prevFlags.has(id),
   );
 }
+
+/** Un seul état « bloqué » dessiné à la fois, par priorité. */
+const BLOCKED_PRIORITY = ["freeze", "stun", "guardLock", "forcedAttack"] as const;
+
+/**
+ * Effets dessinés sur la zone : l'anneau de Provocation, le reflet du
+ * Bouclier, et la texture de l'état bloquant le plus fort. Le reste est
+ * en badges.
+ */
+export function overlayFx(flags: ReadonlySet<StatusFxId>): StatusFxId[] {
+  const out: StatusFxId[] = [];
+  if (flags.has("taunt")) out.push("taunt");
+  if (flags.has("combatShield")) out.push("combatShield");
+  const blocked = BLOCKED_PRIORITY.find((id) => flags.has(id));
+  if (blocked) out.push(blocked);
+  return out;
+}

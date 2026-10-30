@@ -599,7 +599,14 @@
       "guard": "In Guard: {{turns}}/{{max}} opponent turns",
       "counterOffensive": "Counter-offensive on leaving: +{{value}} ATK",
       "guardCooldown": "Can return to Guard next turn",
-      "reflect": "Reflects {{value}}% of combat damage"
+      "reflect": "Reflects {{value}}% of combat damage",
+      "immunities": "Unaffected by: {{list}}"
+    },
+    "immunity": {
+      "SUPPORT_DESTRUCTION": "destruction by Supports",
+      "SUPPORT_DEBUFF": "Support debuffs",
+      "MONSTER_DEBUFF": "Monster debuffs",
+      "MONSTER_STATUS": "Monster statuses (freeze, stun…)"
     }
   },
   "keywords": {
@@ -816,7 +823,9 @@
     "badge": {
       "sleep": "Can't attack this turn",
       "attacksLeft_one": "{{count}} attack left this turn",
-      "attacksLeft_other": "{{count}} attacks left this turn"
+      "attacksLeft_other": "{{count}} attacks left this turn",
+      "more_one": "{{count}} more effect (inspect the card)",
+      "more_other": "{{count}} more effects (inspect the card)"
     },
     "mode": {
       "attack": "Attack mode",

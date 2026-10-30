@@ -28,7 +28,7 @@ describe("getMonsterStatusEntries — nouvelles protections", () => {
     expect(labels).toEqual(
       expect.arrayContaining([
         fr.keywords.combatImmunity.name,
-        fr.keywords.supportShield.name,
+        "Insensible à : la destruction par Support",
         fr.keywords.ignoreTaunt.name,
       ]),
     );
@@ -97,5 +97,40 @@ describe("getMonsterStatusEntries — Garde et renvoi", () => {
     expect(labels({ reflectPercent: 50 }).some((s) => s.includes("50 %"))).toBe(
       true,
     );
+  });
+});
+
+describe("getMonsterStatusEntries — immunités aux effets", () => {
+  let t: TFunction;
+  beforeAll(async () => {
+    const i = i18next.createInstance();
+    await i.init({
+      lng: "fr",
+      resources: { fr: { translation: fr } },
+      fallbackLng: false,
+    });
+    t = i.t;
+  });
+  const labels = (immunities: Immunity[]) =>
+    getMonsterStatusEntries(monster({ immunities }), t, "fr").map((e) =>
+      String(e.label),
+    );
+
+  it("une seule ligne qui liste les immunités partielles", () => {
+    const l = labels([Immunity.SUPPORT_DEBUFF, Immunity.MONSTER_STATUS]);
+    expect(l.filter((s) => s.startsWith("Insensible à"))).toEqual([
+      "Insensible à : les malus de Support et les statuts de Monstre (gel, étourdissement…)",
+    ]);
+  });
+
+  it("immunité totale : le mot-clé global", () => {
+    expect(
+      labels([
+        Immunity.SUPPORT_DESTRUCTION,
+        Immunity.SUPPORT_DEBUFF,
+        Immunity.MONSTER_DEBUFF,
+        Immunity.MONSTER_STATUS,
+      ]),
+    ).toContain(fr.keywords.debuffImmunity.name);
   });
 });

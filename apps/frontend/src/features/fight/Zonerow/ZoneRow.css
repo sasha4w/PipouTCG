@@ -757,36 +757,6 @@
   }
 }
 
-/* ── Turn counter badge ──────────────────────────────────────────────────── */
-.zr-badge--counter {
-  background: rgba(52, 152, 219, 0.2);
-  color: #2471a3;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-.zr-badge--hatch {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-}
-
-.zr-badge--counter-urgent {
-  background: rgba(231, 76, 60, 0.2);
-  color: #c0392b;
-  animation: zr-counter-blink 0.8s ease-in-out infinite;
-}
-
-@keyframes zr-counter-blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
 /* ── Statuts persistants + burst ──────────────────────────────────────────── */
 .zr-status-layer {
   position: absolute;
@@ -810,7 +780,9 @@
     rgba(180, 230, 255, 0.35),
     rgba(80, 170, 220, 0.2)
   );
-  box-shadow: inset 0 0 12px rgba(160, 220, 255, 0.7);
+  box-shadow:
+    inset 0 0 0 3px rgba(150, 225, 255, 0.95),
+    inset 0 0 22px rgba(160, 225, 255, 0.85);
   animation: zr-status-shimmer 2.4s ease-in-out infinite;
 }
 .zr-status-fx--freeze::before,
@@ -859,84 +831,30 @@
   color: rgba(230, 230, 255, 0.85);
   animation: zr-status-float 1.6s ease-in-out infinite;
 }
+/* Provocation : double anneau épais, distinct du contour de rareté */
 .zr-status-fx--taunt {
   box-shadow:
     inset 0 0 0 3px rgba(150, 30, 70, 0.95),
-    inset 0 0 18px rgba(150, 30, 70, 0.7);
+    inset 0 0 0 5px rgba(255, 255, 255, 0.85),
+    inset 0 0 0 8px rgba(150, 30, 70, 0.9),
+    inset 0 0 22px rgba(150, 30, 70, 0.55);
   animation: zr-status-pulse 1.8s ease-in-out infinite;
 }
-.zr-status-fx--piercing {
-  background: linear-gradient(
-    115deg,
-    transparent 40%,
-    rgba(231, 76, 60, 0.35) 50%,
-    transparent 60%
-  );
-  animation: zr-status-slash 2s ease-in-out infinite;
-}
-.zr-status-fx--monsterDebuffImmune {
-  box-shadow: inset 0 0 16px rgba(255, 236, 160, 0.55);
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(255, 250, 210, 0.25),
-    transparent 70%
-  );
-}
-.zr-status-fx--supportDebuffImmune {
-  box-shadow:
-    inset 0 0 0 2px rgba(90, 220, 170, 0.75),
-    inset 0 0 14px rgba(90, 220, 170, 0.5);
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(150, 255, 210, 0.2),
-    transparent 70%
-  );
-}
-.zr-status-fx--immuneAll {
-  box-shadow:
-    inset 0 0 0 2px rgba(255, 236, 160, 0.85),
-    inset 0 0 18px rgba(90, 220, 170, 0.65),
-    inset 0 0 26px rgba(255, 236, 160, 0.5);
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 236, 160, 0.28),
-    rgba(150, 255, 210, 0.28),
-    rgba(255, 236, 160, 0.28)
-  );
-  animation: zr-reflect-glint 2.6s ease-in-out infinite;
-}
-.zr-status-fx--supportDestroyImmune {
-  box-shadow:
-    inset 0 0 0 3px rgba(60, 190, 140, 0.85),
-    inset 0 0 14px rgba(60, 190, 140, 0.5);
-}
-.zr-status-fx--monsterStatusImmune {
-  box-shadow: inset 0 0 16px rgba(255, 190, 120, 0.6);
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(255, 210, 150, 0.22),
-    transparent 70%
-  );
-}
-.zr-status-fx--combatEndure {
-  box-shadow:
-    inset 0 0 0 2px rgba(255, 140, 110, 0.8),
-    inset 0 0 14px rgba(255, 140, 110, 0.5);
-}
+/* Bouclier de combat : reflet cyan qui balaie toute la carte */
 .zr-status-fx--combatShield {
-  inset: 4px;
-  border-radius: 9px;
-  box-shadow:
-    inset 0 0 0 4px rgba(40, 215, 255, 0.95),
-    inset 0 0 0 6px rgba(255, 255, 255, 0.55),
-    inset 0 0 22px rgba(40, 215, 255, 0.75);
-  background: linear-gradient(
-    115deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 65%
-  );
-  background-size: 250% 100%;
+  box-shadow: inset 0 0 26px rgba(40, 215, 255, 0.55);
+  background:
+    linear-gradient(
+      115deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.8) 47%,
+      rgba(120, 230, 255, 0.65) 50%,
+      transparent 65%
+    ),
+    linear-gradient(rgba(60, 210, 255, 0.16), rgba(60, 210, 255, 0.16));
+  background-size:
+    250% 100%,
+    auto;
   animation: zr-shield-sweep 2.2s ease-in-out infinite;
 }
 @keyframes zr-shield-sweep {
@@ -947,54 +865,14 @@
     background-position: -30% 0;
   }
 }
-.zr-status-fx--reflect {
-  box-shadow:
-    inset 0 0 0 2px rgba(220, 120, 255, 0.8),
-    inset 0 0 14px rgba(220, 120, 255, 0.55);
-  background: repeating-linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0.28) 0 6px,
-    rgba(200, 120, 255, 0.12) 6px 14px
-  );
-  animation: zr-reflect-glint 2.2s ease-in-out infinite;
-}
-@keyframes zr-reflect-glint {
-  50% {
-    filter: brightness(1.5);
-  }
-}
-.zr-status-fx--ignoreTaunt {
-  box-shadow: 0 0 0 2px rgba(241, 196, 15, 0.5);
-}
-.zr-status-fx--charge {
-  box-shadow: inset 0 0 12px rgba(243, 156, 18, 0.55);
-  animation: zr-status-pulse 1.2s ease-in-out infinite;
-}
-.zr-status-fx--hatch {
-  box-shadow: inset 0 0 10px rgba(255, 214, 120, 0.5);
-  animation: zr-status-pulse 1.6s ease-in-out infinite;
-}
-.zr-status-fx--countdown {
-  box-shadow: inset 0 0 10px rgba(231, 76, 60, 0.4);
-  animation: zr-status-pulse 1.4s ease-in-out infinite;
-}
-.zr-status-fx--evolve {
-  box-shadow: inset 0 0 14px rgba(46, 204, 113, 0.55);
-  background: radial-gradient(
-    circle at 50% 80%,
-    rgba(46, 204, 113, 0.25),
-    transparent 65%
-  );
-}
+
+
 .zr-status-fx--forcedAttack {
   background: linear-gradient(
     180deg,
     rgba(192, 57, 43, 0.2),
     transparent 70%
   );
-}
-.zr-status-fx--reduce {
-  background: rgba(127, 140, 141, 0.22);
 }
 
 .zr-status-burst {
@@ -1094,20 +972,6 @@
   }
   50% {
     opacity: 1;
-  }
-}
-@keyframes zr-status-slash {
-  0% {
-    transform: translateX(-40%);
-    opacity: 0;
-  }
-  30%,
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(40%);
-    opacity: 0;
   }
 }
 @keyframes zr-status-burst-flash {

@@ -544,7 +544,14 @@
       "guard": "가드 중: 상대 턴 {{turns}}/{{max}}",
       "counterOffensive": "가드 해제 시 반격: +{{value}} ATK",
       "guardCooldown": "다음 턴에 다시 가드 가능",
-      "reflect": "전투 피해의 {{value}}% 반사"
+      "reflect": "전투 피해의 {{value}}% 반사",
+      "immunities": "영향 없음: {{list}}"
+    },
+    "immunity": {
+      "SUPPORT_DESTRUCTION": "서포트에 의한 파괴",
+      "SUPPORT_DEBUFF": "서포트 약화",
+      "MONSTER_DEBUFF": "몬스터 약화",
+      "MONSTER_STATUS": "몬스터 상태 이상(빙결, 기절…)"
     }
   },
   "keywords": {
@@ -752,7 +759,8 @@
     },
     "badge": {
       "sleep": "이번 턴 공격 불가",
-      "attacksLeft": "이번 턴 남은 공격 {{count}}회"
+      "attacksLeft": "이번 턴 남은 공격 {{count}}회",
+      "more": "외 {{count}}개 효과 (카드 확인)"
     },
     "mode": {
       "attack": "공격 모드",

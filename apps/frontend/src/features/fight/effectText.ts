@@ -12,35 +12,33 @@ import {
 
 // ── Mots-clés (glossaire partagé avec les règles) ──────────────────────────
 
-export const KEYWORD_ICON = {
-  taunt: "🛡",
-  piercing: "🗡",
-  debuffImmunity: "✨",
-  combatImmunity: "🌀",
-  supportShield: "🧱",
-  // Icônes SVG fournies par KeywordIcon
-  combatEndure: "",
-  supportDebuffImmunity: "",
-  monsterDebuffImmunity: "",
-  monsterStatusImmunity: "",
-  ignoreTaunt: "🎯",
-  doubleAttack: "⚡",
-  multiAttack: "✖️",
-  forcedAttack: "😈",
-  guardLock: "🔒",
-  freeze: "🧊",
-  damageReduction: "🛡",
-  tempAtk: "⚡",
-  countdown: "⏳",
-  // Icône SVG fournie par KeywordIcon (pas d'emoji pour les nouveaux mots-clés)
-  hatch: "",
-  evolutionJoker: "",
-  instantEvolution: "",
-  reflect: "",
-  releve: "",
-} as const;
-export type KeywordId = keyof typeof KEYWORD_ICON;
-export const KEYWORD_IDS = Object.keys(KEYWORD_ICON) as KeywordId[];
+/** Mots-clés du glossaire, dans l'ordre des règles (icônes : KeywordIcon). */
+export const KEYWORD_IDS = [
+  "taunt",
+  "piercing",
+  "debuffImmunity",
+  "combatImmunity",
+  "supportShield",
+  "combatEndure",
+  "supportDebuffImmunity",
+  "monsterDebuffImmunity",
+  "monsterStatusImmunity",
+  "ignoreTaunt",
+  "doubleAttack",
+  "multiAttack",
+  "forcedAttack",
+  "guardLock",
+  "freeze",
+  "damageReduction",
+  "tempAtk",
+  "countdown",
+  "hatch",
+  "evolutionJoker",
+  "instantEvolution",
+  "reflect",
+  "releve",
+] as const;
+export type KeywordId = (typeof KEYWORD_IDS)[number];
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
