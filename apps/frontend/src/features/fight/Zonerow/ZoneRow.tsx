@@ -170,22 +170,12 @@ export default function ZoneRow({
                   {[...statusOverlay].map((id) => (
                     <span
                       key={id}
-                      className={[
-                        "zr-status-fx",
-                        `zr-status-fx--${id}`,
-                        statusBurst?.includes(id)
-                          ? `zr-status-burst zr-status-burst--${id}`
-                          : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
+                      className={`zr-status-fx zr-status-fx--${id}`}
                     />
                   ))}
                 </span>
               )}
-              {statusBurst
-                ?.filter((id) => !statusOverlay?.has(id))
-                .map((id) => (
+              {statusBurst?.map((id) => (
                   <span
                     key={id}
                     className={`zr-status-burst zr-status-burst--${id}`}
