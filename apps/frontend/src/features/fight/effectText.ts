@@ -16,6 +16,11 @@ export const KEYWORD_ICON = {
   debuffImmunity: "✨",
   combatImmunity: "🌀",
   supportShield: "🧱",
+  // Icônes SVG fournies par KeywordIcon
+  combatEndure: "",
+  supportDebuffImmunity: "",
+  monsterDebuffImmunity: "",
+  monsterStatusImmunity: "",
   ignoreTaunt: "🎯",
   doubleAttack: "⚡",
   multiAttack: "✖️",
@@ -136,6 +141,26 @@ const ACTIONS: Record<string, ActionSpec> = {
     tone: "buff",
     subject: "monster",
     keyword: "supportShield",
+  },
+  SET_COMBAT_DESTRUCTION_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "combatEndure",
+  },
+  SET_SUPPORT_DEBUFF_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "supportDebuffImmunity",
+  },
+  SET_MONSTER_DEBUFF_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "monsterDebuffImmunity",
+  },
+  SET_MONSTER_STATUS_IMMUNITY: {
+    tone: "buff",
+    subject: "monster",
+    keyword: "monsterStatusImmunity",
   },
   IGNORE_TAUNT: { tone: "buff", subject: "monster", keyword: "ignoreTaunt" },
   SET_DELAY_DOUBLE_ATK: {

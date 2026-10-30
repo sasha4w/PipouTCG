@@ -1,3 +1,4 @@
+import { Immunity } from "@pipou/shared";
 import { beforeAll, describe, expect, it } from "vitest";
 import i18next, { type TFunction } from "i18next";
 import fr from "../../i18n/locales/fr.json";
@@ -19,8 +20,7 @@ describe("getMonsterStatusEntries — nouvelles protections", () => {
   it("affiche les trois drapeaux", () => {
     const labels = getMonsterStatusEntries(
       monster({
-        combatImmune: true,
-        supportDestroyImmune: true,
+        immunities: [Immunity.COMBAT_DAMAGE, Immunity.SUPPORT_DESTRUCTION],
         ignoresTaunt: true,
       }),
       t,

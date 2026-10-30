@@ -605,15 +605,15 @@
     },
     "debuffImmunity": {
       "name": "Immune to enemy effects",
-      "desc": "No enemy card effect can target this monster. Combat still damages it."
+      "desc": "No enemy effect (monster or Support) affects it: debuffs, statuses, destruction. Combat still hurts it."
     },
     "combatImmunity": {
       "name": "Combat immunity",
       "desc": "Takes no combat damage, whether attacking or being attacked."
     },
     "supportShield": {
-      "name": "Shielded",
-      "desc": "Cannot be destroyed directly by a Support card (damage still applies)."
+      "name": "Plating",
+      "desc": "Cannot be destroyed directly by a Support card (damage still goes through)."
     },
     "ignoreTaunt": {
       "name": "Bypass",
@@ -670,6 +670,22 @@
     "releve": {
       "name": "Relief",
       "desc": "Instead of paying its cost, this monster can be summoned by sending the given number of Pipou allies from your field to the graveyard; it takes the place of one of them."
+    },
+    "combatEndure": {
+      "name": "Unkillable",
+      "desc": "Takes combat damage but stays at 1 HP: combat cannot destroy it."
+    },
+    "supportDebuffImmunity": {
+      "name": "Anti-Support",
+      "desc": "Enemy Support debuffs (freeze, lock, stat drops...) have no effect."
+    },
+    "monsterDebuffImmunity": {
+      "name": "Anti-monster",
+      "desc": "Burn, slow, freeze and damage effects from enemy monsters have no effect."
+    },
+    "monsterStatusImmunity": {
+      "name": "Unfazed",
+      "desc": "Ignores enemy Taunt, takes no reflected damage, and the Zeta virus does not affect it."
     }
   },
   "fight": {

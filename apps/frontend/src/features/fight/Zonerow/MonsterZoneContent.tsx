@@ -8,7 +8,12 @@ import {
 import InspectableCard from "../InspectableCard";
 import { IconEgg, IconGuard } from "../../../components/Icons";
 import type { MonsterOnBoard } from "../fight.types";
-import { GUARD_MAX_TURNS, type CombatMode } from "@pipou/shared";
+import {
+  EFFECT_IMMUNITIES,
+  GUARD_MAX_TURNS,
+  hasImmunity,
+  type CombatMode,
+} from "@pipou/shared";
 import "./MonsterZoneContent.css";
 
 interface Props {
@@ -47,7 +52,7 @@ export default function MonsterZoneContent({
           🗡
         </span>
       )}
-      {zone.isImmuneToDebuffs && (
+      {EFFECT_IMMUNITIES.every((i) => hasImmunity(zone, i)) && (
         <span
           className="zr-badge zr-badge--immune"
           title={t("keywords.debuffImmunity.name")}

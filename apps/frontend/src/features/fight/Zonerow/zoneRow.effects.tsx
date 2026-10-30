@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import { EFFECT_IMMUNITIES, Immunity, hasImmunity } from "@pipou/shared";
 import type { BuffEntry } from "../BuffDebuffSections";
 import {
   KEYWORD_ICON,
@@ -63,9 +64,16 @@ export function getMonsterStatusEntries(
 
   if (zone.hasTaunt) keyword("taunt", "buff");
   if (zone.hasPiercing) keyword("piercing", "buff");
-  if (zone.isImmuneToDebuffs) keyword("debuffImmunity", "buff");
-  if (zone.combatImmune) keyword("combatImmunity", "buff");
-  if (zone.supportDestroyImmune) keyword("supportShield", "buff");
+  const has = (i: Immunity) => hasImmunity(zone, i);
+  if (EFFECT_IMMUNITIES.every(has)) keyword("debuffImmunity", "buff");
+  else {
+    if (has(Immunity.SUPPORT_DESTRUCTION)) keyword("supportShield", "buff");
+    if (has(Immunity.SUPPORT_DEBUFF)) keyword("supportDebuffImmunity", "buff");
+    if (has(Immunity.MONSTER_DEBUFF)) keyword("monsterDebuffImmunity", "buff");
+    if (has(Immunity.MONSTER_STATUS)) keyword("monsterStatusImmunity", "buff");
+  }
+  if (has(Immunity.COMBAT_DAMAGE)) keyword("combatImmunity", "buff");
+  if (has(Immunity.COMBAT_DESTRUCTION)) keyword("combatEndure", "buff");
   if (zone.ignoresTaunt) keyword("ignoreTaunt", "buff");
   if (zone.damageReduction && zone.damageReduction > 1)
     entries.push({

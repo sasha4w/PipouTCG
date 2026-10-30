@@ -607,7 +607,7 @@
     },
     "debuffImmunity": {
       "name": "Insensible aux effets adverses",
-      "desc": "Aucun effet d'une carte adverse ne peut viser ce monstre. Le combat le blesse normalement."
+      "desc": "Aucun effet adverse (monstre ou Support) ne l'affecte : malus, statuts, destruction. Le combat le blesse normalement."
     },
     "combatImmunity": {
       "name": "Insensible au combat",
@@ -672,6 +672,22 @@
     "releve": {
       "name": "Relève",
       "desc": "Au lieu de payer son coût, ce monstre peut être invoqué en envoyant au cimetière le nombre indiqué d'alliés Pipou de ton terrain ; il prend la place de l'un d'eux."
+    },
+    "combatEndure": {
+      "name": "Increvable",
+      "desc": "Subit les dégâts de combat mais reste à 1 PV : le combat ne peut pas le détruire."
+    },
+    "supportDebuffImmunity": {
+      "name": "Anti-support",
+      "desc": "Les malus des cartes Support adverses (gel, verrou, baisse de stats…) n'ont aucun effet."
+    },
+    "monsterDebuffImmunity": {
+      "name": "Anti-monstre",
+      "desc": "Brûlure, ralentissement, gel et dégâts d'effet des monstres adverses n'ont aucun effet."
+    },
+    "monsterStatusImmunity": {
+      "name": "Imperturbable",
+      "desc": "Ignore la Provocation adverse, ne subit pas le renvoi de dégâts, et le virus Zeta ne l'affecte pas."
     }
   },
   "fight": {
