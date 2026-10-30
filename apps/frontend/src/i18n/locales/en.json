@@ -554,7 +554,15 @@
       "RELEVE": "**{{kw}}** ({{value}}): can be summoned by sending {{value}} Pipou allies from your field to the graveyard instead of paying its cost.",
       "SUMMON_IF_ALL_ELEMENTS": "Can only be summoned with an Adult or an Ancestral of each element (Earth, Fire, Water, Wind) in your graveyard.",
       "COPY_GRAVEYARD_EFFECTS": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
-      "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities."
+      "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY_many": "{{target}} gain **{{kw}}**."
     },
     "filter": {
       "name": "name containing “{{name}}”"

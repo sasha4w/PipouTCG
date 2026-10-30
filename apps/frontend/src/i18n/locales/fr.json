@@ -556,7 +556,15 @@
       "RELEVE": "**{{kw}}** ({{value}}) : peut être invoqué en envoyant {{value}} alliés Pipou de ton terrain au cimetière, à la place du coût.",
       "SUMMON_IF_ALL_ELEMENTS": "Ne peut être invoqué qu'avec un Adulte ou un Ancestral de chaque élément (Terre, Feu, Eau, Vent) dans ton cimetière.",
       "COPY_GRAVEYARD_EFFECTS": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
-      "COPY_GRAVEYARD_EFFECTS_you": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets."
+      "COPY_GRAVEYARD_EFFECTS_you": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY_many": "{{target}} gagnent **{{kw}}**."
     },
     "filter": {
       "name": "nom contenant « {{name}} »"

@@ -6,6 +6,8 @@ import {
   type EffectAction,
   type EffectCondition,
   type EffectFilter,
+  EFFECT_IMMUNITIES,
+  IMMUNITIES_BY_ACTION,
 } from "@pipou/shared";
 
 // ── Mots-clés (glossaire partagé avec les règles) ──────────────────────────
@@ -460,6 +462,48 @@ function describeAction(
   };
 }
 
+/**
+ * Fusionne les immunités d'effets accordées ensemble à la même cible en une
+ * seule « insensible aux effets adverses » : évite 4 lignes quasi identiques,
+ * sans rien à maintenir quand une immunité est ajoutée.
+ */
+function mergeImmunities(actions: EffectAction[]): EffectAction[] {
+  const byTarget = new Map<string, Set<string>>();
+  for (const a of actions) {
+    const granted = IMMUNITIES_BY_ACTION[a.type];
+    if (!granted || a.type === "SET_DEBUFF_IMMUNITY") continue;
+    const set = byTarget.get(String(a.target)) ?? new Set<string>();
+    granted.forEach((i) => set.add(i));
+    byTarget.set(String(a.target), set);
+  }
+  const merged = [...byTarget].filter(([, set]) =>
+    EFFECT_IMMUNITIES.every((i) => set.has(i)),
+  );
+  if (merged.length === 0) return actions;
+  const targets = new Set(merged.map(([target]) => target));
+  const out: EffectAction[] = [];
+  const done = new Set<string>();
+  for (const a of actions) {
+    const target = String(a.target);
+    const granted = IMMUNITIES_BY_ACTION[a.type];
+    if (!targets.has(target) || !granted || a.type === "SET_DEBUFF_IMMUNITY") {
+      out.push(a);
+      continue;
+    }
+    // Les immunités de combat restent des lignes à part
+    const effectOnly = granted.every((i) => EFFECT_IMMUNITIES.includes(i));
+    if (!effectOnly) {
+      out.push(a);
+      continue;
+    }
+    if (!done.has(target)) {
+      done.add(target);
+      out.push({ ...a, type: "SET_DEBUFF_IMMUNITY" } as EffectAction);
+    }
+  }
+  return out;
+}
+
 /** Retranscrit les effets d'une carte (format du moteur) en texte de règle. */
 export function describeCardEffects(
   card: EffectSourceCard,
@@ -494,7 +538,7 @@ export function describeCardEffects(
   for (const effect of card.effects ?? []) {
     const trigger = String(effect.trigger);
     const lines: EffectLine[] = [];
-    for (const action of effect.actions ?? []) {
+    for (const action of mergeImmunities(effect.actions ?? [])) {
       const { line, keyword } = describeAction(t, action, kind, trigger, card);
       lines.push(line);
       if (keyword && !keywords.includes(keyword)) keywords.push(keyword);

@@ -506,7 +506,11 @@
       "RELEVE": "**{{kw}}** ({{value}}): 비용 대신 내 필드의 Pipou 아군 {{value}}명을 묘지로 보내 소환할 수 있습니다.",
       "SUMMON_IF_ALL_ELEMENTS": "묘지에 각 원소(대지, 불, 물, 바람)의 성체 또는 고대종이 있어야만 소환할 수 있습니다.",
       "COPY_GRAVEYARD_EFFECTS": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
-      "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다."
+      "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_MONSTER_DEBUFF_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_MONSTER_STATUS_IMMUNITY": "{{target}}에게 **{{kw}}** 부여."
     },
     "filter": {
       "name": "이름에 '{{name}}' 포함"
