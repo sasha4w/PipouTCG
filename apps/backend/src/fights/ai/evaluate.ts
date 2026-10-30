@@ -9,6 +9,8 @@ import {
   ephemeralTargetSide,
   isImplanted,
   isPlantedBy,
+  hasImmunity,
+  Immunity,
 } from '@pipou/shared';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
@@ -79,7 +81,7 @@ function isGrowing(m: MonsterOnBoard): boolean {
 
 /** Dégâts de combat réellement subis par `target`. */
 function damageTo(target: MonsterOnBoard, attacker: MonsterOnBoard): number {
-  if (target.combatImmune) return 0;
+  if (hasImmunity(target, Immunity.COMBAT_DAMAGE)) return 0;
   const atk = effectiveAtk(attacker);
   return target.damageReduction && !attacker.hasPiercing
     ? Math.ceil(atk / target.damageReduction)

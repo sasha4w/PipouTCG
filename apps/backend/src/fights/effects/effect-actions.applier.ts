@@ -3,6 +3,9 @@ import {
   ActionType,
   DrakonStage,
   isPlantedBy,
+  Immunity,
+  IMMUNITIES_BY_ACTION,
+  blocksEnemyAction,
 } from '@pipou/shared';
 import {
   CardInstance,
@@ -10,6 +13,7 @@ import {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { EffectContext } from './effect-context.interface';
+import { sourceKindOf } from './effect-targets.resolver';
 import { withConditionalValue } from './effect-conditions';
 import { resolveTargets } from './effect-targets.resolver';
 import {
@@ -24,6 +28,14 @@ import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { v4 as uuidv4 } from 'uuid';
 
 export type DestroyKind = 'destroy' | 'damage';
+
+/** Ajoute les immunités manquantes à la liste. */
+export function grantImmunities(
+  list: Immunity[],
+  add: readonly Immunity[],
+): void {
+  for (const i of add) if (!list.includes(i)) list.push(i);
+}
 
 export function applyActions(
   effect: CardEffect,
@@ -40,7 +52,12 @@ export function applyActions(
 ): void {
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
-    const targets = resolveTargets(action.target, ctx, action.archetype);
+    const targets = resolveTargets(
+      action.target,
+      ctx,
+      action.archetype,
+      action.type,
+    );
 
     switch (action.type) {
       // ── Damage ────────────────────────────────────────────────────────────
@@ -98,7 +115,12 @@ export function applyActions(
 
       case ActionType.BUFF_ATK_TEMP:
         for (const target of targets.monsters) {
-          if (target.isImmuneToDebuffs && (action.value ?? 0) < 0) continue;
+          if (
+            (action.value ?? 0) < 0 &&
+            targets.ownerOfMonster(target).userId !== ctx.ownerUserId &&
+            blocksEnemyAction(target, sourceKindOf(ctx), action.type)
+          )
+            continue;
           target.tempAtkBuff = (target.tempAtkBuff ?? 0) + (action.value ?? 0);
           ctx.log.push(
             `⚡ ${card.baseCard.name} booste temporairement ${target.card.baseCard.name} (+${action.value} ATK)`,
@@ -209,10 +231,16 @@ export function applyActions(
         break;
 
       case ActionType.SET_DEBUFF_IMMUNITY:
+      case ActionType.SET_COMBAT_DESTRUCTION_IMMUNITY:
+      case ActionType.SET_SUPPORT_DESTROY_IMMUNITY:
+      case ActionType.SET_SUPPORT_DEBUFF_IMMUNITY:
+      case ActionType.SET_MONSTER_DEBUFF_IMMUNITY:
+      case ActionType.SET_MONSTER_STATUS_IMMUNITY:
         for (const m of targets.monsters) {
-          m.perm.debuffImmune = true;
-          m.isImmuneToDebuffs = true;
-          ctx.log.push(`✨ ${m.card.baseCard.name} est immunisé aux débuffs`);
+          const granted = IMMUNITIES_BY_ACTION[action.type] ?? [];
+          grantImmunities(m.perm.immunities, granted);
+          grantImmunities(m.immunities, granted);
+          ctx.log.push(`✨ ${m.card.baseCard.name} gagne une immunité`);
         }
         break;
 
@@ -238,7 +266,9 @@ export function applyActions(
 
       case ActionType.SET_COMBAT_IMMUNITY:
         for (const m of targets.monsters) {
-          m.combatImmune = true;
+          m.turnImmunities = m.turnImmunities ?? [];
+          grantImmunities(m.turnImmunities, [Immunity.COMBAT_DAMAGE]);
+          grantImmunities(m.immunities, [Immunity.COMBAT_DAMAGE]);
           ctx.log.push(
             `🌀 ${m.card.baseCard.name} est insensible aux dégâts de combat jusqu'à son prochain tour`,
           );

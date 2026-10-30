@@ -1,3 +1,4 @@
+import { EFFECT_IMMUNITIES, Immunity, hasImmunity } from '@pipou/shared';
 import {
   ActionType,
   DrakonStage,
@@ -73,10 +74,10 @@ describe('mécaniques du retravail des cartes', () => {
         hp: 0,
         taunt: false,
         piercing: false,
-        debuffImmune: true,
+        immunities: [...EFFECT_IMMUNITIES],
         attacksPerTurn: 1,
       },
-      isImmuneToDebuffs: true,
+      immunities: [...EFFECT_IMMUNITIES],
     };
     const magouille = () => ({
       card: monsterCard('Magouille', { atk: 0, hp: 2000 }),
@@ -196,7 +197,9 @@ describe('mécaniques du retravail des cartes', () => {
       expect(monsterNamed(game, 'p1', 'Mur').currentHp).toBe(500);
 
       passTurn(engine, game);
-      expect(monsterNamed(game, 'p1', 'Mur').combatImmune).toBeFalsy();
+      expect(
+        hasImmunity(monsterNamed(game, 'p1', 'Mur'), Immunity.COMBAT_DAMAGE),
+      ).toBeFalsy();
     });
   });
 
@@ -222,7 +225,12 @@ describe('mécaniques du retravail des cartes', () => {
         },
       });
       engine.settle(game); // recalcul des passifs
-      expect(monsterNamed(game, 'p2', 'Beta').supportDestroyImmune).toBe(true);
+      expect(
+        hasImmunity(
+          monsterNamed(game, 'p2', 'Beta'),
+          Immunity.SUPPORT_DESTRUCTION,
+        ),
+      ).toBe(true);
 
       const res = engine.dispatch(game, 'p1', {
         type: 'play_support',
@@ -250,7 +258,7 @@ describe('mécaniques du retravail des cartes', () => {
             {
               card: monsterCard('Beta'),
               equipments: [blindage()],
-              patch: { supportDestroyImmune: true },
+              patch: { immunities: [Immunity.SUPPORT_DESTRUCTION] },
             },
           ],
         },
@@ -267,7 +275,7 @@ describe('mécaniques du retravail des cartes', () => {
         hp: 0,
         taunt: true,
         piercing: false,
-        debuffImmune: false,
+        immunities: [],
         attacksPerTurn: 1,
       },
       hasTaunt: true,

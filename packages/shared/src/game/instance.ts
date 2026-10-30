@@ -1,4 +1,5 @@
 import type { DrakonStage } from "../enums/card";
+import type { Immunity } from "../enums/effect";
 import type { ClientCard } from "./card";
 
 /** Exemplaire d'une carte en partie. C = entité complète côté serveur. */
@@ -24,7 +25,7 @@ export interface MonsterPermanentStats {
   hp: number;
   taunt: boolean;
   piercing: boolean;
-  debuffImmune: boolean;
+  immunities: Immunity[];
   damageReduction?: number;
   attacksPerTurn: number;
 }
@@ -44,7 +45,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   attacksUsedThisTurn: number;
   hasTaunt: boolean;
   hasPiercing: boolean;
-  isImmuneToDebuffs: boolean;
+  /** Immunités actives (permanentes ∪ du tour ∪ passives), recalculées à chaque état. */
+  immunities: Immunity[];
   forcedAttackMode: boolean;
   summonedThisTurn: boolean;
   doubleAtkNextTurn: boolean;
@@ -65,12 +67,10 @@ export interface MonsterOnBoard<C = ClientCard> {
   reflectPercent?: number;
   /** Drakon des Origines : la carte avant copie des effets, rendue à la sortie du terrain. */
   originalCard?: CardInstance<C>;
-  /** Aucun dégât de combat jusqu'au début du prochain tour de son propriétaire. */
-  combatImmune?: boolean;
+  /** Immunités jusqu'au début du prochain tour du propriétaire (Bouclier de Fortune). */
+  turnImmunities?: Immunity[];
   /** Zeta implanté : à l'abri de la désinfection jusqu'au prochain tour de son poseur. */
   disinfectImmune?: boolean;
-  /** Une destruction directe venant d'une carte Support n'a pas d'effet (passif). */
-  supportDestroyImmune?: boolean;
   /** Peut attaquer n'importe quel monstre malgré une Provocation (passif). */
   ignoresTaunt?: boolean;
   /** Tours restants avant éclosion (œuf). */

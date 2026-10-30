@@ -1,3 +1,4 @@
+import { Immunity } from '@pipou/shared';
 import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
 import type { CardEffect } from '@pipou/shared';
 import { createEngine } from '../testing/engine';
@@ -76,7 +77,10 @@ describe('renvoi de dégâts', () => {
     const game = duel(
       {
         card: monsterCard('Lame', { atk: 400, hp: 1000 }),
-        patch: { combatImmune: true },
+        patch: {
+          turnImmunities: [Immunity.COMBAT_DAMAGE],
+          immunities: [Immunity.COMBAT_DAMAGE],
+        },
       },
       { card: monsterCard('Roc', { atk: 0, hp: 2000, effects: [reflect50] }) },
     );
