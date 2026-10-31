@@ -557,7 +557,15 @@
       "RELEVE": "**{{kw}}** ({{value}}) : peut être invoqué en envoyant {{value}} alliés Pipou de ton terrain au cimetière, à la place du coût.",
       "SUMMON_IF_ALL_ELEMENTS": "Ne peut être invoqué qu'avec un Adulte ou un Ancestral de chaque élément (Terre, Feu, Eau, Vent) dans ton cimetière.",
       "COPY_GRAVEYARD_EFFECTS": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
-      "COPY_GRAVEYARD_EFFECTS_you": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets."
+      "COPY_GRAVEYARD_EFFECTS_you": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY_many": "{{target}} gagnent **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY": "{{target}} gagne **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY_many": "{{target}} gagnent **{{kw}}**."
     },
     "filter": {
       "name": "nom contenant « {{name}} »"
@@ -594,7 +602,14 @@
       "guard": "En Garde : {{turns}}/{{max}} tours adverses",
       "counterOffensive": "Contre-offensive à la sortie : +{{value}} ATK",
       "guardCooldown": "Retour en Garde possible au prochain tour",
-      "reflect": "Renvoie {{value}} % des dégâts de combat"
+      "reflect": "Renvoie {{value}} % des dégâts de combat",
+      "immunities": "Insensible à : {{list}}"
+    },
+    "immunity": {
+      "SUPPORT_DESTRUCTION": "la destruction par Support",
+      "SUPPORT_DEBUFF": "les malus de Support",
+      "MONSTER_DEBUFF": "les malus de Monstre",
+      "MONSTER_STATUS": "les statuts de Monstre (gel, étourdissement…)"
     }
   },
   "keywords": {
@@ -608,7 +623,7 @@
     },
     "debuffImmunity": {
       "name": "Insensible aux effets adverses",
-      "desc": "Aucun effet d'une carte adverse ne peut viser ce monstre. Le combat le blesse normalement."
+      "desc": "Aucun effet adverse (monstre ou Support) ne l'affecte : malus, statuts, destruction. Le combat le blesse normalement."
     },
     "combatImmunity": {
       "name": "Insensible au combat",
@@ -673,6 +688,22 @@
     "releve": {
       "name": "Relève",
       "desc": "Au lieu de payer son coût, ce monstre peut être invoqué en envoyant au cimetière le nombre indiqué d'alliés Pipou de ton terrain ; il prend la place de l'un d'eux."
+    },
+    "combatEndure": {
+      "name": "Increvable",
+      "desc": "Subit les dégâts de combat mais reste à 1 PV : le combat ne peut pas le détruire."
+    },
+    "supportDebuffImmunity": {
+      "name": "Anti-support",
+      "desc": "Les malus des cartes Support adverses (gel, verrou, baisse de stats…) n'ont aucun effet."
+    },
+    "monsterDebuffImmunity": {
+      "name": "Anti-monstre",
+      "desc": "Brûlure, ralentissement, gel et dégâts d'effet des monstres adverses n'ont aucun effet."
+    },
+    "monsterStatusImmunity": {
+      "name": "Imperturbable",
+      "desc": "Ignore la Provocation adverse, ne subit pas le renvoi de dégâts, et le virus Zeta ne l'affecte pas."
     }
   },
   "fight": {
@@ -795,7 +826,9 @@
     "badge": {
       "sleep": "Ne peut pas attaquer ce tour",
       "attacksLeft_one": "Encore {{count}} attaque ce tour",
-      "attacksLeft_other": "Encore {{count}} attaques ce tour"
+      "attacksLeft_other": "Encore {{count}} attaques ce tour",
+      "more_one": "Et {{count}} autre effet (inspecter la carte)",
+      "more_other": "Et {{count}} autres effets (inspecter la carte)"
     },
     "mode": {
       "attack": "Mode Attaque",

@@ -10,6 +10,7 @@ import {
 import FightHUD from "./FightHUD";
 import FightFxLayer from "./FightFxLayer";
 import { boardFxFromEvents } from "./fightEvents";
+import { useFightSfx } from "./useFightSfx";
 import TerrainBackground from "./TerrainBackground";
 import { pickActiveTerrain, terrainWaveZone } from "./terrainSelection";
 import { useAnimationPrefs } from "../../contexts/useAnimationPrefs";
@@ -104,6 +105,7 @@ export default function FightBoard({
     () => boardFxFromEvents(gs.events ?? [], gs.me.userId),
     [gs.events, gs.me.userId],
   );
+  useFightSfx(gs);
   const myTerrain = pickActiveTerrain(gs.me.supportZones);
   const oppTerrain = pickActiveTerrain(gs.opponent.supportZones);
 

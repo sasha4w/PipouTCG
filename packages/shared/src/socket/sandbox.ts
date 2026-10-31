@@ -1,3 +1,4 @@
+import type { Immunity } from "../enums/effect";
 import type { GameAction } from "../game/action";
 import type { CardInstance, CombatMode } from "../game/instance";
 import type { Seat } from "../game/seat";
@@ -43,7 +44,7 @@ export interface SandboxMonsterPatch {
   mode?: CombatMode;
   taunt?: boolean;
   piercing?: boolean;
-  debuffImmune?: boolean;
+  immunities?: Immunity[];
   /** null : retire la réduction de dégâts. */
   damageReduction?: number | null;
   attacksPerTurn?: number;

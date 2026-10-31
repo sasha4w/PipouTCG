@@ -555,7 +555,15 @@
       "RELEVE": "**{{kw}}** ({{value}}): can be summoned by sending {{value}} Pipou allies from your field to the graveyard instead of paying its cost.",
       "SUMMON_IF_ALL_ELEMENTS": "Can only be summoned with an Adult or an Ancestral of each element (Earth, Fire, Water, Wind) in your graveyard.",
       "COPY_GRAVEYARD_EFFECTS": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
-      "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities."
+      "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_MONSTER_DEBUFF_IMMUNITY_many": "{{target}} gain **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY": "{{target}} gains **{{kw}}**.",
+      "SET_MONSTER_STATUS_IMMUNITY_many": "{{target}} gain **{{kw}}**."
     },
     "filter": {
       "name": "name containing “{{name}}”"
@@ -592,7 +600,14 @@
       "guard": "In Guard: {{turns}}/{{max}} opponent turns",
       "counterOffensive": "Counter-offensive on leaving: +{{value}} ATK",
       "guardCooldown": "Can return to Guard next turn",
-      "reflect": "Reflects {{value}}% of combat damage"
+      "reflect": "Reflects {{value}}% of combat damage",
+      "immunities": "Unaffected by: {{list}}"
+    },
+    "immunity": {
+      "SUPPORT_DESTRUCTION": "destruction by Supports",
+      "SUPPORT_DEBUFF": "Support debuffs",
+      "MONSTER_DEBUFF": "Monster debuffs",
+      "MONSTER_STATUS": "Monster statuses (freeze, stun…)"
     }
   },
   "keywords": {
@@ -606,15 +621,15 @@
     },
     "debuffImmunity": {
       "name": "Immune to enemy effects",
-      "desc": "No enemy card effect can target this monster. Combat still damages it."
+      "desc": "No enemy effect (monster or Support) affects it: debuffs, statuses, destruction. Combat still hurts it."
     },
     "combatImmunity": {
       "name": "Combat immunity",
       "desc": "Takes no combat damage, whether attacking or being attacked."
     },
     "supportShield": {
-      "name": "Shielded",
-      "desc": "Cannot be destroyed directly by a Support card (damage still applies)."
+      "name": "Plating",
+      "desc": "Cannot be destroyed directly by a Support card (damage still goes through)."
     },
     "ignoreTaunt": {
       "name": "Bypass",
@@ -671,6 +686,22 @@
     "releve": {
       "name": "Relief",
       "desc": "Instead of paying its cost, this monster can be summoned by sending the given number of Pipou allies from your field to the graveyard; it takes the place of one of them."
+    },
+    "combatEndure": {
+      "name": "Unkillable",
+      "desc": "Takes combat damage but stays at 1 HP: combat cannot destroy it."
+    },
+    "supportDebuffImmunity": {
+      "name": "Anti-Support",
+      "desc": "Enemy Support debuffs (freeze, lock, stat drops...) have no effect."
+    },
+    "monsterDebuffImmunity": {
+      "name": "Anti-monster",
+      "desc": "Burn, slow, freeze and damage effects from enemy monsters have no effect."
+    },
+    "monsterStatusImmunity": {
+      "name": "Unfazed",
+      "desc": "Ignores enemy Taunt, takes no reflected damage, and the Zeta virus does not affect it."
     }
   },
   "fight": {
@@ -793,7 +824,9 @@
     "badge": {
       "sleep": "Can't attack this turn",
       "attacksLeft_one": "{{count}} attack left this turn",
-      "attacksLeft_other": "{{count}} attacks left this turn"
+      "attacksLeft_other": "{{count}} attacks left this turn",
+      "more_one": "{{count}} more effect (inspect the card)",
+      "more_other": "{{count}} more effects (inspect the card)"
     },
     "mode": {
       "attack": "Attack mode",

@@ -8,7 +8,24 @@ export type SfxName =
   | "rarityCommon"
   | "rarityRare"
   | "rarityEpic"
-  | "rarityLegendary";
+  | "rarityLegendary"
+  | "fightSummon1"
+  | "fightSummon2"
+  | "fightSummon3"
+  | "fightSummon4"
+  | "fightFreeze"
+  | "fightLock"
+  | "fightStun"
+  | "fightTaunt"
+  | "fightPiercing"
+  | "fightImmune"
+  | "fightShield"
+  | "fightReflect"
+  | "fightCharge"
+  | "fightHatch"
+  | "fightCountdown"
+  | "fightEvolve"
+  | "fightHeal";
 
 const SFX_PATHS: Record<SfxName, string> = {
   select: "/sounds/sfx/select.mp3",
@@ -19,6 +36,23 @@ const SFX_PATHS: Record<SfxName, string> = {
   rarityRare: "/sounds/sfx/rarity-rare.mp3",
   rarityEpic: "/sounds/sfx/rarity-epic.mp3",
   rarityLegendary: "/sounds/sfx/rarity-legendary.mp3",
+  fightSummon1: "/sounds/sfx/fight-summon-1.mp3",
+  fightSummon2: "/sounds/sfx/fight-summon-2.mp3",
+  fightSummon3: "/sounds/sfx/fight-summon-3.mp3",
+  fightSummon4: "/sounds/sfx/fight-summon-4.mp3",
+  fightFreeze: "/sounds/sfx/fight-freeze.mp3",
+  fightLock: "/sounds/sfx/fight-lock.mp3",
+  fightStun: "/sounds/sfx/fight-stun.mp3",
+  fightTaunt: "/sounds/sfx/fight-taunt.mp3",
+  fightPiercing: "/sounds/sfx/fight-piercing.mp3",
+  fightImmune: "/sounds/sfx/fight-immune.mp3",
+  fightShield: "/sounds/sfx/fight-shield.mp3",
+  fightReflect: "/sounds/sfx/fight-reflect.mp3",
+  fightCharge: "/sounds/sfx/fight-charge.mp3",
+  fightHatch: "/sounds/sfx/fight-hatch.mp3",
+  fightCountdown: "/sounds/sfx/fight-countdown.mp3",
+  fightEvolve: "/sounds/sfx/fight-evolve.mp3",
+  fightHeal: "/sounds/sfx/fight-heal.mp3",
 };
 
 const BGM_PATH = "/sounds/bgm/main-theme.mp3";

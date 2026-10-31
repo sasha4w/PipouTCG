@@ -10,6 +10,8 @@ import {
   EffectTrigger,
   isImplanted,
   isPlantedBy,
+  Immunity,
+  hasImmunity,
 } from '@pipou/shared';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
@@ -23,14 +25,20 @@ import {
   drawCard,
 } from '../helpers/game-state.helper';
 
-/** Dégâts de combat : rien sur un monstre insensible au combat. Renvoie les dégâts subis. */
+/**
+ * Dégâts de combat : rien sur un monstre insensible au combat, jamais sous 1 PV
+ * s'il est indestructible au combat. Renvoie les dégâts subis.
+ */
 function combatDamage(
   target: MonsterOnBoard,
   dmg: number,
   opts: { ignoreReduction?: boolean },
 ): number {
-  if (target.combatImmune) return 0;
-  return applyDamage(target, dmg, opts);
+  if (hasImmunity(target, Immunity.COMBAT_DAMAGE)) return 0;
+  const taken = applyDamage(target, dmg, opts);
+  if (hasImmunity(target, Immunity.COMBAT_DESTRUCTION) && target.currentHp < 1)
+    target.currentHp = 1;
+  return taken;
 }
 
 /** Renvoi de dégâts : `defender` renvoie une part des dégâts subis à `attacker`. */
@@ -40,6 +48,7 @@ function reflectDamage(
   taken: number,
 ): void {
   if (!defender.reflectPercent || taken <= 0) return;
+  if (hasImmunity(attacker, Immunity.MONSTER_STATUS)) return;
   combatDamage(
     attacker,
     Math.floor((taken * defender.reflectPercent) / 100),
@@ -131,6 +140,7 @@ export class BattleService {
       const tauntMonsters = opponent.monsterZones.filter((m) => m?.hasTaunt);
       if (
         !attacker.ignoresTaunt &&
+        !hasImmunity(attacker, Immunity.MONSTER_STATUS) &&
         tauntMonsters.length > 0 &&
         !tauntMonsters.find((m) => m?.instanceId === targetInstanceId)
       )

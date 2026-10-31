@@ -36,33 +36,78 @@
   color: #fff;
 }
 
-/* Badges */
+/* Badges de statut (sous le nom) : icône colorée, compteur éventuel */
 .zr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
   font-size: 9px;
-  padding: 1px 4px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.3px;
+  padding: 2px 3px;
   border-radius: 99px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   cursor: default;
 }
-
-.zr-badge--taunt {
-  background: rgba(122, 28, 59, 0.15);
+/* 3 badges et « +N » tiennent sur une ligne d'une carte xs */
+.zr-monster .card-face__badges {
+  gap: 1px;
+  left: 2%;
+  right: 2%;
+}
+.zr-badge--guard {
+  color: #5d6d7e;
+}
+.zr-badge--endure {
+  color: #e05a4f;
+}
+.zr-badge--reflect {
+  color: #9b3fc0;
+}
+.zr-badge--reduce {
+  color: #5f6b75;
+}
+.zr-badge--attacks {
+  color: #c47f00;
 }
 .zr-badge--piercing {
-  background: rgba(231, 76, 60, 0.15);
+  color: #c0392b;
 }
-.zr-badge--immune {
-  background: rgba(155, 89, 182, 0.15);
+.zr-badge--ignoreTaunt {
+  color: #a5850a;
 }
-.zr-badge--sleep {
-  background: rgba(100, 100, 100, 0.15);
+.zr-badge--immunity {
+  color: #1e9e77;
+  padding: 1px 3px;
 }
-.zr-badge--charge {
-  background: rgba(243, 156, 18, 0.15);
+.zr-badge--immunity-full {
+  color: #d4a017;
 }
-.zr-badge--multi {
-  background: rgba(39, 174, 96, 0.2);
-  font-weight: 700;
+.zr-badge--hatch {
+  color: #b9770e;
+}
+.zr-badge--countdown {
+  color: #2471a3;
+}
+.zr-badge--evolve {
+  color: #239b56;
+}
+.zr-badge--more {
+  color: #7a1c3b;
+}
+.zr-badge--urgent {
+  color: #c0392b;
+  animation: zr-counter-blink 0.8s ease-in-out infinite;
+}
+@keyframes zr-counter-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 /* Equipment chips */

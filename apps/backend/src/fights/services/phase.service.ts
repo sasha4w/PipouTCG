@@ -97,7 +97,7 @@ export class PhaseService {
   startTurn(game: GameState, player: PlayerGameState): void {
     const log: string[] = [];
     // L'immunité au combat dure jusqu'au début du tour de son propriétaire
-    for (const m of player.monsterZones) if (m) m.combatImmune = false;
+    for (const m of player.monsterZones) if (m) m.turnImmunities = [];
     // Garde : un tour adverse de plus tenu ; au-delà de GUARD_MAX_TURNS, contre-offensive
     // (le délai de retour en Garde d'une sortie précédente tombe d'abord)
     for (const m of player.monsterZones) if (m) m.guardCooldown = false;

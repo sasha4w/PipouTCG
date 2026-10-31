@@ -7,6 +7,8 @@ import {
 } from '../interfaces/game-state.interface';
 import {
   CardType,
+  Immunity,
+  hasImmunity,
   DrakonStage,
   SupportType,
   canTransform,
@@ -81,10 +83,10 @@ export class SupportService {
         if (chosen && !targetable.includes(chosen))
           return {
             error:
-              side === 'enemy' && chosen.isImmuneToDebuffs
+              side === 'enemy' && hasImmunity(chosen, Immunity.SUPPORT_DEBUFF)
                 ? 'Ce monstre est insensible aux effets adverses'
                 : ephemeralDestroysChosenTarget(card.baseCard.effects) &&
-                    chosen.supportDestroyImmune
+                    hasImmunity(chosen, Immunity.SUPPORT_DESTRUCTION)
                   ? 'Ce monstre ne peut pas être détruit par une carte Support'
                   : "Cette carte n'aurait aucun effet sur ce monstre",
           };

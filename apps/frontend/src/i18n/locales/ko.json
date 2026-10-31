@@ -507,7 +507,11 @@
       "RELEVE": "**{{kw}}** ({{value}}): 비용 대신 내 필드의 Pipou 아군 {{value}}명을 묘지로 보내 소환할 수 있습니다.",
       "SUMMON_IF_ALL_ELEMENTS": "묘지에 각 원소(대지, 불, 물, 바람)의 성체 또는 고대종이 있어야만 소환할 수 있습니다.",
       "COPY_GRAVEYARD_EFFECTS": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
-      "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다."
+      "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_SUPPORT_DEBUFF_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_MONSTER_DEBUFF_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
+      "SET_MONSTER_STATUS_IMMUNITY": "{{target}}에게 **{{kw}}** 부여."
     },
     "filter": {
       "name": "이름에 '{{name}}' 포함"
@@ -541,7 +545,14 @@
       "guard": "가드 중: 상대 턴 {{turns}}/{{max}}",
       "counterOffensive": "가드 해제 시 반격: +{{value}} ATK",
       "guardCooldown": "다음 턴에 다시 가드 가능",
-      "reflect": "전투 피해의 {{value}}% 반사"
+      "reflect": "전투 피해의 {{value}}% 반사",
+      "immunities": "영향 없음: {{list}}"
+    },
+    "immunity": {
+      "SUPPORT_DESTRUCTION": "서포트에 의한 파괴",
+      "SUPPORT_DEBUFF": "서포트 약화",
+      "MONSTER_DEBUFF": "몬스터 약화",
+      "MONSTER_STATUS": "몬스터 상태 이상(빙결, 기절…)"
     }
   },
   "keywords": {
@@ -555,15 +566,15 @@
     },
     "debuffImmunity": {
       "name": "적 효과 면역",
-      "desc": "상대 카드의 효과가 이 몬스터를 대상으로 할 수 없습니다. 전투 피해는 받습니다."
+      "desc": "적의 어떤 효과(몬스터·서포트)도 영향을 주지 않습니다. 전투 피해는 정상적으로 받습니다."
     },
     "combatImmunity": {
       "name": "전투 면역",
       "desc": "공격하거나 공격받을 때 전투 피해를 받지 않습니다."
     },
     "supportShield": {
-      "name": "장갑",
-      "desc": "서포트 카드로 직접 파괴되지 않습니다 (피해는 받습니다)."
+      "name": "방어막",
+      "desc": "서포트 카드로 직접 파괴되지 않습니다 (피해는 들어옵니다)."
     },
     "ignoreTaunt": {
       "name": "우회",
@@ -620,6 +631,22 @@
     "releve": {
       "name": "교대",
       "desc": "비용 대신, 지정된 수의 Pipou 아군을 내 필드에서 묘지로 보내 이 몬스터를 소환할 수 있으며, 그중 한 자리를 차지합니다."
+    },
+    "combatEndure": {
+      "name": "불사",
+      "desc": "전투 피해를 받지만 HP 1을 유지해 전투로 파괴되지 않습니다."
+    },
+    "supportDebuffImmunity": {
+      "name": "서포트 방어",
+      "desc": "적 서포트의 약화 효과가 통하지 않습니다."
+    },
+    "monsterDebuffImmunity": {
+      "name": "몬스터 방어",
+      "desc": "적 몬스터의 화상·둔화·빙결·효과 피해가 통하지 않습니다."
+    },
+    "monsterStatusImmunity": {
+      "name": "흔들림 없음",
+      "desc": "적의 도발을 무시하고, 반사 피해를 받지 않으며, 제타 바이러스의 영향을 받지 않습니다."
     }
   },
   "fight": {
@@ -733,7 +760,8 @@
     },
     "badge": {
       "sleep": "이번 턴 공격 불가",
-      "attacksLeft": "이번 턴 남은 공격 {{count}}회"
+      "attacksLeft": "이번 턴 남은 공격 {{count}}회",
+      "more": "외 {{count}}개 효과 (카드 확인)"
     },
     "mode": {
       "attack": "공격 모드",

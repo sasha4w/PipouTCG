@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import {
   ActionType,
+  CardType,
   EffectTarget,
   EffectTrigger,
   SupportType,
   isImplanted,
+  IMMUNITIES_BY_ACTION,
+  blocksEnemyAction,
+  type SourceKind,
 } from '@pipou/shared';
 import type { CardEffect, EffectAction } from '@pipou/shared';
 import {
@@ -15,6 +19,7 @@ import {
 } from './interfaces/game-state.interface';
 import type { EffectContext } from './effects/effect-context.interface';
 import { checkCondition } from './effects/effect-conditions';
+import { grantImmunities } from './effects/effect-actions.applier';
 
 /**
  * Recalcule les valeurs effectives des monstres : on repart des bonus
@@ -51,10 +56,9 @@ export class BuffsCalculatorService {
       m.hpBuff = m.perm.hp;
       m.hasTaunt = m.perm.taunt;
       m.hasPiercing = m.perm.piercing;
-      m.isImmuneToDebuffs = m.perm.debuffImmune;
+      m.immunities = [...m.perm.immunities, ...(m.turnImmunities ?? [])];
       m.damageReduction = m.perm.damageReduction;
       m.attacksPerTurn = m.perm.attacksPerTurn;
-      m.supportDestroyImmune = false;
       m.ignoresTaunt = false;
       m.evolutionJoker = false;
       m.instantEvolution = false;
@@ -119,6 +123,7 @@ export class BuffsCalculatorService {
     // 4 bis. Aura de virus : un monstre implanté retire de l'ATK à tous les autres
     // monstres de son hôte (le plus fort virus l'emporte, sans cumul), sauf immunisés
     let virus = 0;
+    let virusSource: SourceKind = 'monster';
     for (const source of monsters) {
       if (!isImplanted(source, player.userId)) continue;
       const cards = [source.card, ...source.equipments];
@@ -126,15 +131,24 @@ export class BuffsCalculatorService {
         for (const eff of passiveEffects(card)) {
           if (!checkCondition(eff, ctx(card, source))) continue;
           for (const action of eff.actions) {
-            if (action.type === ActionType.VIRUS_ATK_DEBUFF)
-              virus = Math.max(virus, action.value ?? 0);
+            if (
+              action.type === ActionType.VIRUS_ATK_DEBUFF &&
+              (action.value ?? 0) > virus
+            ) {
+              virus = action.value ?? 0;
+              virusSource =
+                card.baseCard.type === CardType.SUPPORT ? 'support' : 'monster';
+            }
           }
         }
       }
     }
     if (virus > 0) {
       for (const m of monsters) {
-        if (!isImplanted(m, player.userId) && !m.isImmuneToDebuffs)
+        if (
+          !isImplanted(m, player.userId) &&
+          !blocksEnemyAction(m, virusSource, ActionType.VIRUS_ATK_DEBUFF)
+        )
           m.atkBuff -= virus;
       }
     }
@@ -222,9 +236,6 @@ function applyPassive(m: MonsterOnBoard, action: EffectAction): void {
     case ActionType.SET_TAUNT:
       m.hasTaunt = true;
       break;
-    case ActionType.SET_SUPPORT_DESTROY_IMMUNITY:
-      m.supportDestroyImmune = true;
-      break;
     case ActionType.IGNORE_TAUNT:
       m.ignoresTaunt = true;
       break;
@@ -238,7 +249,12 @@ function applyPassive(m: MonsterOnBoard, action: EffectAction): void {
       m.instantEvolution = true;
       break;
     case ActionType.SET_DEBUFF_IMMUNITY:
-      m.isImmuneToDebuffs = true;
+    case ActionType.SET_COMBAT_DESTRUCTION_IMMUNITY:
+    case ActionType.SET_SUPPORT_DESTROY_IMMUNITY:
+    case ActionType.SET_SUPPORT_DEBUFF_IMMUNITY:
+    case ActionType.SET_MONSTER_DEBUFF_IMMUNITY:
+    case ActionType.SET_MONSTER_STATUS_IMMUNITY:
+      grantImmunities(m.immunities, IMMUNITIES_BY_ACTION[action.type] ?? []);
       break;
     case ActionType.SET_DAMAGE_REDUCTION:
       m.damageReduction = Math.max(m.damageReduction ?? 1, action.value ?? 2);

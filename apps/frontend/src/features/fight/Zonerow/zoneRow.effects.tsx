@@ -1,7 +1,7 @@
 import type { TFunction } from "i18next";
+import { Immunity, hasImmunity } from "@pipou/shared";
 import type { BuffEntry } from "../BuffDebuffSections";
 import {
-  KEYWORD_ICON,
   type KeywordId,
   describeCardEffects,
   effectPlainText,
@@ -10,9 +10,12 @@ import {
   IconEgg,
   IconEvolve,
   IconGuard,
+  IconHp,
+  IconImmunity,
   IconReflect,
   IconSwords,
 } from "../../../components/Icons";
+import { immunityQuarters, immunityText } from "../statusBadges";
 import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from "@pipou/shared";
 import KeywordIcon from "../KeywordIcon";
 import { buildStatRecap } from "./zoneRow.helpers";
@@ -34,6 +37,7 @@ export function equipmentSummary(eq: CardInstance, t: TFunction): string {
 export function getMonsterStatusEntries(
   zone: MonsterOnBoard | null,
   t: TFunction,
+  language = "fr",
 ): BuffEntry[] {
   if (!zone) return [];
   const entries: BuffEntry[] = [];
@@ -41,13 +45,13 @@ export function getMonsterStatusEntries(
   const recap = buildStatRecap(zone);
   if (recap) {
     entries.push({
-      icon: "⚔️",
+      icon: <IconSwords size={14} />,
       label: recap.atkLine,
       type: "neutral",
       variant: "recap",
     });
     entries.push({
-      icon: "❤️",
+      icon: <IconHp size={14} />,
       label: recap.hpLine,
       type: "neutral",
       variant: "recap",
@@ -63,13 +67,21 @@ export function getMonsterStatusEntries(
 
   if (zone.hasTaunt) keyword("taunt", "buff");
   if (zone.hasPiercing) keyword("piercing", "buff");
-  if (zone.isImmuneToDebuffs) keyword("debuffImmunity", "buff");
-  if (zone.combatImmune) keyword("combatImmunity", "buff");
-  if (zone.supportDestroyImmune) keyword("supportShield", "buff");
+  // Immunités aux effets : une seule ligne, détaillée si elles ne sont pas toutes là
+  const quarters = immunityQuarters(zone);
+  if (quarters.some(Boolean))
+    entries.push({
+      icon: <IconImmunity size={14} quarters={quarters} />,
+      label: immunityText(quarters, t, language),
+      type: "buff",
+    });
+  const has = (i: Immunity) => hasImmunity(zone, i);
+  if (has(Immunity.COMBAT_DAMAGE)) keyword("combatImmunity", "buff");
+  if (has(Immunity.COMBAT_DESTRUCTION)) keyword("combatEndure", "buff");
   if (zone.ignoresTaunt) keyword("ignoreTaunt", "buff");
   if (zone.damageReduction && zone.damageReduction > 1)
     entries.push({
-      icon: KEYWORD_ICON.damageReduction,
+      icon: <KeywordIcon id="damageReduction" />,
       label: t("effects.status.damageReduction", {
         value: zone.damageReduction,
       }),
@@ -77,13 +89,13 @@ export function getMonsterStatusEntries(
     });
   if (zone.attacksPerTurn > 1)
     entries.push({
-      icon: KEYWORD_ICON.multiAttack,
+      icon: <KeywordIcon id="multiAttack" />,
       label: t("effects.status.multiAttack", { count: zone.attacksPerTurn }),
       type: "buff",
     });
   if (zone.doubleAtkNextTurn)
     entries.push({
-      icon: KEYWORD_ICON.doubleAttack,
+      icon: <KeywordIcon id="doubleAttack" />,
       label: t("effects.status.doubleAttack"),
       type: "buff",
     });
@@ -118,13 +130,13 @@ export function getMonsterStatusEntries(
     });
   if (zone.blockAttackTurns && zone.blockAttackTurns > 0)
     entries.push({
-      icon: KEYWORD_ICON.freeze,
+      icon: <KeywordIcon id="freeze" />,
       label: t("effects.status.freeze", { count: zone.blockAttackTurns }),
       type: "debuff",
     });
   if (zone.turnCounter !== undefined && zone.turnCounter > 0)
     entries.push({
-      icon: KEYWORD_ICON.countdown,
+      icon: <KeywordIcon id="countdown" />,
       label: t("effects.status.countdown", { count: zone.turnCounter }),
       type: "neutral",
     });

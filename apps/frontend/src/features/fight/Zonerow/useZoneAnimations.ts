@@ -10,6 +10,11 @@ import {
   type SummonTier,
   type ZoneFxMap,
 } from "../fightEvents";
+import {
+  STATUS_BURST_MS,
+  statusRisingEdges,
+  type StatusFxId,
+} from "../statusFx";
 
 const modeOf = (zone: BoardZone | null) =>
   zone && isMonsterZone(zone) ? zone.mode : undefined;
@@ -47,6 +52,9 @@ export function useZoneAnimations(
   const [dyingZones, setDyingZones] = useState<ReadonlyMap<number, DyingZone>>(
     new Map(),
   );
+  const [statusBurstZones, setStatusBurstZones] = useState<
+    ReadonlyMap<number, readonly StatusFxId[]>
+  >(new Map());
 
   useEffect(() => {
     const prevZones = prevZonesRef.current;
@@ -79,6 +87,16 @@ export function useZoneAnimations(
         );
       }
 
+      if (!isSupport) {
+        const edges = statusRisingEdges(prev, zone);
+        if (edges.length > 0) {
+          setStatusBurstZones((m) => new Map(m).set(idx, edges));
+          later(reduced ? REDUCED_MS : STATUS_BURST_MS, () =>
+            setStatusBurstZones((m) => without(m, idx)),
+          );
+        }
+      }
+
       if (!isSupport && prev && zone) {
         const prevMode = prevModes[idx];
         const curMode = modeOf(zone);
@@ -104,5 +122,5 @@ export function useZoneAnimations(
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  return { summoningZones, flippingZones, dyingZones };
+  return { summoningZones, flippingZones, dyingZones, statusBurstZones };
 }

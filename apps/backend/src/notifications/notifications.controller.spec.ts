@@ -70,6 +70,16 @@ describe('NotificationsController', () => {
     });
   });
 
+  it('le flux SSE prévient le joueur quand ses quêtes ont progressé', async () => {
+    const received = firstValueFrom(controller.events(req(7)));
+    controller.onQuestsUpdated({ userId: 9 }); // autre joueur : ignoré
+    controller.onQuestsUpdated({ userId: 7 });
+    await expect(received).resolves.toEqual({
+      type: 'quests.updated',
+      data: '{}',
+    });
+  });
+
   it('une diffusion (userId null) atteint tout le monde', async () => {
     const received = firstValueFrom(controller.events(req(7)));
     controller.onCreated({ userId: null });

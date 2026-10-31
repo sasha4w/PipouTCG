@@ -1,6 +1,12 @@
-import { ActionType, EffectTarget, EffectTrigger } from "../enums/effect";
+import {
+  ActionType,
+  EffectTarget,
+  EffectTrigger,
+  Immunity,
+} from "../enums/effect";
 import type { DrakonElement, DrakonStage } from "../enums/card";
 import type { CardEffect } from "./effect";
+import { blocksEnemyAction, hasImmunity, type SourceKind } from "./immunity";
 
 /** Règles de construction d'un deck (création et lancement de match). */
 export const DECK_RULES = { MIN_CARDS: 30, MAX_CARDS: 40, MAX_COPIES: 3 } as const;
@@ -71,11 +77,13 @@ export function canImplantOn(
   return !hostZones.some((m) => !!m && m.ownerUserId === posterUserId);
 }
 
-/** Un effet adverse peut-il viser ce monstre ? (Maître Magouille : non.) */
-export function isTargetableByEnemyEffects(monster: {
-  isImmuneToDebuffs: boolean;
-}): boolean {
-  return !monster.isImmuneToDebuffs;
+/** Un effet adverse de cette source peut-il viser ce monstre ? */
+export function isTargetableByEnemyEffects(
+  monster: { immunities?: readonly Immunity[] },
+  source: SourceKind,
+  action: ActionType,
+): boolean {
+  return !blocksEnemyAction(monster, source, action);
 }
 
 /**
@@ -99,8 +107,7 @@ export function ephemeralDestroysChosenTarget(
 }
 
 interface EphemeralTarget {
-  isImmuneToDebuffs: boolean;
-  supportDestroyImmune?: boolean;
+  immunities?: readonly Immunity[];
   hatchCounter?: number;
   summonedThisTurn?: boolean;
   instantEvolution?: boolean;
@@ -135,14 +142,21 @@ export function isTargetableByEphemeral(
   side: "ally" | "enemy",
   effects: readonly CardEffect[] | null | undefined,
 ): boolean {
-  if (side === "enemy" && !isTargetableByEnemyEffects(monster)) return false;
-  if (ephemeralDestroysChosenTarget(effects) && monster.supportDestroyImmune)
+  if (
+    ephemeralDestroysChosenTarget(effects) &&
+    hasImmunity(monster, Immunity.SUPPORT_DESTRUCTION)
+  )
     return false;
   // Au moins une action sur la cible choisie doit lui servir à quelque chose
   const chosenActions = (effects ?? [])
     .filter((e) => e.trigger === EffectTrigger.ON_PLAY)
     .flatMap((e) => e.actions)
     .filter((a) => CHOSEN_TARGETS.has(a.target));
+  if (
+    side === "enemy" &&
+    chosenActions.some((a) => blocksEnemyAction(monster, "support", a.type))
+  )
+    return false;
   return (
     chosenActions.length === 0 ||
     chosenActions.some((a) => actionBenefits(a.type, monster))

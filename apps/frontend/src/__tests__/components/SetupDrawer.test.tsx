@@ -30,7 +30,7 @@ const monster = {
     hp: 0,
     taunt: false,
     piercing: false,
-    debuffImmune: false,
+    immunities: [],
     attacksPerTurn: 1,
   },
   attacksPerTurn: 1,
