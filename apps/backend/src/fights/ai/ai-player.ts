@@ -17,7 +17,12 @@ import type {
 } from './decision-log';
 import { determinize } from './determinize';
 import { evaluate } from './evaluate';
-import { actionKey, planTurn, stateSignature } from './planner';
+import {
+  actionKey,
+  planTurn,
+  scoreAfterChoice,
+  stateSignature,
+} from './planner';
 import type { Plan, ThinkingProfile } from './planner';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
@@ -196,15 +201,19 @@ export class AiPlayer {
         crashes.push({ action, error });
         continue;
       }
+      // Un choix à faire (cartes à prendre) : noté après le meilleur choix
+      const scored = scoreAfterChoice(this.engine, clone, seat, (s) =>
+        evaluate(s, seat, profile.archetype),
+      );
       // Le cerveau qui planifie trouve ces suites lui-même
       if (this.thinking !== 'greedy') {
-        valid.push({ action, score: evaluate(clone, seat, profile.archetype) });
+        valid.push({ action, score: scored });
         continue;
       }
       valid.push({
         action,
         score: Math.max(
-          evaluate(clone, seat, profile.archetype),
+          scored,
           this.guardedScore(
             clone,
             seat,

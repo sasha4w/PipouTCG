@@ -16,6 +16,7 @@ import { AiPlayer, aiMustAct } from './ai-player';
 import { listCandidates } from './candidate-actions';
 import { evaluate } from './evaluate';
 import type { AiProfile } from './ai-player';
+import type { DecisionRecord } from './decision-log';
 
 const engine = createEngine();
 const ai = new AiPlayer(engine, () => 0.99);
@@ -78,6 +79,40 @@ describe('AiPlayer', () => {
       attackerInstanceId: monsterNamed(game, 'p2', 'Champion').instanceId,
       targetInstanceId: monsterNamed(game, 'p1', 'Mastodonte').instanceId,
     });
+  });
+
+  it('un coup qui ouvre un choix est noté après le choix, pas sur l’état intermédiaire', () => {
+    // Partie réelle : Incubation Rapide fait éclore l'Œuf ; tant que le Bébé
+    // n'est pas choisi, le terrain est vide et le coup était noté à -2760
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p1: { monsters: [monsterCard('Lame', { atk: 300, hp: 900 })] },
+      p2: {
+        monsters: [
+          {
+            card: realCard('Œuf de la Genèse'),
+            mode: 'guard',
+            summonedThisTurn: true,
+          },
+        ],
+        hand: [realCard('Incubation Rapide')],
+        deck: [realCard('Bébé Ackos'), realCard('Bébé Tempestu')],
+      },
+    });
+    const records: DecisionRecord[] = [];
+    const watched = new AiPlayer(engine, () => 0.99);
+    watched.setDecisionSink((r) => records.push(r));
+
+    watched.chooseAction(game, 'p2', { archetype: 'dragon', level: 3 });
+
+    const score = (type: string) =>
+      Math.max(
+        ...records[0].candidates
+          .filter((c) => c.action.type === type)
+          .map((c) => c.score),
+      );
+    expect(score('play_support')).toBeGreaterThan(score('end_phase') - 1000);
   });
 
   it('une erreur volontaire reste crédible : jamais une victoire ratée', () => {
