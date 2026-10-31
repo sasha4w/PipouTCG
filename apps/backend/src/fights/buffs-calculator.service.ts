@@ -145,7 +145,8 @@ export class BuffsCalculatorService {
     }
     if (virus > 0) {
       for (const m of monsters) {
-        if (!isImplanted(m, player.userId) &&
+        if (
+          !isImplanted(m, player.userId) &&
           !blocksEnemyAction(m, virusSource, ActionType.VIRUS_ATK_DEBUFF)
         )
           m.atkBuff -= virus;

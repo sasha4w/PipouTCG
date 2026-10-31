@@ -52,9 +52,7 @@ const teros = (reflect: number): CardEffect[] => [
   fx('ON_SUMMON', [self('SET_TAUNT'), self('SET_DEBUFF_IMMUNITY')]),
   fx('PASSIVE', [self('SET_DAMAGE_REDUCTION', 2)]),
   fx('PASSIVE', [self('REFLECT_DAMAGE', reflect)]),
-  fx('ON_DEATH', [
-    { type: 'DRAW', value: 1, target: 'PLAYER' } as EffectAction,
-  ]),
+  fx('ON_DEATH', [{ type: 'DRAW', value: 1, target: 'PLAYER' }]),
 ];
 
 const MAGOUILLE: CardEffect[] = [
@@ -70,9 +68,7 @@ const ECAILLE: CardEffect[] = [
 const DRAKON_ORIGINES: CardEffect[] = [
   fx('PASSIVE', [self('SUMMON_IF_ALL_ELEMENTS')]),
   fx('ON_SUMMON', [self('SET_DEBUFF_IMMUNITY', 1)]),
-  fx('ON_SUMMON', [
-    { type: 'COPY_GRAVEYARD_EFFECTS', target: 'PLAYER' } as EffectAction,
-  ]),
+  fx('ON_SUMMON', [{ type: 'COPY_GRAVEYARD_EFFECTS', target: 'PLAYER' }]),
 ];
 
 export const IMMUNITY_PATCHES: ImmunityPatch[] = [
