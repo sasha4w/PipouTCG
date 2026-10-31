@@ -6,6 +6,7 @@ import {
   EffectTrigger,
   SupportType,
   canEvolveOnto,
+  canSummonFromHand,
   ephemeralTargetSide,
   isImplanted,
   isPlantedBy,
@@ -20,6 +21,7 @@ import type {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { effectiveAtk, seatPlayer } from '../helpers/game-state.helper';
+import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { ARCHETYPE_PROFILES } from './archetype-profiles';
 import type { ArchetypeProfile } from './archetype-profiles';
 
@@ -214,6 +216,41 @@ function raid(
   return out;
 }
 
+/**
+ * Monstres que `p` peut poser à son prochain tour depuis sa main, les plus
+ * forts d'abord, tant qu'il a une zone libre et de quoi payer (il pioche une
+ * carte avant). Sur l'état déterminisé, la main adverse est un tirage
+ * plausible : l'IA ne voit pas la vraie.
+ */
+function reinforcements(p: PlayerGameState): MonsterOnBoard[] {
+  let free = p.monsterZones.filter((z) => z === null).length;
+  let cards = p.hand.length + 1;
+  let energy = p.recycleEnergy;
+  const out: MonsterOnBoard[] = [];
+  const monsters = p.hand
+    .filter(
+      (c) =>
+        c.baseCard.type === CardType.MONSTER && canSummonFromHand(c.baseCard),
+    )
+    .sort((a, b) => (b.baseCard.atk ?? 0) - (a.baseCard.atk ?? 0));
+  for (const c of monsters) {
+    if (free === 0) break;
+    const cost = c.baseCard.cost ?? 0;
+    const paid = Math.max(0, cost - energy);
+    if (cards < 1 + paid) continue;
+    cards -= 1 + paid;
+    energy = Math.max(0, energy - cost);
+    free -= 1;
+    out.push(
+      createMonsterOnBoard(c, {
+        instanceId: `renfort:${c.instanceId}`,
+        ownerUserId: p.userId,
+      }),
+    );
+  }
+  return out;
+}
+
 const BOOST_ACTIONS = new Set<string>([
   ActionType.BUFF_ATK,
   ActionType.BUFF_HP,
@@ -405,9 +442,10 @@ export function evaluate(
   for (const m of myBoard) add('myBoard', monsterValue(m));
   for (const m of oppBoard) add('oppBoard', -monsterValue(m));
 
-  // Tour adverse : il peut repasser ses monstres en mode ATK
+  // Tour adverse : il peut repasser ses monstres en mode ATK, et poser des
+  // renforts qui attaquent aussitôt
   const threat = raid(
-    oppBoard
+    [...oppBoard, ...reinforcements(opp)]
       .filter((m) => !isEgg(m) && !blocked(m) && !m.guardLocked)
       .map((m) => ({ m, attacks: m.attacksPerTurn })),
     myZones,

@@ -114,6 +114,27 @@ describe('evaluate', () => {
     );
   });
 
+  it('la menace compte les monstres que l’adversaire peut poser et lancer aussitôt', () => {
+    // Partie réelle (tour 2) : l'adversaire, terrain vide, a posé deux monstres
+    // qui ont tué ensemble le Capitaine laissé en attaque
+    const game = scenario({
+      turn: 'p2',
+      phase: 'end',
+      p1: {
+        hand: [
+          monsterCard('Mastodonte', { atk: 700, hp: 800, cost: 0 }),
+          monsterCard('Chevalier', { atk: 500, hp: 900, cost: 0 }),
+        ],
+      },
+      p2: { monsters: [monsterCard('Capitaine', { atk: 500, hp: 1100 })] },
+    });
+    const parts: Record<string, number> = {};
+
+    evaluate(game, 'p2', 'pipou', false, parts);
+
+    expect(parts.threat).toBeLessThan(0);
+  });
+
   it("les poids d'archétype viennent du profil", () => {
     expect(ARCHETYPE_PROFILES.pipou.perMonster).toBe(400);
     expect(ARCHETYPE_PROFILES.pixelman.perEquipment).toBe(400);
