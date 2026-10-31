@@ -50,6 +50,25 @@ Les annotations vont dans `journal.jsonl.annotations.jsonl`.
 `pnpm --filter @pipou/backend ai:review export journal.jsonl > revue.jsonl` : une ligne par décision, avec ses
 annotations (`{ decision, annotations }`). Les annotations sans décision sont comptées sur stderr.
 
+## Expliquer une décision
+
+`pnpm --filter @pipou/backend ai:explain journal.jsonl <id>` rejoue chaque coup candidat sur l'état enregistré
+(vrai moteur) et affiche, pour chacun, l'écart avec le coup choisi morceau par morceau du score : `primes`, `hand`,
+`myBoard`, `oppBoard`, `threat` (menace au tour adverse), `potential`, `archetype`… Exemple : « menace −1825 » dit
+que ce coup expose un monstre que l'adversaire peut tuer. Le détail vient de `evaluate(…, parts)`, qui ne change
+pas le score.
+
+## Partie complète
+
+Avec `AI_DECISION_LOG`, les coups du joueur et la fin de partie vont dans `<journal>.human.jsonl` (`MatchEvent`) :
+le journal de l'IA seul ne voit ni les coups adverses ni le résultat.
+
+## Revue dans l'appli (admin)
+
+Sans `AI_DECISION_LOG`, les combats d'aventure d'un compte admin sont journalisés en base (`ai_decision`,
+`ai_annotation`) et relus dans l'onglet Admin « Revue IA ». `GET /admin/ai-review/export` sort les annotations
+avec le contexte de leur décision.
+
 ## Limites connues
 
 - Le journal est lourd : environ 3 Mo par partie, car chaque décision garde l'état complet.
