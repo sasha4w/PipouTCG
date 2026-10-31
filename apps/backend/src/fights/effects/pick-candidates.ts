@@ -5,6 +5,7 @@ import {
   ChoiceCandidate,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
+import { normalizeCardName } from './card-name';
 
 /** Vrai si la carte respecte le filtre d'une action de récupération. */
 export function matchesFilter(
@@ -17,6 +18,11 @@ export function matchesFilter(
   if (filter.rarities && !filter.rarities.includes(c.rarity)) return false;
   if (filter.type && c.type !== filter.type) return false;
   if (filter.name && !c.name.toLowerCase().includes(filter.name.toLowerCase()))
+    return false;
+  if (
+    filter.excludeName &&
+    normalizeCardName(c.name) === normalizeCardName(filter.excludeName)
+  )
     return false;
   if (filter.element && c.element !== filter.element) return false;
   if (filter.stage && c.stage !== filter.stage) return false;

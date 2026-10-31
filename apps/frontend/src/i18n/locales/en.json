@@ -566,7 +566,8 @@
       "SET_MONSTER_STATUS_IMMUNITY_many": "{{target}} gain **{{kw}}**."
     },
     "filter": {
-      "name": "name containing “{{name}}”"
+      "name": "name containing “{{name}}”",
+      "excludeName": "except “{{name}}”"
     },
     "stage": {
       "egg": "Egg",

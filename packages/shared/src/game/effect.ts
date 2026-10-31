@@ -30,6 +30,8 @@ export interface EffectFilter {
   rarities?: Rarity[];
   type?: CardType;
   name?: string;
+  /** Nom de carte exclu (exact, sans tenir compte des accents ni de la casse). */
+  excludeName?: string;
   element?: DrakonElement;
   stage?: DrakonStage;
 }
