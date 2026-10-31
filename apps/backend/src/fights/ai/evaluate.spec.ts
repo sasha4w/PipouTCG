@@ -59,6 +59,61 @@ describe('evaluate', () => {
     expect(parts.threat).toBeLessThan(0);
   });
 
+  it('adversaire à une Prime de la victoire : se barricader vaut mieux que prendre une Prime', () => {
+    // Partie réelle (tour 11) : l'IA prenait une Prime avec son Champion et le
+    // laissait tuable, alors que l'adversaire n'avait plus qu'une Prime à prendre
+    const opponent = (withChampion: boolean) => ({
+      primes: 1,
+      monsters: [
+        monsterCard('Maraudeur', { atk: 800, hp: 1000 }),
+        ...(withChampion
+          ? [monsterCard('Champion adverse', { atk: 1200, hp: 900 })]
+          : []),
+        monsterCard('Général', { atk: 1100, hp: 1800 }),
+      ],
+    });
+    const attacked = scenario({
+      turn: 'p2',
+      phase: 'end',
+      p1: opponent(false),
+      p2: {
+        primes: 4,
+        monsters: [
+          {
+            card: monsterCard('Champion', { atk: 1200, hp: 1800 }),
+            currentHp: 600,
+          },
+        ],
+        hand: [
+          monsterCard('Lieutenant', { atk: 300, hp: 500, cost: 1 }),
+          monsterCard('Médecin', { atk: 100, hp: 1800, cost: 3 }),
+        ],
+      },
+    });
+    const barricaded = scenario({
+      turn: 'p2',
+      phase: 'end',
+      p1: opponent(true),
+      p2: {
+        primes: 5,
+        monsters: [
+          {
+            card: monsterCard('Champion', { atk: 1200, hp: 1800 }),
+            mode: 'guard',
+          },
+          {
+            card: monsterCard('Lieutenant', { atk: 300, hp: 500, cost: 1 }),
+            mode: 'guard',
+          },
+        ],
+      },
+    });
+
+    expect(evaluate(barricaded, 'p2', 'pipou')).toBeGreaterThan(
+      evaluate(attacked, 'p2', 'pipou'),
+    );
+  });
+
   it("les poids d'archétype viennent du profil", () => {
     expect(ARCHETYPE_PROFILES.pipou.perMonster).toBe(400);
     expect(ARCHETYPE_PROFILES.pixelman.perEquipment).toBe(400);

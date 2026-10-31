@@ -33,6 +33,12 @@ const ENERGY_VALUE = 50;
 const HAND_CARD_BASE = 100;
 /** Prime que l'adversaire peut prendre à son prochain tour (estimation). */
 const THREAT_PRIME = PRIME * 0.6;
+/**
+ * L'adversaire peut prendre toutes ses Primes restantes à son tour : une
+ * estimation, donc sous la défaite certaine (-Infinity), mais au-dessus de
+ * tout ce qu'un coup peut rapporter d'autre.
+ */
+const LETHAL_THREAT = PRIME * 4;
 /** Prime que je peux encore prendre ce tour (phase principale). */
 const POTENTIAL_PRIME = PRIME * 0.3;
 /** Prime promise par un compteur de tour (Noyau Zeta). */
@@ -407,7 +413,11 @@ export function evaluate(
     myZones,
     true,
   );
-  add('threat', -THREAT_PRIME * (threat.primes - threat.conceded));
+  const threatPrimes = threat.primes - threat.conceded;
+  add('threat', -THREAT_PRIME * threatPrimes);
+  // Assez de Primes pour qu'il gagne à son tour : c'est la défaite, pas 1 Prime
+  if (threatPrimes > 0 && threatPrimes >= opp.primes)
+    add('threat', -LETHAL_THREAT);
   for (const d of threat.destroyed)
     add(
       'threat',
