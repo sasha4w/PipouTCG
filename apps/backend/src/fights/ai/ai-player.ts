@@ -227,10 +227,8 @@ export class AiPlayer {
 
     if (this.mistakeRate > 0 && this.random() < this.mistakeRate) {
       this.plan = null;
-      return result(
-        valid[Math.floor(this.random() * valid.length)].action,
-        'mistake',
-      );
+      const mistake = plausibleMistake(valid, this.random);
+      if (mistake) return result(mistake, 'mistake');
     }
 
     if (game.phase === 'mulligan')
@@ -371,6 +369,28 @@ export class AiPlayer {
     }
     return evaluate(clone, seat, profile.archetype);
   }
+}
+
+/**
+ * Une erreur volontaire (niveaux faciles) reste un coup qu'un joueur pourrait
+ * jouer : au plus ce score de moins que le meilleur (moins qu'une Prime).
+ */
+const MISTAKE_MAX_LOSS = 1000;
+
+/**
+ * Un coup moins bon que le meilleur, tiré parmi ceux qui ne perdent pas plus
+ * de MISTAKE_MAX_LOSS ; null s'il n'y en a pas (le meilleur est alors joué).
+ */
+function plausibleMistake(
+  valid: Scored[],
+  random: () => number,
+): GameAction | null {
+  const best = Math.max(...valid.map((v) => v.score));
+  const pool = valid.filter(
+    (v) => v.score < best && v.score >= best - MISTAKE_MAX_LOSS,
+  );
+  if (pool.length === 0) return null;
+  return pool[Math.floor(random() * pool.length)].action;
 }
 
 /** Exception levée par le moteur pendant une simulation (bug moteur). */

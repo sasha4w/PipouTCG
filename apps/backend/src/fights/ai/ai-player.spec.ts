@@ -80,6 +80,33 @@ describe('AiPlayer', () => {
     });
   });
 
+  it('une erreur volontaire reste crédible : jamais une victoire ratée', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: {
+        monsters: [
+          monsterCard('Colosse', { atk: 50, hp: 5000 }),
+          monsterCard('Moucheron', { atk: 0, hp: 100 }),
+        ],
+      },
+      p2: {
+        primes: 1,
+        monsters: [monsterCard('Lame', { atk: 200, hp: 500 })],
+      },
+    });
+    // Erreur à chaque coup, tirage le plus bas : l'ancien choix était le 1er coup valide
+    const clumsy = new AiPlayer(engine, () => 0, 'greedy', 1);
+
+    const action = clumsy.chooseAction(game, 'p2', profile);
+
+    expect(action).toEqual({
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Lame').instanceId,
+      targetInstanceId: monsterNamed(game, 'p1', 'Moucheron').instanceId,
+    });
+  });
+
   it('choix en attente pour l’IA : un pick_cards accepté par le moteur', () => {
     const game = scenario({
       turn: 'p1',

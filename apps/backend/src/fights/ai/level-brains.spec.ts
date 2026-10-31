@@ -56,7 +56,7 @@ describe('LEVEL_BRAINS', () => {
 });
 
 describe('createLevelAi', () => {
-  it('niveau 1 : erreur forcée, joue le premier coup valide', () => {
+  it('niveau 1 : erreur forcée, mais crédible : la victoire n’est pas ratée', () => {
     const game = winningAttack();
     const first = listCandidates(game, 'p2').find(
       (a) => !engine.dispatch(structuredClone(game), 'p2', a).error,
@@ -66,10 +66,11 @@ describe('createLevelAi', () => {
       attackerInstanceId: monsterNamed(game, 'p2', 'Lame').instanceId,
       targetInstanceId: monsterNamed(game, 'p1', 'Moucheron').instanceId,
     };
+    // L'ancienne erreur jouait ce premier coup valide, qui rate la victoire
     expect(first).not.toEqual(best);
     expect(
       createLevelAi(engine, 1, () => 0).chooseAction(game, 'p2', level(1)),
-    ).toEqual(first);
+    ).toEqual(best);
   });
 
   it('taux 0 par défaut : jamais de coup au hasard, même au niveau 1', () => {
