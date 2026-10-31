@@ -37,6 +37,11 @@ import { emitGameState } from './helpers/client-state.builder';
 import { createGameState } from './helpers/game-factory';
 import { aiMustAct } from './ai/ai-player';
 import type { AiPlayer } from './ai/ai-player';
+import { AI_DECISION_RECORDER } from '../ai-review/decision-recorder';
+import type { DecisionRecorder } from '../ai-review/decision-recorder';
+import { appendMatchEvent, fileSink } from './ai/decision-log';
+import type { MatchEvent } from './ai/decision-log';
+import { describeAction } from './ai/ai-review';
 import { createLevelAi } from './ai/level-brains';
 import {
   AI_ACTION_DELAY_MS,
@@ -85,6 +90,9 @@ export class FightsService {
     private gameEnd: GameEndService,
     private turnTimeout: TurnTimeoutService,
     @Optional() @Inject(PVE_HOOKS) private pveHooks?: PveHooks,
+    @Optional()
+    @Inject(AI_DECISION_RECORDER)
+    private decisionRecorder?: DecisionRecorder,
   ) {}
 
   // ── Matchmaking ──────────────────────────────────────────────────────────
@@ -135,6 +143,8 @@ export class FightsService {
     socketId: string,
     payload: AdventureStartPayload,
     server: FightServer,
+    /** Admin : les décisions de l'IA sont journalisées pour la revue. */
+    isAdmin = false,
   ): Promise<{ error?: string }> {
     const hooks = this.pveHooks;
     if (!hooks) return { error: 'Mode Aventure indisponible' };
@@ -197,6 +207,13 @@ export class FightsService {
         return { error: 'Impossible de lancer ce combat' };
       }
 
+      const ai = createLevelAi(this.engine, start.profile.level);
+      // AI_DECISION_LOG (diagnostic local) : journal fichier, sinon base pour les admins
+      const logPath = process.env.AI_DECISION_LOG;
+      const sink = logPath
+        ? fileSink(logPath)
+        : (this.decisionRecorder?.sinkFor(userId, isAdmin) ?? null);
+      if (sink) ai.setDecisionSink(sink, `pve${Date.now()}`);
       this.adopt(game);
       this.pve.set(matchId, {
         info: {
@@ -208,7 +225,7 @@ export class FightsService {
           aiActionsThisTurn: 0,
         },
         aiTurn: game.turnNumber,
-        ai: createLevelAi(this.engine, start.profile.level),
+        ai,
       });
       server.to(socketId).emit('fight:matched', {
         matchId,
@@ -261,7 +278,26 @@ export class FightsService {
       const seat = seatOf(game, userId);
       if (!seat) return { error: NOT_IN_MATCH };
 
+      const session0 = this.pve.get(matchId);
+      // Diagnostic local : coup de l'humain, décrit sur l'état d'avant
+      const logPath = process.env.AI_DECISION_LOG;
+      const before =
+        logPath && session0 && userId !== session0.info.aiUserId
+          ? {
+              turn: game.turnNumber,
+              phase: game.phase,
+              text: describeAction(action, game),
+            }
+          : null;
       const result = this.engine.dispatch(game, seat, action);
+      if (logPath && before)
+        this.logMatchEvent(logPath, {
+          kind: 'human',
+          matchId,
+          ...before,
+          action,
+          ...(result.error && { error: result.error }),
+        });
       if (!result.error) {
         const session = this.pve.get(matchId);
         if (session && userId !== session.info.aiUserId)
@@ -587,12 +623,33 @@ export class FightsService {
     server.to(game.player2.socketId).emit('fight:game_over', payload);
   }
 
+  /** Le journal de diagnostic ne doit jamais gêner la partie. */
+  private logMatchEvent(logPath: string, event: MatchEvent): void {
+    try {
+      appendMatchEvent(logPath, event);
+    } catch (err) {
+      this.logger.warn(
+        `Journal de partie en échec — ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+
   /** Fin PvE : résultat d'aventure au lieu de l'ELO et de l'historique JcJ. */
   private async finishPve(
     game: GameState,
     info: PveInfo,
     server: FightServer,
   ): Promise<void> {
+    const logPath = process.env.AI_DECISION_LOG;
+    if (logPath)
+      this.logMatchEvent(logPath, {
+        kind: 'end',
+        matchId: game.matchId,
+        turn: game.turnNumber,
+        winner: game.winner ?? null,
+        endReason: game.endReason,
+        primes: { p1: game.player1.primes, p2: game.player2.primes },
+      });
     let adventure: AdventureResultPayload | undefined;
     try {
       adventure = await this.pveHooks?.recordResult(game, info);

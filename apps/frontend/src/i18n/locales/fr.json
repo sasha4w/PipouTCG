@@ -378,7 +378,8 @@
       "banners": "Bannières",
       "patchnotes": "Patchnotes",
       "sandbox": "Sandbox",
-      "adventure": "Aventure"
+      "adventure": "Aventure",
+      "aiReview": "Revue IA"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
@@ -567,7 +568,8 @@
       "SET_MONSTER_STATUS_IMMUNITY_many": "{{target}} gagnent **{{kw}}**."
     },
     "filter": {
-      "name": "nom contenant « {{name}} »"
+      "name": "nom contenant « {{name}} »",
+      "excludeName": "sauf « {{name}} »"
     },
     "stage": {
       "egg": "Œuf",

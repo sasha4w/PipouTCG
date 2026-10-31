@@ -30,6 +30,8 @@ export interface EffectFilter {
   rarities?: Rarity[];
   type?: CardType;
   name?: string;
+  /** Nom de carte exclu (exact, sans tenir compte des accents ni de la casse). */
+  excludeName?: string;
   element?: DrakonElement;
   stage?: DrakonStage;
 }
@@ -44,6 +46,8 @@ export interface EffectAction {
   type: ActionType;
   target: EffectTarget;
   value?: number;
+  /** Durée en tours du propriétaire, pour les effets qui s'éteignent (ex. dégâts divisés). */
+  duration?: number;
   archetype?: string;
   filter?: EffectFilter;
   valueIf?: EffectValueIf;

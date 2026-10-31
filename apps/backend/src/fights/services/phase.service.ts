@@ -121,6 +121,16 @@ export class PhaseService {
     // Compteurs en premier : un monstre détruit au compteur 0 ne déclenche
     // pas son ON_TURN_START ce même tour.
     this.processTurnCounters(game, player, log);
+    // Les dégâts divisés à durée limitée comptent les débuts de tour du propriétaire
+    for (const m of player.monsterZones) {
+      if (!m || m.reductionTurns === undefined) continue;
+      m.reductionTurns -= 1;
+      if (m.reductionTurns > 0) continue;
+      m.reductionTurns = undefined;
+      m.perm.damageReduction = undefined;
+      m.damageReduction = undefined;
+      log.push(`🛡️ ${m.card.baseCard.name} ne divise plus les dégâts reçus`);
+    }
     for (const m of [...player.monsterZones]) {
       if (!m || m.hatchCounter === undefined) continue;
       m.hatchCounter -= 1;

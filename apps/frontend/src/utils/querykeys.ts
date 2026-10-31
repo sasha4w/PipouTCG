@@ -79,6 +79,14 @@ export const QUERY_KEYS = {
     banners: ["admin", "banners"] as const,
   },
 
+  // ── Revue de l'IA (admin) ─────────────────────────────────────────────────
+  aiReview: {
+    games: ["admin", "ai-review", "games"] as const,
+    decisions: (gameId: string) =>
+      ["admin", "ai-review", "decisions", gameId] as const,
+    decision: (id: string) => ["admin", "ai-review", "decision", id] as const,
+  },
+
   // ── Sandbox admin ─────────────────────────────────────────────────────────
   sandbox: {
     scenarios: ["sandbox", "scenarios"] as const,

@@ -16,6 +16,7 @@ import { AiPlayer, aiMustAct } from './ai-player';
 import { listCandidates } from './candidate-actions';
 import { evaluate } from './evaluate';
 import type { AiProfile } from './ai-player';
+import type { DecisionRecord } from './decision-log';
 
 const engine = createEngine();
 const ai = new AiPlayer(engine, () => 0.99);
@@ -48,6 +49,97 @@ describe('AiPlayer', () => {
     expect(engine.dispatch(game, 'p2', action).error).toBeUndefined();
     expect(game.phase).toBe('finished');
     expect(game.winner).toBe(P2_ID);
+  });
+
+  it('prend la Prime même si son monstre devient tuable seul : il l’était déjà à plusieurs', () => {
+    // Partie réelle (tour 7) : l'IA refusait de tuer le Mastodonte pour garder
+    // son Champion à pleine vie, alors que les trois attaquants le tuaient quand même
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: {
+        monsters: [
+          {
+            card: monsterCard('Mastodonte', { atk: 1000, hp: 400 }),
+            patch: { hasTaunt: true },
+          },
+          monsterCard('Commandant', { atk: 800, hp: 1300 }),
+          monsterCard('Chevalier', { atk: 800, hp: 500 }),
+        ],
+      },
+      p2: {
+        monsters: [monsterCard('Champion', { atk: 900, hp: 1800 })],
+      },
+    });
+
+    const action = ai.chooseAction(game, 'p2', profile);
+
+    expect(action).toEqual({
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Champion').instanceId,
+      targetInstanceId: monsterNamed(game, 'p1', 'Mastodonte').instanceId,
+    });
+  });
+
+  it('un coup qui ouvre un choix est noté après le choix, pas sur l’état intermédiaire', () => {
+    // Partie réelle : Incubation Rapide fait éclore l'Œuf ; tant que le Bébé
+    // n'est pas choisi, le terrain est vide et le coup était noté à -2760
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p1: { monsters: [monsterCard('Lame', { atk: 300, hp: 900 })] },
+      p2: {
+        monsters: [
+          {
+            card: realCard('Œuf de la Genèse'),
+            mode: 'guard',
+            summonedThisTurn: true,
+          },
+        ],
+        hand: [realCard('Incubation Rapide')],
+        deck: [realCard('Bébé Ackos'), realCard('Bébé Tempestu')],
+      },
+    });
+    const records: DecisionRecord[] = [];
+    const watched = new AiPlayer(engine, () => 0.99);
+    watched.setDecisionSink((r) => records.push(r));
+
+    watched.chooseAction(game, 'p2', { archetype: 'dragon', level: 3 });
+
+    const score = (type: string) =>
+      Math.max(
+        ...records[0].candidates
+          .filter((c) => c.action.type === type)
+          .map((c) => c.score),
+      );
+    expect(score('play_support')).toBeGreaterThan(score('end_phase') - 1000);
+  });
+
+  it('une erreur volontaire reste crédible : jamais une victoire ratée', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: {
+        monsters: [
+          monsterCard('Colosse', { atk: 50, hp: 5000 }),
+          monsterCard('Moucheron', { atk: 0, hp: 100 }),
+        ],
+      },
+      p2: {
+        primes: 1,
+        monsters: [monsterCard('Lame', { atk: 200, hp: 500 })],
+      },
+    });
+    // Erreur à chaque coup, tirage le plus bas : l'ancien choix était le 1er coup valide
+    const clumsy = new AiPlayer(engine, () => 0, 'greedy', 1);
+
+    const action = clumsy.chooseAction(game, 'p2', profile);
+
+    expect(action).toEqual({
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Lame').instanceId,
+      targetInstanceId: monsterNamed(game, 'p1', 'Moucheron').instanceId,
+    });
   });
 
   it('choix en attente pour l’IA : un pick_cards accepté par le moteur', () => {

@@ -62,7 +62,7 @@ export const ARCHETYPE_PROFILES: Record<AdventureArchetype, ArchetypeProfile> =
       perStage: 300,
       growingHp: 0.3,
       protect: 'growing',
-      prepEvolve: 400,
+      prepEvolve: 150,
       prepEquip: 100,
       prepTarget: 50,
     },

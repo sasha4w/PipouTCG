@@ -265,7 +265,12 @@ const ACTIONS: Record<string, ActionSpec> = {
     keyword: "reflect",
     defaultValue: 0,
   },
-  RELEVE: { tone: "neutral", subject: "card", keyword: "releve", defaultValue: 2 },
+  RELEVE: {
+    tone: "neutral",
+    subject: "card",
+    keyword: "releve",
+    defaultValue: 2,
+  },
   SUMMON_IF_ALL_ELEMENTS: { tone: "neutral", subject: "card" },
   COPY_GRAVEYARD_EFFECTS: { tone: "buff", subject: "player" },
 };
@@ -320,6 +325,8 @@ function describeFilter(t: TFunction, filter?: EffectFilter): string {
   if (filter.stage) parts.push(t(`effects.stage.${filter.stage}`));
   if (filter.element) parts.push(t(`effects.element.${filter.element}`));
   if (filter.name) parts.push(t("effects.filter.name", { name: filter.name }));
+  if (filter.excludeName)
+    parts.push(t("effects.filter.excludeName", { name: filter.excludeName }));
   return parts.length ? ` (${parts.join(" · ")})` : "";
 }
 

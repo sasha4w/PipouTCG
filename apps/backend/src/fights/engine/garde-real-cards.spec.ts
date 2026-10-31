@@ -135,14 +135,32 @@ describe('vraies cartes du patch Garde', () => {
       turn: 'p1',
       phase: 'battle',
       p1: { monsters: [monsterCard('Lame', { atk: 400, hp: 1000 })] },
-      p2: { monsters: [realCard('Jeune Teros')] },
+      // Posé directement : la réduction (effet d'invocation) est donnée à la main
+      p2: {
+        monsters: [
+          {
+            card: realCard('Jeune Teros'),
+            patch: {
+              perm: {
+                atk: 0,
+                hp: 0,
+                taunt: false,
+                piercing: false,
+                immunities: [],
+                attacksPerTurn: 1,
+                damageReduction: 2,
+              },
+            },
+          },
+        ],
+      },
     });
     recalc(game);
     game.phase = 'battle';
     expect(
       attackWith(engine, game, 'p1', 'Lame', 'Jeune Teros').error,
     ).toBeUndefined();
-    expect(monsterNamed(game, 'p2', 'Jeune Teros').currentHp).toBe(1600);
+    expect(monsterNamed(game, 'p2', 'Jeune Teros').currentHp).toBe(1200);
     expect(monsterNamed(game, 'p1', 'Lame').currentHp).toBe(1000 - 300 - 80);
   });
 

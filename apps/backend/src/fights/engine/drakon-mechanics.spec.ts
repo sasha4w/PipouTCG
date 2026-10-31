@@ -203,7 +203,7 @@ describe('mécaniques Drakon', () => {
         paymentHandIndices,
       });
 
-    it('remplace la base : équipements et mode gardés, PV pleins, base au cimetière, ON_SUMMON', () => {
+    it('remplace la base : équipements et mode gardés, PV au plancher de 50 %, base au cimetière, ON_SUMMON', () => {
       const casque = equipmentCard('Casque', []);
       const game = scenario({
         p1: {
@@ -226,7 +226,8 @@ describe('mécaniques Drakon', () => {
         'Casque',
       ]);
       expect(evolved.mode).toBe('guard');
-      expect(evolved.currentHp).toBe(900);
+      // 100/400 de PV (25 %) : remonté à 50 % des 900 PV du Jeune
+      expect(evolved.currentHp).toBe(450);
       expect(evolved.hasPiercing).toBe(true);
       expect(graveyardNames(game, 'p1')).toEqual(['Bébé Feros']);
       expect(game.player1.recycleEnergy).toBe(0);
@@ -235,6 +236,27 @@ describe('mécaniques Drakon', () => {
         zoneIndex: 0,
       });
     });
+
+    it.each([
+      [400, 900],
+      [300, 675],
+      [200, 450],
+    ])(
+      'le monstre évolué garde la part de PV de la base (%i/400 → %i/900)',
+      (hp, expected) => {
+        const game = scenario({
+          p1: {
+            hand: [jeune()],
+            recycleEnergy: 1,
+            monsters: [{ card: bebe(), currentHp: hp }],
+          },
+        });
+        expect(evolve(game)).toEqual({});
+        expect(monsterNamed(game, 'p1', 'Jeune Feros').currentHp).toBe(
+          expected,
+        );
+      },
+    );
 
     it('coût en différence payé par défausse', () => {
       const game = scenario({

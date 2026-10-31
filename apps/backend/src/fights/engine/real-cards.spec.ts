@@ -329,6 +329,22 @@ describe('vraies cartes — combos', () => {
       ]);
     });
 
+    it('Appel des ancêtres ne propose pas un autre Appel des ancêtres', () => {
+      const game = scenario({
+        p1: {
+          hand: [realCard('Appel des ancêtres')],
+          graveyard: [
+            realCard('Appel des ancêtres'),
+            realCard('Bébé Teros'),
+            realCard('Jeune Feros'),
+          ],
+        },
+      });
+      engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 });
+
+      expect(candidateNames(game)).toEqual(['Bébé Teros', 'Jeune Feros']);
+    });
+
     it('Mise à jour Système seule au cimetière : injouable, elle ne se récupère pas', () => {
       const game = scenario({
         p1: { hand: [realCard('Mise à jour Système')] },

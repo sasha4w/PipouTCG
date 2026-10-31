@@ -6,6 +6,7 @@ import type { CardInstance } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
+import type { DecisionSink } from './decision-log';
 import { STRONGEST } from './planner';
 import type { ThinkingProfile } from './planner';
 import type { AiLevel } from './ai-player';
@@ -107,11 +108,13 @@ export function instances(
 }
 
 /** Joue une partie : vainqueur (0 = p1, 1 = p2, null sans vainqueur) et télémétrie. */
-function playGame(
+export function playGame(
   p1: TournamentEntry,
   p2: TournamentEntry,
   seed: number,
   maxActions: number,
+  /** Journal des décisions (diagnostic) ; n'influe pas sur la partie. */
+  sink?: DecisionSink,
 ): { winner: 0 | 1 | null; telemetry: Telemetry } {
   const random = seeded(seed);
   // PickService mélange avec Math.random : on le fige pendant la partie
@@ -124,6 +127,10 @@ function playGame(
       return new AiPlayer(engine, random, thinking, mistakeRate);
     };
     const ais: Record<Seat, AiPlayer> = { p1: aiFor(p1), p2: aiFor(p2) };
+    if (sink) {
+      ais.p1.setDecisionSink(sink, `seed${seed}`);
+      ais.p2.setDecisionSink(sink, `seed${seed}`);
+    }
     const game = createGameState(
       1,
       { userId: 1, username: p1.name, socketId: 's1' },

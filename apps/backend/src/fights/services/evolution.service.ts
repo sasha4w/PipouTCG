@@ -6,7 +6,7 @@ import {
   isImplanted,
   evolutionCost,
 } from '@pipou/shared';
-import { GameState } from '../interfaces/game-state.interface';
+import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
@@ -16,6 +16,21 @@ import {
   boardCard,
   sendToGraveyard,
 } from '../helpers/game-state.helper';
+
+/** Part minimale des PV max qu'un monstre garde en évoluant, même très blessé. */
+export const EVOLUTION_MIN_HP_RATIO = 0.5;
+
+/**
+ * PV du monstre évolué : la même part de ses PV max que l'ancien, au moins
+ * EVOLUTION_MIN_HP_RATIO. Les PV de l'ancien compris les bonus de PV du moment.
+ */
+export function evolvedHp(base: MonsterOnBoard, evolvedMaxHp: number): number {
+  const baseMax = base.card.baseCard.hp + base.hpBuff;
+  const ratio = baseMax > 0 ? base.currentHp / baseMax : 1;
+  return Math.ceil(
+    Math.min(1, Math.max(EVOLUTION_MIN_HP_RATIO, ratio)) * evolvedMaxHp,
+  );
+}
 
 @Injectable()
 export class EvolutionService {
@@ -80,6 +95,7 @@ export class EvolutionService {
       ownerUserId: base.ownerUserId,
     });
     evolved.equipments = base.equipments;
+    evolved.currentHp = evolvedHp(base, evolvedCard.baseCard.hp);
     evolved.mode = base.mode;
     // La Garde continue : même compteur, même verrou, même délai de retour
     evolved.guardTurns = base.guardTurns;

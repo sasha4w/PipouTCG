@@ -377,7 +377,8 @@
       "banners": "배너",
       "patchnotes": "패치노트",
       "sandbox": "샌드박스",
-      "adventure": "모험"
+      "adventure": "모험",
+      "aiReview": "AI 검토"
     },
     "sandbox_back": "관리자로 돌아가기",
     "patchnote": {
@@ -513,7 +514,8 @@
       "SET_MONSTER_STATUS_IMMUNITY": "{{target}}에게 **{{kw}}** 부여."
     },
     "filter": {
-      "name": "이름에 '{{name}}' 포함"
+      "name": "이름에 '{{name}}' 포함",
+      "excludeName": "'{{name}}' 제외"
     },
     "stage": {
       "egg": "알",

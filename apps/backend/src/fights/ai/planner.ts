@@ -135,6 +135,14 @@ interface Node extends Plan {
   state: GameState;
 }
 
+/**
+ * Coût minime d'un changement de mode : à score égal, ne rien changer gagne,
+ * sinon une égalité suffit à faire basculer Garde / Attaque d'un coup à l'autre.
+ */
+const MODE_TOLL = 5;
+const modeToll = (actions: GameAction[]) =>
+  MODE_TOLL * actions.filter((a) => a.type === 'change_mode').length;
+
 const clone = (game: GameState): GameState =>
   structuredClone({ ...game, log: [], pendingEvents: [] });
 
@@ -212,7 +220,9 @@ export function planTurn(
           actions: [...node.actions, action],
           keys: [...node.keys, actionKey(node.state, action)],
           expected: [...node.expected, sig],
-          score: score(next),
+          score:
+            scoreAfterChoice(engine, next, seat, score, counter) -
+            modeToll([...node.actions, action]),
         };
         // Fin de suite : partie finie, tour passé, choix pour l'adversaire
         keep(aiMustAct(next, me) ? children : leaves, sig, child);
@@ -220,8 +230,21 @@ export function planTurn(
       if (exhausted) break;
     }
     if (exhausted) {
-      for (const n of [...beam, ...children.values()])
-        if (n.actions.length > 0) keep(leaves, n.expected.at(-1)!, n);
+      // Suites coupées en plein tour : notées après « je finis mes phases »,
+      // comme les tours complets. Un état à mi-tour compte encore les Primes
+      // à prendre ce tour : comparé tel quel, il gagnait à tort (Garde puis
+      // Attaque en boucle d'un coup à l'autre en aventure).
+      const partial = [...beam, ...children.values()]
+        .filter((n) => n.actions.length > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, thinking.beamWidth);
+      for (const n of partial) {
+        const done = finishTurn(engine, n.state, seat, me, counter);
+        keep(leaves, n.expected.at(-1)!, {
+          ...n,
+          score: score(done) - modeToll(n.actions),
+        });
+      }
       beam = [];
       break;
     }
@@ -258,6 +281,60 @@ export function planTurn(
     expected: best.expected,
     score: best.score,
   };
+}
+
+/**
+ * Score de `state`, ou, si `seat` doit y faire un choix (cartes à prendre),
+ * celui de son meilleur choix. Pendant un choix, l'état est à mi-chemin
+ * (œuf parti et bébé pas encore posé, carte transformée et bébé pas encore
+ * récupéré) : noté tel quel, le coup qui l'ouvre était écarté à tort.
+ */
+export function scoreAfterChoice(
+  engine: GameEngine,
+  state: GameState,
+  seat: Seat,
+  score: (s: GameState) => number,
+  counter?: Counter,
+): number {
+  const choice = activeChoice(state);
+  if (!choice || choice.forUserId !== seatPlayer(state, seat).userId)
+    return score(state);
+  let best = -Infinity;
+  for (const pick of listCandidates(state, seat)) {
+    if (pick.type !== 'pick_cards') continue;
+    const next = clone(state);
+    if (counter) counter.used++;
+    try {
+      if (engine.dispatch(next, seat, pick).error) continue;
+    } catch {
+      continue;
+    }
+    best = Math.max(best, score(next));
+  }
+  return best === -Infinity ? score(state) : best;
+}
+
+/**
+ * Copie de `state` où `seat` a fini ses phases (au plus une par phase
+ * restante) : arrêt sur un choix à faire, une erreur ou la fin du tour.
+ */
+function finishTurn(
+  engine: GameEngine,
+  state: GameState,
+  seat: Seat,
+  me: number,
+  counter: Counter,
+): GameState {
+  const s = clone(state);
+  for (let n = 0; n < 4 && aiMustAct(s, me) && !activeChoice(s); n++) {
+    counter.used++;
+    try {
+      if (engine.dispatch(s, seat, { type: 'end_phase' }).error) break;
+    } catch {
+      break;
+    }
+  }
+  return s;
 }
 
 const ARCHETYPES: AdventureArchetype[] = ['pipou', 'pixelman', 'dragon'];
