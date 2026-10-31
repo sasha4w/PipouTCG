@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /** Revue de l'IA : décisions journalisées et annotations admin. */
-export class AiReview1791000000017 implements MigrationInterface {
-  name = 'AiReview1791000000017';
+export class AiReview1791000000018 implements MigrationInterface {
+  name = 'AiReview1791000000018';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(

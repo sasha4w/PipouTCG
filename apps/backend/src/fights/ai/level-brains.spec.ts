@@ -42,7 +42,7 @@ describe('LEVEL_BRAINS', () => {
     );
     for (const n of [3, 4, 5] as const)
       expect(LEVEL_BRAINS[n].mistakeRate).toBe(0);
-    for (const p of planned) expect(p.timeLimitMs).toBe(50);
+    for (const p of planned) expect(p.timeLimitMs).toBe(200);
     expect(planned[0].beamWidth).toBeLessThan(planned[1].beamWidth);
     expect(planned[1].beamWidth).toBeLessThan(planned[2].beamWidth);
     expect(planned[0].depth).toBeLessThan(planned[1].depth);
