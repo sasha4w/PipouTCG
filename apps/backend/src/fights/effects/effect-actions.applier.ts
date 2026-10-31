@@ -87,7 +87,19 @@ export function applyActions(
         const value = action.value ?? 0;
         for (const target of targets.monsters) {
           const maxHp = target.card.baseCard.hp + target.hpBuff;
+          const before = target.currentHp;
           target.currentHp = Math.min(target.currentHp + value, maxHp);
+          if (target.currentHp > before) {
+            const owner = targets.ownerOfMonster(target);
+            ctx.game.pendingEvents.push({
+              kind: 'monster_healed',
+              ownerId: owner.userId,
+              zoneIndex: owner.monsterZones.findIndex(
+                (m) => m?.instanceId === target.instanceId,
+              ),
+              instanceId: target.instanceId,
+            });
+          }
           ctx.log.push(
             `💚 ${card.baseCard.name} soigne ${target.card.baseCard.name}`,
           );

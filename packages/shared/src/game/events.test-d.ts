@@ -13,7 +13,10 @@ describe("fight events", () => {
   it("joint les événements à l'état client", () => {
     expectTypeOf<ClientGameState["events"]>().toEqualTypeOf<FightEvent[]>();
     expectTypeOf<FightEvent["kind"]>().toEqualTypeOf<
-      "monster_summoned" | "monster_destroyed" | "terrain_played"
+      | "monster_summoned"
+      | "monster_destroyed"
+      | "terrain_played"
+      | "monster_healed"
     >();
   });
 

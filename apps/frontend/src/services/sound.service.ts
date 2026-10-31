@@ -24,7 +24,8 @@ export type SfxName =
   | "fightCharge"
   | "fightHatch"
   | "fightCountdown"
-  | "fightEvolve";
+  | "fightEvolve"
+  | "fightHeal";
 
 const SFX_PATHS: Record<SfxName, string> = {
   select: "/sounds/sfx/select.mp3",
@@ -51,6 +52,7 @@ const SFX_PATHS: Record<SfxName, string> = {
   fightHatch: "/sounds/sfx/fight-hatch.mp3",
   fightCountdown: "/sounds/sfx/fight-countdown.mp3",
   fightEvolve: "/sounds/sfx/fight-evolve.mp3",
+  fightHeal: "/sounds/sfx/fight-heal.mp3",
 };
 
 const BGM_PATH = "/sounds/bgm/main-theme.mp3";

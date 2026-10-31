@@ -26,4 +26,10 @@ export type FightEvent =
       ownerId: number;
       zoneIndex: number;
       instanceId: string;
+    }
+  | {
+      kind: "monster_healed";
+      ownerId: number;
+      zoneIndex: number;
+      instanceId: string;
     };

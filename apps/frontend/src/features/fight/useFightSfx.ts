@@ -63,7 +63,12 @@ function playSummons(events: readonly FightEvent[]) {
   }
 }
 
-/** Sons d'invocation et de statut ; ignore le premier snapshot (reconnexion). */
+function playHeals(events: readonly FightEvent[]) {
+  if (events.some((e) => e.kind === "monster_healed"))
+    soundService.play("fightHeal");
+}
+
+/** Sons d'invocation, de soin et de statut ; ignore le premier snapshot (reconnexion). */
 export function useFightSfx(gs: GameState) {
   const primed = useRef(false);
   const prevMe = useRef<(BoardZone | null)[]>(gs.me.monsterZones);
@@ -79,6 +84,7 @@ export function useFightSfx(gs: GameState) {
       return;
     }
     playSummons(gs.events ?? []);
+    playHeals(gs.events ?? []);
     playStatusEdges(prevMe.current, me);
     playStatusEdges(prevOpp.current, opp);
     prevMe.current = me;
