@@ -15,6 +15,7 @@ import {
   inferArchetype,
   planTurn,
   riposte,
+  scoreAfterChoice,
   stateSignature,
 } from './planner';
 import { seeded } from './tournament';
@@ -384,5 +385,39 @@ describe('fins de suite', () => {
       used: 0,
     })!;
     expect(types(plan.actions)).toContain('evolve');
+  });
+
+  it('un choix à faire est noté avec son meilleur choix, pas comme un état figé', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p2: { deck: [monsterCard('Petit'), monsterCard('Grand', { atk: 900 })] },
+    });
+    game.pendingChoices.push({
+      forUserId: P2_ID,
+      candidates: game.player2.deck.map((c) => ({
+        instanceId: c.instanceId,
+        baseCard: c.baseCard,
+        source: 'deck' as const,
+      })),
+      count: 1,
+      prompt: 'Choisis une carte',
+    });
+    const score = (s: GameState) => evaluate(s, 'p2', 'pipou');
+    const best = Math.max(
+      ...listCandidates(game, 'p2')
+        .filter((a) => a.type === 'pick_cards')
+        .map((a) => {
+          const next = structuredClone(game);
+          engine.dispatch(next, 'p2', a);
+          return score(next);
+        }),
+    );
+
+    expect(scoreAfterChoice(engine, game, 'p2', score)).toBe(best);
+    // Sans choix pour lui : le score de l'état, tel quel
+    expect(
+      scoreAfterChoice(engine, game, 'p1', (s) => evaluate(s, 'p1', 'pipou')),
+    ).toBe(evaluate(game, 'p1', 'pipou'));
   });
 });

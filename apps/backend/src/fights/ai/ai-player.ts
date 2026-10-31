@@ -9,9 +9,20 @@ import {
   seatPlayer,
 } from '../helpers/game-state.helper';
 import { activeChoice, listCandidates } from './candidate-actions';
+import { finiteScore, snapshotState } from './decision-log';
+import type {
+  DecisionRecord,
+  DecisionSink,
+  DecisionSource,
+} from './decision-log';
 import { determinize } from './determinize';
 import { evaluate } from './evaluate';
-import { actionKey, planTurn, stateSignature } from './planner';
+import {
+  actionKey,
+  planTurn,
+  scoreAfterChoice,
+  stateSignature,
+} from './planner';
 import type { Plan, ThinkingProfile } from './planner';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
@@ -47,6 +58,14 @@ interface Scored {
   score: number;
 }
 
+/** Ce qu'une décision laisse derrière elle quand le journal est actif. */
+interface Trace {
+  candidates: Scored[];
+  source: DecisionSource;
+  state: GameState;
+  baseline?: number;
+}
+
 /**
  * Joueur heuristique : simule chaque coup candidat sur une copie de l'état
  * avec le vrai moteur, puis garde celui qui maximise `evaluate`.
@@ -56,6 +75,9 @@ export class AiPlayer {
 
   /** Plan en cours (cerveau qui planifie) : prochain coup à jouer = `next`. */
   private plan: (Plan & { seat: Seat; next: number }) | null = null;
+  private sink: DecisionSink | null = null;
+  private run = 'run';
+  private decisionCount = 0;
   private visited: { turn: string; states: Set<string> } = {
     turn: '',
     states: new Set(),
@@ -75,6 +97,16 @@ export class AiPlayer {
     return this.chooseDetailed(game, seat, profile).action;
   }
 
+  /**
+   * Journalise chaque décision (diagnostic). Sans sink, aucun calcul ni copie
+   * en plus. `run` préfixe les identifiants pour distinguer plusieurs parties.
+   */
+  setDecisionSink(sink: DecisionSink | null, run = 'run'): void {
+    this.sink = sink;
+    this.run = run;
+    this.decisionCount = 0;
+  }
+
   /** Comme `chooseAction`, avec les coups acceptés par le moteur ([] en repli). */
   chooseDetailed(
     game: GameState,
@@ -82,20 +114,28 @@ export class AiPlayer {
     profile: AiProfile,
   ): { action: GameAction; valid: GameAction[] } {
     const crashes: SimulationCrash[] = [];
+    const trace: Trace | null = this.sink
+      ? { candidates: [], source: 'greedy', state: snapshotState(game) }
+      : null;
+    let result: { action: GameAction; valid: GameAction[] } | undefined;
     try {
-      return (
-        this.decide(game, seat, profile, crashes) ?? {
-          action: fallbackAction(game, seat),
-          valid: [],
-        }
-      );
+      result = this.decide(game, seat, profile, crashes, trace) ?? {
+        action: fallbackAction(game, seat),
+        valid: [],
+      };
+      if (trace && result.valid.length === 0) trace.source = 'fallback';
+      return result;
     } catch (err) {
       const fallback = safeFallback(game, seat);
       this.logger.warn(
         `Match ${game.matchId} (${seat}) : décision IA en échec, repli ${JSON.stringify(fallback)} — ${describe(err)}`,
       );
-      return { action: fallback, valid: [] };
+      result = { action: fallback, valid: [] };
+      if (trace) trace.source = 'fallback';
+      return result;
     } finally {
+      if (trace && result)
+        this.emit(game, seat, profile, trace, crashes, result.action);
       // Un seul message par décision, même si plusieurs simulations ont planté
       if (crashes.length > 0)
         this.logger.warn(
@@ -104,11 +144,51 @@ export class AiPlayer {
     }
   }
 
+  private emit(
+    game: GameState,
+    seat: Seat,
+    profile: AiProfile,
+    trace: Trace,
+    crashes: SimulationCrash[],
+    chosen: GameAction,
+  ): void {
+    this.decisionCount++;
+    const record: DecisionRecord = {
+      id: `${this.run}:${game.matchId}:${seat}:${this.decisionCount}`,
+      matchId: game.matchId,
+      turn: game.turnNumber,
+      phase: game.phase,
+      seat,
+      archetype: profile.archetype,
+      level: profile.level,
+      source: trace.source,
+      baseline:
+        trace.baseline === undefined ? undefined : finiteScore(trace.baseline),
+      chosen,
+      candidates: trace.candidates.map((c) => ({
+        action: c.action,
+        score: finiteScore(c.score),
+      })),
+      simulationCrashes: crashes.map((c) => ({
+        action: c.action,
+        message: describe(c.error).split('\n')[0],
+      })),
+      state: trace.state,
+    };
+    try {
+      this.sink?.(record);
+    } catch (err) {
+      // Le diagnostic ne doit jamais gêner la partie
+      this.logger.warn(`Journal de décisions en échec — ${describe(err)}`);
+    }
+  }
+
   private decide(
     game: GameState,
     seat: Seat,
     profile: AiProfile,
     crashes: SimulationCrash[],
+    trace: Trace | null,
   ): { action: GameAction; valid: GameAction[] } | null {
     // L'IA ne voit que ce qu'un joueur voit : cartes cachées redistribuées
     const known = determinize(game, seat, this.random);
@@ -121,15 +201,19 @@ export class AiPlayer {
         crashes.push({ action, error });
         continue;
       }
+      // Un choix à faire (cartes à prendre) : noté après le meilleur choix
+      const scored = scoreAfterChoice(this.engine, clone, seat, (s) =>
+        evaluate(s, seat, profile.archetype),
+      );
       // Le cerveau qui planifie trouve ces suites lui-même
       if (this.thinking !== 'greedy') {
-        valid.push({ action, score: evaluate(clone, seat, profile.archetype) });
+        valid.push({ action, score: scored });
         continue;
       }
       valid.push({
         action,
         score: Math.max(
-          evaluate(clone, seat, profile.archetype),
+          scored,
           this.guardedScore(
             clone,
             seat,
@@ -144,22 +228,24 @@ export class AiPlayer {
       });
     }
     if (valid.length === 0) return null;
-    const result = (action: GameAction) => ({
-      action,
-      valid: valid.map((v) => v.action),
-    });
+    if (trace) trace.candidates = valid;
+    const result = (action: GameAction, source: DecisionSource = 'greedy') => {
+      if (trace) trace.source = source;
+      return { action, valid: valid.map((v) => v.action) };
+    };
 
     if (this.mistakeRate > 0 && this.random() < this.mistakeRate) {
       this.plan = null;
-      return result(valid[Math.floor(this.random() * valid.length)].action);
+      const mistake = plausibleMistake(valid, this.random);
+      if (mistake) return result(mistake, 'mistake');
     }
 
     if (game.phase === 'mulligan')
-      return result(mulliganChoice(game, seat, valid));
+      return result(mulliganChoice(game, seat, valid), 'mulligan');
 
     if (this.thinking !== 'greedy') {
       const planned = this.planned(game, seat, profile, valid);
-      if (planned) return result(planned);
+      if (planned) return result(planned, 'plan');
     }
 
     const endPhase = valid.find((v) => v.action.type === 'end_phase');
@@ -168,6 +254,7 @@ export class AiPlayer {
     const best = others.reduce((a, b) => (b.score > a.score ? b : a));
     if (!endPhase) return result(best.action);
     const current = evaluate(known, seat, profile.archetype);
+    if (trace) trace.baseline = current;
     return result(
       best.score > current + IMPROVEMENT_EPSILON
         ? best.action
@@ -291,6 +378,28 @@ export class AiPlayer {
     }
     return evaluate(clone, seat, profile.archetype);
   }
+}
+
+/**
+ * Une erreur volontaire (niveaux faciles) reste un coup qu'un joueur pourrait
+ * jouer : au plus ce score de moins que le meilleur (moins qu'une Prime).
+ */
+const MISTAKE_MAX_LOSS = 1000;
+
+/**
+ * Un coup moins bon que le meilleur, tiré parmi ceux qui ne perdent pas plus
+ * de MISTAKE_MAX_LOSS ; null s'il n'y en a pas (le meilleur est alors joué).
+ */
+function plausibleMistake(
+  valid: Scored[],
+  random: () => number,
+): GameAction | null {
+  const best = Math.max(...valid.map((v) => v.score));
+  const pool = valid.filter(
+    (v) => v.score < best && v.score >= best - MISTAKE_MAX_LOSS,
+  );
+  if (pool.length === 0) return null;
+  return pool[Math.floor(random() * pool.length)].action;
 }
 
 /** Exception levée par le moteur pendant une simulation (bug moteur). */

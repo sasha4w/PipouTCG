@@ -6,6 +6,7 @@ import {
   EffectTrigger,
   SupportType,
   canEvolveOnto,
+  canSummonFromHand,
   ephemeralTargetSide,
   isImplanted,
   isPlantedBy,
@@ -20,6 +21,7 @@ import type {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { effectiveAtk, seatPlayer } from '../helpers/game-state.helper';
+import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { ARCHETYPE_PROFILES } from './archetype-profiles';
 import type { ArchetypeProfile } from './archetype-profiles';
 
@@ -33,6 +35,12 @@ const ENERGY_VALUE = 50;
 const HAND_CARD_BASE = 100;
 /** Prime que l'adversaire peut prendre à son prochain tour (estimation). */
 const THREAT_PRIME = PRIME * 0.6;
+/**
+ * L'adversaire peut prendre toutes ses Primes restantes à son tour : une
+ * estimation, donc sous la défaite certaine (-Infinity), mais au-dessus de
+ * tout ce qu'un coup peut rapporter d'autre.
+ */
+const LETHAL_THREAT = PRIME * 4;
 /** Prime que je peux encore prendre ce tour (phase principale). */
 const POTENTIAL_PRIME = PRIME * 0.3;
 /** Prime promise par un compteur de tour (Noyau Zeta). */
@@ -109,13 +117,17 @@ const BOOST_TARGET_FACTOR = 2;
 interface Raid {
   primes: number;
   destroyed: MonsterOnBoard[];
+  /** Primes rendues au défenseur : attaquants sacrifiés dans un échange. */
+  conceded: number;
 }
 
 /**
- * Estimation gloutonne d'une phase de combat : chaque attaquant, du plus fort
- * au plus faible, attaque en direct si le terrain est vide, sinon détruit une
- * cible qu'il bat sans mourir à la riposte : d'abord celles qui rapportent
- * une Prime (mode ATK), la plus précieuse en premier (stats + bonus d'équipe).
+ * Estimation gloutonne d'une phase de combat. Une attaque ne compte que si
+ * l'attaquant survit à la riposte. D'abord chaque attaquant, du plus fort au
+ * plus faible, détruit seul une cible qu'il bat : celles qui rapportent une
+ * Prime (mode ATK) d'abord, la plus précieuse en premier (stats + bonus
+ * d'équipe). Puis les attaques restantes se regroupent sur une même cible
+ * pour la détruire ensemble. Terrain vide : attaques directes.
  */
 function raid(
   attackers: { m: MonsterOnBoard; attacks: number }[],
@@ -127,29 +139,114 @@ function raid(
   const alive = defenderZones
     .filter((d) => d !== null)
     .sort((a, b) => worth(b) - worth(a));
-  const out: Raid = { primes: 0, destroyed: [] };
-  const sorted = [...attackers].sort(
-    (a, b) => effectiveAtk(b.m) - effectiveAtk(a.m),
-  );
-  for (const { m, attacks } of sorted) {
-    for (let n = 0; n < attacks; n++) {
-      if (alive.length === 0) {
-        if (directAllowed) out.primes += 1;
-        continue;
+  const out: Raid = { primes: 0, destroyed: [], conceded: 0 };
+  // Une entrée par attaque disponible, du plus fort au plus faible
+  const strikes = [...attackers]
+    .sort((a, b) => effectiveAtk(b.m) - effectiveAtk(a.m))
+    .flatMap(({ m, attacks }) => Array.from({ length: attacks }, () => m));
+  const used = strikes.map(() => false);
+  const canTarget = (m: MonsterOnBoard, d: MonsterOnBoard) =>
+    d.hasTaunt || m.ignoresTaunt || !alive.some((x) => x.hasTaunt);
+  const survives = (m: MonsterOnBoard, d: MonsterOnBoard) =>
+    d.mode === 'guard' || damageTo(m, d) < m.currentHp;
+  const destroy = (d: MonsterOnBoard, last: MonsterOnBoard) => {
+    if (d.mode === 'attack' || last.hasPiercing) out.primes += 1;
+    out.destroyed.push(d);
+    alive.splice(alive.indexOf(d), 1);
+  };
+
+  // 1. Chacun seul
+  strikes.forEach((m, i) => {
+    if (alive.length === 0) return;
+    const safe = alive.filter(
+      (d) => canTarget(m, d) && damageTo(d, m) >= d.currentHp && survives(m, d),
+    );
+    const target =
+      safe.find((d) => d.mode === 'attack' || m.hasPiercing) ?? safe[0];
+    if (!target) return;
+    used[i] = true;
+    destroy(target, m);
+  });
+
+  // 2. À plusieurs sur une même cible
+  for (let progress = true; progress && alive.length > 0;) {
+    progress = false;
+    const targets = [...alive].sort(
+      (a, b) => Number(b.mode === 'attack') - Number(a.mode === 'attack'),
+    );
+    for (const d of targets) {
+      const usable = (i: number) =>
+        !used[i] && canTarget(strikes[i], d) && damageTo(d, strikes[i]) > 0;
+      const group: number[] = [];
+      let damage = 0;
+      for (let i = 0; i < strikes.length && damage < d.currentHp; i++) {
+        if (!usable(i) || !survives(strikes[i], d)) continue;
+        group.push(i);
+        damage += damageTo(d, strikes[i]);
       }
-      const taunts = alive.filter((d) => d.hasTaunt);
-      const pool = taunts.length > 0 && !m.ignoresTaunt ? taunts : alive;
-      const killable = pool.filter((d) => damageTo(d, m) >= d.currentHp);
-      const safe = killable.filter(
-        (d) => d.mode === 'guard' || damageTo(m, d) < m.currentHp,
-      );
-      const target =
-        safe.find((d) => d.mode === 'attack' || m.hasPiercing) ?? safe[0];
-      if (!target) break;
-      if (target.mode === 'attack' || m.hasPiercing) out.primes += 1;
-      out.destroyed.push(target);
-      alive.splice(alive.indexOf(target), 1);
+      // Il manque des dégâts : un échange, si la cible rapporte une Prime et
+      // vaut plus que l'attaquant sacrifié (le moins précieux qui suffit)
+      let sacrificed = -1;
+      if (damage < d.currentHp && d.mode === 'attack')
+        sacrificed =
+          strikes
+            .map((m, i) => ({ m, i }))
+            .filter(
+              ({ m, i }) =>
+                usable(i) &&
+                !survives(m, d) &&
+                damage + damageTo(d, m) >= d.currentHp &&
+                monsterValue(m) < worth(d),
+            )
+            .sort((a, b) => monsterValue(a.m) - monsterValue(b.m))[0]?.i ?? -1;
+      if (damage < d.currentHp && sacrificed < 0) continue;
+      if (sacrificed >= 0) {
+        group.push(sacrificed);
+        out.conceded += 1;
+      }
+      for (const i of group) used[i] = true;
+      destroy(d, strikes[group[group.length - 1]]);
+      progress = true;
+      break;
     }
+  }
+
+  if (alive.length === 0 && directAllowed)
+    out.primes += used.filter((u) => !u).length;
+  return out;
+}
+
+/**
+ * Monstres que `p` peut poser à son prochain tour depuis sa main, les plus
+ * forts d'abord, tant qu'il a une zone libre et de quoi payer (il pioche une
+ * carte avant). Sur l'état déterminisé, la main adverse est un tirage
+ * plausible : l'IA ne voit pas la vraie.
+ */
+function reinforcements(p: PlayerGameState): MonsterOnBoard[] {
+  let free = p.monsterZones.filter((z) => z === null).length;
+  let cards = p.hand.length + 1;
+  let energy = p.recycleEnergy;
+  const out: MonsterOnBoard[] = [];
+  const monsters = p.hand
+    .filter(
+      (c) =>
+        c.baseCard.type === CardType.MONSTER && canSummonFromHand(c.baseCard),
+    )
+    .sort((a, b) => (b.baseCard.atk ?? 0) - (a.baseCard.atk ?? 0));
+  for (const c of monsters) {
+    if (free === 0) break;
+    const cost = c.baseCard.cost ?? 0;
+    const paid = Math.max(0, cost - energy);
+    if (cards < 1 + paid) continue;
+    cards -= 1 + paid;
+    energy = Math.max(0, energy - cost);
+    free -= 1;
+    out.push(
+      createMonsterOnBoard(c, {
+        instanceId: `renfort:${c.instanceId}`,
+        ownerUserId: p.userId,
+      }),
+    );
   }
   return out;
 }
@@ -257,6 +354,20 @@ export function handPotential(
   return total;
 }
 
+/** Morceaux du score, pour expliquer une décision (diagnostic). */
+export type ScorePart =
+  | 'primes'
+  | 'hand'
+  | 'energy'
+  | 'terrains'
+  | 'counters'
+  | 'myBoard'
+  | 'oppBoard'
+  | 'threat'
+  | 'potential'
+  | 'archetype'
+  | 'prepare';
+
 /**
  * Score de l'état pour `seat` : Primes (fort poids), terrain, main, risque au
  * tour adverse, plus un bonus propre à l'archétype. ±Infinity en fin de partie.
@@ -267,6 +378,8 @@ export function evaluate(
   archetype: AdventureArchetype,
   /** Valeur de ce que la main prépare : le planificateur seulement (le glouton de l'aventure reste celui de l'étape 1). */
   prepare = false,
+  /** Rempli avec le détail du score si fourni ; ne change pas le résultat. */
+  parts?: Partial<Record<ScorePart, number>>,
 ): number {
   const me = seatPlayer(game, seat);
   const opp = seatPlayer(game, seat === 'p1' ? 'p2' : 'p1');
@@ -278,13 +391,23 @@ export function evaluate(
     return -PRIME * 10;
   }
 
-  let score = (opp.primes - me.primes) * PRIME;
+  let score = 0;
+  // Même ordre d'additions qu'avant : le score reste identique au bit près
+  const add = parts
+    ? (part: ScorePart, value: number) => {
+        score += value;
+        parts[part] = (parts[part] ?? 0) + value;
+      }
+    : (_part: ScorePart, value: number) => {
+        score += value;
+      };
+  add('primes', (opp.primes - me.primes) * PRIME);
 
   for (const c of me.hand)
-    score += HAND_CARD_BASE + 0.1 * cardUsefulness(c.baseCard);
-  score += ENERGY_VALUE * me.recycleEnergy;
-  score += TERRAIN_VALUE * me.supportZones.filter(Boolean).length;
-  score -= TERRAIN_VALUE * opp.supportZones.filter(Boolean).length;
+    add('hand', HAND_CARD_BASE + 0.1 * cardUsefulness(c.baseCard));
+  add('energy', ENERGY_VALUE * me.recycleEnergy);
+  add('terrains', TERRAIN_VALUE * me.supportZones.filter(Boolean).length);
+  add('terrains', -TERRAIN_VALUE * opp.supportZones.filter(Boolean).length);
 
   const mine = me.monsterZones.filter((m) => m !== null);
   const theirs = opp.monsterZones.filter((m) => m !== null);
@@ -310,25 +433,37 @@ export function evaluate(
       if (m.turnCounter !== undefined) {
         // Chaque tour restant prolonge le virus pour le poseur
         const value = COUNTER_PRIME + VIRUS_TURN_VALUE * m.turnCounter;
-        score += (m.ownerUserId ?? host.userId) === me.userId ? value : -value;
+        add(
+          'counters',
+          (m.ownerUserId ?? host.userId) === me.userId ? value : -value,
+        );
       }
 
-  for (const m of myBoard) score += monsterValue(m);
-  for (const m of oppBoard) score -= monsterValue(m);
+  for (const m of myBoard) add('myBoard', monsterValue(m));
+  for (const m of oppBoard) add('oppBoard', -monsterValue(m));
 
-  // Tour adverse : il peut repasser ses monstres en mode ATK
+  // Tour adverse : il peut repasser ses monstres en mode ATK, et poser des
+  // renforts qui attaquent aussitôt
   const threat = raid(
-    oppBoard
+    [...oppBoard, ...reinforcements(opp)]
       .filter((m) => !isEgg(m) && !blocked(m) && !m.guardLocked)
       .map((m) => ({ m, attacks: m.attacksPerTurn })),
     myZones,
     true,
   );
-  score -= THREAT_PRIME * threat.primes;
+  const threatPrimes = threat.primes - threat.conceded;
+  add('threat', -THREAT_PRIME * threatPrimes);
+  // Assez de Primes pour qu'il gagne à son tour : c'est la défaite, pas 1 Prime
+  if (threatPrimes > 0 && threatPrimes >= opp.primes)
+    add('threat', -LETHAL_THREAT);
   for (const d of threat.destroyed)
-    score -=
-      monsterValue(d) / 2 +
-      PROTECT_PENALTY * protectWeight(d, myZones, profile);
+    add(
+      'threat',
+      -(
+        monsterValue(d) / 2 +
+        PROTECT_PENALTY * protectWeight(d, myZones, profile)
+      ),
+    );
 
   // Mon tour, avant le combat : Primes encore à prendre
   if (game.currentTurnUserId === me.userId && game.phase === 'main') {
@@ -339,14 +474,12 @@ export function evaluate(
       oppZones,
       game.turnNumber > 1,
     );
-    score += POTENTIAL_PRIME * potential.primes;
+    add('potential', POTENTIAL_PRIME * (potential.primes - potential.conceded));
   }
 
-  return (
-    score +
-    archetypeBonus(myBoard, profile) +
-    (prepare ? handPotential(me, opp, profile) : 0)
-  );
+  add('archetype', archetypeBonus(myBoard, profile));
+  if (prepare) add('prepare', handPotential(me, opp, profile));
+  return score;
 }
 
 /**

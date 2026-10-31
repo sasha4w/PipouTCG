@@ -38,6 +38,9 @@ async function main(): Promise<void> {
       deck: o.cards.flatMap((oc) =>
         Array.from({ length: oc.quantity }, () => oc.card),
       ),
+      // Le cerveau de l'aventure (erreurs des niveaux faciles comprises) :
+      // sans lui, le tournoi joue glouton sans erreur
+      brain: 'level' as const,
     };
   });
 

@@ -7,6 +7,7 @@ import { Match } from './entities/match.entity';
 import { PlayerStats } from './entities/player-stats.entity';
 import { DecksModule } from '../decks/decks.module';
 import { AdventureModule } from '../adventure/adventure.module';
+import { AiReviewModule } from '../ai-review/ai-review.module';
 
 // Gateway / Controller
 import { FightsGateway } from './fights.gateway';
@@ -38,6 +39,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     TypeOrmModule.forFeature([Match, PlayerStats]),
     DecksModule,
     AdventureModule,
+    AiReviewModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

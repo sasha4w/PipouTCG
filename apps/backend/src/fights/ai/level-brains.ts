@@ -11,7 +11,7 @@ export interface LevelBrain {
 }
 
 /** Plafond de temps d'une décision en aventure. */
-const AI_TIME_LIMIT_MS = 50;
+const AI_TIME_LIMIT_MS = 200;
 
 /**
  * Difficulté croissante (étape 3 du design ai-better-brain). Riposte à 0

@@ -377,7 +377,8 @@
       "banners": "배너",
       "patchnotes": "패치노트",
       "sandbox": "샌드박스",
-      "adventure": "모험"
+      "adventure": "모험",
+      "aiReview": "AI 검토"
     },
     "sandbox_back": "관리자로 돌아가기",
     "patchnote": {

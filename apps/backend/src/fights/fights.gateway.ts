@@ -61,6 +61,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     client.data.userId = user.userId;
     client.data.username = user.username;
+    client.data.isAdmin = user.isAdmin;
 
     const resumed = this.fightsService.reconnect(user.userId, client.id);
     if (resumed) {
@@ -131,6 +132,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.id,
         data,
         this.server,
+        client.data.isAdmin === true,
       ),
     );
   }

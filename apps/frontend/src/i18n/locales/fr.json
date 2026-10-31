@@ -378,7 +378,8 @@
       "banners": "Bannières",
       "patchnotes": "Patchnotes",
       "sandbox": "Sandbox",
-      "adventure": "Aventure"
+      "adventure": "Aventure",
+      "aiReview": "Revue IA"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
