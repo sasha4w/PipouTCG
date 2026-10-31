@@ -421,3 +421,9 @@
 .card-face.card-face--guard[data-rarity] {
   --card-border: #3c78dc;
 }
+
+/* PV max : plus discret que les PV courants, couleur du badge conservée */
+.card-face__stat-max {
+  font-size: 0.7em;
+  opacity: 0.75;
+}

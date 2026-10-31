@@ -1,16 +1,26 @@
-/** Règles pures du streak journalier. Les jours sont des chaînes YYYY-MM-DD en UTC. */
+import { lastDailyReset } from '../quests/quest-schedule';
+
+/** Règles pures du streak journalier. Les jours sont des chaînes YYYY-MM-DD. */
 
 const DAY_MS = 86_400_000;
 
 export const RESCUE_BASE_COST = 100;
 export const RESCUE_COST_PER_STREAK_DAY = 10;
 
-export function todayUtc(now: Date = new Date()): string {
-  return now.toISOString().slice(0, 10);
+const isoDay = (d: Date) => d.toISOString().slice(0, 10);
+
+/**
+ * Journée de jeu : change au même moment que le reset des quêtes daily
+ * (RESET_HOUR), pour que récompense et quêtes se renouvellent ensemble.
+ */
+export function gameDay(now: Date = new Date()): string {
+  const d = lastDailyReset(now);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export function shiftDay(day: string, delta: number): string {
-  return todayUtc(new Date(Date.parse(`${day}T00:00:00Z`) + delta * DAY_MS));
+  return isoDay(new Date(Date.parse(`${day}T00:00:00Z`) + delta * DAY_MS));
 }
 
 /** Nombre de jours de `from` à `to` (négatif si `to` est avant). */

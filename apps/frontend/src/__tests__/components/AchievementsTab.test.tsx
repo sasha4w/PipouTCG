@@ -5,7 +5,7 @@ import AchievementsTab from "../../features/achievements/AchievementsTab";
 
 vi.mock("../../hooks/useGameData", () => ({
   useAchievements: () => ({ data: undefined, isLoading: false, isError: true }),
-  useClaimAchievement: () => ({ mutate: vi.fn(), isPending: false }),
+  useClaimAllAchievements: () => ({ mutate: vi.fn(), isPending: false }),
   useSetTitle: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 

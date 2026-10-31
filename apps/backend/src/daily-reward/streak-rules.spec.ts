@@ -2,15 +2,16 @@ import {
   classifyGap,
   cycleDayFor,
   daysBetween,
+  gameDay,
   rescueCost,
   shiftDay,
-  todayUtc,
   weekNumberFor,
 } from './streak-rules';
 
 describe('streak-rules', () => {
-  it('todayUtc renvoie la date UTC même tard le soir en heure locale', () => {
-    expect(todayUtc(new Date('2026-10-16T23:30:00Z'))).toBe('2026-10-16');
+  it('gameDay bascule au reset des quêtes, pas à minuit', () => {
+    expect(gameDay(new Date(2026, 9, 16, 3, 59))).toBe('2026-10-15');
+    expect(gameDay(new Date(2026, 9, 16, 4, 0))).toBe('2026-10-16');
   });
 
   it('shiftDay passe les changements de mois', () => {

@@ -6,6 +6,7 @@ import {
   ParseEnumPipe,
   Post,
   Put,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -23,6 +24,15 @@ export class AchievementsController {
   @Get()
   getMine(@Request() req: AuthenticatedRequest) {
     return this.achievements.getAchievements(req.user.userId);
+  }
+
+  @Post('claim-all')
+  claimAll(
+    @Request() req: AuthenticatedRequest,
+    @Query('family', new ParseEnumPipe(AchievementFamily, { optional: true }))
+    family?: AchievementFamily,
+  ) {
+    return this.achievements.claimAll(req.user.userId, family);
   }
 
   @Post(':family/claim')

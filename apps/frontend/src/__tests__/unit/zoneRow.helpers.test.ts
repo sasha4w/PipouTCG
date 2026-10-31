@@ -11,6 +11,7 @@ describe("monsterFaceStats", () => {
     expect(monsterFaceStats(monster())).toEqual({
       atk: 100,
       hp: 500,
+      maxHp: 500,
       atkState: undefined,
       hpState: undefined,
     });
@@ -29,6 +30,7 @@ describe("monsterFaceStats", () => {
   it("marque des PV blessés en baisse, même buffés", () => {
     const stats = monsterFaceStats(monster({ hpBuff: 200, currentHp: 600 }));
     expect(stats.hp).toBe(600);
+    expect(stats.maxHp).toBe(700);
     expect(stats.hpState).toBe("down");
   });
 
