@@ -17,6 +17,7 @@ export default function AchievementSheet({ progress, claiming, onClaim, onClose 
   const { t } = useTranslation();
   const { family, value, tiers } = progress;
   const next = nextAchievementTier(progress);
+  const claimableCount = tiers.filter((tier) => tier.reached && !tier.claimed).length;
   const pct = next ? Math.min(100, Math.round((value / Math.max(1, next.threshold)) * 100)) : 100;
 
   return (
@@ -42,7 +43,10 @@ export default function AchievementSheet({ progress, claiming, onClaim, onClose 
             key={tier.tier}
             className={`ach-sheet__tier${tier.claimed ? " ach-sheet__tier--claimed" : ""}${tier.reached && !tier.claimed ? " ach-sheet__tier--ready" : ""}`}
           >
-            <span className={`ach-pip ach-pip--${tier.tier.toLowerCase()} ach-pip--on`} aria-hidden="true" />
+            <span
+              className={`ach-pip ach-pip--${tier.tier.toLowerCase()}${tier.claimed ? " ach-pip--on" : ""}`}
+              aria-hidden="true"
+            />
             <span className="ach-sheet__goal">
               <span className="ach-sheet__tier-name">{t(`achievements.tiers.${tier.tier}`)}</span>
               <span>{t(`achievements.goals.${family}`, { n: tier.threshold.toLocaleString() })}</span>
@@ -65,7 +69,7 @@ export default function AchievementSheet({ progress, claiming, onClaim, onClose 
 
       {next ? (
         <Button variant="primary-inverse" onClick={onClaim} disabled={!next.reached || claiming}>
-          {claiming ? "..." : t("achievements.claim")}
+          {claiming ? "..." : t(claimableCount > 1 ? "achievements.claim_all" : "achievements.claim")}
         </Button>
       ) : (
         <p className="ach-sheet__done">{t("achievements.all_done")}</p>

@@ -904,6 +904,7 @@
     "title_label": "칭호",
     "no_title": "칭호 없음",
     "claim": "받기",
+    "claim_all": "모두 받기",
     "claimed": "받음",
     "locked": "달성 필요",
     "all_done": "모든 단계를 받았습니다",

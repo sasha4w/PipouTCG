@@ -25,9 +25,9 @@ import {
 import {
   classifyGap,
   cycleDayFor,
+  gameDay,
   rescueCost,
   shiftDay,
-  todayUtc,
   weekNumberFor,
 } from './streak-rules';
 import {
@@ -134,7 +134,7 @@ export class DailyRewardService {
    */
   async claimDaily(userId: number): Promise<ClaimDailyResult> {
     const streak = await this.getOrCreateStreak(userId);
-    const today = todayUtc();
+    const today = gameDay();
     const gap = classifyGap(streak.lastClaimDate, today);
 
     if (gap === 'claimed_today') {
@@ -243,7 +243,7 @@ export class DailyRewardService {
   /** Rachète l'unique jour manqué, uniquement le jour du retour. */
   async rescueStreak(userId: number): Promise<RescueStreakResult> {
     const streak = await this.getOrCreateStreak(userId);
-    const today = todayUtc();
+    const today = gameDay();
 
     if (classifyGap(streak.lastClaimDate, today) !== 'rescuable') {
       throw new BadRequestException(
@@ -286,7 +286,7 @@ export class DailyRewardService {
 
   async resetStreak(userId: number) {
     const streak = await this.getOrCreateStreak(userId);
-    if (classifyGap(streak.lastClaimDate, todayUtc()) !== 'rescuable') {
+    if (classifyGap(streak.lastClaimDate, gameDay()) !== 'rescuable') {
       throw new BadRequestException(
         "Rien à réinitialiser : ta série n'est pas en danger.",
       );
@@ -302,7 +302,7 @@ export class DailyRewardService {
 
   async getStatus(userId: number): Promise<DailyRewardStatus> {
     const streak = await this.getOrCreateStreak(userId);
-    const today = todayUtc();
+    const today = gameDay();
     const gap = classifyGap(streak.lastClaimDate, today);
     const nextDay =
       gap === 'lost' || gap === 'first' ? 1 : streak.currentStreak + 1;
@@ -322,6 +322,7 @@ export class DailyRewardService {
         cycleDay: cycleDayFor(nextDay),
         weekNumber: weekNumberFor(nextDay),
       },
+      today,
       alreadyClaimed: gap === 'claimed_today',
       rescueAvailable: gap === 'rescuable',
       rescueCost: gap === 'rescuable' ? rescueCost(streak.currentStreak) : null,
@@ -362,9 +363,9 @@ export class DailyRewardService {
     ]);
 
     return {
-      claimedDates: [...new Set(claims.map((c) => todayUtc(c.claimedAt)))],
+      claimedDates: [...new Set(claims.map((c) => gameDay(c.claimedAt)))],
       // Un rachat se fait le jour du retour et couvre la veille
-      rescuedDates: rescues.map((r) => shiftDay(todayUtc(r.rescuedAt), -1)),
+      rescuedDates: rescues.map((r) => shiftDay(gameDay(r.rescuedAt), -1)),
     };
   }
 

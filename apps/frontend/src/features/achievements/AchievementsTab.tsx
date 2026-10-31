@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AchievementTier, type AchievementFamily } from "@pipou/shared";
-import { useAchievements, useClaimAchievement, useSetTitle } from "../../hooks/useGameData";
+import { useAchievements, useClaimAllAchievements, useSetTitle } from "../../hooks/useGameData";
+import Button from "../../components/Button";
 import AchievementTile from "./AchievementTile";
 import AchievementSheet from "./AchievementSheet";
 import "./Achievements.css";
@@ -32,7 +33,7 @@ function ProgressRing({ value, total }: { value: number; total: number }) {
 export default function AchievementsTab() {
   const { t } = useTranslation();
   const { data, isLoading, isError } = useAchievements();
-  const claim = useClaimAchievement();
+  const claimAll = useClaimAllAchievements();
   const setTitle = useSetTitle();
   const [openFamily, setOpenFamily] = useState<AchievementFamily | null>(null);
 
@@ -43,6 +44,10 @@ export default function AchievementsTab() {
   const titles = data.families
     .filter((f) => f.claimedTier === AchievementTier.GOLD)
     .map((f) => f.family);
+  const claimableTiers = data.families.reduce(
+    (n, f) => n + f.tiers.filter((tier) => tier.reached && !tier.claimed).length,
+    0,
+  );
 
   return (
     <div className="ach">
@@ -70,6 +75,16 @@ export default function AchievementsTab() {
         </div>
       </div>
 
+      {claimableTiers > 0 && (
+        <Button
+          variant="primary-inverse"
+          onClick={() => claimAll.mutate(undefined)}
+          disabled={claimAll.isPending}
+        >
+          {claimAll.isPending ? "..." : `${t("achievements.claim_all")} (${claimableTiers})`}
+        </Button>
+      )}
+
       <div className="ach-grid">
         {data.families.map((p) => (
           <AchievementTile key={p.family} progress={p} onOpen={() => setOpenFamily(p.family)} />
@@ -79,8 +94,8 @@ export default function AchievementsTab() {
       {open && (
         <AchievementSheet
           progress={open}
-          claiming={claim.isPending}
-          onClaim={() => claim.mutate(open.family)}
+          claiming={claimAll.isPending}
+          onClaim={() => claimAll.mutate(open.family)}
           onClose={() => setOpenFamily(null)}
         />
       )}

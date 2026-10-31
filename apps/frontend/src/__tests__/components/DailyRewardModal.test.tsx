@@ -17,6 +17,7 @@ vi.mock("../../services/user.service");
 const status: DailyRewardStatus = {
   streak: { current: 20, longest: 28, totalDays: 38, lastClaimDate: "2026-10-14" },
   nextDay: { cycleDay: 7, weekNumber: 3 },
+  today: "2026-10-16",
   alreadyClaimed: false,
   rescueAvailable: true,
   rescueCost: 300,

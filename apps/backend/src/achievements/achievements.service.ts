@@ -13,7 +13,9 @@ import {
   type AchievementFamily,
   type AchievementReward,
   type AchievementsResponse,
+  type AchievementTierProgress,
   type ClaimAchievementResponse,
+  type ClaimAllAchievementsResponse,
 } from '@pipou/shared';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
@@ -71,7 +73,40 @@ export class AchievementsService {
       throw new BadRequestException('Tous les paliers sont déjà réclamés.');
     if (!next.reached)
       throw new BadRequestException('Palier pas encore atteint.');
+    return this.claimTier(userId, family, next);
+  }
 
+  /**
+   * Réclame tous les paliers atteints, d'une famille ou de toutes.
+   * S'arrête à la première erreur de distribution : ce qui est déjà réclamé reste acquis.
+   */
+  async claimAll(
+    userId: number,
+    family?: AchievementFamily,
+  ): Promise<ClaimAllAchievementsResponse> {
+    const { families } = await this.getAchievements(userId);
+    const claimed: ClaimAchievementResponse[] = [];
+    for (const progress of families) {
+      if (family && progress.family !== family) continue;
+      for (const tier of progress.tiers) {
+        if (tier.claimed) continue;
+        if (!tier.reached) break;
+        try {
+          claimed.push(await this.claimTier(userId, progress.family, tier));
+        } catch (err) {
+          // Réclamé en parallèle ailleurs : on passe au palier suivant
+          if (!(err instanceof ConflictException)) throw err;
+        }
+      }
+    }
+    return { claimed };
+  }
+
+  private async claimTier(
+    userId: number,
+    family: AchievementFamily,
+    next: AchievementTierProgress,
+  ): Promise<ClaimAchievementResponse> {
     const row = { userId, family, tier: next.tier };
     try {
       await this.repo.insert(row);

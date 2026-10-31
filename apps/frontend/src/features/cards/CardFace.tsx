@@ -27,6 +27,8 @@ export interface CardFaceStats {
   hp: number;
   atkState?: StatState;
   hpState?: StatState;
+  /** PV max actuels (base + buffs) : affiche « hp/max » dans le badge. */
+  maxHp?: number;
 }
 
 export type CardFaceSize = "xs" | "sm" | "md" | "lg";
@@ -121,7 +123,12 @@ export default function CardFace({
             </div>
             <div className={statBadgeClass(current.hpState)}>
               <span className="card-face__stat-label">HP</span>
-              <span className="card-face__stat-value">{current.hp}</span>
+              <span className="card-face__stat-value">
+                {current.hp}
+                {current.maxHp !== undefined && (
+                  <span className="card-face__stat-max">/{current.maxHp}</span>
+                )}
+              </span>
             </div>
           </div>
         )}

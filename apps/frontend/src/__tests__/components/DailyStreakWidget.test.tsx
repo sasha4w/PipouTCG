@@ -14,6 +14,7 @@ vi.mock("../../contexts/DailyRewardContext", () => ({
 const status: DailyRewardStatus = {
   streak: { current: 2, longest: 5, totalDays: 9, lastClaimDate: "2026-10-15" },
   nextDay: { cycleDay: 3, weekNumber: 1 },
+  today: "2026-10-16",
   alreadyClaimed: false,
   rescueAvailable: false,
   rescueCost: null,
