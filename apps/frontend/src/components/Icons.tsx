@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useId, type CSSProperties, type ReactNode } from "react";
 
 interface IconProps {
   size?: number;
@@ -1407,5 +1407,183 @@ export function IconDust(props: IconProps) {
       <circle cx="5.5" cy="18" r="1" />
       <circle cx="17.5" cy="4.5" r="0.6" />
     </StrokeIcon>
+  );
+}
+
+// ── Statuts de combat (trait, 24x24) ─────────────────────────────────────────
+const SHIELD_PATH = "M12 3L19 6V11C19 15.5 16 19 12 21C8 19 5 15.5 5 11V6L12 3Z";
+
+/** Provocation : un bouclier marqué d'un point d'exclamation. */
+export function IconTaunt(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d={SHIELD_PATH} />
+      <path d="M12 8v4.5M12 16h.01" />
+    </StrokeIcon>
+  );
+}
+
+/** Perçant : une dague. */
+export function IconPierce(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M20 4l-9.5 9.5M20 4h-3.5L8 12.5M20 4v3.5L11.5 16" />
+      <path d="M6.5 14.5l3 3M8 16l-4 4" />
+    </StrokeIcon>
+  );
+}
+
+/** Contournement de la provocation : une cible. */
+export function IconTarget(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </StrokeIcon>
+  );
+}
+
+/** Increvable : un cœur. */
+export function IconHeart(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" />
+    </StrokeIcon>
+  );
+}
+
+/** Réduction de dégâts : un plastron. */
+export function IconArmor(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M8 3l4 2 4-2 4 3-2 4v10H6V10L4 6l4-3Z" />
+      <path d="M9 13h6M9 16.5h6" />
+    </StrokeIcon>
+  );
+}
+
+/** Bouclier de combat : une bulle protectrice. */
+export function IconBubble(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M7.5 9.5a5 5 0 0 1 3-3" />
+    </StrokeIcon>
+  );
+}
+
+/** Double attaque, ATK temporaire : un éclair. */
+export function IconBolt(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8Z" />
+    </StrokeIcon>
+  );
+}
+
+/** Attaque forcée : deux chevrons vers l'avant. */
+export function IconForward(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 6l6 6-6 6M13 6l6 6-6 6" />
+    </StrokeIcon>
+  );
+}
+
+/** Gel : un flocon. */
+export function IconSnowflake(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7" />
+      <path d="M9.5 3.5L12 6l2.5-2.5M9.5 20.5L12 18l2.5 2.5" />
+    </StrokeIcon>
+  );
+}
+
+/** Compte à rebours : un sablier. */
+export function IconHourglass(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9" />
+    </StrokeIcon>
+  );
+}
+
+/** Équipement : une clé plate. */
+export function IconWrench(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M14.7 6.3a4 4 0 0 0 5 5L21 13l-8 8-3-3 6.7-6.7a4 4 0 0 1-5-5L14 4l-2 2 2 2 2-2Z" />
+    </StrokeIcon>
+  );
+}
+
+/** PV : un cœur plein. */
+export function IconHp({ size = 24, color = "currentColor", className, style }: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"
+        fill={color}
+      />
+    </svg>
+  );
+}
+
+/**
+ * Immunités aux effets : un bouclier en quatre quarts, remplis comme les
+ * cœurs de Zelda. Ordre : haut gauche, haut droit, bas gauche, bas droit.
+ */
+export function IconImmunity({
+  quarters,
+  size = 24,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps & { quarters: readonly [boolean, boolean, boolean, boolean] }) {
+  const clip = useId();
+  const cells = [
+    [0, 0],
+    [12, 0],
+    [0, 12],
+    [12, 12],
+  ] as const;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <clipPath id={clip}>
+        <path d={SHIELD_PATH} />
+      </clipPath>
+      <g clipPath={`url(#${clip})`}>
+        {cells.map(([x, y], i) =>
+          quarters[i] ? (
+            <rect key={i} x={x} y={y} width="12" height="12" fill={color} />
+          ) : null,
+        )}
+      </g>
+      <path
+        d={`${SHIELD_PATH}M12 3V21M5 12H19`}
+        stroke={color}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

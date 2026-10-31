@@ -1,6 +1,11 @@
 import { HAND_LIMIT, canTransform } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
-import { IconEvolve, IconTransform } from "../../components/Icons";
+import {
+  IconEarth,
+  IconEvolve,
+  IconTransform,
+  IconWrench,
+} from "../../components/Icons";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
@@ -107,10 +112,14 @@ export default function FightActionBar({
 
           {/* Rappel visuel pour TERRAIN et EQUIPMENT (action sur la zone) */}
           {card.type === "support" && card.supportType === "TERRAIN" && (
-            <span className="fab-hint">🌍 {t("fight.bar.terrainHint")}</span>
+            <span className="fab-hint">
+              <IconEarth size={12} /> {t("fight.bar.terrainHint")}
+            </span>
           )}
           {card.type === "support" && card.supportType === "EQUIPMENT" && (
-            <span className="fab-hint">🔧 {t("fight.bar.equipHint")}</span>
+            <span className="fab-hint">
+              <IconWrench size={12} /> {t("fight.bar.equipHint")}
+            </span>
           )}
 
           {card.type === "monster" &&

@@ -1,3 +1,4 @@
+import { EFFECT_IMMUNITIES, Immunity } from '@pipou/shared';
 import { createEngine } from '../testing/engine';
 import { monsterCard } from '../testing/cards';
 import { realCard } from '../testing/real-cards';
@@ -90,7 +91,7 @@ describe('cartes retravaillées', () => {
                 hp: 0,
                 taunt: true,
                 piercing: false,
-                debuffImmune: false,
+                immunities: [],
                 attacksPerTurn: 1,
               },
             },
@@ -196,10 +197,10 @@ describe('cartes retravaillées', () => {
                   hp: 0,
                   taunt: false,
                   piercing: false,
-                  debuffImmune: true,
+                  immunities: [...EFFECT_IMMUNITIES],
                   attacksPerTurn: 1,
                 },
-                isImmuneToDebuffs: true,
+                immunities: [...EFFECT_IMMUNITIES],
               },
             },
           ],
@@ -244,7 +245,7 @@ describe('cartes retravaillées', () => {
           monsters: [
             {
               card: realCard('Noyau Beta'),
-              patch: { supportDestroyImmune: true },
+              patch: { immunities: [Immunity.SUPPORT_DESTRUCTION] },
             },
           ],
         },
@@ -266,7 +267,7 @@ describe('cartes retravaillées', () => {
           monsters: [
             {
               card: realCard('Noyau Beta'),
-              patch: { supportDestroyImmune: true },
+              patch: { immunities: [Immunity.SUPPORT_DESTRUCTION] },
             },
             monsterCard('Autre'),
           ],
@@ -293,7 +294,7 @@ describe('cartes retravaillées', () => {
           monsters: [
             {
               card: monsterCard('Mur', { hp: 3000 }),
-              patch: { supportDestroyImmune: true },
+              patch: { immunities: [Immunity.SUPPORT_DESTRUCTION] },
             },
           ],
         },

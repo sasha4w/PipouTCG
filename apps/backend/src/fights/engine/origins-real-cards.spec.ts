@@ -1,3 +1,4 @@
+import { Immunity, hasImmunity } from '@pipou/shared';
 import { createEngine } from '../testing/engine';
 import { monsterCard } from '../testing/cards';
 import { realCard } from '../testing/real-cards';
@@ -71,6 +72,6 @@ describe("vraies cartes de l'extension Drakon", () => {
     ).toBeUndefined();
     const origines = monsterNamed(game, 'p1', 'Drakon des Origines');
     expect(origines.attacksPerTurn).toBe(2);
-    expect(origines.isImmuneToDebuffs).toBe(true);
+    expect(hasImmunity(origines, Immunity.MONSTER_DEBUFF)).toBe(true);
   });
 });

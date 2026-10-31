@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { CardType, DestroyCause, EffectTrigger } from '@pipou/shared';
+import {
+  CardType,
+  DestroyCause,
+  EffectTrigger,
+  Immunity,
+  hasImmunity,
+} from '@pipou/shared';
 import {
   CardInstance,
   GameState,
@@ -51,7 +57,8 @@ export class EffectsResolverService {
           if (
             kind === 'destroy' &&
             card.baseCard.type === CardType.SUPPORT &&
-            target?.supportDestroyImmune
+            target &&
+            hasImmunity(target, Immunity.SUPPORT_DESTRUCTION)
           ) {
             ctx.log.push(
               `🧱 ${target.card.baseCard.name} résiste à la destruction`,

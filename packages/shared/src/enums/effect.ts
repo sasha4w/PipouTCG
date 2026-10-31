@@ -72,8 +72,25 @@ export const ActionType = {
   RELEVE: "RELEVE",
   SUMMON_IF_ALL_ELEMENTS: "SUMMON_IF_ALL_ELEMENTS",
   COPY_GRAVEYARD_EFFECTS: "COPY_GRAVEYARD_EFFECTS",
+  SET_COMBAT_DESTRUCTION_IMMUNITY: "SET_COMBAT_DESTRUCTION_IMMUNITY",
+  SET_SUPPORT_DEBUFF_IMMUNITY: "SET_SUPPORT_DEBUFF_IMMUNITY",
+  SET_MONSTER_DEBUFF_IMMUNITY: "SET_MONSTER_DEBUFF_IMMUNITY",
+  SET_MONSTER_STATUS_IMMUNITY: "SET_MONSTER_STATUS_IMMUNITY",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
+
+export const Immunity = {
+  /** Aucun dégât de combat. */
+  COMBAT_DAMAGE: "COMBAT_DAMAGE",
+  /** Dégâts de combat subis, mais jamais sous 1 PV en combat. */
+  COMBAT_DESTRUCTION: "COMBAT_DESTRUCTION",
+  SUPPORT_DESTRUCTION: "SUPPORT_DESTRUCTION",
+  SUPPORT_DEBUFF: "SUPPORT_DEBUFF",
+  MONSTER_DEBUFF: "MONSTER_DEBUFF",
+  /** Ignore la Provocation et le renvoi de dégâts adverses. */
+  MONSTER_STATUS: "MONSTER_STATUS",
+} as const;
+export type Immunity = (typeof Immunity)[keyof typeof Immunity];
 
 export const EffectTarget = {
   SELF: "SELF",

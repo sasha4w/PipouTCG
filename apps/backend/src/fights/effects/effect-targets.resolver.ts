@@ -1,9 +1,12 @@
 import {
+  ActionType,
+  CardType,
   EffectTarget,
   isImplanted,
   isPlantedBy,
   isTargetableByEnemyEffects,
 } from '@pipou/shared';
+import type { SourceKind } from '@pipou/shared';
 import {
   PlayerGameState,
   MonsterOnBoard,
@@ -17,10 +20,18 @@ export interface ResolvedTargets {
   ownerOfMonster: (m: MonsterOnBoard) => PlayerGameState;
 }
 
+/** Un effet porté par une carte Support (équipement compris) vient d'un support. */
+export function sourceKindOf(ctx: EffectContext): SourceKind {
+  return ctx.sourceCard?.baseCard.type === CardType.SUPPORT
+    ? 'support'
+    : 'monster';
+}
+
 export function resolveTargets(
   target: EffectTarget,
   ctx: EffectContext,
   archetype?: string,
+  actionType?: ActionType,
 ): ResolvedTargets {
   const owner =
     ctx.game.player1.userId === ctx.ownerUserId
@@ -35,12 +46,13 @@ export function resolveTargets(
   const allies = owner.monsterZones.filter(
     (m): m is MonsterOnBoard => m !== null && !isImplanted(m, owner.userId),
   );
-  // Les monstres insensibles aux effets adverses ne sont jamais visés,
+  // Les monstres immunisés contre cette action adverse ne sont jamais visés,
   // ni le monstre que le lanceur a lui-même implanté chez l'adversaire
   const enemies = opponent.monsterZones.filter(
     (m): m is MonsterOnBoard =>
       m !== null &&
-      isTargetableByEnemyEffects(m) &&
+      (!actionType ||
+        isTargetableByEnemyEffects(m, sourceKindOf(ctx), actionType)) &&
       !isPlantedBy(m, owner.userId),
   );
 
