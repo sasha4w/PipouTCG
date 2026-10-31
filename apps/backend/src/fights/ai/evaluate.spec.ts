@@ -154,6 +154,13 @@ describe('evaluate', () => {
     ).toBeCloseTo(ARCHETYPE_PROFILES.dragon.prepEvolve);
   });
 
+  it("garder une évolution en main vaut moins que d'évoluer (sinon l'IA passe son tour)", () => {
+    // Partie réelle : prepEvolve 400 contre un gain d'évolution de 390,
+    // l'IA gardait Ancestral Feros en main et finissait sa phase
+    const profile = ARCHETYPE_PROFILES.dragon;
+    expect(profile.prepEvolve).toBeLessThan(profile.perStage);
+  });
+
   it('un équipement sans porteur ne prépare rien', () => {
     const sword = equipmentCard('Épée', []);
     const alone = scenario({ p1: { hand: [sword] } });
