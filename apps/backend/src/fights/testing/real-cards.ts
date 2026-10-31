@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Card } from '../../cards/card.entity';
 import { ANCETRES_PATCHES } from '../../database/ancetres-2026-10-patches';
+import { TEROS_PATCHES } from '../../database/teros-2026-10-patches';
 import { CARD_EFFECT_PATCHES } from '../../database/card-effect-patches';
 import { CARD_REWORK_PATCHES } from '../../database/card-rework-patches';
 import {
@@ -160,7 +161,22 @@ export function allRealCards(): Card[] {
         } as Card)
       : c;
   });
-  return [...withAncetres(cards), ...extensionCards(cards)];
+  return withTeros([...withAncetres(cards), ...extensionCards(cards)]);
+}
+
+/** Nerf des Teros et de l'Écaille de Dragon, après le patch Garde et l'extension. */
+function withTeros(cards: Card[]): Card[] {
+  return cards.map((c) => {
+    const patch = TEROS_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          description: patch.after.description,
+          hp: patch.after.hp,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
 }
 
 /** Nerf d'Appel des ancêtres, après le patch Garde. */

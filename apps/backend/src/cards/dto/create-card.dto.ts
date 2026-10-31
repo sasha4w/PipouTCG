@@ -98,6 +98,10 @@ export class EffectFilterDto implements EffectFilter {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
+  excludeName?: string;
 }
 
 /** DEAL_DAMAGE ne vise que des monstres. */
@@ -127,6 +131,10 @@ export class EffectActionDto implements EffectAction {
   @IsOptional()
   @IsNumber()
   value?: number;
+
+  @IsOptional()
+  @IsNumber()
+  duration?: number;
 
   @IsOptional()
   @IsEnum(Archetype)

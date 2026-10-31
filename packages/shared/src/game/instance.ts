@@ -55,6 +55,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   /** Ne peut pas attaquer le tour de son invocation (effet de carte). */
   cannotAttackOnSummonTurn: boolean;
   damageReduction?: number;
+  /** Débuts de tour du propriétaire restants avant la fin des dégâts divisés. */
+  reductionTurns?: number;
   turnCounter?: number;
   ownerUserId?: number;
   blockAttackTurns?: number;

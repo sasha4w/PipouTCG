@@ -46,6 +46,8 @@ export interface EffectAction {
   type: ActionType;
   target: EffectTarget;
   value?: number;
+  /** Durée en tours du propriétaire, pour les effets qui s'éteignent (ex. dégâts divisés). */
+  duration?: number;
   archetype?: string;
   filter?: EffectFilter;
   valueIf?: EffectValueIf;

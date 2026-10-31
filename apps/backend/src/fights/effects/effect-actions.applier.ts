@@ -301,8 +301,10 @@ export function applyActions(
           const v = action.value ?? 2;
           m.perm.damageReduction = Math.max(m.perm.damageReduction ?? 1, v);
           m.damageReduction = Math.max(m.damageReduction ?? 1, v);
+          if (action.duration !== undefined)
+            m.reductionTurns = Math.max(m.reductionTurns ?? 0, action.duration);
           ctx.log.push(
-            `🛡️ ${m.card.baseCard.name} divise les dégâts reçus par ${v}`,
+            `🛡️ ${m.card.baseCard.name} divise les dégâts reçus par ${v}${action.duration !== undefined ? ` pendant ${action.duration} tour(s)` : ''}`,
           );
         }
         break;
