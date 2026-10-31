@@ -50,6 +50,36 @@ describe('AiPlayer', () => {
     expect(game.winner).toBe(P2_ID);
   });
 
+  it('prend la Prime même si son monstre devient tuable seul : il l’était déjà à plusieurs', () => {
+    // Partie réelle (tour 7) : l'IA refusait de tuer le Mastodonte pour garder
+    // son Champion à pleine vie, alors que les trois attaquants le tuaient quand même
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: {
+        monsters: [
+          {
+            card: monsterCard('Mastodonte', { atk: 1000, hp: 400 }),
+            patch: { hasTaunt: true },
+          },
+          monsterCard('Commandant', { atk: 800, hp: 1300 }),
+          monsterCard('Chevalier', { atk: 800, hp: 500 }),
+        ],
+      },
+      p2: {
+        monsters: [monsterCard('Champion', { atk: 900, hp: 1800 })],
+      },
+    });
+
+    const action = ai.chooseAction(game, 'p2', profile);
+
+    expect(action).toEqual({
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Champion').instanceId,
+      targetInstanceId: monsterNamed(game, 'p1', 'Mastodonte').instanceId,
+    });
+  });
+
   it('choix en attente pour l’IA : un pick_cards accepté par le moteur', () => {
     const game = scenario({
       turn: 'p1',

@@ -20,6 +20,45 @@ const young = (lineage: string) =>
   });
 
 describe('evaluate', () => {
+  it('le détail du score s’additionne au score, sans le changer', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { monsters: [baby], hand: [young('A')] },
+      p2: { monsters: [monsterCard('Lame', { atk: 400, hp: 300 })] },
+    });
+    const parts: Record<string, number> = {};
+
+    const score = evaluate(game, 'p1', 'dragon', true, parts);
+
+    expect(score).toBe(evaluate(game, 'p1', 'dragon', true));
+    const sum = Object.values(parts).reduce((a, b) => a + b, 0);
+    expect(sum).toBeCloseTo(score);
+    expect(Object.keys(parts)).toEqual(
+      expect.arrayContaining(['primes', 'myBoard', 'oppBoard', 'threat']),
+    );
+  });
+
+  it('la menace compte deux attaquants qui tuent ensemble ce qu’aucun ne tue seul', () => {
+    // Partie réelle (tour 3) : Général 800/1500 face à 1000 + 800 d'attaque
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p1: {
+        monsters: [
+          monsterCard('Mastodonte', { atk: 1000, hp: 1200 }),
+          monsterCard('Chevalier', { atk: 800, hp: 500 }),
+        ],
+      },
+      p2: { monsters: [monsterCard('Général', { atk: 800, hp: 1500 })] },
+    });
+    const parts: Record<string, number> = {};
+
+    evaluate(game, 'p2', 'pipou', false, parts);
+
+    expect(parts.threat).toBeLessThan(0);
+  });
+
   it("les poids d'archétype viennent du profil", () => {
     expect(ARCHETYPE_PROFILES.pipou.perMonster).toBe(400);
     expect(ARCHETYPE_PROFILES.pixelman.perEquipment).toBe(400);

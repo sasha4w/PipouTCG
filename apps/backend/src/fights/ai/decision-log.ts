@@ -82,6 +82,38 @@ export function fileSink(path: string): DecisionSink {
   return (record) => appendFileSync(path, toJsonlLine(record) + '\n');
 }
 
+/**
+ * Ce que le journal de l'IA ne voit pas : les coups de l'humain et la fin de
+ * partie. Écrit à côté du journal, dans `<journal>.human.jsonl`.
+ */
+export type MatchEvent =
+  | {
+      kind: 'human';
+      matchId: number;
+      turn: number;
+      phase: string;
+      action: GameAction;
+      /** Coup avec des noms de carte, lu sur l'état d'avant. */
+      text: string;
+      error?: string;
+    }
+  | {
+      kind: 'end';
+      matchId: number;
+      turn: number;
+      winner: number | null;
+      endReason?: string;
+      primes: { p1: number; p2: number };
+    };
+
+export function matchEventPath(log: string): string {
+  return `${log}.human.jsonl`;
+}
+
+export function appendMatchEvent(log: string, event: MatchEvent): void {
+  appendFileSync(matchEventPath(log), JSON.stringify(event) + '\n');
+}
+
 export function readDecisions(path: string): DecisionRecord[] {
   return parseJsonl<DecisionRecord>(readFileSync(path, 'utf8'));
 }
