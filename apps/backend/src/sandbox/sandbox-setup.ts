@@ -197,8 +197,7 @@ function editMonster(
   if (patch.hpBonus !== undefined) m.perm.hp = patch.hpBonus;
   if (patch.taunt !== undefined) m.perm.taunt = patch.taunt;
   if (patch.piercing !== undefined) m.perm.piercing = patch.piercing;
-  if (patch.debuffImmune !== undefined)
-    m.perm.debuffImmune = patch.debuffImmune;
+  if (patch.immunities !== undefined) m.perm.immunities = [...patch.immunities];
   if (patch.damageReduction !== undefined)
     m.perm.damageReduction = patch.damageReduction ?? undefined;
   if (patch.attacksPerTurn !== undefined)

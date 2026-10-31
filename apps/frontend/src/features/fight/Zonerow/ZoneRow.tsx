@@ -14,6 +14,7 @@ import type { CombatMode } from "@pipou/shared";
 import { IconLock, IconVirus } from "../../../components/Icons";
 import { useAnimationPrefs } from "../../../contexts/useAnimationPrefs";
 import type { ZoneFxMap } from "../fightEvents";
+import { overlayFx, statusFlags } from "../statusFx";
 
 interface Props {
   label: string;
@@ -66,14 +67,10 @@ export default function ZoneRow({
   damagedZones,
   fx,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { reduced } = useAnimationPrefs();
-  const { summoningZones, flippingZones, dyingZones } = useZoneAnimations(
-    zones,
-    isSupport,
-    fx,
-    reduced,
-  );
+  const { summoningZones, flippingZones, dyingZones, statusBurstZones } =
+    useZoneAnimations(zones, isSupport, fx, reduced);
 
   const [inspectId, setInspectId] = useState<string | null>(null);
   const inspected =
@@ -96,6 +93,9 @@ export default function ZoneRow({
           const isShattering = !!dying;
           const dyingData = dying?.zone;
           const summonTier = zone ? summoningZones.get(idx) : undefined;
+          const statusOverlay =
+            zone && isMonsterZone(zone) ? statusFlags(zone) : undefined;
+          const statusBurst = statusBurstZones.get(idx);
           const isZetaTarget = highlightOpponentEmpty && !zone && !isShattering;
           const lockedReason = zone
             ? lockedInstances?.get(zone.instanceId)
@@ -130,6 +130,11 @@ export default function ZoneRow({
             flippingZones.has(idx) ? "zr-zone--mode-flip" : "",
             attackingZone === idx ? "zr-zone--attacking" : "",
             damagedZones?.has(idx) ? "zr-zone--damaged" : "",
+            statusOverlay
+              ? [...statusOverlay]
+                  .map((id) => `zr-zone--status-${id}`)
+                  .join(" ")
+              : "",
           ]
             .filter(Boolean)
             .join(" ");
@@ -160,6 +165,23 @@ export default function ZoneRow({
               {summonTier && summonTier >= 3 && (
                 <span className="zr-summon-beam" aria-hidden />
               )}
+              {statusOverlay && overlayFx(statusOverlay).length > 0 && (
+                <span className="zr-status-layer" aria-hidden>
+                  {overlayFx(statusOverlay).map((id) => (
+                    <span
+                      key={id}
+                      className={`zr-status-fx zr-status-fx--${id}`}
+                    />
+                  ))}
+                </span>
+              )}
+              {statusBurst?.map((id) => (
+                  <span
+                    key={id}
+                    className={`zr-status-burst zr-status-burst--${id}`}
+                    aria-hidden
+                  />
+                ))}
               {lockedReason && (
                 <span className="zr-locked-note">
                   <IconLock size={11} /> {lockedReason}
@@ -229,7 +251,7 @@ export default function ZoneRow({
           guard={isMonsterZone(inspected) && inspected.mode === "guard"}
           status={
             isMonsterZone(inspected)
-              ? getMonsterStatusEntries(inspected, t)
+              ? getMonsterStatusEntries(inspected, t, i18n.language)
               : undefined
           }
           equipments={

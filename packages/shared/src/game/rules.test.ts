@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { Immunity } from "../enums/effect";
+import { EFFECT_IMMUNITIES } from "./immunity";
 import {
   canSummonFromHand,
   graveyardHasAllElements,
@@ -97,7 +99,7 @@ describe("isTargetableByEphemeral", () => {
       actions: [{ type: "DEAL_DAMAGE", target: "ENEMY_MONSTER", value: 100 }],
     },
   ];
-  const shielded = { isImmuneToDebuffs: false, supportDestroyImmune: true };
+  const shielded = { immunities: [Immunity.SUPPORT_DESTRUCTION] };
 
   it("refuse un monstre protégé pour un Éphémère destructeur", () => {
     expect(
@@ -113,7 +115,7 @@ describe("isTargetableByEphemeral", () => {
   });
 
   it("refuse un monstre insensible aux effets adverses côté ennemi seulement", () => {
-    const magouille = { isImmuneToDebuffs: true };
+    const magouille = { immunities: [...EFFECT_IMMUNITIES] };
     expect(isTargetableByEphemeral(magouille, "enemy", damage)).toBe(false);
     expect(isTargetableByEphemeral(magouille, "ally", damage)).toBe(true);
   });
@@ -203,7 +205,6 @@ describe("isTargetableByEphemeral — cibles qui profitent de l'effet", () => {
     stage: "egg" | "baby" | "young" | null,
     flags: { summonedThisTurn?: boolean; hatchCounter?: number; instantEvolution?: boolean } = {},
   ) => ({
-    isImmuneToDebuffs: false,
     summonedThisTurn: false,
     card: { baseCard: { stage } },
     ...flags,
@@ -283,5 +284,31 @@ describe("graveyardHasAllElements", () => {
         c("baby", "wind"),
       ]),
     ).toBe(false);
+  });
+});
+
+describe("immunités par source", () => {
+  const freeze = [
+    {
+      trigger: "ON_PLAY",
+      actions: [{ type: "BLOCK_ATTACK", target: "ENEMY_MONSTER", value: 1 }],
+    },
+  ] as never;
+  const kill = [
+    {
+      trigger: "ON_PLAY",
+      actions: [{ type: "DESTROY_MONSTER", target: "ENEMY_MONSTER" }],
+    },
+  ] as never;
+  it("débuff support bloque le gel, pas la destruction", () => {
+    const teros = {
+      immunities: [Immunity.SUPPORT_DEBUFF, Immunity.MONSTER_DEBUFF],
+    };
+    expect(isTargetableByEphemeral(teros, "enemy", freeze)).toBe(false);
+    expect(isTargetableByEphemeral(teros, "enemy", kill)).toBe(true);
+    const ancestral = {
+      immunities: [...teros.immunities, Immunity.SUPPORT_DESTRUCTION],
+    };
+    expect(isTargetableByEphemeral(ancestral, "enemy", kill)).toBe(false);
   });
 });

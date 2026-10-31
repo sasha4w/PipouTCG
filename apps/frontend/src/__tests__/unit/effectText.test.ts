@@ -555,3 +555,37 @@ describe("describeCardEffects : patch Garde, Relève et Origines (fr)", () => {
       );
   });
 });
+
+describe("immunités fusionnées", () => {
+  it("les quatre immunités d'effets ne forment qu'une ligne", async () => {
+    const t = await makeT("fr");
+    const actions = [
+      "SET_SUPPORT_DESTROY_IMMUNITY",
+      "SET_SUPPORT_DEBUFF_IMMUNITY",
+      "SET_MONSTER_DEBUFF_IMMUNITY",
+      "SET_MONSTER_STATUS_IMMUNITY",
+    ].map((type) => ({ type, target: "SELF", value: 1 }));
+    const text = describeCardEffects(
+      monster([{ trigger: "ON_SUMMON", condition: null, actions }] as never),
+      t,
+    );
+    expect(text.rules[0].lines).toHaveLength(1);
+    expect(text.keywords).toEqual(["debuffImmunity"]);
+  });
+
+  it("une immunité seule reste détaillée et traduite", async () => {
+    const t = await makeT("fr");
+    const text = describeCardEffects(
+      monster([
+        {
+          trigger: "ON_SUMMON",
+          condition: null,
+          actions: [{ type: "SET_MONSTER_STATUS_IMMUNITY", target: "SELF" }],
+        },
+      ] as never),
+      t,
+    );
+    expect(text.rules[0].lines[0].text).not.toContain("Effects.action");
+    expect(text.keywords).toEqual(["monsterStatusImmunity"]);
+  });
+});

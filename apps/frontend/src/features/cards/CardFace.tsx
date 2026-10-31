@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { ClientCard, SupportType } from "@pipou/shared";
+import { IconGuard } from "../../components/Icons";
 import "./CardFace.css";
 
 const SUPPORT_TYPE_LABELS: Record<string, string> = {
@@ -106,7 +107,7 @@ export default function CardFace({
 
         {guard && (
           <div className="card-face__guard-shield" aria-hidden="true">
-            🛡️
+            <IconGuard />
           </div>
         )}
 

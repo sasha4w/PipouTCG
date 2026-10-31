@@ -34,7 +34,9 @@ describe("MonsterZoneContent", () => {
     expect(container.querySelector(".card-face")).toHaveClass(
       "card-face--guard",
     );
-    expect(screen.getByTitle("Provocation")).toBeInTheDocument();
+    // La Provocation est un anneau sur la zone, pas un badge
+    const badges = [...container.querySelectorAll(".zr-badge")];
+    expect(badges.map((b) => b.classList[1])).toEqual(["zr-badge--guard"]);
   });
 
   it("affiche le compteur d'éclosion d'un œuf sur le plateau", () => {
@@ -49,7 +51,35 @@ describe("MonsterZoneContent", () => {
     const badge = container.querySelector(".zr-badge--hatch");
     expect(badge).toHaveTextContent("2");
     expect(badge?.querySelector("svg")).not.toBeNull();
-    expect(badge).not.toHaveClass("zr-badge--counter-urgent");
+    expect(badge).not.toHaveClass("zr-badge--urgent");
+  });
+
+  it("montre 3 badges puis « +N »", () => {
+    const { container } = render(
+      <MonsterZoneContent
+        zone={monster({
+          mode: "guard",
+          guardTurns: 1,
+          reflectPercent: 50,
+          hasPiercing: true,
+          ignoresTaunt: true,
+          hatchCounter: 1,
+        })}
+        isOpponent
+        onInspect={vi.fn()}
+        onInspectEnd={vi.fn()}
+      />,
+    );
+    const badges = [...container.querySelectorAll(".zr-badge")];
+    expect(badges.map((b) => b.classList[1])).toEqual([
+      "zr-badge--guard",
+      "zr-badge--reflect",
+      "zr-badge--piercing",
+      "zr-badge--more",
+    ]);
+    expect(badges[0]).toHaveTextContent("1/2");
+    expect(badges[0]).toHaveClass("zr-badge--urgent");
+    expect(badges[3]).toHaveTextContent("+2");
   });
 
   it("grise un monstre qui a fini d'attaquer", () => {

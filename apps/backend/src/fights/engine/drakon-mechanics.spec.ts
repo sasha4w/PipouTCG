@@ -1,3 +1,4 @@
+import { Immunity, hasImmunity } from '@pipou/shared';
 import {
   ActionType,
   CardEffect,
@@ -109,8 +110,12 @@ describe('mécaniques Drakon', () => {
         },
       });
       engine.settle(game);
-      expect(monsterNamed(game, 'p1', 'Œuf').isImmuneToDebuffs).toBe(true);
-      expect(monsterNamed(game, 'p1', 'Bébé').isImmuneToDebuffs).toBe(false);
+      expect(
+        hasImmunity(monsterNamed(game, 'p1', 'Œuf'), Immunity.MONSTER_DEBUFF),
+      ).toBe(true);
+      expect(
+        hasImmunity(monsterNamed(game, 'p1', 'Bébé'), Immunity.MONSTER_DEBUFF),
+      ).toBe(false);
     });
 
     it('filtre de recherche par stade', () => {

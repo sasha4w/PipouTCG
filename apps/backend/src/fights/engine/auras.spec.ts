@@ -1,3 +1,4 @@
+import { EFFECT_IMMUNITIES } from '@pipou/shared';
 import {
   ActionType,
   EffectConditionType,
@@ -150,7 +151,9 @@ describe('GameEngine — aura de virus du Zeta implanté', () => {
         ],
       },
     });
-    monsterNamed(game, 'p2', 'Permanent').perm.debuffImmune = true;
+    monsterNamed(game, 'p2', 'Permanent').perm.immunities = [
+      ...EFFECT_IMMUNITIES,
+    ];
 
     engine.settle(game);
 

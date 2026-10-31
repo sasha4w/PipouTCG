@@ -10,6 +10,18 @@ import {
   IconPlay,
   IconSwords,
   IconGem,
+  IconTaunt,
+  IconPierce,
+  IconTarget,
+  IconHeart,
+  IconArmor,
+  IconBubble,
+  IconBolt,
+  IconForward,
+  IconSnowflake,
+  IconHourglass,
+  IconWrench,
+  IconImmunity,
 } from "../../components/Icons";
 
 const ICONS = {
@@ -22,6 +34,17 @@ const ICONS = {
   IconPlay,
   IconSwords,
   IconGem,
+  IconTaunt,
+  IconPierce,
+  IconTarget,
+  IconHeart,
+  IconArmor,
+  IconBubble,
+  IconBolt,
+  IconForward,
+  IconSnowflake,
+  IconHourglass,
+  IconWrench,
 };
 
 describe("nouvelles icônes", () => {
@@ -36,4 +59,17 @@ describe("nouvelles icônes", () => {
       expect(stroked).toHaveAttribute("stroke", "currentColor");
     },
   );
+});
+
+describe("IconImmunity", () => {
+  it("remplit seulement les quarts actifs", () => {
+    const { container } = render(
+      <IconImmunity size={13} quarters={[true, false, false, true]} />,
+    );
+    const rects = [...container.querySelectorAll("rect")];
+    expect(rects.map((r) => [r.getAttribute("x"), r.getAttribute("y")])).toEqual([
+      ["0", "0"],
+      ["12", "12"],
+    ]);
+  });
 });
