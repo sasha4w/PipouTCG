@@ -21,6 +21,8 @@ import { toHandCard, type HandCard } from "./handCard";
 import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
+import EnergyCounter from "./EnergyCounter";
+import type { PhaseOption } from "./phaseOptions";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import { releveOptions } from "./releve";
@@ -127,6 +129,10 @@ export default function FightBoard({
   }, [fx, reduced]);
 
   const [showSummonModal, setShowSummonModal] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [graveyardSide, setGraveyardSide] = useState<
+    "me" | "opponent" | null
+  >(null);
   // Relève sur une zone occupée : l'allié de cette zone est sacrifié d'office
   const [releveLockedId, setReleveLockedId] = useState<string | null>(null);
   // Monstre visé par une évolution en attente de paiement
@@ -532,6 +538,12 @@ export default function FightBoard({
     );
   };
 
+  /** Change de phase : un `end_phase` par étape, sans jamais revenir en arrière. */
+  const handlePickPhase = (option: PhaseOption) => {
+    if (option.disabledReason) return;
+    for (let i = 0; i < option.steps; i++) onEndPhase();
+  };
+
   const triggerAttackAnim = (zoneIdx: number) => {
     if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
     setAttackingZoneIdx(zoneIdx);
@@ -592,7 +604,13 @@ export default function FightBoard({
         turnNumber={gs.turnNumber}
         isMyTurn={gs.isMyTurn}
         timeLeft={timeLeft}
+        handSize={gs.me.hand.length}
+        onPickPhase={handlePickPhase}
+        onOpenLog={() => setLogOpen(true)}
+        onOpenGraveyard={setGraveyardSide}
+        onSurrender={onSurrender}
       />
+      <EnergyCounter value={gs.me.recycleEnergy} />
 
       <div className="fb-side-row">
         <TerrainBackground
@@ -604,10 +622,6 @@ export default function FightBoard({
             fx.opponent.supports,
           )}
           reduced={reduced}
-        />
-        <GraveyardPile
-          graveyard={gs.opponent.graveyard}
-          label={gs.opponent.username}
         />
         <div className="fb-zones-col">
           <ZoneRow
@@ -716,7 +730,6 @@ export default function FightBoard({
             }
           />
         </div>
-        <GraveyardPile graveyard={gs.me.graveyard} label={t("fight.zone.me")} />
       </div>
 
       <FightHand
@@ -845,7 +858,18 @@ export default function FightBoard({
         />
       )}
 
-      <FightLog log={gs.log} />
+      {logOpen && <FightLog log={gs.log} onClose={() => setLogOpen(false)} />}
+      {graveyardSide && (
+        <GraveyardPile
+          graveyard={
+            graveyardSide === "me" ? gs.me.graveyard : gs.opponent.graveyard
+          }
+          label={
+            graveyardSide === "me" ? t("fight.zone.me") : gs.opponent.username
+          }
+          onClose={() => setGraveyardSide(null)}
+        />
+      )}
     </div>
   );
 }

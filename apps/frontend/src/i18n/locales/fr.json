@@ -786,6 +786,11 @@
       "me": "Moi"
     },
     "hud": {
+      "log": "Journal",
+      "myGraveyard": "Mon cimetière ({{count}})",
+      "oppGraveyard": "Cimetière adverse ({{count}})",
+      "surrender": "Abandonner",
+      "energy": "Énergie : {{count}}",
       "turn": "Tour {{count}}",
       "deck_one": "{{count}} carte dans le deck",
       "deck_other": "{{count}} cartes dans le deck",

@@ -1606,3 +1606,21 @@ export function IconInfo(props: IconProps) {
     </StrokeIcon>
   );
 }
+
+/** Journal : un parchemin à lignes. */
+export function IconScroll(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V3ZM9 8h7M9 12h7M9 16h4" />
+    </StrokeIcon>
+  );
+}
+
+/** Abandon : un drapeau. */
+export function IconFlag(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+    </StrokeIcon>
+  );
+}

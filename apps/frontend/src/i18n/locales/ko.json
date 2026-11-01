@@ -727,6 +727,11 @@
       "me": "나"
     },
     "hud": {
+      "log": "기록",
+      "myGraveyard": "내 묘지 ({{count}})",
+      "oppGraveyard": "상대 묘지 ({{count}})",
+      "surrender": "항복",
+      "energy": "에너지: {{count}}",
       "turn": "{{count}}턴",
       "deck": "덱에 카드 {{count}}장",
       "hand": "손패 {{count}}장",

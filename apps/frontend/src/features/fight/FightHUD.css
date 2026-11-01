@@ -81,13 +81,54 @@
   border-top: 1px solid #f0ddd0;
   border-bottom: 1px solid #f0ddd0;
 }
+.hud-phase-wrap {
+  position: relative;
+  display: inline-flex;
+}
 .hud-phase-chip {
-  background: #7a1c3b;
+  border: 0;
   color: #fff;
   border-radius: 99px;
-  padding: 2px 10px;
+  padding: 4px 12px;
   font-size: 11px;
   font-family: "Lilita One", sans-serif;
+  transition: background 0.3s;
+}
+button.hud-phase-chip {
+  min-height: 28px;
+  cursor: pointer;
+}
+/* Mon tour : vert ; tour adverse : gris */
+.hud-phase-chip--mine {
+  background: #2e9d5b;
+}
+.hud-phase-chip--theirs {
+  background: #8a8a8a;
+}
+.hud-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.hud-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #f0ddd0;
+  border-radius: 8px;
+  background: #fff;
+  color: #7a1c3b;
+  cursor: pointer;
+}
+.hud-icon-btn--opp {
+  color: #888;
+}
+.hud-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 .hud-turn-num {
   font-size: 11px;

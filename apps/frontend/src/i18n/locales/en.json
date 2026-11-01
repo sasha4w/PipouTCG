@@ -784,6 +784,11 @@
       "me": "Me"
     },
     "hud": {
+      "log": "Log",
+      "myGraveyard": "My graveyard ({{count}})",
+      "oppGraveyard": "Opponent graveyard ({{count}})",
+      "surrender": "Surrender",
+      "energy": "Energy: {{count}}",
       "turn": "Turn {{count}}",
       "deck_one": "{{count}} card in the deck",
       "deck_other": "{{count}} cards in the deck",
