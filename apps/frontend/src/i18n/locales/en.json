@@ -753,23 +753,17 @@
       "discard_one": "Discard {{count}} card",
       "discard_other": "Discard {{count}} cards"
     },
-    "endPhase": {
-      "main": "Battle Phase →",
-      "battle": "Control Phase →",
-      "end": "End the Turn →",
-      "other": "Continue →"
-    },
     "bar": {
-      "summon": "Summon",
-      "summonFree": "Summon (free)",
       "play": "Play",
       "terrainHint": "Tap an empty support zone",
       "equipHint": "Tap an allied monster to equip",
-      "recycle": "Recycle (+1⚡)",
-      "discard_one": "Discard {{count}} card (tap the card)",
-      "discard_other": "Discard {{count}} cards (tap the card)",
-      "surrender": "Surrender",
-      "confirmSurrender": "Surrender?"
+      "recycle": "Recycle",
+      "confirmSurrender": "Surrender?",
+      "recycleTitle": "Recycle the card: +1 energy",
+      "discardAction": "Discard",
+      "directAttack": "Direct attack",
+      "action": "Action",
+      "summonHint": "Tap a zone to summon"
     },
     "noTarget": "No valid target",
     "targetAlly": "Choose the allied monster to target with “{{name}}”",

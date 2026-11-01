@@ -538,6 +538,50 @@ export default function FightBoard({
     );
   };
 
+  const clearHandSelection = () => {
+    onSetSelectedCard(null);
+    onSetSelectedZone(null);
+    onSetPayIndices([]);
+  };
+
+  /** Recycler (phase principale) ou défausser (phase de contrôle) la carte sélectionnée. */
+  const handleBarRecycle = () => {
+    if (selectedCard === null) return;
+    if (phase === "end") onDiscardCard(selectedCard);
+    else onRecycleSupport(selectedCard);
+    onSetSelectedCard(null);
+    onSetPayIndices([]);
+  };
+
+  /** Action de l'emplacement principal : transformer, jouer un Éphémère ou attaquer. */
+  const handleBarMain = () => {
+    if (phase === "battle") {
+      handleDirectAttack();
+      return;
+    }
+    if (selectedCard === null || !selectedHandCard) return;
+    if (selectedHandCard.type === "monster") {
+      onTransform(selectedCard);
+      onSetSelectedCard(null);
+      onSetPayIndices([]);
+      return;
+    }
+    // Éphémère ciblé : choisir la cible avant de jouer
+    const instance = gs.me.hand[selectedCard];
+    const side = ephemeralTargetSide(instance?.baseCard.effects);
+    if (instance && side) {
+      openTargetPick(
+        selectedCard,
+        instance.baseCard.name,
+        side,
+        instance.baseCard.effects,
+      );
+      return;
+    }
+    onPlaySupport(selectedCard);
+    clearHandSelection();
+  };
+
   /** Change de phase : un `end_phase` par étape, sans jamais revenir en arrière. */
   const handlePickPhase = (option: PhaseOption) => {
     if (option.disabledReason) return;
@@ -745,56 +789,14 @@ export default function FightBoard({
       <FightActionBar
         phase={phase}
         isMyTurn={gs.isMyTurn}
-        selectedCard={selectedCard}
-        selectedZone={isZeta ? selectedOppZone : selectedZone}
-        hand={mappedHand}
-        onSummon={onSummon}
-        onOpenSummonModal={() => {
-          onSetPayIndices([]);
-          setShowSummonModal(true);
-        }}
-        onPlaySupport={(handIdx, zoneIndex, targetInstanceId) => {
-          // Si déjà une cible fournie (depuis la barre), jouer directement
-          if (targetInstanceId !== undefined || zoneIndex !== undefined) {
-            onPlaySupport(handIdx, zoneIndex, targetInstanceId);
-            onSetSelectedCard(null);
-            onSetSelectedZone(null);
-            onSetPayIndices([]);
-            return;
-          }
-          // Éphémère ciblé : choisir la cible avant de jouer
-          const instance = gs.me.hand[handIdx];
-          const side = ephemeralTargetSide(instance?.baseCard.effects);
-          if (instance && side) {
-            openTargetPick(
-              handIdx,
-              instance.baseCard.name,
-              side,
-              instance.baseCard.effects,
-            );
-            return;
-          }
-          onPlaySupport(handIdx);
-          onSetSelectedCard(null);
-          onSetSelectedZone(null);
-          onSetPayIndices([]);
-        }}
-        onEndPhase={onEndPhase}
-        onSurrender={onSurrender}
-        onRecycleFromHand={(idx) => {
-          onRecycleSupport(idx);
-          onSetSelectedCard(null);
-          onSetPayIndices([]);
-        }}
-        onTransformFromHand={(idx) => {
-          onTransform(idx);
-          onSetSelectedCard(null);
-          onSetPayIndices([]);
-        }}
+        selectedCard={selectedHandCard}
+        attackerSelected={attackerSelected}
         transformUsed={gs.me.transformUsedThisTurn}
-        freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
-        playBlockedReason={playBlockedReason}
+        overHandLimit={gs.me.hand.length > HAND_LIMIT}
         canEvolve={evolvableTargets.length > 0}
+        playBlockedReason={playBlockedReason}
+        onRecycle={handleBarRecycle}
+        onMain={handleBarMain}
       />
 
       {showSummonModal &&

@@ -1,180 +1,86 @@
-import { HAND_LIMIT, canTransform } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
-import {
-  IconEarth,
-  IconEvolve,
-  IconTransform,
-  IconWrench,
-} from "../../components/Icons";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
+import { mainSlot } from "./mainSlot";
 
 interface Props {
   phase: Phase | undefined;
   isMyTurn: boolean;
-  selectedCard: number | null;
-  selectedZone: number | null;
-  hand: HandCard[];
-  freeSummonInstanceIds: string[];
-  onSummon: () => void;
-  onOpenSummonModal: () => void; // ouvre la modal de coût
-  onPlaySupport: (
-    handIndex: number,
-    zoneIndex?: number,
-    targetInstanceId?: string,
-  ) => void;
-  onEndPhase: () => void;
-  /** Absent : pas de bouton d'abandon. */
-  onSurrender?: () => void;
-  onRecycleFromHand: (handIndex: number) => void;
-  onTransformFromHand: (handIndex: number) => void;
+  selectedCard: HandCard | null;
+  attackerSelected: boolean;
   /** Transformation déjà utilisée ce tour. */
-  transformUsed?: boolean;
+  transformUsed: boolean;
+  /** La carte sélectionnée peut évoluer sur un monstre allié. */
+  canEvolve?: boolean;
+  /** Main au-dessus de la limite : Recycler devient Défausser en phase de contrôle. */
+  overHandLimit: boolean;
   /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
   playBlockedReason?: string;
-  /** La carte sélectionnée (Jeune/Adulte) peut évoluer sur un monstre allié. */
-  canEvolve?: boolean;
+  onRecycle: () => void;
+  onMain: () => void;
 }
 
+/** Deux emplacements fixes : Recycler à gauche, action principale à droite. */
 export default function FightActionBar({
   phase,
   isMyTurn,
   selectedCard,
-  selectedZone,
-  hand,
-  freeSummonInstanceIds,
-  onSummon,
-  onOpenSummonModal,
-  onPlaySupport,
-  onEndPhase,
-  onSurrender,
-  onRecycleFromHand,
-  onTransformFromHand,
-  transformUsed = false,
+  attackerSelected,
+  transformUsed,
+  overHandLimit,
+  canEvolve,
   playBlockedReason,
-  canEvolve = false,
+  onRecycle,
+  onMain,
 }: Props) {
   const { t } = useTranslation();
-  if (!isMyTurn) return null;
 
-  const card = selectedCard !== null ? hand[selectedCard] : null;
-  const overhandLimit = phase === "end" && hand.length > HAND_LIMIT;
-
-  const isFreeCard =
-    card !== null && freeSummonInstanceIds.includes(card.instanceId);
-
-  /**
-   * Summon button logic:
-   * - Free card (rendue gratuite par SET_FREE_SUMMON) → invoke directly, no modal
-   * - Cost = 0 → invoke directly, no modal
-   * - Otherwise → open cost modal
-   */
-  const handleSummonClick = () => {
-    if (!card) return;
-    if (isFreeCard || (card.cost ?? 0) === 0) {
-      onSummon();
-    } else {
-      onOpenSummonModal();
-    }
-  };
+  const discarding = phase === "end" && overHandLimit;
+  const canRecycle =
+    isMyTurn && selectedCard !== null && (phase === "main" || discarding);
+  const slot = mainSlot({
+    phase,
+    isMyTurn,
+    card: selectedCard,
+    attackerSelected,
+    transformUsed,
+    canEvolve,
+    playBlockedReason,
+  });
+  const hintText = slot.hintKey ? t(slot.hintKey) : (playBlockedReason ?? "");
 
   return (
     <div className="fab-bar">
-      {phase === "main" && card !== null && (
-        <>
-          {card.type === "monster" && selectedZone !== null && (
-            <button onClick={handleSummonClick} className="fab-btn">
-              {isFreeCard
-                ? `⚡ ${t("fight.bar.summonFree")}`
-                : `⬆️ ${t("fight.bar.summon")}`}
-            </button>
-          )}
-
-          {card.type === "monster" && canEvolve && (
-            <span className="fab-hint">
-              <IconEvolve size={14} /> {t("fight.evolveHint")}
-            </span>
-          )}
-
-          {/* Carte EPHEMERAL : le choix de cible éventuel est géré par le plateau */}
-          {card.type === "support" && card.supportType === "EPHEMERAL" && (
-            <button
-              onClick={() => onPlaySupport(selectedCard!)}
-              className="fab-btn"
-              disabled={playBlockedReason !== undefined}
-              title={playBlockedReason}
-            >
-              ✨ {t("fight.bar.play")}
-              {playBlockedReason ? ` — ${playBlockedReason}` : ""}
-            </button>
-          )}
-
-          {/* Rappel visuel pour TERRAIN et EQUIPMENT (action sur la zone) */}
-          {card.type === "support" && card.supportType === "TERRAIN" && (
-            <span className="fab-hint">
-              <IconEarth size={12} /> {t("fight.bar.terrainHint")}
-            </span>
-          )}
-          {card.type === "support" && card.supportType === "EQUIPMENT" && (
-            <span className="fab-hint">
-              <IconWrench size={12} /> {t("fight.bar.equipHint")}
-            </span>
-          )}
-
-          {card.type === "monster" &&
-            canTransform({
-              stage: card.stage ?? null,
-              lineage: card.lineage,
-            }) && (
-              <button
-                onClick={() => onTransformFromHand(selectedCard!)}
-                className="fab-btn"
-                disabled={transformUsed}
-                title={
-                  transformUsed
-                    ? t("fight.transformOncePerTurn")
-                    : t("fight.transformTitle")
-                }
-              >
-                <IconTransform size={14} /> {t("fight.transform")}
-              </button>
-            )}
-
-          <button
-            onClick={() => onRecycleFromHand(selectedCard!)}
-            className="fab-btn fab-btn--recycle"
-          >
-            ♻️ {t("fight.bar.recycle")}
-          </button>
-        </>
-      )}
-
-      {overhandLimit && (
-        <span className="fab-discard-warning">
-          ⚠️ {t("fight.bar.discard", { count: hand.length - HAND_LIMIT })}
-        </span>
-      )}
-
-      <button
-        onClick={onEndPhase}
-        disabled={overhandLimit}
-        className={`fab-btn-phase${overhandLimit ? " fab-btn-phase--disabled" : ""}`}
-      >
-        {t(
-          phase === "main" || phase === "battle" || phase === "end"
-            ? `fight.endPhase.${phase}`
-            : phase === undefined
-              ? "fight.endPhase.main"
-              : "fight.endPhase.other",
-        )}
-      </button>
-
-      {onSurrender && (
-        <button onClick={onSurrender} className="fab-btn-surrender">
-          🏳️ {t("fight.bar.surrender")}
+      <div className="fab-hint-row" aria-live="polite">
+        {hintText}
+      </div>
+      <div className="fab-btns">
+        <button
+          type="button"
+          className="fab-btn fab-btn--recycle"
+          disabled={!canRecycle}
+          title={t("fight.bar.recycleTitle")}
+          onClick={onRecycle}
+        >
+          {t(discarding ? "fight.bar.discardAction" : "fight.bar.recycle")}
         </button>
-      )}
+        <button
+          type="button"
+          className="fab-btn fab-btn--main"
+          disabled={!slot.enabled}
+          title={
+            slot.labelKey === "fight.transform" && transformUsed
+              ? t("fight.transformOncePerTurn")
+              : slot.labelKey === "fight.transform"
+                ? t("fight.transformTitle")
+                : undefined
+          }
+          onClick={onMain}
+        >
+          {t(slot.labelKey)}
+        </button>
+      </div>
     </div>
   );
 }

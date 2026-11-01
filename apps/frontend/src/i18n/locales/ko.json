@@ -697,22 +697,17 @@
       "endTurn": "턴 마치기",
       "discard_other": "카드 {{count}}장 버리기"
     },
-    "endPhase": {
-      "main": "배틀 페이즈 →",
-      "battle": "컨트롤 페이즈 →",
-      "end": "턴 마치기 →",
-      "other": "계속 →"
-    },
     "bar": {
-      "summon": "소환",
-      "summonFree": "소환 (무료)",
       "play": "사용",
       "terrainHint": "빈 서포트 구역을 터치하세요",
       "equipHint": "장착할 아군 몬스터를 터치하세요",
-      "recycle": "재활용 (+1⚡)",
-      "discard": "카드 {{count}}장을 버리세요 (카드를 터치)",
-      "surrender": "항복",
-      "confirmSurrender": "항복할까요?"
+      "recycle": "재활용",
+      "confirmSurrender": "항복할까요?",
+      "recycleTitle": "카드를 재활용: 에너지 +1",
+      "discardAction": "버리기",
+      "directAttack": "직접 공격",
+      "action": "행동",
+      "summonHint": "구역을 눌러 소환"
     },
     "noTarget": "유효한 대상 없음",
     "targetAlly": "「{{name}}」(으)로 지정할 아군 몬스터를 고르세요",

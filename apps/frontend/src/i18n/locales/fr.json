@@ -755,23 +755,17 @@
       "discard_one": "Défausse {{count}} carte",
       "discard_other": "Défausse {{count}} cartes"
     },
-    "endPhase": {
-      "main": "Phase de Combat →",
-      "battle": "Phase de contrôle →",
-      "end": "Terminer le Tour →",
-      "other": "Continuer →"
-    },
     "bar": {
-      "summon": "Invoquer",
-      "summonFree": "Invoquer (gratuit)",
       "play": "Jouer",
       "terrainHint": "Clique sur une zone support vide",
       "equipHint": "Clique sur un monstre allié à équiper",
-      "recycle": "Recycler (+1⚡)",
-      "discard_one": "Défausse {{count}} carte (clique sur la carte)",
-      "discard_other": "Défausse {{count}} cartes (clique sur la carte)",
-      "surrender": "Abandonner",
-      "confirmSurrender": "Abandonner ?"
+      "recycle": "Recycler",
+      "confirmSurrender": "Abandonner ?",
+      "recycleTitle": "Recycle la carte : +1 énergie",
+      "discardAction": "Défausser",
+      "directAttack": "Attaque directe",
+      "action": "Action",
+      "summonHint": "Touche une zone pour invoquer"
     },
     "noTarget": "Aucune cible valide",
     "targetAlly": "Choisir le monstre allié à cibler avec « {{name}} »",
