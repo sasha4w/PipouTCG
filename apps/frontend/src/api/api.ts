@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import { parseApiError, logError } from "../utils/errors";
+import { clearAuthToken, getAuthToken } from "./authToken";
 
 /**
  * Create axios instance with base configuration
@@ -22,6 +23,10 @@ api.interceptors.request.use(
     if (import.meta.env.DEV) {
       console.debug(`[API] ${config.method?.toUpperCase()} ${config.url}`);
     }
+
+    // Repli quand le navigateur bloque le cookie tiers (Opera GX, Safari)
+    const token = getAuthToken();
+    if (token) config.headers.set("Authorization", `Bearer ${token}`);
 
     return config;
   },
@@ -55,7 +60,7 @@ api.interceptors.response.use(
       !window.location.pathname.includes("/login")
     ) {
       // Clear any stored auth data
-      localStorage.removeItem("authToken");
+      clearAuthToken();
       sessionStorage.clear();
 
       // Redirect to login

@@ -19,6 +19,8 @@ const envSchema = z.object({
 
   IMGBB_API_KEY: z.string().min(1).optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
+  // Expéditeur des mails, ex. `TCG App <noreply@mondomaine.fr>` (domaine vérifié chez Resend)
+  MAIL_FROM: z.string().min(1).optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>) {

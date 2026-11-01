@@ -7,13 +7,19 @@ export interface SocketUser {
   isAdmin: boolean;
 }
 
-/** Utilisateur authentifié par le cookie JWT d'un handshake Socket.io, ou null. */
+/**
+ * Utilisateur authentifié d'un handshake Socket.io, ou null. Jeton lu dans le
+ * cookie, sinon dans `auth.token` (navigateurs qui bloquent les cookies tiers).
+ */
 export function readSocketUser(
   cookieHeader: string | undefined,
   jwt: JwtService,
   secret: string,
+  authToken?: unknown,
 ): SocketUser | null {
-  const token = cookie.parse(cookieHeader ?? '')['token'];
+  const token =
+    cookie.parse(cookieHeader ?? '')['token'] ||
+    (typeof authToken === 'string' ? authToken : undefined);
   if (!token) return null;
   try {
     const payload = jwt.verify<{

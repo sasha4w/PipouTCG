@@ -14,7 +14,8 @@ import { MailService } from './mail.service';
 import { RegisterDto } from './dto/registerdto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import type { JwtPayload } from './auth-user';
+import type { AuthUser, JwtPayload } from './auth-user';
+import { SSE_TICKET_TTL, sseTicketSecret } from './sse-ticket';
 
 @Injectable()
 export class AuthService {
@@ -56,6 +57,18 @@ export class AuthService {
       // 2. PASSER la durée ici pour que le JWT expire en même temps que le Cookie
       access_token: this.jwtService.sign(payload, { expiresIn: duration }),
       autoClaimedRewards: [],
+    };
+  }
+
+  /** Ticket à usage SSE : 2 min, signé avec un secret distinct de la session. */
+  createSseTicket(user: AuthUser) {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET absent');
+    return {
+      ticket: this.jwtService.sign(
+        { sub: user.userId, is_admin: user.isAdmin },
+        { secret: sseTicketSecret(secret), expiresIn: SSE_TICKET_TTL },
+      ),
     };
   }
 

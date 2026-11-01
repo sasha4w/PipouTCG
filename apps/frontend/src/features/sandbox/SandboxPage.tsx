@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
+import { getAuthToken } from "../../api/authToken";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { IconUndo } from "../../components/Icons";
@@ -86,7 +87,12 @@ export default function SandboxPage() {
   useEffect(() => {
     const socket: SandboxClientSocket = io(
       `${import.meta.env.VITE_API_URL}${SANDBOX_NAMESPACE}`,
-      { withCredentials: true, transports: ["websocket"] },
+      {
+        withCredentials: true,
+        // Repli quand le cookie tiers est bloqué (Opera GX, Safari)
+        auth: (cb) => cb({ token: getAuthToken() }),
+        transports: ["websocket"],
+      },
     );
     socketRef.current = socket;
 

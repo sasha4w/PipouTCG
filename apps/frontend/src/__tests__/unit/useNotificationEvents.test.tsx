@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useNotificationEvents } from "../../hooks/useNotifications";
@@ -22,7 +22,8 @@ class FakeEventSource {
   }
 }
 
-function setup() {
+/** La connexion s'ouvre après un await (ticket SSE éventuel) : on l'attend. */
+async function setup() {
   vi.stubGlobal("EventSource", FakeEventSource);
   const client = new QueryClient();
   const invalidate = vi.spyOn(client, "invalidateQueries");
@@ -30,6 +31,7 @@ function setup() {
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
   );
   renderHook(() => useNotificationEvents(), { wrapper });
+  await waitFor(() => expect(FakeEventSource.last).toBeDefined());
   return invalidate;
 }
 
@@ -38,16 +40,16 @@ describe("useNotificationEvents", () => {
     vi.unstubAllGlobals();
   });
 
-  it("recharge la boîte à l'arrivée d'un message", () => {
-    const invalidate = setup();
+  it("recharge la boîte à l'arrivée d'un message", async () => {
+    const invalidate = await setup();
     FakeEventSource.last.fire("notification.created");
     expect(invalidate).toHaveBeenCalledWith({
       queryKey: QUERY_KEYS.notifications.all,
     });
   });
 
-  it("recharge les quêtes quand leur progression change côté serveur", () => {
-    const invalidate = setup();
+  it("recharge les quêtes quand leur progression change côté serveur", async () => {
+    const invalidate = await setup();
     FakeEventSource.last.fire("quests.updated");
     expect(invalidate).toHaveBeenCalledWith({ queryKey: QUERY_KEYS.quests });
   });

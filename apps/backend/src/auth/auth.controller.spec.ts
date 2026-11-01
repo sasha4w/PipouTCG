@@ -70,6 +70,7 @@ describe('AuthController', () => {
       expect(result).toEqual({
         message: 'Connexion réussie',
         autoClaimedRewards: [],
+        access_token: 'jwt_token',
       });
     });
   });

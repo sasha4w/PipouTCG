@@ -43,6 +43,7 @@ export class SandboxGateway
       client.handshake.headers.cookie,
       this.jwtService,
       this.configService.getOrThrow<string>('JWT_SECRET'),
+      client.handshake.auth?.token,
     );
     if (!user?.isAdmin) {
       client.emit('sandbox:error', { message: 'Sandbox réservé aux admins' });
