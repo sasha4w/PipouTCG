@@ -61,7 +61,12 @@ export default function AdventurePath() {
   return (
     <div className="adv-root">
       <header className="adv-top">
-        <button type="button" className="adv-back" onClick={() => navigate("/adventure")}>
+        <button
+          type="button"
+          className="adv-back"
+          aria-label={t("adventure.back_worlds_label")}
+          onClick={() => navigate("/adventure")}
+        >
           <IconArrowLeft size={16} />
           {t("adventure.back_worlds")}
         </button>

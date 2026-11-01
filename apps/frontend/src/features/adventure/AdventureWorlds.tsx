@@ -66,7 +66,12 @@ export default function AdventureWorlds() {
   return (
     <div className="adv-root">
       <header className="adv-top">
-        <button type="button" className="adv-back" onClick={() => navigate("/arena")}>
+        <button
+          type="button"
+          className="adv-back"
+          aria-label={t("adventure.back_arena_label")}
+          onClick={() => navigate("/arena")}
+        >
           <IconArrowLeft size={16} />
           {t("adventure.back_arena")}
         </button>

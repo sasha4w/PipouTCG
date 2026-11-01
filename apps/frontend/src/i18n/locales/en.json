@@ -1071,7 +1071,7 @@
   },
   "adventure": {
     "title": "Adventure",
-    "back_arena": "Arena",
+    "back_arena": "Modes",
     "back_worlds": "Worlds",
     "loading": "Loading adventure…",
     "error": "Could not load the adventure.",
@@ -1137,7 +1137,8 @@
       "unlocked": "{{name}} unlocked!",
       "replay": "Play again",
       "back": "Back to the world",
-      "unavailable": "Rewards unavailable"
+      "unavailable": "Rewards unavailable",
+      "worlds": "Change world"
     },
     "hub": {
       "title": "Adventure",
@@ -1146,7 +1147,9 @@
       "f2": "A booster for every first victory",
       "f3": "Farm rewards every day",
       "cta": "Start the adventure"
-    }
+    },
+    "back_arena_label": "Change game mode",
+    "back_worlds_label": "Change world"
   },
   "adventure_admin": {
     "title": "Adventure",

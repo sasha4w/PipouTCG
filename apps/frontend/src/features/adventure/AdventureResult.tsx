@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Rarity, type AdventureResultPayload } from "@pipou/shared";
@@ -23,6 +24,8 @@ interface Props {
   /** Absent : pas de deck connu, on ne propose que le retour. */
   onReplay?: () => void;
   onBack: () => void;
+  /** Retour à la liste des mondes (changer de monde). */
+  onWorlds: () => void;
 }
 
 /** Fin d'un combat d'aventure : victoire avec butin, ou défaite. */
@@ -34,8 +37,16 @@ export default function AdventureResult({
   unlockedWorlds,
   onReplay,
   onBack,
+  onWorlds,
 }: Props) {
   const { t } = useTranslation();
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // L'écran de fin s'ouvre toujours en haut de page, quel que soit le défilement du combat
+  useEffect(() => {
+    const scroller = rootRef.current?.closest<HTMLElement>(".app-main");
+    if (scroller) scroller.scrollTop = 0;
+  }, []);
   const loot = won ? (result?.loot ?? null) : null;
   const title = won
     ? t("adventure.result.victory")
@@ -44,7 +55,7 @@ export default function AdventureResult({
       : t("adventure.result.defeat");
 
   return (
-    <div className="adv-result">
+    <div className="adv-result" ref={rootRef}>
       <h2 className={`adv-result__title${won ? " adv-result__title--win" : ""}`}>{title}</h2>
 
       {won && result?.worldCompleted && worldOrder !== null && (
@@ -121,6 +132,9 @@ export default function AdventureResult({
             {t("adventure.result.replay")}
           </Button>
         )}
+        <Button variant="ghost-bordeaux" onClick={onWorlds}>
+          {t("adventure.result.worlds")}
+        </Button>
         <Button onClick={onBack}>{t("adventure.result.back")}</Button>
       </div>
     </div>

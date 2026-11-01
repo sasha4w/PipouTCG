@@ -1005,7 +1005,7 @@
   },
   "adventure": {
     "title": "모험",
-    "back_arena": "아레나",
+    "back_arena": "모드",
     "back_worlds": "월드",
     "loading": "모험 불러오는 중…",
     "error": "모험을 불러올 수 없습니다.",
@@ -1070,7 +1070,8 @@
       "unlocked": "{{name}} 잠금 해제!",
       "replay": "다시 하기",
       "back": "월드로 돌아가기",
-      "unavailable": "보상 정보를 불러올 수 없습니다"
+      "unavailable": "보상 정보를 불러올 수 없습니다",
+      "worlds": "월드 변경"
     },
     "hub": {
       "title": "모험",
@@ -1079,7 +1080,9 @@
       "f2": "첫 승리마다 부스터 1개",
       "f3": "매일 파밍 보상",
       "cta": "모험 떠나기"
-    }
+    },
+    "back_arena_label": "모드 변경",
+    "back_worlds_label": "월드 변경"
   },
   "adventure_admin": {
     "title": "모험",
