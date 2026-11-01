@@ -731,6 +731,19 @@
       "end": "Control phase",
       "finished": "Finished"
     },
+    "confirm": {
+      "summon": "Summon {{card}}?",
+      "summonRecycling": "Summon {{card}} by recycling {{recycled}}?",
+      "recycle": "Recycle {{card}}?",
+      "evolve": "Evolve {{target}} into {{card}}?",
+      "transform": "Transform {{card}}?",
+      "play": "Play {{card}}?",
+      "discard": "Discard {{card}}?",
+      "surplus": "{{count}} extra energy, kept in reserve",
+      "missing": "{{count}} energy missing",
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },
     "phaseMenu": {
       "title": "Phases",
       "battle": "Battle",

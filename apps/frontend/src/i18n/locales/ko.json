@@ -676,6 +676,19 @@
       "end": "컨트롤 페이즈",
       "finished": "종료"
     },
+    "confirm": {
+      "summon": "{{card}}을(를) 소환할까요?",
+      "summonRecycling": "{{recycled}}을(를) 재활용해 {{card}}을(를) 소환할까요?",
+      "recycle": "{{card}}을(를) 재활용할까요?",
+      "evolve": "{{target}}을(를) {{card}}(으)로 진화시킬까요?",
+      "transform": "{{card}}을(를) 변신시킬까요?",
+      "play": "{{card}}을(를) 사용할까요?",
+      "discard": "{{card}}을(를) 버릴까요?",
+      "surplus": "에너지 {{count}} 초과, 비축분으로 보관됩니다",
+      "missing": "에너지 {{count}} 부족",
+      "confirm": "확인",
+      "cancel": "취소"
+    },
     "phaseMenu": {
       "title": "페이즈",
       "battle": "배틀",

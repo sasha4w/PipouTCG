@@ -733,6 +733,19 @@
       "end": "Phase de contrôle",
       "finished": "Terminé"
     },
+    "confirm": {
+      "summon": "Invoquer {{card}} ?",
+      "summonRecycling": "Invoquer {{card}} en recyclant {{recycled}} ?",
+      "recycle": "Recycler {{card}} ?",
+      "evolve": "Faire évoluer {{target}} en {{card}} ?",
+      "transform": "Transformer {{card}} ?",
+      "play": "Jouer {{card}} ?",
+      "discard": "Défausser {{card}} ?",
+      "surplus": "{{count}} énergie en trop, gardée en réserve",
+      "missing": "Il manque {{count}} énergie",
+      "confirm": "Confirmer",
+      "cancel": "Annuler"
+    },
     "phaseMenu": {
       "title": "Phases",
       "battle": "Combat",
