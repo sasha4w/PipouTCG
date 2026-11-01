@@ -1,17 +1,8 @@
-/* Hauteur réservée pour l'indication : les boutons ne bougent jamais */
+/* Deux emplacements : les boutons ne bougent jamais */
 .fab-bar {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.fab-hint-row {
-  min-height: 1.3em;
-  font-size: 0.75rem;
-  line-height: 1.3;
-  color: #888;
-  font-style: italic;
-  text-align: center;
 }
 
 .fab-btns {

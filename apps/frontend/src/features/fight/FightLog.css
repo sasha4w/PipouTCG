@@ -13,3 +13,22 @@
   padding: 2px 0;
   border-bottom: 1px solid #f9f5f2;
 }
+
+.flog-box {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(122 28 59 / 0.5) transparent;
+}
+.flog-box::-webkit-scrollbar {
+  width: 8px;
+}
+.flog-box::-webkit-scrollbar-track {
+  background: rgb(122 28 59 / 0.06);
+  border-radius: 8px;
+}
+.flog-box::-webkit-scrollbar-thumb {
+  background: rgb(122 28 59 / 0.5);
+  border-radius: 8px;
+}
+.flog-box::-webkit-scrollbar-thumb:hover {
+  background: rgb(122 28 59 / 0.75);
+}

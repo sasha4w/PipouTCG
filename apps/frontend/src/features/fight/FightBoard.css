@@ -163,11 +163,11 @@ body.in-fight .fp-root {
 }
 
 .fp-fight-area .zr-wrap--support {
-  flex: 2 1 0;
+  flex: 3 1 0;
 }
 
 .fp-fight-area .zr-wrap:not(.zr-wrap--support) {
-  flex: 3 1 0;
+  flex: 7 1 0;
 }
 
 /* Le nom de la rangée reste lisible par les lecteurs d'écran */
@@ -197,29 +197,275 @@ body.in-fight .fp-root {
   l'origine). L'échelle suit la hauteur d'un terrain, par paliers : --zm pour
   les monstres, --zs pour les supports.
 */
+/* Paliers générés : un par 8 px de hauteur de terrain (monstres 70 %, supports 30 %) */
 .fp-fight-area .fb-zones-col {
-  --zm: 0.34;
-  --zs: 0.29;
+  --zm: 0.20;
+  --zs: 0.20;
 }
 
-@container (min-height: 170px) {
+@container (min-height: 120px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.46;
-    --zs: 0.4;
+    --zm: 0.28;
+    --zs: 0.21;
+  }
+}
+
+@container (min-height: 128px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.32;
+    --zs: 0.23;
+  }
+}
+
+@container (min-height: 136px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.36;
+    --zs: 0.24;
+  }
+}
+
+@container (min-height: 144px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.40;
+    --zs: 0.26;
+  }
+}
+
+@container (min-height: 152px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.43;
+    --zs: 0.27;
+  }
+}
+
+@container (min-height: 160px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.47;
+    --zs: 0.29;
+  }
+}
+
+@container (min-height: 168px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.51;
+    --zs: 0.31;
+  }
+}
+
+@container (min-height: 176px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.55;
+    --zs: 0.32;
+  }
+}
+
+@container (min-height: 184px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.58;
+    --zs: 0.34;
+  }
+}
+
+@container (min-height: 192px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.62;
+    --zs: 0.35;
   }
 }
 
 @container (min-height: 200px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.58;
+    --zm: 0.66;
+    --zs: 0.37;
+  }
+}
+
+@container (min-height: 208px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.69;
+    --zs: 0.39;
+  }
+}
+
+@container (min-height: 216px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.73;
+    --zs: 0.40;
+  }
+}
+
+@container (min-height: 224px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.77;
+    --zs: 0.42;
+  }
+}
+
+@container (min-height: 232px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.81;
+    --zs: 0.43;
+  }
+}
+
+@container (min-height: 240px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.84;
+    --zs: 0.45;
+  }
+}
+
+@container (min-height: 248px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.88;
+    --zs: 0.47;
+  }
+}
+
+@container (min-height: 256px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.92;
     --zs: 0.48;
   }
 }
 
-@container (min-height: 230px) {
+@container (min-height: 264px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.7;
+    --zm: 0.96;
+    --zs: 0.50;
+  }
+}
+
+@container (min-height: 272px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.99;
+    --zs: 0.51;
+  }
+}
+
+@container (min-height: 280px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.53;
+  }
+}
+
+@container (min-height: 288px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.55;
+  }
+}
+
+@container (min-height: 296px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
     --zs: 0.56;
+  }
+}
+
+@container (min-height: 304px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.58;
+  }
+}
+
+@container (min-height: 312px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.59;
+  }
+}
+
+@container (min-height: 320px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.61;
+  }
+}
+
+@container (min-height: 328px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.63;
+  }
+}
+
+@container (min-height: 336px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.64;
+  }
+}
+
+@container (min-height: 344px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.66;
+  }
+}
+
+@container (min-height: 352px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.67;
+  }
+}
+
+@container (min-height: 360px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.69;
+  }
+}
+
+@container (min-height: 368px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.71;
+  }
+}
+
+@container (min-height: 376px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.72;
+  }
+}
+
+@container (min-height: 384px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.74;
+  }
+}
+
+@container (min-height: 392px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 400px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.77;
+  }
+}
+
+@container (min-height: 408px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.79;
+  }
+}
+
+@container (min-height: 416px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.80;
   }
 }
 

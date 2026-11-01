@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import type { PhaseOption } from "./phaseOptions";
+import type { Phase } from "./fight.types";
+import type { PhaseOption, PhaseTarget } from "./phaseOptions";
 import "./PhaseMenu.css";
 
 interface Props {
+  /** Phase en cours : elle et les précédentes restent visibles, grisées. */
+  phase: Phase;
   options: PhaseOption[];
   /** Cartes à défausser pour pouvoir finir le tour. */
   discardCount: number;
@@ -11,8 +14,17 @@ interface Props {
   onClose: () => void;
 }
 
-/** Menu ancré sous la pastille de phase : uniquement les phases à venir. */
+/** Ordre du tour, présenté en entier : on ne peut qu'avancer. */
+const STEPS: ({ id: "main" } | { id: PhaseTarget })[] = [
+  { id: "main" },
+  { id: "battle" },
+  { id: "end" },
+  { id: "endTurn" },
+];
+
+/** Menu ancré sous la pastille de phase. */
 export default function PhaseMenu({
+  phase,
   options,
   discardCount,
   onPick,
@@ -32,18 +44,25 @@ export default function PhaseMenu({
     <>
       <div className="phm-backdrop" onClick={onClose} />
       <div className="phm" role="menu" aria-label={t("fight.phaseMenu.title")}>
-        {options.map((o) => {
-          const blocked = o.disabledReason === "discard";
+        {STEPS.map(({ id }) => {
+          const option = options.find((o) => o.target === id);
+          const current = id === phase;
+          const blocked = option?.disabledReason === "discard";
           return (
             <button
-              key={o.target}
+              key={id}
               type="button"
               role="menuitem"
-              className="phm-item"
-              disabled={blocked}
-              onClick={() => onPick(o)}
+              className={`phm-item${current ? " phm-item--current" : ""}`}
+              aria-current={current ? "true" : undefined}
+              disabled={!option || blocked}
+              onClick={() => option && onPick(option)}
             >
-              <span>{t(`fight.phaseMenu.${o.target}`)}</span>
+              <span>
+                {id === "main"
+                  ? t("fight.phase.main")
+                  : t(`fight.phaseMenu.${id}`)}
+              </span>
               {blocked && (
                 <span className="phm-hint">
                   {t("fight.phaseMenu.discard", { count: discardCount })}

@@ -72,10 +72,11 @@
   white-space: nowrap;
 }
 /* ── Centre : phase + timer ── */
+/* Pastille de phase au centre ; tour et chrono à gauche, outils à droite */
 .hud-center {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   padding: 2px 0;
   border-top: 1px solid #f0ddd0;
@@ -105,10 +106,16 @@ button.hud-phase-chip {
 .hud-phase-chip--theirs {
   background: #8a8a8a;
 }
+.hud-center-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
 .hud-actions {
   display: flex;
   gap: 4px;
-  margin-left: auto;
+  justify-self: end;
 }
 .hud-icon-btn {
   display: inline-flex;

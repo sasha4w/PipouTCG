@@ -41,7 +41,6 @@ function renderBar(over: Partial<ComponentProps<typeof FightActionBar>> = {}) {
     attackerSelected: false,
     transformUsed: false,
     overHandLimit: false,
-    canEvolve: false,
     onRecycle: vi.fn(),
     onMain: vi.fn(),
     ...over,
@@ -92,15 +91,14 @@ describe("FightActionBar", () => {
     expect(screen.getByRole("button", { name: /Transformer/ })).toBeDisabled();
   });
 
-  it("monstre non transformable : Action grisé avec l'indication d'invocation", () => {
+  it("monstre non transformable : Action grisé", () => {
     renderBar({ selectedCard: monster({ stage: "baby", lineage: null }) });
     expect(screen.getByRole("button", { name: "Action" })).toBeDisabled();
-    expect(screen.getByText("Touche une zone pour invoquer")).toBeTruthy();
   });
 
-  it("carte pouvant évoluer : l'indication d'évolution s'affiche", () => {
-    renderBar({ canEvolve: true });
-    expect(screen.getByText("Touche un de tes monstres pour évoluer")).toBeTruthy();
+  it("la barre ne contient plus de ligne d'indication (elle est au centre de l'écran)", () => {
+    renderBar({ selectedCard: monster({ stage: "baby", lineage: null }) });
+    expect(screen.queryByText("Touche une zone pour invoquer")).toBeNull();
   });
 
   it("Recycler actif avec une carte sélectionnée et appelle onRecycle", () => {
@@ -189,6 +187,26 @@ describe("FightActionBar", () => {
 });
 
 describe("mainSlot", () => {
+  const base = {
+    phase: "main" as const,
+    isMyTurn: true,
+    attackerSelected: false,
+    transformUsed: false,
+  };
+
+  it("monstre non transformable : indication d'invocation", () => {
+    expect(
+      mainSlot({ ...base, card: monster({ stage: "baby", lineage: null }) })
+        .hintKey,
+    ).toBe("fight.bar.summonHint");
+  });
+
+  it("carte pouvant évoluer : indication d'évolution", () => {
+    expect(
+      mainSlot({ ...base, card: monster(), canEvolve: true }).hintKey,
+    ).toBe("fight.evolveHint");
+  });
+
   it("Terrain : Jouer grisé avec l'indication de zone", () => {
     expect(
       mainSlot({

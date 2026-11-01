@@ -11,8 +11,6 @@ interface Props {
   attackerSelected: boolean;
   /** Transformation déjà utilisée ce tour. */
   transformUsed: boolean;
-  /** La carte sélectionnée peut évoluer sur un monstre allié. */
-  canEvolve?: boolean;
   /** Main au-dessus de la limite : Recycler devient Défausser en phase de contrôle. */
   overHandLimit: boolean;
   /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
@@ -29,7 +27,6 @@ export default function FightActionBar({
   attackerSelected,
   transformUsed,
   overHandLimit,
-  canEvolve,
   playBlockedReason,
   onRecycle,
   onMain,
@@ -45,16 +42,11 @@ export default function FightActionBar({
     card: selectedCard,
     attackerSelected,
     transformUsed,
-    canEvolve,
     playBlockedReason,
   });
-  const hintText = slot.hintKey ? t(slot.hintKey) : (playBlockedReason ?? "");
 
   return (
     <div className="fab-bar">
-      <div className="fab-hint-row" aria-live="polite">
-        {hintText}
-      </div>
       <div className="fab-btns">
         <button
           type="button"

@@ -24,6 +24,8 @@ import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
 import EnergyCounter from "./EnergyCounter";
 import TurnBanner from "./TurnBanner";
+import SelectionHint from "./SelectionHint";
+import { mainSlot } from "./mainSlot";
 import ConfirmActionSheet from "./ConfirmActionSheet";
 import { confirmText, type PendingAction } from "./pendingAction";
 import { paymentBalance } from "./payment";
@@ -651,6 +653,23 @@ export default function FightBoard({
       ? t("fight.noTarget")
       : undefined;
 
+  // Indication de la carte sélectionnée, montrée au centre de l'écran
+  const hintSlot = mainSlot({
+    phase,
+    isMyTurn: gs.isMyTurn,
+    card: selectedHandCard,
+    attackerSelected,
+    transformUsed: gs.me.transformUsedThisTurn,
+    canEvolve: evolvableTargets.length > 0,
+    playBlockedReason,
+  });
+  const hintText =
+    gs.isMyTurn && selectedHandCard !== null
+      ? hintSlot.hintKey
+        ? t(hintSlot.hintKey)
+        : (playBlockedReason ?? "")
+      : "";
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -683,6 +702,7 @@ export default function FightBoard({
       />
       <EnergyCounter value={gs.me.recycleEnergy} />
       <TurnBanner isMyTurn={gs.isMyTurn} turnNumber={gs.turnNumber} />
+      <SelectionHint text={hintText} resetKey={selectedCard} />
 
       <div className="fb-side-row">
         <TerrainBackground
@@ -813,7 +833,6 @@ export default function FightBoard({
         attackerSelected={attackerSelected}
         transformUsed={gs.me.transformUsedThisTurn}
         overHandLimit={gs.me.hand.length > HAND_LIMIT}
-        canEvolve={evolvableTargets.length > 0}
         playBlockedReason={playBlockedReason}
         onRecycle={handleBarRecycle}
         onMain={handleBarMain}

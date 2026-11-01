@@ -98,6 +98,21 @@ export default function FightHUD({
 
       {/* ── Ligne centrale : phase + tour + timer ── */}
       <div className="hud-center">
+        <span className="hud-center-left">
+          <span className="hud-turn-num">
+            {t("fight.hud.turn", { count: turnNumber })}
+          </span>
+          {isMyTurn && timeLeft !== null && (
+            <span
+              className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
+            >
+              <span className="hud-timer-icon">
+                <IconHourglass size={12} />
+              </span>
+              {timeLeft}s
+            </span>
+          )}
+        </span>
         <span className="hud-phase-wrap">
           {canPickPhase ? (
             <button
@@ -114,6 +129,7 @@ export default function FightHUD({
           )}
           {menuOpen && canPickPhase && (
             <PhaseMenu
+              phase={phase}
               options={options}
               discardCount={Math.max(0, handSize - HAND_LIMIT)}
               onPick={(o) => {
@@ -124,19 +140,6 @@ export default function FightHUD({
             />
           )}
         </span>
-        <span className="hud-turn-num">
-          {t("fight.hud.turn", { count: turnNumber })}
-        </span>
-        {isMyTurn && timeLeft !== null && (
-          <span
-            className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
-          >
-            <span className="hud-timer-icon">
-              <IconHourglass size={12} />
-            </span>
-            {timeLeft}s
-          </span>
-        )}
         <span className="hud-actions">
           <button
             type="button"

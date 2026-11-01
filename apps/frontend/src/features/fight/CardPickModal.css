@@ -129,3 +129,22 @@
   background: #ccc !important;
   cursor: not-allowed;
 }
+
+.cpm-grid {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(122 28 59 / 0.5) transparent;
+}
+.cpm-grid::-webkit-scrollbar {
+  width: 8px;
+}
+.cpm-grid::-webkit-scrollbar-track {
+  background: rgb(122 28 59 / 0.06);
+  border-radius: 8px;
+}
+.cpm-grid::-webkit-scrollbar-thumb {
+  background: rgb(122 28 59 / 0.5);
+  border-radius: 8px;
+}
+.cpm-grid::-webkit-scrollbar-thumb:hover {
+  background: rgb(122 28 59 / 0.75);
+}
