@@ -88,9 +88,9 @@
 
 /* Message d'énergie manquante : au-dessus du dock, 2 s */
 .fb-notice {
-  position: fixed;
+  position: absolute;
   left: 50%;
-  bottom: 140px;
+  bottom: 205px;
   transform: translateX(-50%);
   z-index: 950;
   padding: 8px 14px;
@@ -101,4 +101,175 @@
   font-weight: 700;
   font-size: 13px;
   pointer-events: none;
+}
+
+/* ── Écran de combat : un seul écran, sans défilement ─────────────────────────
+   Duel et aventure rendent le plateau dans .fp-fight-area ; le bac à sable
+   garde sa mise en page libre. */
+body.in-fight .cc-header,
+body.in-fight .cc-footer {
+  display: none;
+}
+
+body.in-fight .app-main {
+  padding: 0;
+  overflow: hidden;
+}
+
+body.in-fight .fp-root {
+  min-height: 0;
+  height: 100%;
+}
+
+.fp-fight-area {
+  min-height: 0;
+}
+
+.fp-fight-area .fb-wrap {
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  overflow: hidden;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  gap: 4px;
+}
+
+.fp-fight-area .hud {
+  margin-bottom: 0;
+  padding: 4px 8px;
+}
+
+/* Les deux terrains se partagent la hauteur à parts égales */
+.fp-fight-area .fb-side-row {
+  flex: 1 1 0;
+  min-height: 0;
+  container-type: size;
+}
+
+/* Laisse la place au compteur d'énergie, à gauche */
+.fp-fight-area .fb-zones-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 28px;
+}
+
+.fp-fight-area .zr-wrap {
+  margin: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.fp-fight-area .zr-wrap--support {
+  flex: 2 1 0;
+}
+
+.fp-fight-area .zr-wrap:not(.zr-wrap--support) {
+  flex: 3 1 0;
+}
+
+/* Le nom de la rangée reste lisible par les lecteurs d'écran */
+.fp-fight-area .zr-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.fp-fight-area .zr-row {
+  flex: 1;
+  min-height: 0;
+  gap: 4px;
+}
+
+.fp-fight-area .zr-zone {
+  min-height: 0;
+  padding: 2px;
+}
+
+/*
+  Carte de zone : miniature proportionnelle de la carte (100 px de large à
+  l'origine). L'échelle suit la hauteur d'un terrain, par paliers : --zm pour
+  les monstres, --zs pour les supports.
+*/
+.fp-fight-area .fb-zones-col {
+  --zm: 0.34;
+  --zs: 0.29;
+}
+
+@container (min-height: 170px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.46;
+    --zs: 0.4;
+  }
+}
+
+@container (min-height: 200px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.58;
+    --zs: 0.48;
+  }
+}
+
+@container (min-height: 230px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.7;
+    --zs: 0.56;
+  }
+}
+
+.fp-fight-area .zr-card {
+  width: 100px;
+  zoom: var(--z, 0.5);
+}
+
+.fp-fight-area .zr-wrap:not(.zr-wrap--support) .zr-card {
+  --z: var(--zm);
+}
+
+.fp-fight-area .zr-wrap--support .zr-card {
+  --z: var(--zs);
+}
+
+/* Le bouton « i » garde une taille tactile malgré la miniature */
+.fp-fight-area .zr-card .icard-info {
+  zoom: calc(1 / var(--z, 0.5));
+}
+
+/* HUD resserré pour laisser la hauteur au plateau */
+.fp-fight-area .hud {
+  gap: 0;
+}
+
+.fp-fight-area .hud-center {
+  padding: 0;
+}
+
+.fp-fight-area .hud-icon-btn {
+  width: 28px;
+  height: 28px;
+}
+
+/* Dock : la main passe au premier plan, par-dessus le bas du plateau */
+.fp-fight-area .fhand {
+  position: relative;
+  z-index: 30;
+  min-height: 0;
+  margin-top: -24px;
+  padding: 24px 16px 2px;
+  pointer-events: none;
+}
+
+.fp-fight-area .fhand .icard {
+  pointer-events: auto;
+}
+
+.fp-fight-area .fab-bar {
+  position: relative;
+  z-index: 31;
 }

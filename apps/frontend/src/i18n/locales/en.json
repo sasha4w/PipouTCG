@@ -989,7 +989,8 @@
       "stepOf": "Step {{n}} / {{total}}",
       "prev": "Previous",
       "next": "Next"
-    }
+    },
+    "yourTurn": "Your turn!"
   },
   "achievements": {
     "tab": "Achievements",

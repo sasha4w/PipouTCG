@@ -108,12 +108,15 @@ export default function FightPage({
         <div className={`fp-toast fp-toast--${toast.type}`}>{toast.msg}</div>
       )}
 
-      <FightTabBar
-        tab={tab}
-        onTabChange={setTab}
-        selectedDeck={selectedDeck}
-        onSelectDeck={setSelectedDeck}
-      />
+      {/* Pas d'onglets pendant un combat : l'écran est réservé au plateau */}
+      {status !== "playing" && (
+        <FightTabBar
+          tab={tab}
+          onTabChange={setTab}
+          selectedDeck={selectedDeck}
+          onSelectDeck={setSelectedDeck}
+        />
+      )}
 
       {tab === "leaderboard" && (
         <div className="fp-section">

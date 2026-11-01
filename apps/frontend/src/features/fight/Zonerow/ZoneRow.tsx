@@ -81,7 +81,9 @@ export default function ZoneRow({
       : undefined;
 
   return (
-    <div className={`zr-wrap${isOpponent ? " zr-wrap--opponent" : ""}`}>
+    <div
+      className={`zr-wrap${isOpponent ? " zr-wrap--opponent" : ""}${isSupport ? " zr-wrap--support" : ""}`}
+    >
       <div className="zr-label">
         {label}{" "}
         {recycleEnergy !== undefined && recycleEnergy > 0 && (

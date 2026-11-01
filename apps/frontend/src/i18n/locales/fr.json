@@ -991,7 +991,8 @@
       "stepOf": "Étape {{n}} / {{total}}",
       "prev": "Précédent",
       "next": "Suivant"
-    }
+    },
+    "yourTurn": "À toi de jouer !"
   },
   "achievements": {
     "tab": "Succès",

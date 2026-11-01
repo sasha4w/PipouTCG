@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+import { IconHourglass } from "../../components/Icons";
+import { useHideAppChrome } from "./useHideAppChrome";
 import FightBoard from "./FightBoard";
 import CardPickModal from "./CardPickModal";
 import MulliganPanel from "./MulliganPanel";
@@ -20,6 +22,7 @@ export default function FightArena({
   onSurrender,
 }: FightArenaProps) {
   const { t } = useTranslation();
+  useHideAppChrome();
   if (gameState.phase === "mulligan") {
     return (
       <MulliganPanel
@@ -36,7 +39,7 @@ export default function FightArena({
     <>
       {gameState.opponentChoosing && (
         <div className="fp-waiting-choice">
-          ⏳{" "}
+          <IconHourglass size={14} />{" "}
           {t("fight.opponentChoosing", {
             name: gameState.opponent.username,
           })}

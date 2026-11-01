@@ -1,6 +1,6 @@
 /* Au-dessus du plateau, sous les feuilles (BottomSheet : 1100) */
 .enc {
-  position: fixed;
+  position: absolute;
   left: 6px;
   top: 50%;
   transform: translateY(-50%);

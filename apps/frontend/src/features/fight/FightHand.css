@@ -15,8 +15,8 @@
 
 /* ── Carte : largeur fixe = HAND_CARD_WIDTH ───────────────────────────────── */
 .fhand-card {
-  flex: 0 0 84px;
-  width: 84px;
+  flex: 0 0 64px;
+  width: 64px;
   transform-origin: bottom center;
   transform: translateY(var(--fan-y, 0px)) rotate(var(--fan-rotate, 0deg));
   transition:
@@ -33,6 +33,11 @@
 .fhand-card--paying {
   transform: translateY(-22px) rotate(0deg);
   z-index: 50 !important;
+}
+
+/* Au-dessus des cartes de paiement : son bouton « i » doit rester accessible */
+.fhand-card--selected {
+  z-index: 60 !important;
 }
 
 /* Survol réel seulement : sur tactile il resterait collé après un tap */

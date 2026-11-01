@@ -23,6 +23,8 @@ import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
 import EnergyCounter from "./EnergyCounter";
+import TurnBanner from "./TurnBanner";
+import { useHideAppChrome } from "./useHideAppChrome";
 import ConfirmActionSheet from "./ConfirmActionSheet";
 import { confirmText, type PendingAction } from "./pendingAction";
 import { paymentBalance } from "./payment";
@@ -106,6 +108,7 @@ export default function FightBoard({
   const phase = gs.phase;
 
   const { reduced } = useAnimationPrefs();
+  useHideAppChrome();
   const fx = useMemo(
     // `?? []` : état envoyé par un backend pas encore redéployé
     () => boardFxFromEvents(gs.events ?? [], gs.me.userId),
@@ -681,6 +684,7 @@ export default function FightBoard({
         onSurrender={onSurrender}
       />
       <EnergyCounter value={gs.me.recycleEnergy} />
+      <TurnBanner isMyTurn={gs.isMyTurn} turnNumber={gs.turnNumber} />
 
       <div className="fb-side-row">
         <TerrainBackground
@@ -720,14 +724,6 @@ export default function FightBoard({
           />
         </div>
       </div>
-
-      {phase === "battle" && gs.isMyTurn && selectedZone !== null && (
-        <div className="fb-direct-atk">
-          <button onClick={handleDirectAttack} className="fb-btn-direct-atk">
-            ⚡ Attaque Directe
-          </button>
-        </div>
-      )}
 
       {isZeta && isMyMain && (
         <div className="fb-zeta-hint">
@@ -899,7 +895,7 @@ export default function FightBoard({
       {targetSupportChoice !== null && targetSupportHandIdx !== null && (
         <CardPickModal
           choice={targetSupportChoice}
-          confirmLabel={`🎯 ${t("fight.target")}`}
+          confirmLabel={t("fight.target")}
           onConfirm={(instanceIds) => {
             const [targetId] = instanceIds;
             onPlaySupport(targetSupportHandIdx, undefined, targetId);

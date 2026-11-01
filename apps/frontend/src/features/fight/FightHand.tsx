@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import { IconBolt, IconCheck } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
@@ -9,7 +10,7 @@ import CardDrawer from "./CardDrawer";
 import { fanLayout } from "./fanLayout";
 
 /** Largeur d'une carte de la main (px) — doit suivre .fhand-card. */
-const HAND_CARD_WIDTH = 84;
+const HAND_CARD_WIDTH = 64;
 /** Largeur utilisée avant la première mesure (coque mobile 430px). */
 const DEFAULT_HAND_WIDTH = 400;
 
@@ -97,15 +98,19 @@ export default function FightHand({
           >
             {isFree && (
               <span className="fhand-free-label">
-                {t("fight.hand.free")} ⚡
+                {t("fight.hand.free")} <IconBolt size={8} />
               </span>
             )}
             {isPaying && (
               <div className="fhand-pay-badge" title={t("fight.hand.payCard")}>
-                💰
+                <IconBolt size={10} />
               </div>
             )}
-            {isSelected && <div className="fhand-selected-badge">✓</div>}
+            {isSelected && (
+              <div className="fhand-selected-badge">
+                <IconCheck size={9} />
+              </div>
+            )}
             {mustDiscard && (
               <div className="fhand-discard-label">
                 {t("fight.hand.discard")}
