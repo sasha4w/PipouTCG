@@ -14,10 +14,6 @@ const REWARD_LABEL: Record<DailyRewardType, string> = {
   bundle: "Bundle",
 };
 
-/** Jour courant YYYY-MM-DD en UTC (même découpage que le serveur). */
-export function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 /** « 150 gold », « 2× Booster »… */
 export function rewardText(

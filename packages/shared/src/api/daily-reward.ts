@@ -34,6 +34,8 @@ export interface DailyRewardStatus {
   streak: StreakView;
   /** Position du prochain jour à réclamer. */
   nextDay: { cycleDay: number; weekNumber: number };
+  /** Journée de jeu courante YYYY-MM-DD (bascule au reset des quêtes). */
+  today: string;
   alreadyClaimed: boolean;
   /** Exactement 1 jour manqué : rachat possible aujourd'hui. */
   rescueAvailable: boolean;

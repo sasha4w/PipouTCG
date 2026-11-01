@@ -15,7 +15,7 @@ import { apiErrorMessage } from "../utils/errors";
 import Button from "./Button";
 import MonthCalendar from "./daily-reward/MonthCalendar";
 import MilestoneCard from "./daily-reward/MilestoneCard";
-import { MONTH_FR, RewardIcon, rewardText, todayUtc } from "./daily-reward/rewardDisplay";
+import { MONTH_FR, RewardIcon, rewardText } from "./daily-reward/rewardDisplay";
 import {
   IconCalendar,
   IconCheck,
@@ -88,8 +88,8 @@ export default function DailyRewardModal({ onClose, addToast }: DailyRewardModal
     staleTime: 10 * 60 * 1000,
   });
 
-  const today = todayUtc();
-  const monthTitle = `${MONTH_FR[Number(today.slice(5, 7)) - 1]} ${today.slice(0, 4)}`;
+  const today = status?.today ?? "";
+  const monthTitle = status ? `${MONTH_FR[Number(today.slice(5, 7)) - 1]} ${today.slice(0, 4)}` : "";
   const missingGold =
     rescue && me ? Math.max(rescue.cost - Number(me.gold), 0) : 0;
 

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import "./FightHUD.css";
 import type { MyState, OppState, Phase } from "./fight.types";
+import { STARTING_PRIMES } from "@pipou/shared";
 import { IconChest, IconCards, IconHand } from "../../components/Icons";
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
   timeLeft: number | null;
 }
 
+/** `primes` = primes restantes à récupérer ; les coffres se colorent à mesure qu'elles sont prises. */
 function PrimesRow({ primes }: { primes: number }) {
   const { t } = useTranslation();
   return (
@@ -20,14 +22,14 @@ function PrimesRow({ primes }: { primes: number }) {
       className="hud-primes"
       title={t("fight.hud.primes", { count: primes })}
     >
-      {Array.from({ length: 6 }).map((_, i) => (
-        <span
-          key={i}
-          className={`hud-prime${i < primes ? " hud-prime--earned" : ""}`}
-        >
-          <IconChest size={13} color={i < primes ? "#7a1c3b" : "#ccc"} />
-        </span>
-      ))}
+      {Array.from({ length: STARTING_PRIMES }).map((_, i) => {
+        const taken = i < STARTING_PRIMES - primes;
+        return (
+          <span key={i} className={`hud-prime${taken ? " hud-prime--earned" : ""}`}>
+            <IconChest size={13} color={taken ? "#7a1c3b" : "#ccc"} />
+          </span>
+        );
+      })}
     </span>
   );
 }

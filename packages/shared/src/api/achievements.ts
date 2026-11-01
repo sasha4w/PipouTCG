@@ -33,6 +33,11 @@ export interface ClaimAchievementResponse {
   reward: AchievementReward;
 }
 
+/** POST /achievements/claim-all[?family=...] */
+export interface ClaimAllAchievementsResponse {
+  claimed: ClaimAchievementResponse[];
+}
+
 /** PUT /achievements/title */
 export interface SetTitleRequest {
   family: AchievementFamily | null;

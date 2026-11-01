@@ -100,6 +100,19 @@ export const useClaimAchievement = () => {
   });
 };
 
+export const useClaimAllAchievements = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (family?: AchievementFamily) => achievementService.claimAll(family),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.achievements });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myStats });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+    },
+  });
+};
+
 export const useSetTitle = () => {
   const queryClient = useQueryClient();
   return useMutation({

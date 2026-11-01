@@ -3,7 +3,7 @@ import { dailyRewardService } from "../services/dailyReward.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import { useDailyReward } from "../contexts/DailyRewardContext";
 import { IconCheck, IconFire, IconSkull, IconTrophy } from "./Icons";
-import { RewardIcon, rewardText, todayUtc } from "./daily-reward/rewardDisplay";
+import { RewardIcon, rewardText } from "./daily-reward/rewardDisplay";
 import "./DailyStreakWidget.css";
 
 /** 7 jours de la semaine courante (lundi → dimanche), en UTC comme le serveur. */
@@ -46,7 +46,7 @@ export default function DailyStreakWidget() {
     nextReward,
     milestones,
   } = status;
-  const today = todayUtc();
+  const today = status.today;
   const weekDays = buildWeekDays(today, [
     ...status.claimedDates,
     ...status.rescuedDates,

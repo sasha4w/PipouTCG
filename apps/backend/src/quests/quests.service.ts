@@ -603,6 +603,9 @@ export class QuestService {
 
   @OnEvent('daily-reward.claimed')
   async handleDailyRewardClaimed(payload: { userId: number }) {
+    // Premier geste de la journée : les quêtes du jour n'existent peut-être pas encore
+    // (aucun GET /quests avant) ou sont périmées, la progression serait perdue.
+    await this.syncUserQuests(payload.userId);
     await this.track(payload.userId, ConditionType.CLAIM_DAILY_REWARD);
   }
 
