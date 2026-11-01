@@ -704,7 +704,7 @@ export default function FightBoard({
       <TurnBanner isMyTurn={gs.isMyTurn} turnNumber={gs.turnNumber} />
       <SelectionHint text={hintText} resetKey={selectedCard} />
 
-      <div className="fb-side-row">
+      <div className="fb-side-row fb-side-row--opp">
         <TerrainBackground
           terrain={oppTerrain}
           side="opponent"
