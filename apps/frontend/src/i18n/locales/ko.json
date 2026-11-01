@@ -687,7 +687,8 @@
       "surplus": "에너지 {{count}} 초과, 비축분으로 보관됩니다",
       "missing": "에너지 {{count}} 부족",
       "confirm": "확인",
-      "cancel": "취소"
+      "cancel": "취소",
+      "close": "닫기"
     },
     "phaseMenu": {
       "title": "페이즈",

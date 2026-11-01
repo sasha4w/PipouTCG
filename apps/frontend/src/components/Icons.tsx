@@ -1587,3 +1587,22 @@ export function IconImmunity({
     </svg>
   );
 }
+
+/** Attention : un triangle d'alerte. */
+export function IconAlert(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M12 3L2 20h20L12 3ZM12 10v4M12 17h.01" />
+    </StrokeIcon>
+  );
+}
+
+/** Information : un « i » dans un cercle. */
+export function IconInfo(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
+    </StrokeIcon>
+  );
+}

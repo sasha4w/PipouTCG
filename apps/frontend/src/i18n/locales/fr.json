@@ -744,7 +744,8 @@
       "surplus": "{{count}} énergie en trop, gardée en réserve",
       "missing": "Il manque {{count}} énergie",
       "confirm": "Confirmer",
-      "cancel": "Annuler"
+      "cancel": "Annuler",
+      "close": "Fermer"
     },
     "phaseMenu": {
       "title": "Phases",

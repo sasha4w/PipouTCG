@@ -742,7 +742,8 @@
       "surplus": "{{count}} extra energy, kept in reserve",
       "missing": "{{count}} energy missing",
       "confirm": "Confirm",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "close": "Close"
     },
     "phaseMenu": {
       "title": "Phases",
