@@ -8,7 +8,7 @@ import { useZoneAnimations } from "./useZoneAnimations";
 import MonsterZoneContent from "./MonsterZoneContent";
 import SupportZoneContent from "./SupportZoneContent";
 import CardFace from "../../cards/CardFace";
-import CardInspect from "../CardInspect";
+import CardDrawer from "../CardDrawer";
 import { isMonsterZone, type BoardZone } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
 import { IconLock, IconVirus } from "../../../components/Icons";
@@ -73,13 +73,17 @@ export default function ZoneRow({
     useZoneAnimations(zones, isSupport, fx, reduced);
 
   const [inspectId, setInspectId] = useState<string | null>(null);
+  // Dernière carte touchée de cette rangée : elle reçoit le bouton « i »
+  const [pickedId, setPickedId] = useState<string | null>(null);
   const inspected =
     inspectId !== null
       ? zones.find((z) => z?.instanceId === inspectId)
       : undefined;
 
   return (
-    <div className={`zr-wrap${isOpponent ? " zr-wrap--opponent" : ""}`}>
+    <div
+      className={`zr-wrap${isOpponent ? " zr-wrap--opponent" : ""}${isSupport ? " zr-wrap--support" : ""}`}
+    >
       <div className="zr-label">
         {label}{" "}
         {recycleEnergy !== undefined && recycleEnergy > 0 && (
@@ -154,6 +158,7 @@ export default function ZoneRow({
                   : undefined
               }
               onClick={() => {
+                if (zone) setPickedId(zone.instanceId);
                 if (zone && onMonsterClick && zone.instanceId)
                   onMonsterClick(zone.instanceId);
                 else if (onZoneClick) onZoneClick(idx);
@@ -197,14 +202,16 @@ export default function ZoneRow({
                         ? undefined
                         : onModeChange
                     }
-                    onInspect={() => setInspectId(zone.instanceId)}
-                    onInspectEnd={() => setInspectId(null)}
+                    selected={
+                      pickedId === zone.instanceId || selectedZone === idx
+                    }
+                    onInfo={() => setInspectId(zone.instanceId)}
                   />
                 ) : (
                   <SupportZoneContent
                     zone={zone}
-                    onInspect={() => setInspectId(zone.instanceId)}
-                    onInspectEnd={() => setInspectId(null)}
+                    selected={pickedId === zone.instanceId}
+                    onInfo={() => setInspectId(zone.instanceId)}
                   />
                 )
               ) : isShattering && dyingData ? (
@@ -239,7 +246,7 @@ export default function ZoneRow({
       </div>
 
       {inspected && (
-        <CardInspect
+        <CardDrawer
           card={
             isMonsterZone(inspected)
               ? inspected.card.baseCard

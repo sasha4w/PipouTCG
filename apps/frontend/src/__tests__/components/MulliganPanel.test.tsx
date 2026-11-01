@@ -68,7 +68,7 @@ describe("MulliganPanel", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("inspecte une carte de la main de départ", () => {
+  it("un tap sur une carte de la main de départ montre i, qui ouvre le tiroir", () => {
     render(
       <MulliganPanel
         hand={[card("Gobelin")]}
@@ -79,7 +79,8 @@ describe("MulliganPanel", () => {
       />,
     );
 
-    fireEvent.contextMenu(screen.getByRole("button", { name: /Gobelin/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Gobelin/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
 
     expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
   });

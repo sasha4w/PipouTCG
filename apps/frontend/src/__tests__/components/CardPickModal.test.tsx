@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import CardPickModal from "../../features/fight/CardPickModal";
 import type { PendingChoice } from "../../features/fight/fight.types";
 import i18n from "../../i18n";
@@ -46,19 +46,13 @@ describe("CardPickModal", () => {
     expect(onConfirm).toHaveBeenCalledWith(["c1"]);
   });
 
-  it("inspecte une carte par appui long sans la sélectionner", () => {
-    vi.useFakeTimers();
+  it("un tap sélectionne la carte et montre i, qui ouvre le tiroir", () => {
     render(<CardPickModal choice={choice} onConfirm={vi.fn()} />);
-    const card = screen.getByRole("button", { name: /Gobelin/ });
 
-    fireEvent.pointerDown(card, { clientX: 0, clientY: 0, button: 0 });
-    act(() => {
-      vi.advanceTimersByTime(400);
-    });
+    fireEvent.click(screen.getByRole("button", { name: /Gobelin/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
 
     expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
-    expect(screen.getByText("Texte de Gobelin")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /\(0\/1\)/ })).toBeDisabled();
   });
 
   it("invocation depuis le deck : bouton « Invoquer »", async () => {

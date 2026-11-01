@@ -1,8 +1,19 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./FightHUD.css";
 import type { MyState, OppState, Phase } from "./fight.types";
-import { STARTING_PRIMES } from "@pipou/shared";
-import { IconChest, IconCards, IconHand } from "../../components/Icons";
+import { HAND_LIMIT, STARTING_PRIMES } from "@pipou/shared";
+import {
+  IconCards,
+  IconChest,
+  IconFlag,
+  IconHand,
+  IconHourglass,
+  IconScroll,
+  IconSkull,
+} from "../../components/Icons";
+import PhaseMenu from "./PhaseMenu";
+import { phaseOptions, type PhaseOption } from "./phaseOptions";
 
 interface Props {
   me: MyState;
@@ -12,6 +23,13 @@ interface Props {
   isMyTurn: boolean;
   /** null : pas de timer. */
   timeLeft: number | null;
+  /** Taille de ma main : bloque « Finir le tour » au-delà de la limite. */
+  handSize: number;
+  onPickPhase: (option: PhaseOption) => void;
+  onOpenLog: () => void;
+  onOpenGraveyard: (side: "me" | "opponent") => void;
+  /** Absent : pas de bouton d'abandon. */
+  onSurrender?: () => void;
 }
 
 /** `primes` = primes restantes à récupérer ; les coffres se colorent à mesure qu'elles sont prises. */
@@ -40,8 +58,17 @@ export default function FightHUD({
   turnNumber,
   isMyTurn,
   timeLeft,
+  handSize,
+  onPickPhase,
+  onOpenLog,
+  onOpenGraveyard,
+  onSurrender,
 }: Props) {
   const { t } = useTranslation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const options = phaseOptions(phase, handSize);
+  const canPickPhase = isMyTurn && options.length > 0;
+  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}`;
   return (
     <div className="hud">
       {/* ── Ligne adversaire ── */}
@@ -71,18 +98,88 @@ export default function FightHUD({
 
       {/* ── Ligne centrale : phase + tour + timer ── */}
       <div className="hud-center">
-        <span className="hud-phase-chip">{t(`fight.phase.${phase}`)}</span>
-        <span className="hud-turn-num">
-          {t("fight.hud.turn", { count: turnNumber })}
-        </span>
-        {isMyTurn && timeLeft !== null && (
-          <span
-            className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
-          >
-            <span className="hud-timer-icon">⏱</span>
-            {timeLeft}s
+        <span className="hud-center-left">
+          <span className="hud-turn-num">
+            {t("fight.hud.turn", { count: turnNumber })}
           </span>
-        )}
+          {isMyTurn && timeLeft !== null && (
+            <span
+              className={`hud-timer${timeLeft < 20 ? " hud-timer--urgent" : ""}`}
+            >
+              <span className="hud-timer-icon">
+                <IconHourglass size={12} />
+              </span>
+              {timeLeft}s
+            </span>
+          )}
+        </span>
+        <span className="hud-phase-wrap">
+          {canPickPhase ? (
+            <button
+              type="button"
+              className={chipClass}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((o) => !o)}
+            >
+              {t(`fight.phase.${phase}`)}
+            </button>
+          ) : (
+            <span className={chipClass}>{t(`fight.phase.${phase}`)}</span>
+          )}
+          {menuOpen && canPickPhase && (
+            <PhaseMenu
+              phase={phase}
+              options={options}
+              discardCount={Math.max(0, handSize - HAND_LIMIT)}
+              onPick={(o) => {
+                setMenuOpen(false);
+                onPickPhase(o);
+              }}
+              onClose={() => setMenuOpen(false)}
+            />
+          )}
+        </span>
+        <span className="hud-actions">
+          <button
+            type="button"
+            className="hud-icon-btn"
+            aria-label={t("fight.hud.log")}
+            onClick={onOpenLog}
+          >
+            <IconScroll size={16} />
+          </button>
+          <button
+            type="button"
+            className="hud-icon-btn"
+            aria-label={t("fight.hud.myGraveyard", { count: me.graveyard.length })}
+            disabled={me.graveyard.length === 0}
+            onClick={() => onOpenGraveyard("me")}
+          >
+            <IconSkull size={16} />
+          </button>
+          <button
+            type="button"
+            className="hud-icon-btn hud-icon-btn--opp"
+            aria-label={t("fight.hud.oppGraveyard", {
+              count: opponent.graveyard.length,
+            })}
+            disabled={opponent.graveyard.length === 0}
+            onClick={() => onOpenGraveyard("opponent")}
+          >
+            <IconSkull size={16} />
+          </button>
+          {onSurrender && (
+            <button
+              type="button"
+              className="hud-icon-btn"
+              aria-label={t("fight.hud.surrender")}
+              onClick={onSurrender}
+            >
+              <IconFlag size={16} />
+            </button>
+          )}
+        </span>
       </div>
 
       {/* ── Ligne moi ── */}

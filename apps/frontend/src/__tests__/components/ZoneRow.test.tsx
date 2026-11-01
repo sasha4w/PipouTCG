@@ -12,7 +12,8 @@ describe("ZoneRow inspection", () => {
   it("ne rouvre pas de grande carte quand la zone inspectée se vide puis se remplit", () => {
     const { rerender } = render(<ZoneRow label="Monstres" zones={[monster()]} />);
 
-    fireEvent.contextMenu(screen.getByRole("button", { name: /Gobelin/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Gobelin/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
     expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
 
     rerender(<ZoneRow label="Monstres" zones={[null]} />);

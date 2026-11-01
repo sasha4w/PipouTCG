@@ -730,26 +730,42 @@
       "mulligan": "Mulligan",
       "main": "Principale",
       "battle": "Combat",
-      "end": "Fin de tour",
+      "end": "Phase de contrôle",
       "finished": "Terminé"
     },
-    "endPhase": {
-      "main": "Phase de Combat →",
-      "battle": "Fin de Tour →",
-      "end": "Terminer le Tour →",
-      "other": "Continuer →"
+    "confirm": {
+      "summon": "Invoquer {{card}} ?",
+      "summonRecycling": "Invoquer {{card}} en recyclant {{recycled}} ?",
+      "recycle": "Recycler {{card}} ?",
+      "evolve": "Faire évoluer {{target}} en {{card}} ?",
+      "transform": "Transformer {{card}} ?",
+      "play": "Jouer {{card}} ?",
+      "discard": "Défausser {{card}} ?",
+      "surplus": "{{count}} énergie en trop, gardée en réserve",
+      "missing": "Il manque {{count}} énergie",
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "close": "Fermer"
+    },
+    "phaseMenu": {
+      "title": "Phases",
+      "battle": "Combat",
+      "end": "Phase de contrôle",
+      "endTurn": "Finir le tour",
+      "discard_one": "Défausse {{count}} carte",
+      "discard_other": "Défausse {{count}} cartes"
     },
     "bar": {
-      "summon": "Invoquer",
-      "summonFree": "Invoquer (gratuit)",
       "play": "Jouer",
       "terrainHint": "Clique sur une zone support vide",
       "equipHint": "Clique sur un monstre allié à équiper",
-      "recycle": "Recycler (+1⚡)",
-      "discard_one": "Défausse {{count}} carte (clique sur la carte)",
-      "discard_other": "Défausse {{count}} cartes (clique sur la carte)",
-      "surrender": "Abandonner",
-      "confirmSurrender": "Abandonner ?"
+      "recycle": "Recycler",
+      "confirmSurrender": "Abandonner ?",
+      "recycleTitle": "Recycle la carte : +1 énergie",
+      "discardAction": "Défausser",
+      "directAttack": "Attaque directe",
+      "action": "Action",
+      "summonHint": "Touche une zone pour invoquer"
     },
     "noTarget": "Aucune cible valide",
     "targetAlly": "Choisir le monstre allié à cibler avec « {{name}} »",
@@ -764,6 +780,11 @@
       "me": "Moi"
     },
     "hud": {
+      "log": "Journal",
+      "myGraveyard": "Mon cimetière ({{count}})",
+      "oppGraveyard": "Cimetière adverse ({{count}})",
+      "surrender": "Abandonner",
+      "energy": "Énergie : {{count}}",
       "turn": "Tour {{count}}",
       "deck_one": "{{count}} carte dans le deck",
       "deck_other": "{{count}} cartes dans le deck",
@@ -780,7 +801,7 @@
     "hand": {
       "free": "GRATUIT",
       "payCard": "Carte de paiement",
-      "discard": "défausser"
+      "releve": "Relève disponible"
     },
     "pick": {
       "source": {
@@ -836,6 +857,12 @@
       "guard": "Mode Garde"
     },
     "cardLabel": "{{name}}, {{atk}} ATK, {{hp}} PV",
+    "info": "Informations",
+    "drawer": {
+      "close": "Fermer",
+      "seeAll": "Voir tout",
+      "stats": "{{atk}} ATK · {{hp}} PV"
+    },
     "effectsSection": "Effets",
     "lobby": {
       "draw": "Match nul",
@@ -964,7 +991,8 @@
       "stepOf": "Étape {{n}} / {{total}}",
       "prev": "Précédent",
       "next": "Suivant"
-    }
+    },
+    "yourTurn": "À toi de jouer !"
   },
   "achievements": {
     "tab": "Succès",

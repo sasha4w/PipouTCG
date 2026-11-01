@@ -1,0 +1,68 @@
+.phm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+/* Beige / brun, comme les autres fenêtres de l'app */
+.phm {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 61;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 14px;
+  background: #f5efe0;
+  color: #3d1020;
+  border: 1.5px solid rgb(61 16 32 / 0.18);
+  box-shadow: 0 10px 28px rgb(61 16 32 / 0.28);
+}
+
+.phm-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #3d1020;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.phm-item:hover:not(:disabled) {
+  background: rgb(122 28 59 / 0.1);
+}
+
+/* Phases passées ou indisponibles : grisées */
+.phm-item:disabled {
+  color: rgb(61 16 32 / 0.35);
+  cursor: not-allowed;
+}
+
+/* Phase en cours : repérée sans être cliquable */
+.phm-item--current {
+  background: rgb(122 28 59 / 0.1);
+  color: #7a1c3b;
+}
+
+.phm-item--current:disabled {
+  color: #7a1c3b;
+}
+
+.phm-hint {
+  font-size: 0.75em;
+  font-weight: 400;
+  color: #b3541e;
+}

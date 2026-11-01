@@ -1,0 +1,46 @@
+/* Ne capte jamais les appuis : le joueur peut déjà jouer */
+.tb {
+  position: absolute;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(10 10 16 / 0.6);
+  pointer-events: none;
+  animation: tb-fade 1.2s ease-out forwards;
+}
+
+.tb-text {
+  font-family: "Lilita One", sans-serif;
+  font-size: clamp(28px, 9vw, 48px);
+  color: #fff;
+  text-shadow: 0 3px 14px rgb(0 0 0 / 0.6);
+  animation: tb-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.tb--still,
+.tb--still .tb-text {
+  animation: none;
+}
+
+@keyframes tb-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes tb-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

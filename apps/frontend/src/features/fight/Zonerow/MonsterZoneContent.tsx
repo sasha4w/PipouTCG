@@ -16,16 +16,17 @@ interface Props {
   zone: MonsterOnBoard;
   isOpponent: boolean;
   onModeChange?: (instanceId: string, mode: CombatMode) => void;
-  onInspect: () => void;
-  onInspectEnd: () => void;
+  /** Carte touchée : le bouton « i » apparaît. */
+  selected?: boolean;
+  onInfo: () => void;
 }
 
 export default function MonsterZoneContent({
   zone,
   isOpponent,
   onModeChange,
-  onInspect,
-  onInspectEnd,
+  selected,
+  onInfo,
 }: Props) {
   const { t } = useTranslation();
 
@@ -39,8 +40,8 @@ export default function MonsterZoneContent({
         guard={zone.mode === "guard"}
         spent={hasSpentAttacks(zone)}
         badges={<StatusBadges monster={zone} />}
-        onInspect={onInspect}
-        onInspectEnd={onInspectEnd}
+        selected={selected}
+        onInfo={onInfo}
       />
 
       {Array.isArray(zone.equipments) && zone.equipments.length > 0 && (

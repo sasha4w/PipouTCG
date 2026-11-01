@@ -728,26 +728,42 @@
       "mulligan": "Mulligan",
       "main": "Main",
       "battle": "Battle",
-      "end": "End of turn",
+      "end": "Control phase",
       "finished": "Finished"
     },
-    "endPhase": {
-      "main": "Battle Phase →",
-      "battle": "End of Turn →",
-      "end": "End the Turn →",
-      "other": "Continue →"
+    "confirm": {
+      "summon": "Summon {{card}}?",
+      "summonRecycling": "Summon {{card}} by recycling {{recycled}}?",
+      "recycle": "Recycle {{card}}?",
+      "evolve": "Evolve {{target}} into {{card}}?",
+      "transform": "Transform {{card}}?",
+      "play": "Play {{card}}?",
+      "discard": "Discard {{card}}?",
+      "surplus": "{{count}} extra energy, kept in reserve",
+      "missing": "{{count}} energy missing",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "phaseMenu": {
+      "title": "Phases",
+      "battle": "Battle",
+      "end": "Control phase",
+      "endTurn": "End turn",
+      "discard_one": "Discard {{count}} card",
+      "discard_other": "Discard {{count}} cards"
     },
     "bar": {
-      "summon": "Summon",
-      "summonFree": "Summon (free)",
       "play": "Play",
       "terrainHint": "Tap an empty support zone",
       "equipHint": "Tap an allied monster to equip",
-      "recycle": "Recycle (+1⚡)",
-      "discard_one": "Discard {{count}} card (tap the card)",
-      "discard_other": "Discard {{count}} cards (tap the card)",
-      "surrender": "Surrender",
-      "confirmSurrender": "Surrender?"
+      "recycle": "Recycle",
+      "confirmSurrender": "Surrender?",
+      "recycleTitle": "Recycle the card: +1 energy",
+      "discardAction": "Discard",
+      "directAttack": "Direct attack",
+      "action": "Action",
+      "summonHint": "Tap a zone to summon"
     },
     "noTarget": "No valid target",
     "targetAlly": "Choose the allied monster to target with “{{name}}”",
@@ -762,6 +778,11 @@
       "me": "Me"
     },
     "hud": {
+      "log": "Log",
+      "myGraveyard": "My graveyard ({{count}})",
+      "oppGraveyard": "Opponent graveyard ({{count}})",
+      "surrender": "Surrender",
+      "energy": "Energy: {{count}}",
       "turn": "Turn {{count}}",
       "deck_one": "{{count}} card in the deck",
       "deck_other": "{{count}} cards in the deck",
@@ -778,7 +799,7 @@
     "hand": {
       "free": "FREE",
       "payCard": "Payment card",
-      "discard": "discard"
+      "releve": "Relief available"
     },
     "pick": {
       "source": {
@@ -834,6 +855,12 @@
       "guard": "Guard mode"
     },
     "cardLabel": "{{name}}, {{atk}} ATK, {{hp}} HP",
+    "info": "Info",
+    "drawer": {
+      "close": "Close",
+      "seeAll": "See all",
+      "stats": "{{atk}} ATK · {{hp}} HP"
+    },
     "effectsSection": "Effects",
     "lobby": {
       "draw": "Draw",
@@ -962,7 +989,8 @@
       "stepOf": "Step {{n}} / {{total}}",
       "prev": "Previous",
       "next": "Next"
-    }
+    },
+    "yourTurn": "Your turn!"
   },
   "achievements": {
     "tab": "Achievements",

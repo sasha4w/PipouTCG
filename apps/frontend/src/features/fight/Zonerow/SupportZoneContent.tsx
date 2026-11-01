@@ -4,14 +4,15 @@ import "./SupportZoneContent.css";
 
 interface Props {
   zone: CardInstance;
-  onInspect: () => void;
-  onInspectEnd: () => void;
+  /** Carte touchée : le bouton « i » apparaît. */
+  selected?: boolean;
+  onInfo: () => void;
 }
 
 export default function SupportZoneContent({
   zone,
-  onInspect,
-  onInspectEnd,
+  selected,
+  onInfo,
 }: Props) {
   return (
     <div className="zr-support">
@@ -19,8 +20,8 @@ export default function SupportZoneContent({
         className="zr-card"
         card={zone.baseCard}
         size="xs"
-        onInspect={onInspect}
-        onInspectEnd={onInspectEnd}
+        selected={selected}
+        onInfo={onInfo}
       />
     </div>
   );

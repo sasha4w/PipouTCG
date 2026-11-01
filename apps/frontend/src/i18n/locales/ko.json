@@ -673,25 +673,41 @@
       "mulligan": "멀리건",
       "main": "메인",
       "battle": "배틀",
-      "end": "턴 종료",
+      "end": "컨트롤 페이즈",
       "finished": "종료"
     },
-    "endPhase": {
-      "main": "배틀 페이즈 →",
-      "battle": "턴 종료 →",
-      "end": "턴 마치기 →",
-      "other": "계속 →"
+    "confirm": {
+      "summon": "{{card}}을(를) 소환할까요?",
+      "summonRecycling": "{{recycled}}을(를) 재활용해 {{card}}을(를) 소환할까요?",
+      "recycle": "{{card}}을(를) 재활용할까요?",
+      "evolve": "{{target}}을(를) {{card}}(으)로 진화시킬까요?",
+      "transform": "{{card}}을(를) 변신시킬까요?",
+      "play": "{{card}}을(를) 사용할까요?",
+      "discard": "{{card}}을(를) 버릴까요?",
+      "surplus": "에너지 {{count}} 초과, 비축분으로 보관됩니다",
+      "missing": "에너지 {{count}} 부족",
+      "confirm": "확인",
+      "cancel": "취소",
+      "close": "닫기"
+    },
+    "phaseMenu": {
+      "title": "페이즈",
+      "battle": "배틀",
+      "end": "컨트롤 페이즈",
+      "endTurn": "턴 마치기",
+      "discard_other": "카드 {{count}}장 버리기"
     },
     "bar": {
-      "summon": "소환",
-      "summonFree": "소환 (무료)",
       "play": "사용",
       "terrainHint": "빈 서포트 구역을 터치하세요",
       "equipHint": "장착할 아군 몬스터를 터치하세요",
-      "recycle": "재활용 (+1⚡)",
-      "discard": "카드 {{count}}장을 버리세요 (카드를 터치)",
-      "surrender": "항복",
-      "confirmSurrender": "항복할까요?"
+      "recycle": "재활용",
+      "confirmSurrender": "항복할까요?",
+      "recycleTitle": "카드를 재활용: 에너지 +1",
+      "discardAction": "버리기",
+      "directAttack": "직접 공격",
+      "action": "행동",
+      "summonHint": "구역을 눌러 소환"
     },
     "noTarget": "유효한 대상 없음",
     "targetAlly": "「{{name}}」(으)로 지정할 아군 몬스터를 고르세요",
@@ -706,6 +722,11 @@
       "me": "나"
     },
     "hud": {
+      "log": "기록",
+      "myGraveyard": "내 묘지 ({{count}})",
+      "oppGraveyard": "상대 묘지 ({{count}})",
+      "surrender": "항복",
+      "energy": "에너지: {{count}}",
       "turn": "{{count}}턴",
       "deck": "덱에 카드 {{count}}장",
       "hand": "손패 {{count}}장",
@@ -719,7 +740,7 @@
     "hand": {
       "free": "무료",
       "payCard": "지불 카드",
-      "discard": "버리기"
+      "releve": "교대 가능"
     },
     "pick": {
       "source": {
@@ -769,6 +790,12 @@
       "guard": "가드 모드"
     },
     "cardLabel": "{{name}}, ATK {{atk}}, HP {{hp}}",
+    "info": "정보",
+    "drawer": {
+      "close": "닫기",
+      "seeAll": "모두 보기",
+      "stats": "ATK {{atk}} · HP {{hp}}"
+    },
     "effectsSection": "효과",
     "lobby": {
       "draw": "무승부",
@@ -896,7 +923,8 @@
       "stepOf": "{{n}} / {{total}} 단계",
       "prev": "이전",
       "next": "다음"
-    }
+    },
+    "yourTurn": "당신의 차례!"
   },
   "achievements": {
     "tab": "업적",

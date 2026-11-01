@@ -85,3 +85,1113 @@
     transform: translate(2px, 1px);
   }
 }
+
+/* Message d'énergie manquante : au-dessus du dock, 2 s */
+.fb-notice {
+  position: absolute;
+  left: 50%;
+  bottom: 205px;
+  transform: translateX(-50%);
+  z-index: 950;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgb(20 21 27 / 0.92);
+  border: 1px solid #e8c547;
+  color: #f6dc7a;
+  font-weight: 700;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+/* ── Écran de combat : un seul écran, sans défilement ─────────────────────────
+   Duel et aventure rendent le plateau dans .fp-fight-area ; le bac à sable
+   garde sa mise en page libre. */
+body.in-fight .cc-header,
+body.in-fight .cc-footer {
+  display: none;
+}
+
+body.in-fight .app-main {
+  padding: 0;
+  overflow: hidden;
+}
+
+body.in-fight .fp-root {
+  min-height: 0;
+  height: 100%;
+}
+
+.fp-fight-area {
+  min-height: 0;
+}
+
+.fp-fight-area .fb-wrap {
+  flex: 1;
+  min-height: 0;
+  max-width: none;
+  overflow: hidden;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  gap: 4px;
+}
+
+.fp-fight-area .hud {
+  margin-bottom: 0;
+  padding: 4px 8px;
+}
+
+/*
+  Les deux terrains se partagent la hauteur à parts égales ; leurs rangées
+  restent groupées au centre et suivent la taille des cartes (pas d'étirement).
+*/
+.fp-fight-area .fb-side-row {
+  flex: 1 1 0;
+  min-height: 0;
+  container-type: size;
+}
+
+/* Laisse la place au compteur d'énergie, à gauche */
+.fp-fight-area .fb-zones-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding-left: 28px;
+}
+
+.fp-fight-area .zr-wrap {
+  flex: 0 0 auto;
+  margin: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Le nom de la rangée reste lisible par les lecteurs d'écran */
+.fp-fight-area .zr-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.fp-fight-area .zr-row {
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.fp-fight-area .zr-zone {
+  padding: 1px;
+}
+
+/*
+  Carte de zone : miniature proportionnelle (100 x 150 à l'origine). L'échelle
+  est le plus petit de deux plafonds : un selon la hauteur du terrain (--zm
+  monstres, --zs supports), l'autre selon sa largeur (--zw). Paliers générés,
+  un par 8 px.
+*/
+.fp-fight-area .fb-zones-col {
+  --zm: 0.20;
+  --zs: 0.15;
+  --zw: 0.49;
+}
+
+@container (min-height: 100px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.20;
+    --zs: 0.15;
+  }
+}
+
+@container (min-height: 108px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.23;
+    --zs: 0.17;
+  }
+}
+
+@container (min-height: 116px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.26;
+    --zs: 0.19;
+  }
+}
+
+@container (min-height: 124px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.29;
+    --zs: 0.22;
+  }
+}
+
+@container (min-height: 132px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.32;
+    --zs: 0.24;
+  }
+}
+
+@container (min-height: 140px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.35;
+    --zs: 0.26;
+  }
+}
+
+@container (min-height: 148px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.38;
+    --zs: 0.29;
+  }
+}
+
+@container (min-height: 156px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.41;
+    --zs: 0.31;
+  }
+}
+
+@container (min-height: 164px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.44;
+    --zs: 0.33;
+  }
+}
+
+@container (min-height: 172px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.47;
+    --zs: 0.35;
+  }
+}
+
+@container (min-height: 180px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.50;
+    --zs: 0.38;
+  }
+}
+
+@container (min-height: 188px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.53;
+    --zs: 0.40;
+  }
+}
+
+@container (min-height: 196px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.56;
+    --zs: 0.42;
+  }
+}
+
+@container (min-height: 204px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.59;
+    --zs: 0.45;
+  }
+}
+
+@container (min-height: 212px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.62;
+    --zs: 0.47;
+  }
+}
+
+@container (min-height: 220px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.66;
+    --zs: 0.49;
+  }
+}
+
+@container (min-height: 228px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.69;
+    --zs: 0.51;
+  }
+}
+
+@container (min-height: 236px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.72;
+    --zs: 0.54;
+  }
+}
+
+@container (min-height: 244px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.75;
+    --zs: 0.56;
+  }
+}
+
+@container (min-height: 252px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.78;
+    --zs: 0.58;
+  }
+}
+
+@container (min-height: 260px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.81;
+    --zs: 0.61;
+  }
+}
+
+@container (min-height: 268px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.84;
+    --zs: 0.63;
+  }
+}
+
+@container (min-height: 276px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.87;
+    --zs: 0.65;
+  }
+}
+
+@container (min-height: 284px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.90;
+    --zs: 0.67;
+  }
+}
+
+@container (min-height: 292px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.93;
+    --zs: 0.70;
+  }
+}
+
+@container (min-height: 300px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.96;
+    --zs: 0.72;
+  }
+}
+
+@container (min-height: 308px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.99;
+    --zs: 0.74;
+  }
+}
+
+@container (min-height: 316px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 324px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 332px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 340px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 348px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 356px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 364px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 372px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 380px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 388px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 396px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 404px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 412px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-height: 420px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 1.00;
+    --zs: 0.75;
+  }
+}
+
+@container (min-width: 200px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.49;
+  }
+}
+
+@container (min-width: 203px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.50;
+  }
+}
+
+@container (min-width: 206px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.51;
+  }
+}
+
+@container (min-width: 209px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.52;
+  }
+}
+
+@container (min-width: 212px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.53;
+  }
+}
+
+@container (min-width: 215px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.54;
+  }
+}
+
+@container (min-width: 218px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.55;
+  }
+}
+
+@container (min-width: 221px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.56;
+  }
+}
+
+@container (min-width: 224px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.57;
+  }
+}
+
+@container (min-width: 227px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.58;
+  }
+}
+
+@container (min-width: 230px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.59;
+  }
+}
+
+@container (min-width: 233px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.60;
+  }
+}
+
+@container (min-width: 236px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.61;
+  }
+}
+
+@container (min-width: 239px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.62;
+  }
+}
+
+@container (min-width: 242px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.63;
+  }
+}
+
+@container (min-width: 245px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.64;
+  }
+}
+
+@container (min-width: 248px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.65;
+  }
+}
+
+@container (min-width: 251px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.66;
+  }
+}
+
+@container (min-width: 254px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.67;
+  }
+}
+
+@container (min-width: 257px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.68;
+  }
+}
+
+@container (min-width: 260px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.69;
+  }
+}
+
+@container (min-width: 263px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.70;
+  }
+}
+
+@container (min-width: 266px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.71;
+  }
+}
+
+@container (min-width: 269px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.72;
+  }
+}
+
+@container (min-width: 272px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.73;
+  }
+}
+
+@container (min-width: 275px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.74;
+  }
+}
+
+@container (min-width: 278px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.75;
+  }
+}
+
+@container (min-width: 281px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.76;
+  }
+}
+
+@container (min-width: 284px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.77;
+  }
+}
+
+@container (min-width: 287px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.78;
+  }
+}
+
+@container (min-width: 290px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.79;
+  }
+}
+
+@container (min-width: 293px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.80;
+  }
+}
+
+@container (min-width: 296px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.81;
+  }
+}
+
+@container (min-width: 299px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.82;
+  }
+}
+
+@container (min-width: 302px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.83;
+  }
+}
+
+@container (min-width: 305px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.84;
+  }
+}
+
+@container (min-width: 308px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.85;
+  }
+}
+
+@container (min-width: 311px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.86;
+  }
+}
+
+@container (min-width: 314px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.87;
+  }
+}
+
+@container (min-width: 317px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.88;
+  }
+}
+
+@container (min-width: 320px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.89;
+  }
+}
+
+@container (min-width: 323px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.90;
+  }
+}
+
+@container (min-width: 326px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.91;
+  }
+}
+
+@container (min-width: 329px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.92;
+  }
+}
+
+@container (min-width: 332px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.93;
+  }
+}
+
+@container (min-width: 335px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.94;
+  }
+}
+
+@container (min-width: 338px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.95;
+  }
+}
+
+@container (min-width: 341px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.96;
+  }
+}
+
+@container (min-width: 344px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.97;
+  }
+}
+
+@container (min-width: 347px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.98;
+  }
+}
+
+@container (min-width: 350px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.99;
+  }
+}
+
+@container (min-width: 353px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 356px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 359px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 362px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 365px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 368px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 371px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 374px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 377px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 380px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 383px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 386px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 389px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 392px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 395px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 398px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 401px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 404px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 407px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 410px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 413px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 416px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 419px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 422px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 425px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 428px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 431px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 434px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 437px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 440px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 443px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 446px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 449px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 452px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 455px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 458px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 461px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 464px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 467px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 470px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 473px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 476px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 479px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 482px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 485px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 488px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 491px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 494px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 497px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 500px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 503px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 506px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 509px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 512px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 515px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 518px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+.fp-fight-area .zr-wrap:not(.zr-wrap--support) {
+  --zc: min(var(--zm), var(--zw));
+}
+
+.fp-fight-area .zr-wrap--support {
+  --zc: min(var(--zs), var(--zw));
+}
+
+/* La case suit la taille de sa carte (+ boutons de mode pour les monstres) */
+.fp-fight-area .zr-wrap:not(.zr-wrap--support) .zr-zone {
+  min-height: calc(var(--zc) * 150px + 40px);
+}
+
+/* Pas de boutons de mode chez l'adversaire : la case colle à la carte */
+.fp-fight-area .zr-wrap--opponent:not(.zr-wrap--support) .zr-zone {
+  min-height: calc(var(--zc) * 150px + 6px);
+}
+
+.fp-fight-area .zr-wrap--support .zr-zone {
+  min-height: calc(var(--zc) * 150px + 6px);
+}
+
+.fp-fight-area .zr-card {
+  width: 100px;
+  zoom: var(--zc);
+}
+
+/* Le bouton « i » garde une taille tactile malgré la miniature, mais déborde
+   du coin pour ne pas couvrir la carte */
+.fp-fight-area .zr-card .icard-info {
+  zoom: calc(0.85 / var(--zc));
+  top: -6px;
+  right: -6px;
+}
+
+/* HUD resserré pour laisser la hauteur au plateau */
+.fp-fight-area .hud {
+  gap: 0;
+}
+
+.fp-fight-area .hud-center {
+  padding: 0;
+}
+
+.fp-fight-area .hud-icon-btn {
+  width: 28px;
+  height: 28px;
+}
+
+/* Dock : la main passe au premier plan, par-dessus le bas du plateau */
+.fp-fight-area .fhand {
+  position: relative;
+  z-index: 30;
+  min-height: 0;
+  margin-top: -24px;
+  padding: 24px 16px 2px;
+  pointer-events: none;
+}
+
+.fp-fight-area .fhand .icard {
+  pointer-events: auto;
+}
+
+.fp-fight-area .fab-bar {
+  position: relative;
+  z-index: 31;
+}

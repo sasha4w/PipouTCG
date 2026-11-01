@@ -60,9 +60,12 @@ export function useBoardControls(
         attack({ targetInstanceId }),
       onDirectAttack: () => attack({ direct: true }),
       /** Le paiement passe en argument : l'état payIndices n'est pas encore à jour. */
-      onSummon: (paymentIndices: number[] = payIndices) => {
-        if (selectedZone !== null)
-          summonAt(selectedZone, paymentIndices, false);
+      /** La zone vient de l'appel quand la sélection n'est pas encore à jour. */
+      onSummon: (
+        paymentIndices: number[] = payIndices,
+        zoneIndex: number | null = selectedZone,
+      ) => {
+        if (zoneIndex !== null) summonAt(zoneIndex, paymentIndices, false);
       },
       /** Relève : les alliés Pipou envoyés au cimetière remplacent le paiement. */
       onSummonReleve: (zoneIndex: number, releveInstanceIds: string[]) => {

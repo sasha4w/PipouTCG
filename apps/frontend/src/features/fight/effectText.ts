@@ -567,3 +567,19 @@ export function describeCardEffects(
 export function effectPlainText(text: string): string {
   return text.replace(/\*\*/g, "");
 }
+
+const SUMMARY_MAX = 90;
+
+/**
+ * Résumé en une ligne (90 caractères au plus) du premier effet de la carte,
+ * sans marqueurs de mots-clés. La règle de pose (sans icône) n'est pas un effet.
+ */
+export function effectSummary(card: EffectSourceCard, t: TFunction): string {
+  const first = describeCardEffects(card, t).rules.find((r) => r.icon !== "");
+  const line = first?.lines[0];
+  if (!line) return "";
+  const text = effectPlainText(line.text);
+  return text.length <= SUMMARY_MAX
+    ? text
+    : `${text.slice(0, SUMMARY_MAX - 1).trimEnd()}…`;
+}

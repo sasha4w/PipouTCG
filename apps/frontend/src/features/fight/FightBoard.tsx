@@ -6,6 +6,7 @@ import {
   RARITY_COLOR,
   type GameState,
   type MonsterOnBoard,
+  type Phase,
 } from "./fight.types";
 import FightHUD from "./FightHUD";
 import FightFxLayer from "./FightFxLayer";
@@ -21,6 +22,14 @@ import { toHandCard, type HandCard } from "./handCard";
 import FightActionBar from "./FightActionBar";
 import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
+import EnergyCounter from "./EnergyCounter";
+import TurnBanner from "./TurnBanner";
+import SelectionHint from "./SelectionHint";
+import { mainSlot } from "./mainSlot";
+import ConfirmActionSheet from "./ConfirmActionSheet";
+import { confirmText, type PendingAction } from "./pendingAction";
+import { paymentBalance } from "./payment";
+import type { PhaseOption } from "./phaseOptions";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import { releveOptions } from "./releve";
@@ -53,9 +62,9 @@ interface Props {
   onSetPayIndices: React.Dispatch<React.SetStateAction<number[]>>;
   onAttackMonster: (instanceId: string) => void;
   onDirectAttack: () => void;
-  onSummon: () => void;
+  onSummon: (paymentIndices?: number[], zoneIndex?: number) => void;
   /** Invoque Noyau Zeta sur la zone adverse zoneIndex */
-  onSummonZeta: (zoneIndex: number) => void;
+  onSummonZeta: (zoneIndex: number, paymentIndices?: number[]) => void;
   onSummonReleve: (zoneIndex: number, releveInstanceIds: string[]) => void;
   /** Fait évoluer la carte sélectionnée sur le monstre allié visé */
   onEvolve: (targetInstanceId: string, paymentIndices?: number[]) => void;
@@ -96,7 +105,7 @@ export default function FightBoard({
   onEndPhase,
   onSurrender,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const phase = gs.phase;
 
   const { reduced } = useAnimationPrefs();
@@ -127,19 +136,39 @@ export default function FightBoard({
   }, [fx, reduced]);
 
   const [showSummonModal, setShowSummonModal] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [graveyardSide, setGraveyardSide] = useState<
+    "me" | "opponent" | null
+  >(null);
   // Relève sur une zone occupée : l'allié de cette zone est sacrifié d'office
   const [releveLockedId, setReleveLockedId] = useState<string | null>(null);
-  // Monstre visé par une évolution en attente de paiement
-  const [evolveTargetId, setEvolveTargetId] = useState<string | null>(null);
-  // Une évolution en attente ne survit pas à un changement de carte sélectionnée
-  const [evolveCard, setEvolveCard] = useState(selectedCard);
-  if (evolveCard !== selectedCard) {
-    setEvolveCard(selectedCard);
-    if (evolveTargetId !== null) {
-      setEvolveTargetId(null);
-      setShowSummonModal(false);
-    }
-  }
+  // Action de carte en attente de confirmation, liée au tour, à la phase et à
+  // la carte sélectionnée : si l'un change, la confirmation disparaît.
+  const [pending, setPending] = useState<{
+    action: PendingAction;
+    phase: Phase;
+    turn: number;
+    card: number | null;
+  } | null>(null);
+  const activePending =
+    pending !== null &&
+    gs.isMyTurn &&
+    pending.phase === phase &&
+    pending.turn === gs.turnNumber &&
+    pending.card === selectedCard
+      ? pending.action
+      : null;
+  // Confirmation périmée (autre tour, phase ou carte) : on l'oublie pour de bon
+  if (pending !== null && activePending === null) setPending(null);
+  // Message d'énergie manquante, affiché 2 s au-dessus du dock
+  const [shortage, setShortage] = useState<{ count: number; id: number } | null>(
+    null,
+  );
+  useEffect(() => {
+    if (shortage === null) return;
+    const id = setTimeout(() => setShortage(null), 2000);
+    return () => clearTimeout(id);
+  }, [shortage]);
 
   // ── Support ciblé sur monstre (CardPickModal interne) ────────────────────
   const [targetSupportHandIdx, setTargetSupportHandIdx] = useState<
@@ -147,13 +176,6 @@ export default function FightBoard({
   >(null);
   const [targetSupportChoice, setTargetSupportChoice] =
     useState<PendingChoice | null>(null);
-
-  // Zone adverse choisie pour Zeta (distinct de selectedZone qui est côté allié)
-  // Zone adverse choisie pour Noyau Zeta, liée à la carte de la main sélectionnée
-  const [oppZoneChoice, setOppZoneChoice] = useState<{
-    card: number | null;
-    zone: number;
-  } | null>(null);
 
   // ── Attack animation ──────────────────────────────────────────────────────
   const [attackingZoneIdx, setAttackingZoneIdx] = useState<number | null>(null);
@@ -260,12 +282,6 @@ export default function FightBoard({
       : [],
   );
 
-  // Valable seulement tant que la même carte Zeta reste sélectionnée
-  const selectedOppZone =
-    isZeta && oppZoneChoice?.card === selectedCard ? oppZoneChoice.zone : null;
-  const setSelectedOppZone = (zone: number | null) =>
-    setOppZoneChoice(zone === null ? null : { card: selectedCard, zone });
-
   // Monstres alliés sur lesquels la carte sélectionnée peut évoluer maintenant
   const selectedInstance =
     selectedCard !== null ? gs.me.hand[selectedCard] : undefined;
@@ -275,6 +291,14 @@ export default function FightBoard({
     selectedInstance && canSummonFromHand(selectedInstance.baseCard)
       ? releveOptions(selectedInstance.baseCard, gs.me.monsterZones, myId)
       : null;
+  // Cartes de la main dont la Relève est jouable maintenant (signalées dans la main)
+  const releveReadyIds = new Set(
+    isMyMain
+      ? gs.me.hand
+          .filter((c) => releveOptions(c.baseCard, gs.me.monsterZones, myId))
+          .map((c) => c.instanceId)
+      : [],
+  );
   const evolvesOnly =
     !!selectedInstance && !canSummonFromHand(selectedInstance.baseCard);
   const evolvableTargets: MonsterOnBoard[] =
@@ -288,16 +312,6 @@ export default function FightBoard({
       : [];
   const evolvableIds = new Set(evolvableTargets.map((m) => m.instanceId));
   const myHighlightIds = new Set([...evolvableIds, ...equippableIds]);
-  const evolveTarget =
-    evolveTargetId !== null
-      ? gs.me.monsterZones.find((m) => m?.instanceId === evolveTargetId)
-      : undefined;
-
-  const monsterNeedsPayment = (card: HandCard): boolean => {
-    const cost = card.cost ?? 0;
-    if (cost === 0) return false;
-    return Math.max(0, cost - gs.me.recycleEnergy) > 0;
-  };
 
   /** Monstres qu'un Éphémère peut viser dans ce camp (immunisés exclus). */
   const targetableZones = (
@@ -355,6 +369,34 @@ export default function FightBoard({
 
   // ── Event handlers ────────────────────────────────────────────────────────
 
+  const openPending = (action: PendingAction) =>
+    setPending({ action, phase, turn: gs.turnNumber, card: selectedCard });
+
+  /** Coût de la carte : 0 si l'invocation est gratuite. */
+  const summonCost = (card: HandCard): number =>
+    gs.me.freeSummonInstanceIds.includes(card.instanceId) ? 0 : (card.cost ?? 0);
+
+  /**
+   * Ouvre la confirmation d'une action payante, sauf s'il manque de l'énergie :
+   * le joueur en est alors informé et rien n'est envoyé.
+   */
+  const requestPayment = (
+    cost: number,
+    action: Extract<PendingAction, { payIndices: number[] }>,
+  ) => {
+    const { missing } = paymentBalance(
+      cost,
+      gs.me.recycleEnergy,
+      payIndices.length,
+    );
+    if (missing > 0) {
+      // `id` change à chaque appui : le délai de 2 s repart de zéro
+      setShortage((prev) => ({ count: missing, id: (prev?.id ?? 0) + 1 }));
+      return;
+    }
+    openPending(action);
+  };
+
   const handleCardClick = (idx: number) => {
     if (!gs.isMyTurn) return;
 
@@ -362,7 +404,6 @@ export default function FightBoard({
       if (selectedCard === idx) {
         onSetSelectedCard(null);
         onSetPayIndices([]);
-        setSelectedOppZone(null);
         return;
       }
       if (selectedCard === null) {
@@ -373,7 +414,9 @@ export default function FightBoard({
         prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
       );
     } else if (phase === "end") {
-      if (gs.me.hand.length > HAND_LIMIT) onDiscardCard(idx);
+      // Phase de contrôle : on touche la carte, puis « Défausser » confirme
+      if (gs.me.hand.length > HAND_LIMIT)
+        onSetSelectedCard(selectedCard === idx ? null : idx);
     }
   };
 
@@ -389,14 +432,12 @@ export default function FightBoard({
           evolvableIds.has(occupant.instanceId) &&
           selectedInstance
         ) {
-          const cost = evolutionCost(selectedInstance.baseCard, occupant);
-          if (Math.max(0, cost - gs.me.recycleEnergy) > 0) {
-            onSetPayIndices([]);
-            setEvolveTargetId(occupant.instanceId);
-            setShowSummonModal(true);
-          } else {
-            onEvolve(occupant.instanceId, []);
-          }
+          requestPayment(evolutionCost(selectedInstance.baseCard, occupant), {
+            kind: "evolve",
+            handIndex: selectedCard,
+            targetInstanceId: occupant.instanceId,
+            payIndices,
+          });
           return;
         }
         // Relève : la zone d'un allié Pipou accueille le monstre à sa place
@@ -411,27 +452,26 @@ export default function FightBoard({
         }
         if (evolvesOnly) return;
         const card = mappedHand[selectedCard];
-        const isFreeCard =
-          selectedHandCard !== null &&
-          gs.me.freeSummonInstanceIds.includes(selectedHandCard.instanceId);
 
         if (card?.type === "monster") {
-          onSetSelectedZone(idx);
-          if (!isFreeCard && monsterNeedsPayment(card)) {
-            onSetPayIndices([]);
-            setShowSummonModal(true);
-          }
+          if (occupant) return; // on n'invoque que sur une zone libre
+          requestPayment(summonCost(card), {
+            kind: "summon",
+            handIndex: selectedCard,
+            zoneIndex: idx,
+            payIndices,
+          });
         } else if (
           card?.type === "support" &&
           card.supportType === "EQUIPMENT"
         ) {
           // EQUIPMENT : équiper directement le monstre sur cette zone
-          const target = gs.me.monsterZones[idx];
-          if (!target) return; // zone vide, pas de cible
-          onPlaySupport(selectedCard, undefined, target.instanceId);
-          onSetSelectedCard(null);
-          onSetSelectedZone(null);
-          onSetPayIndices([]);
+          if (!occupant) return; // zone vide, pas de cible
+          openPending({
+            kind: "playSupport",
+            handIndex: selectedCard,
+            targetInstanceId: occupant.instanceId,
+          });
         } else {
           onSetSelectedZone(idx);
         }
@@ -462,10 +502,11 @@ export default function FightBoard({
     const occupant = gs.opponent.monsterZones[idx];
     if (isEquipment && selectedCard !== null) {
       if (!occupant || !plantedByMeIds.has(occupant.instanceId)) return;
-      onPlaySupport(selectedCard, undefined, occupant.instanceId);
-      onSetSelectedCard(null);
-      onSetSelectedZone(null);
-      onSetPayIndices([]);
+      openPending({
+        kind: "playSupport",
+        handIndex: selectedCard,
+        targetInstanceId: occupant.instanceId,
+      });
       return;
     }
 
@@ -476,18 +517,12 @@ export default function FightBoard({
       selectedCard !== null &&
       !gs.opponent.monsterZones[idx]
     ) {
-      setSelectedOppZone(idx);
-      const card = mappedHand[selectedCard];
-      const isFreeCard = gs.me.freeSummonInstanceIds.includes(card.instanceId);
-
-      if (!isFreeCard && monsterNeedsPayment(card)) {
-        onSetPayIndices([]);
-        setShowSummonModal(true);
-      } else {
-        onSummonZeta(idx);
-        onSetSelectedCard(null);
-        setSelectedOppZone(null);
-      }
+      requestPayment(summonCost(mappedHand[selectedCard]), {
+        kind: "summonZeta",
+        handIndex: selectedCard,
+        oppZoneIndex: idx,
+        payIndices,
+      });
     }
   };
 
@@ -496,33 +531,50 @@ export default function FightBoard({
     if (!isTerrain) return;
     if (gs.me.supportZones[idx]) return;
 
-    onPlaySupport(selectedCard, idx);
+    openPending({ kind: "playSupport", handIndex: selectedCard, zoneIndex: idx });
+  };
+
+  /** Envoie l'action confirmée puis vide la sélection. */
+  const confirmPending = (a: PendingAction) => {
+    setPending(null);
+    switch (a.kind) {
+      case "summon":
+        onSummon(a.payIndices, a.zoneIndex);
+        break;
+      case "summonZeta":
+        onSummonZeta(a.oppZoneIndex, a.payIndices);
+        break;
+      case "evolve":
+        onEvolve(a.targetInstanceId, a.payIndices);
+        break;
+      case "playSupport":
+        onPlaySupport(a.handIndex, a.zoneIndex, a.targetInstanceId);
+        break;
+      case "transform":
+        onTransform(a.handIndex);
+        break;
+      case "recycle":
+        onRecycleSupport(a.handIndex);
+        break;
+      case "discard":
+        onDiscardCard(a.handIndex);
+        break;
+    }
     onSetSelectedCard(null);
     onSetSelectedZone(null);
     onSetPayIndices([]);
   };
 
-  // Modal confirm : selon contexte, invocation normale ou Zeta adverse
+  /** Fenêtre de la Relève : seul chemin qui garde la modale de coût. */
   const handleModalConfirm = () => {
     setShowSummonModal(false);
-    if (evolveTargetId !== null) {
-      onEvolve(evolveTargetId, payIndices);
-      setEvolveTargetId(null);
-    } else if (isZeta && selectedOppZone !== null) {
-      onSummonZeta(selectedOppZone);
-      onSetSelectedCard(null);
-      setSelectedOppZone(null);
-    } else {
-      onSummon();
-    }
+    onSummon();
   };
 
   const handleModalClose = () => {
     setReleveLockedId(null);
     setShowSummonModal(false);
-    setEvolveTargetId(null);
     onSetSelectedZone(null);
-    setSelectedOppZone(null);
     onSetPayIndices([]);
   };
 
@@ -530,6 +582,47 @@ export default function FightBoard({
     onSetPayIndices((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
     );
+  };
+
+  /** Recycler (phase principale) ou défausser (phase de contrôle) la carte sélectionnée. */
+  const handleBarRecycle = () => {
+    if (selectedCard === null) return;
+    openPending({
+      kind: phase === "end" ? "discard" : "recycle",
+      handIndex: selectedCard,
+    });
+  };
+
+  /** Action de l'emplacement principal : transformer, jouer un Éphémère ou attaquer. */
+  const handleBarMain = () => {
+    if (phase === "battle") {
+      handleDirectAttack();
+      return;
+    }
+    if (selectedCard === null || !selectedHandCard) return;
+    if (selectedHandCard.type === "monster") {
+      openPending({ kind: "transform", handIndex: selectedCard });
+      return;
+    }
+    // Éphémère ciblé : le choix de la cible tient lieu de confirmation
+    const instance = gs.me.hand[selectedCard];
+    const side = ephemeralTargetSide(instance?.baseCard.effects);
+    if (instance && side) {
+      openTargetPick(
+        selectedCard,
+        instance.baseCard.name,
+        side,
+        instance.baseCard.effects,
+      );
+      return;
+    }
+    openPending({ kind: "playSupport", handIndex: selectedCard });
+  };
+
+  /** Change de phase : un `end_phase` par étape, sans jamais revenir en arrière. */
+  const handlePickPhase = (option: PhaseOption) => {
+    if (option.disabledReason) return;
+    for (let i = 0; i < option.steps; i++) onEndPhase();
   };
 
   const triggerAttackAnim = (zoneIdx: number) => {
@@ -568,6 +661,23 @@ export default function FightBoard({
       ? t("fight.noTarget")
       : undefined;
 
+  // Indication de la carte sélectionnée, montrée au centre de l'écran
+  const hintSlot = mainSlot({
+    phase,
+    isMyTurn: gs.isMyTurn,
+    card: selectedHandCard,
+    attackerSelected,
+    transformUsed: gs.me.transformUsedThisTurn,
+    canEvolve: evolvableTargets.length > 0,
+    playBlockedReason,
+  });
+  const hintText =
+    gs.isMyTurn && selectedHandCard !== null
+      ? hintSlot.hintKey
+        ? t(hintSlot.hintKey)
+        : (playBlockedReason ?? "")
+      : "";
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -592,9 +702,17 @@ export default function FightBoard({
         turnNumber={gs.turnNumber}
         isMyTurn={gs.isMyTurn}
         timeLeft={timeLeft}
+        handSize={gs.me.hand.length}
+        onPickPhase={handlePickPhase}
+        onOpenLog={() => setLogOpen(true)}
+        onOpenGraveyard={setGraveyardSide}
+        onSurrender={onSurrender}
       />
+      <EnergyCounter value={gs.me.recycleEnergy} />
+      <TurnBanner isMyTurn={gs.isMyTurn} turnNumber={gs.turnNumber} />
+      <SelectionHint text={hintText} resetKey={selectedCard} />
 
-      <div className="fb-side-row">
+      <div className="fb-side-row fb-side-row--opp">
         <TerrainBackground
           terrain={oppTerrain}
           side="opponent"
@@ -604,10 +722,6 @@ export default function FightBoard({
             fx.opponent.supports,
           )}
           reduced={reduced}
-        />
-        <GraveyardPile
-          graveyard={gs.opponent.graveyard}
-          label={gs.opponent.username}
         />
         <div className="fb-zones-col">
           <ZoneRow
@@ -636,14 +750,6 @@ export default function FightBoard({
           />
         </div>
       </div>
-
-      {phase === "battle" && gs.isMyTurn && selectedZone !== null && (
-        <div className="fb-direct-atk">
-          <button onClick={handleDirectAttack} className="fb-btn-direct-atk">
-            ⚡ Attaque Directe
-          </button>
-        </div>
-      )}
 
       {isZeta && isMyMain && (
         <div className="fb-zeta-hint">
@@ -716,7 +822,6 @@ export default function FightBoard({
             }
           />
         </div>
-        <GraveyardPile graveyard={gs.me.graveyard} label={t("fight.zone.me")} />
       </div>
 
       <FightHand
@@ -726,62 +831,20 @@ export default function FightBoard({
         selectedCard={selectedCard}
         payIndices={payIndices}
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
+        releveInstanceIds={releveReadyIds}
         onCardClick={handleCardClick}
       />
 
       <FightActionBar
         phase={phase}
         isMyTurn={gs.isMyTurn}
-        selectedCard={selectedCard}
-        selectedZone={isZeta ? selectedOppZone : selectedZone}
-        hand={mappedHand}
-        onSummon={onSummon}
-        onOpenSummonModal={() => {
-          onSetPayIndices([]);
-          setShowSummonModal(true);
-        }}
-        onPlaySupport={(handIdx, zoneIndex, targetInstanceId) => {
-          // Si déjà une cible fournie (depuis la barre), jouer directement
-          if (targetInstanceId !== undefined || zoneIndex !== undefined) {
-            onPlaySupport(handIdx, zoneIndex, targetInstanceId);
-            onSetSelectedCard(null);
-            onSetSelectedZone(null);
-            onSetPayIndices([]);
-            return;
-          }
-          // Éphémère ciblé : choisir la cible avant de jouer
-          const instance = gs.me.hand[handIdx];
-          const side = ephemeralTargetSide(instance?.baseCard.effects);
-          if (instance && side) {
-            openTargetPick(
-              handIdx,
-              instance.baseCard.name,
-              side,
-              instance.baseCard.effects,
-            );
-            return;
-          }
-          onPlaySupport(handIdx);
-          onSetSelectedCard(null);
-          onSetSelectedZone(null);
-          onSetPayIndices([]);
-        }}
-        onEndPhase={onEndPhase}
-        onSurrender={onSurrender}
-        onRecycleFromHand={(idx) => {
-          onRecycleSupport(idx);
-          onSetSelectedCard(null);
-          onSetPayIndices([]);
-        }}
-        onTransformFromHand={(idx) => {
-          onTransform(idx);
-          onSetSelectedCard(null);
-          onSetPayIndices([]);
-        }}
+        selectedCard={selectedHandCard}
+        attackerSelected={attackerSelected}
         transformUsed={gs.me.transformUsedThisTurn}
-        freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
+        overHandLimit={gs.me.hand.length > HAND_LIMIT}
         playBlockedReason={playBlockedReason}
-        canEvolve={evolvableTargets.length > 0}
+        onRecycle={handleBarRecycle}
+        onMain={handleBarMain}
       />
 
       {showSummonModal &&
@@ -796,13 +859,8 @@ export default function FightBoard({
             onTogglePay={handleTogglePay}
             onConfirm={handleModalConfirm}
             onClose={handleModalClose}
-            costOverride={
-              evolveTarget && selectedInstance
-                ? evolutionCost(selectedInstance.baseCard, evolveTarget)
-                : undefined
-            }
             releve={
-              releve && !evolveTarget && !isZeta
+              releve && !isZeta
                 ? {
                     needed: releve.needed,
                     allies: releve.allies.map((m) => ({
@@ -824,11 +882,46 @@ export default function FightBoard({
           />
         )}
 
+      {shortage !== null && (
+        <div className="fb-notice" role="status">
+          {t("fight.confirm.missing", { count: shortage.count })}
+        </div>
+      )}
+
+      {activePending !== null && (
+        <ConfirmActionSheet
+          text={confirmText(activePending, {
+            handNames: gs.me.hand.map((c) => c.baseCard.name),
+            targetName:
+              activePending.kind === "evolve"
+                ? gs.me.monsterZones.find(
+                    (m) => m?.instanceId === activePending.targetInstanceId,
+                  )?.card.baseCard.name
+                : undefined,
+            cost:
+              activePending.kind === "evolve" && selectedInstance
+                ? evolutionCost(
+                    selectedInstance.baseCard,
+                    gs.me.monsterZones.find(
+                      (m) => m?.instanceId === activePending.targetInstanceId,
+                    ) as MonsterOnBoard,
+                  )
+                : selectedHandCard
+                  ? summonCost(selectedHandCard)
+                  : 0,
+            reserve: gs.me.recycleEnergy,
+            locale: i18n.language,
+          })}
+          onConfirm={() => confirmPending(activePending)}
+          onCancel={() => setPending(null)}
+        />
+      )}
+
       {/* Modal de choix de cible pour support éphémère ciblé ──────────── */}
       {targetSupportChoice !== null && targetSupportHandIdx !== null && (
         <CardPickModal
           choice={targetSupportChoice}
-          confirmLabel={`🎯 ${t("fight.target")}`}
+          confirmLabel={t("fight.target")}
           onConfirm={(instanceIds) => {
             const [targetId] = instanceIds;
             onPlaySupport(targetSupportHandIdx, undefined, targetId);
@@ -845,7 +938,18 @@ export default function FightBoard({
         />
       )}
 
-      <FightLog log={gs.log} />
+      {logOpen && <FightLog log={gs.log} onClose={() => setLogOpen(false)} />}
+      {graveyardSide && (
+        <GraveyardPile
+          graveyard={
+            graveyardSide === "me" ? gs.me.graveyard : gs.opponent.graveyard
+          }
+          label={
+            graveyardSide === "me" ? t("fight.zone.me") : gs.opponent.username
+          }
+          onClose={() => setGraveyardSide(null)}
+        />
+      )}
     </div>
   );
 }

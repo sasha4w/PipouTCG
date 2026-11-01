@@ -10,7 +10,7 @@ import type {
 } from "./fight.types";
 import Button from "../../components/Button";
 import InspectableCard from "./InspectableCard";
-import CardInspect from "./CardInspect";
+import CardDrawer from "./CardDrawer";
 import "./CardPickModal.css";
 
 interface Props {
@@ -89,6 +89,7 @@ export default function CardPickModal({
   const [inspected, setInspected] = useState<ClientChoiceCandidate | null>(
     null,
   );
+  const [pickedId, setPickedId] = useState<string | null>(null);
 
   const resolution = choice.resolution ?? "pick_to_hand";
   const isBoardPick = choice.candidates.every((c) => c.source === "board");
@@ -151,9 +152,12 @@ export default function CardPickModal({
                   .filter(Boolean)
                   .join(" ")}
                 style={{ "--cpm-accent": headerColor } as CSSProperties}
-                onClick={() => toggle(c.instanceId)}
-                onInspect={() => setInspected(c)}
-                onInspectEnd={() => setInspected(null)}
+                selected={pickedId === c.instanceId}
+                onClick={() => {
+                  setPickedId(c.instanceId);
+                  toggle(c.instanceId);
+                }}
+                onInfo={() => setInspected(c)}
               >
                 {isSelected && (
                   <span
@@ -189,7 +193,7 @@ export default function CardPickModal({
         </div>
 
         {inspected && (
-          <CardInspect
+          <CardDrawer
             card={inspected.baseCard}
             onClose={() => setInspected(null)}
           />

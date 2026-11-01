@@ -10,6 +10,8 @@
 }
 
 .bsheet__panel {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(245 239 224 / 0.55) transparent;
   width: 100%;
   max-height: 85%;
   box-sizing: border-box;
@@ -52,4 +54,21 @@
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   padding: 4px;
+}
+
+/* Sur fond bordeaux : rail discret, pouce beige bien visible */
+.bsheet__panel::-webkit-scrollbar {
+  width: 8px;
+}
+.bsheet__panel::-webkit-scrollbar-track {
+  background: rgb(245 239 224 / 0.08);
+  border-radius: 8px;
+  margin: 8px 0;
+}
+.bsheet__panel::-webkit-scrollbar-thumb {
+  background: rgb(245 239 224 / 0.55);
+  border-radius: 8px;
+}
+.bsheet__panel::-webkit-scrollbar-thumb:hover {
+  background: rgb(245 239 224 / 0.8);
 }

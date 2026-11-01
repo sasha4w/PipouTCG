@@ -15,8 +15,8 @@
 
 /* ── Carte : largeur fixe = HAND_CARD_WIDTH ───────────────────────────────── */
 .fhand-card {
-  flex: 0 0 84px;
-  width: 84px;
+  flex: 0 0 64px;
+  width: 64px;
   transform-origin: bottom center;
   transform: translateY(var(--fan-y, 0px)) rotate(var(--fan-rotate, 0deg));
   transition:
@@ -35,6 +35,11 @@
   z-index: 50 !important;
 }
 
+/* Au-dessus des cartes de paiement : son bouton « i » doit rester accessible */
+.fhand-card--selected {
+  z-index: 60 !important;
+}
+
 /* Survol réel seulement : sur tactile il resterait collé après un tap */
 @media (hover: hover) {
   .fhand-card--interactive:hover {
@@ -49,12 +54,6 @@
     0 0 0 2px rgba(122, 28, 59, 0.35),
     0 3px 8px rgba(0, 0, 0, 0.3);
   opacity: 0.9;
-}
-
-.fhand-card--discard-hint .card-face {
-  box-shadow:
-    0 0 0 2px #e74c3c,
-    0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
 .fhand-card--free .card-face {
@@ -119,15 +118,20 @@
   z-index: 3;
 }
 
-.fhand-discard-label {
+/* Relève jouable maintenant : pastille dorée en bas à gauche de la carte */
+.fhand-releve-badge {
   position: absolute;
-  bottom: -14px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 9px;
-  color: #e74c3c;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  bottom: 18px;
+  left: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e8c547;
+  color: #3d1020;
+  border: 1.5px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  z-index: 3;
 }

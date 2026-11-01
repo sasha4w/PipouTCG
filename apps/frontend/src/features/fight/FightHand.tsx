@@ -1,15 +1,16 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import { IconBolt, IconCheck, IconReleve } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
 import InspectableCard from "./InspectableCard";
-import CardInspect from "./CardInspect";
+import CardDrawer from "./CardDrawer";
 import { fanLayout } from "./fanLayout";
 
 /** Largeur d'une carte de la main (px) — doit suivre .fhand-card. */
-const HAND_CARD_WIDTH = 84;
+const HAND_CARD_WIDTH = 64;
 /** Largeur utilisée avant la première mesure (coque mobile 430px). */
 const DEFAULT_HAND_WIDTH = 400;
 
@@ -20,6 +21,8 @@ interface Props {
   selectedCard: number | null;
   payIndices: number[];
   freeSummonInstanceIds: string[];
+  /** Cartes dont la Relève est disponible (assez d'alliés Pipou). */
+  releveInstanceIds?: ReadonlySet<string>;
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -30,11 +33,11 @@ export default function FightHand({
   selectedCard,
   payIndices,
   freeSummonInstanceIds,
+  releveInstanceIds,
   onCardClick,
 }: Props) {
   const { t } = useTranslation();
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
-  const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const inspected =
@@ -78,7 +81,6 @@ export default function FightHand({
               isPaying ? "fhand-card--paying" : "",
               isInteractive ? "fhand-card--interactive" : "",
               isPayable && !isPaying ? "fhand-card--payable" : "",
-              phase === "end" && isMyTurn ? "fhand-card--discard-hint" : "",
               isFree ? "fhand-card--free" : "",
             ]
               .filter(Boolean)
@@ -92,31 +94,39 @@ export default function FightHand({
               } as CSSProperties
             }
             onClick={isInteractive ? () => onCardClick(idx, card) : undefined}
-            onInspect={() => setInspectedId(card.instanceId)}
-            onInspectEnd={() => setInspectedId(null)}
+            selected={isSelected}
+            onInfo={() => setInspectedId(card.instanceId)}
           >
             {isFree && (
               <span className="fhand-free-label">
-                {t("fight.hand.free")} ⚡
+                {t("fight.hand.free")} <IconBolt size={8} />
               </span>
             )}
             {isPaying && (
               <div className="fhand-pay-badge" title={t("fight.hand.payCard")}>
-                💰
+                <IconBolt size={10} />
               </div>
             )}
-            {isSelected && <div className="fhand-selected-badge">✓</div>}
-            {mustDiscard && (
-              <div className="fhand-discard-label">
-                {t("fight.hand.discard")}
+            {isSelected && (
+              <div className="fhand-selected-badge">
+                <IconCheck size={9} />
               </div>
+            )}
+            {releveInstanceIds?.has(card.instanceId) && (
+              <span
+                className="fhand-releve-badge"
+                aria-label={t("fight.hand.releve")}
+                title={t("fight.hand.releve")}
+              >
+                <IconReleve size={11} />
+              </span>
             )}
           </InspectableCard>
         );
       })}
 
       {inspected && (
-        <CardInspect card={inspected} onClose={() => setInspectedId(null)} />
+        <CardDrawer card={inspected} onClose={() => setInspectedId(null)} />
       )}
     </div>
   );

@@ -1,0 +1,19 @@
+/* Au-dessus du plateau, sous les feuilles (BottomSheet : 1100) */
+.enc {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 7px;
+  border-radius: 12px;
+  background: rgb(20 21 27 / 0.85);
+  color: #e8c547;
+  font-family: "Lilita One", sans-serif;
+  font-size: 14px;
+  pointer-events: none;
+}
