@@ -101,7 +101,13 @@ function renderBoard(
   const row = screen.getByText("Mes Monstres").closest(".zr-wrap")!;
   const select = (selectedCard: number | null) =>
     rerender(<FightBoard {...props} selectedCard={selectedCard} />);
-  return { zones: row.querySelectorAll(".zr-zone"), onEvolve, select, props };
+  return {
+    zones: row.querySelectorAll(".zr-zone"),
+    onEvolve,
+    select,
+    props,
+    rerender,
+  };
 }
 
 describe("FightBoard — transformation", () => {
@@ -109,9 +115,12 @@ describe("FightBoard — transformation", () => {
     await i18n.changeLanguage("fr");
   });
 
-  it("carte Jeune sélectionnée : « Transformer » envoie la transformation", () => {
+  it("carte Jeune sélectionnée : « Transformer » demande confirmation puis envoie", () => {
     const { props } = renderBoard(state(0));
-    fireEvent.click(screen.getByRole("button", { name: /Transformer/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Transformer$/ }));
+    expect(props.onTransform).not.toHaveBeenCalled();
+    expect(screen.getByText("Transformer Jeune Feros ?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
     expect(props.onTransform).toHaveBeenCalledWith(0);
   });
 
@@ -148,29 +157,33 @@ describe("FightBoard — évolution", () => {
     ).toBeInTheDocument();
   });
 
-  it("évolution payée par l'énergie : envoi direct, sans fenêtre", () => {
+  it("évolution payée par l'énergie : confirmation, puis envoi", () => {
     const { zones, onEvolve } = renderBoard(state(1));
     fireEvent.click(zones[0]);
+    expect(onEvolve).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Faire évoluer Bébé Feros en Jeune Feros ?"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
     expect(onEvolve).toHaveBeenCalledWith("bebe", []);
-    expect(screen.queryByText(/Évolution —/)).not.toBeInTheDocument();
   });
 
-  it("coût restant : fenêtre de paiement d'évolution, puis envoi", () => {
+  it("coût restant sans carte recyclée : message d'énergie manquante, rien d'envoyé", () => {
     const { zones, onEvolve } = renderBoard(state(0, 3));
     fireEvent.click(zones[0]);
     expect(onEvolve).not.toHaveBeenCalled();
-    expect(screen.getByText(/Évolution — Jeune Feros/)).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     // coût d'évolution 3 − 1 = 2
-    expect(screen.getByText("0/2")).toBeInTheDocument();
+    expect(screen.getByText("Il manque 2 énergie")).toBeInTheDocument();
   });
 
   it("changer de carte sélectionnée abandonne l'évolution en attente", () => {
-    const { zones, onEvolve, select } = renderBoard(state(0, 3));
+    const { zones, onEvolve, select } = renderBoard(state(1));
     fireEvent.click(zones[0]);
-    expect(screen.getByText(/Évolution — Jeune Feros/)).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     select(null);
     select(0);
-    expect(screen.queryByText(/Évolution —/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(onEvolve).not.toHaveBeenCalled();
   });
 
@@ -339,6 +352,8 @@ describe("FightBoard — Noyau Zeta", () => {
     expect(theirs[0]).toHaveClass("zr-zone--pulse-equipment");
     expect(theirs[1]).not.toHaveClass("zr-zone--pulse-equipment");
     fireEvent.click(theirs[0]);
+    expect(props.onPlaySupport).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
     expect(props.onPlaySupport).toHaveBeenCalledWith(0, undefined, "monZeta");
     // le Zeta implanté chez moi ne s'équipe pas
     expect(mine[1]).not.toHaveClass("zr-zone--pulse-equipment");
@@ -361,7 +376,9 @@ describe("FightBoard — Noyau Zeta", () => {
     );
     expect(theirs[0]).toHaveClass("zr-zone--zeta-target");
     fireEvent.click(theirs[0]);
-    expect(props.onSummonZeta).toHaveBeenCalledWith(0);
+    expect(props.onSummonZeta).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+    expect(props.onSummonZeta).toHaveBeenCalledWith(0, []);
   });
 
   it("poser Zeta désactivé s'il y en a déjà un chez l'adversaire", () => {
@@ -430,5 +447,149 @@ describe("FightBoard : Relève", () => {
       modal.getByRole("button", { name: i18n.t("fight.releve.confirm") }),
     );
     expect(props.onSummonReleve).toHaveBeenCalledWith(1, ["B", "A"]);
+  });
+});
+
+// ─── Confirmation de toute action de carte, recyclage rapide ─────────────────
+
+const named = (name: string, cost = 1): CardInstance["baseCard"] => ({
+  ...monster().card.baseCard,
+  name,
+  cost,
+  archetype: null,
+  effects: null,
+});
+
+/** Main : Gobelin (à invoquer) puis Rat, Chat, Loup ; zone 2 libre. */
+function recycleState(opts: { cost: number; energy?: number }): GameState {
+  const gs = state(opts.energy ?? 0);
+  gs.me.hand = [
+    named("Gobelin", opts.cost),
+    named("Rat"),
+    named("Chat"),
+    named("Loup"),
+  ].map((b, i) => ({ instanceId: `h${i}`, ownerId: 1, baseCard: b }));
+  return gs;
+}
+
+describe("FightBoard — confirmations et recyclage rapide", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("deux cartes recyclées : confirmation détaillée, puis invocation", () => {
+    const { zones, props } = renderBoard(recycleState({ cost: 2 }), vi.fn(), {
+      payIndices: [1, 2],
+    });
+    fireEvent.click(zones[2]);
+    expect(props.onSummon).not.toHaveBeenCalled();
+    expect(
+      screen.getByText("Invoquer Gobelin en recyclant Rat et Chat ?"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+    expect(props.onSummon).toHaveBeenCalledWith([1, 2], 2);
+  });
+
+  it("énergie en trop : l'avertissement l'indique", () => {
+    const { zones } = renderBoard(recycleState({ cost: 2 }), vi.fn(), {
+      payIndices: [1, 2, 3],
+    });
+    fireEvent.click(zones[2]);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "1 énergie en trop, gardée en réserve",
+    );
+  });
+
+  it("énergie insuffisante : pas de confirmation, message de manque", () => {
+    const { zones, props } = renderBoard(recycleState({ cost: 3 }), vi.fn(), {
+      payIndices: [1],
+    });
+    fireEvent.click(zones[2]);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText("Il manque 2 énergie")).toBeInTheDocument();
+    expect(props.onSummon).not.toHaveBeenCalled();
+  });
+
+  it("invocation gratuite : confirmation quand même, envoi après Confirmer", () => {
+    const gs = recycleState({ cost: 4 });
+    gs.me.freeSummonInstanceIds = ["h0"];
+    const { zones, props } = renderBoard(gs);
+    fireEvent.click(zones[2]);
+    expect(props.onSummon).not.toHaveBeenCalled();
+    expect(screen.getByText("Invoquer Gobelin ?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+    expect(props.onSummon).toHaveBeenCalledWith([], 2);
+  });
+
+  it("un double appui sur Confirmer n'invoque qu'une fois", () => {
+    const gs = recycleState({ cost: 4 });
+    gs.me.freeSummonInstanceIds = ["h0"];
+    const { zones, props } = renderBoard(gs);
+    fireEvent.click(zones[2]);
+    const confirm = screen.getByRole("button", { name: "Confirmer" });
+    fireEvent.click(confirm);
+    fireEvent.click(confirm);
+    expect(props.onSummon).toHaveBeenCalledTimes(1);
+  });
+
+  it("Recycler demande confirmation ; Annuler n'envoie rien", () => {
+    const { props } = renderBoard(recycleState({ cost: 2 }));
+    fireEvent.click(screen.getByRole("button", { name: /^Recycler$/ }));
+    expect(screen.getByText("Recycler Gobelin ?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Annuler" }));
+    expect(props.onRecycleSupport).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /^Recycler$/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+    expect(props.onRecycleSupport).toHaveBeenCalledWith(0);
+  });
+
+  it("toucher la carte à invoquer annule toute la sélection", () => {
+    const { props } = renderBoard(recycleState({ cost: 2 }), vi.fn(), {
+      payIndices: [1],
+    });
+    const hand = within(document.querySelector<HTMLElement>(".fhand")!);
+    fireEvent.click(hand.getByRole("button", { name: /Gobelin/ }));
+    expect(props.onSetSelectedCard).toHaveBeenCalledWith(null);
+    expect(props.onSetPayIndices).toHaveBeenCalledWith([]);
+  });
+
+  it("la confirmation disparaît sans rien envoyer quand le tour change", () => {
+    const gs = recycleState({ cost: 4 });
+    gs.me.freeSummonInstanceIds = ["h0"];
+    const { zones, props, rerender } = renderBoard(gs);
+    fireEvent.click(zones[2]);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const next = recycleState({ cost: 4 });
+    next.me.freeSummonInstanceIds = ["h0"];
+    next.isMyTurn = false;
+    rerender(<FightBoard {...props} gs={next} />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(props.onSummon).not.toHaveBeenCalled();
+  });
+
+  it("menu des phases : Finir le tour envoie trois changements de phase", () => {
+    const { props } = renderBoard(recycleState({ cost: 2 }));
+    fireEvent.click(screen.getByText("Principale"));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Finir le tour" }));
+    expect(props.onEndPhase).toHaveBeenCalledTimes(3);
+  });
+
+  it("main trop pleine : Finir le tour est grisé et n'envoie rien", () => {
+    const gs = recycleState({ cost: 2 });
+    gs.me.hand = [
+      ...gs.me.hand,
+      ...[1, 2, 3, 4].map((i) => ({
+        instanceId: `x${i}`,
+        ownerId: 1,
+        baseCard: named(`Extra${i}`),
+      })),
+    ];
+    const { props } = renderBoard(gs);
+    fireEvent.click(screen.getByText("Principale"));
+    const item = screen.getByRole("menuitem", { name: /Finir le tour/ });
+    expect(item).toBeDisabled();
+    fireEvent.click(item);
+    expect(props.onEndPhase).not.toHaveBeenCalled();
   });
 });

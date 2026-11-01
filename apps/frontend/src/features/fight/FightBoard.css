@@ -85,3 +85,20 @@
     transform: translate(2px, 1px);
   }
 }
+
+/* Message d'énergie manquante : au-dessus du dock, 2 s */
+.fb-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 140px;
+  transform: translateX(-50%);
+  z-index: 950;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgb(20 21 27 / 0.92);
+  border: 1px solid #e8c547;
+  color: #f6dc7a;
+  font-weight: 700;
+  font-size: 13px;
+  pointer-events: none;
+}
