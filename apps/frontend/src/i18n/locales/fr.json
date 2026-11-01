@@ -730,12 +730,20 @@
       "mulligan": "Mulligan",
       "main": "Principale",
       "battle": "Combat",
-      "end": "Fin de tour",
+      "end": "Phase de contrôle",
       "finished": "Terminé"
+    },
+    "phaseMenu": {
+      "title": "Phases",
+      "battle": "Combat",
+      "end": "Phase de contrôle",
+      "endTurn": "Finir le tour",
+      "discard_one": "Défausse {{count}} carte",
+      "discard_other": "Défausse {{count}} cartes"
     },
     "endPhase": {
       "main": "Phase de Combat →",
-      "battle": "Fin de Tour →",
+      "battle": "Phase de contrôle →",
       "end": "Terminer le Tour →",
       "other": "Continuer →"
     },

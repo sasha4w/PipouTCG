@@ -673,12 +673,19 @@
       "mulligan": "멀리건",
       "main": "메인",
       "battle": "배틀",
-      "end": "턴 종료",
+      "end": "컨트롤 페이즈",
       "finished": "종료"
+    },
+    "phaseMenu": {
+      "title": "페이즈",
+      "battle": "배틀",
+      "end": "컨트롤 페이즈",
+      "endTurn": "턴 마치기",
+      "discard_other": "카드 {{count}}장 버리기"
     },
     "endPhase": {
       "main": "배틀 페이즈 →",
-      "battle": "턴 종료 →",
+      "battle": "컨트롤 페이즈 →",
       "end": "턴 마치기 →",
       "other": "계속 →"
     },

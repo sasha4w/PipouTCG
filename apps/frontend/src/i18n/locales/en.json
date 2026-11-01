@@ -728,12 +728,20 @@
       "mulligan": "Mulligan",
       "main": "Main",
       "battle": "Battle",
-      "end": "End of turn",
+      "end": "Control phase",
       "finished": "Finished"
+    },
+    "phaseMenu": {
+      "title": "Phases",
+      "battle": "Battle",
+      "end": "Control phase",
+      "endTurn": "End turn",
+      "discard_one": "Discard {{count}} card",
+      "discard_other": "Discard {{count}} cards"
     },
     "endPhase": {
       "main": "Battle Phase →",
-      "battle": "End of Turn →",
+      "battle": "Control Phase →",
       "end": "End the Turn →",
       "other": "Continue →"
     },

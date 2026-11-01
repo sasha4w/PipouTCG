@@ -1,0 +1,54 @@
+.phm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.phm {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 61;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--surface, #252833);
+  border: 1px solid var(--border, #444);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+.phm-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.phm-item:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.phm-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.phm-hint {
+  font-size: 0.75em;
+  font-weight: 400;
+  color: var(--warning, #e8c547);
+}
