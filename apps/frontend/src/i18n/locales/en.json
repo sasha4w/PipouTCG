@@ -856,6 +856,12 @@
       "guard": "Guard mode"
     },
     "cardLabel": "{{name}}, {{atk}} ATK, {{hp}} HP",
+    "info": "Info",
+    "drawer": {
+      "close": "Close",
+      "seeAll": "See all",
+      "stats": "{{atk}} ATK · {{hp}} HP"
+    },
     "effectsSection": "Effects",
     "lobby": {
       "draw": "Draw",

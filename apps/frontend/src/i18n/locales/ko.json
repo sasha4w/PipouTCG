@@ -790,6 +790,12 @@
       "guard": "가드 모드"
     },
     "cardLabel": "{{name}}, ATK {{atk}}, HP {{hp}}",
+    "info": "정보",
+    "drawer": {
+      "close": "닫기",
+      "seeAll": "모두 보기",
+      "stats": "ATK {{atk}} · HP {{hp}}"
+    },
     "effectsSection": "효과",
     "lobby": {
       "draw": "무승부",

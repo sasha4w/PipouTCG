@@ -1,5 +1,5 @@
 import { beforeAll, afterEach, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import MonsterZoneContent from "../../features/fight/Zonerow/MonsterZoneContent";
 import { monster } from "../fixtures/monster";
 import i18n from "../../i18n";
@@ -23,8 +23,7 @@ describe("MonsterZoneContent", () => {
           hasTaunt: true,
         })}
         isOpponent
-        onInspect={vi.fn()}
-        onInspectEnd={vi.fn()}
+        onInfo={vi.fn()}
       />,
     );
 
@@ -44,8 +43,7 @@ describe("MonsterZoneContent", () => {
       <MonsterZoneContent
         zone={monster({ hatchCounter: 2 })}
         isOpponent={false}
-        onInspect={vi.fn()}
-        onInspectEnd={vi.fn()}
+        onInfo={vi.fn()}
       />,
     );
     const badge = container.querySelector(".zr-badge--hatch");
@@ -66,8 +64,7 @@ describe("MonsterZoneContent", () => {
           hatchCounter: 1,
         })}
         isOpponent
-        onInspect={vi.fn()}
-        onInspectEnd={vi.fn()}
+        onInfo={vi.fn()}
       />,
     );
     const badges = [...container.querySelectorAll(".zr-badge")];
@@ -87,34 +84,30 @@ describe("MonsterZoneContent", () => {
       <MonsterZoneContent
         zone={monster({ hasAttackedThisTurn: true, attacksUsedThisTurn: 1 })}
         isOpponent={false}
-        onInspect={vi.fn()}
-        onInspectEnd={vi.fn()}
+        onInfo={vi.fn()}
       />,
     );
 
     expect(screen.getByText("a attaqué")).toBeInTheDocument();
   });
 
-  it("change de mode et s'inspecte par appui long", () => {
-    vi.useFakeTimers();
+  it("change de mode et s'informe via le bouton i de la carte sélectionnée", () => {
     const onModeChange = vi.fn();
-    const onInspect = vi.fn();
+    const onInfo = vi.fn();
     render(
       <MonsterZoneContent
         zone={monster()}
         isOpponent={false}
         onModeChange={onModeChange}
-        onInspect={onInspect}
-        onInspectEnd={vi.fn()}
+        selected
+        onInfo={onInfo}
       />,
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Mode Garde" }));
     expect(onModeChange).toHaveBeenCalledWith("m1", "guard");
 
-    const card = screen.getByRole("button", { name: /Gobelin/ });
-    fireEvent.pointerDown(card, { clientX: 0, clientY: 0, button: 0 });
-    act(() => vi.advanceTimersByTime(400));
-    expect(onInspect).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
+    expect(onInfo).toHaveBeenCalledTimes(1);
   });
 });

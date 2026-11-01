@@ -41,11 +41,12 @@ describe("GraveyardPile", () => {
     ).toBeInTheDocument();
   });
 
-  it("le clic droit inspecte la carte", () => {
+  it("un tap sélectionne la carte et i ouvre le tiroir", () => {
     render(<GraveyardPile graveyard={[dead]} label="Moi" />);
     fireEvent.click(screen.getByTitle("Cimetière (1)"));
 
-    fireEvent.contextMenu(screen.getByRole("button", { name: /Squelette/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Squelette/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
 
     expect(
       screen.getByRole("dialog", { name: "Squelette" }),

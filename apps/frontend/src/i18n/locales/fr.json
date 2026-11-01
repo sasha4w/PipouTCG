@@ -858,6 +858,12 @@
       "guard": "Mode Garde"
     },
     "cardLabel": "{{name}}, {{atk}} ATK, {{hp}} PV",
+    "info": "Informations",
+    "drawer": {
+      "close": "Fermer",
+      "seeAll": "Voir tout",
+      "stats": "{{atk}} ATK · {{hp}} PV"
+    },
     "effectsSection": "Effets",
     "lobby": {
       "draw": "Match nul",

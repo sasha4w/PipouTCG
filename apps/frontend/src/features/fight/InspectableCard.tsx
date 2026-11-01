@@ -1,34 +1,32 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import CardFace, { type CardFaceProps } from "../cards/CardFace";
-import { useLongPress } from "../../hooks/useLongPress";
+import { IconInfo } from "../../components/Icons";
 import "./InspectableCard.css";
 
 export interface InspectableCardProps extends CardFaceProps {
-  onInspect: () => void;
-  onInspectEnd?: () => void;
   onClick?: () => void;
+  /** Carte sélectionnée : le bouton « i » apparaît (si `onInfo` est fourni). */
+  selected?: boolean;
+  /** Ouvre le tiroir d'info de la carte. */
+  onInfo?: () => void;
   className?: string;
   style?: CSSProperties;
   /** Pastilles posées autour de la carte (sélection, paiement…). */
   children?: ReactNode;
 }
 
-/** Carte de duel : tap = action, appui long / clic droit = inspection. */
+/** Carte de duel : tap = action, bouton « i » de la carte sélectionnée = info. */
 export default function InspectableCard({
-  onInspect,
-  onInspectEnd,
   onClick,
+  selected = false,
+  onInfo,
   className,
   style,
   children,
   ...face
 }: InspectableCardProps) {
   const { t } = useTranslation();
-  const longPress = useLongPress({
-    onLongPress: onInspect,
-    onLongPressEnd: onInspectEnd,
-  });
   const stats = face.stats ?? { atk: face.card.atk, hp: face.card.hp };
   const label =
     face.card.type === "support"
@@ -48,7 +46,6 @@ export default function InspectableCard({
 
   return (
     <div
-      {...longPress}
       className={["icard", className].filter(Boolean).join(" ")}
       style={style}
       role="button"
@@ -59,6 +56,20 @@ export default function InspectableCard({
     >
       <CardFace {...face} />
       {children}
+      {selected && onInfo && (
+        <button
+          type="button"
+          className="icard-info"
+          aria-label={t("fight.info")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onInfo();
+          }}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <IconInfo size={16} />
+        </button>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { CardInstance } from "@pipou/shared";
 import Button from "../../components/Button";
 import InspectableCard from "./InspectableCard";
-import CardInspect from "./CardInspect";
+import CardDrawer from "./CardDrawer";
 import "./MulliganPanel.css";
 
 interface Props {
@@ -24,6 +24,7 @@ export default function MulliganPanel({
 }: Props) {
   const { t } = useTranslation();
   const [inspected, setInspected] = useState<CardInstance | null>(null);
+  const [pickedId, setPickedId] = useState<string | null>(null);
 
   return (
     <div className="mull-root">
@@ -35,8 +36,9 @@ export default function MulliganPanel({
             className="mull-card"
             card={c.baseCard}
             size="sm"
-            onInspect={() => setInspected(c)}
-            onInspectEnd={() => setInspected(null)}
+            selected={pickedId === c.instanceId}
+            onClick={() => setPickedId(c.instanceId)}
+            onInfo={() => setInspected(c)}
           />
         ))}
       </div>
@@ -57,7 +59,7 @@ export default function MulliganPanel({
         </div>
       )}
       {inspected && (
-        <CardInspect
+        <CardDrawer
           card={inspected.baseCard}
           onClose={() => setInspected(null)}
         />

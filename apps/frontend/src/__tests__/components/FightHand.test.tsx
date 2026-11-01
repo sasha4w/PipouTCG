@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import FightHand from "../../features/fight/FightHand";
 import type { HandCard } from "../../features/fight/handCard";
 import i18n from "../../i18n";
@@ -68,52 +68,27 @@ describe("FightHand", () => {
     expect(onCardClick).not.toHaveBeenCalled();
   });
 
-  it("un appui long ouvre la grande carte sans la jouer, le relâchement la ferme", () => {
+  it("la carte sélectionnée montre i, qui ouvre le tiroir sans jouer la carte", () => {
+    const { onCardClick } = renderHand({ selectedCard: 0 });
+
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
+
+    expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
+    expect(onCardClick).not.toHaveBeenCalled();
+  });
+
+  it("sans sélection, aucun bouton i", () => {
+    renderHand();
+    expect(screen.queryByRole("button", { name: "Informations" })).toBeNull();
+  });
+
+  it("un appui maintenu n'ouvre plus la grande carte", () => {
     vi.useFakeTimers();
-    const { onCardClick } = renderHand();
+    renderHand();
     const card = screen.getByRole("button", { name: /Gobelin/ });
 
     fireEvent.pointerDown(card, { clientX: 0, clientY: 0, button: 0 });
-    act(() => vi.advanceTimersByTime(400));
-
-    const dialog = screen.getByRole("dialog", { name: "Gobelin" });
-    expect(dialog).toBeInTheDocument();
-    expect(
-      within(dialog).getAllByText("Description de Gobelin"),
-    ).toHaveLength(1);
-
-    fireEvent.pointerUp(card);
-    fireEvent.click(card);
-
-    expect(onCardClick).not.toHaveBeenCalled();
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
-
-  it("marque la carte sélectionnée", () => {
-    renderHand({ selectedCard: 0 });
-
-    expect(screen.getByRole("button", { name: /Gobelin/ })).toHaveClass(
-      "fhand-card--selected",
-    );
-  });
-
-  it("ne bascule pas sur une autre carte si la carte inspectée quitte la main", () => {
-    const { hand, rerender, onCardClick } = renderHand();
-
-    fireEvent.contextMenu(screen.getByRole("button", { name: /Gobelin/ }));
-    expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
-
-    rerender(
-      <FightHand
-        hand={[hand[1]]}
-        phase="main"
-        isMyTurn
-        selectedCard={null}
-        payIndices={[]}
-        freeSummonInstanceIds={[]}
-        onCardClick={onCardClick}
-      />,
-    );
+    act(() => vi.advanceTimersByTime(800));
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });

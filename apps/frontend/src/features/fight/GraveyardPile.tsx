@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import InspectableCard from "./InspectableCard";
-import CardInspect from "./CardInspect";
+import CardDrawer from "./CardDrawer";
 import "./GraveyardPile.css";
 import type { CardInstance } from "./fight.types";
 
@@ -15,6 +15,7 @@ export default function GraveyardPile({ graveyard, label }: Props) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [inspected, setInspected] = useState<CardInstance | null>(null);
+  const [pickedId, setPickedId] = useState<string | null>(null);
 
   if (graveyard.length === 0) return null;
 
@@ -55,13 +56,14 @@ export default function GraveyardPile({ graveyard, label }: Props) {
                     key={c.instanceId}
                     card={c.baseCard}
                     size="sm"
-                    onInspect={() => setInspected(c)}
-                    onInspectEnd={() => setInspected(null)}
+                    selected={pickedId === c.instanceId}
+                    onClick={() => setPickedId(c.instanceId)}
+                    onInfo={() => setInspected(c)}
                   />
                 ))}
               </div>
               {inspected && (
-                <CardInspect
+                <CardDrawer
                   card={inspected.baseCard}
                   onClose={() => setInspected(null)}
                 />

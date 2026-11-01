@@ -5,7 +5,7 @@ import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
 import InspectableCard from "./InspectableCard";
-import CardInspect from "./CardInspect";
+import CardDrawer from "./CardDrawer";
 import { fanLayout } from "./fanLayout";
 
 /** Largeur d'une carte de la main (px) — doit suivre .fhand-card. */
@@ -92,8 +92,8 @@ export default function FightHand({
               } as CSSProperties
             }
             onClick={isInteractive ? () => onCardClick(idx, card) : undefined}
-            onInspect={() => setInspectedId(card.instanceId)}
-            onInspectEnd={() => setInspectedId(null)}
+            selected={isSelected}
+            onInfo={() => setInspectedId(card.instanceId)}
           >
             {isFree && (
               <span className="fhand-free-label">
@@ -116,7 +116,7 @@ export default function FightHand({
       })}
 
       {inspected && (
-        <CardInspect card={inspected} onClose={() => setInspectedId(null)} />
+        <CardDrawer card={inspected} onClose={() => setInspectedId(null)} />
       )}
     </div>
   );

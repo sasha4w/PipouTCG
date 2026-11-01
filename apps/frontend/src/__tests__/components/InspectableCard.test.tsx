@@ -25,44 +25,63 @@ describe("InspectableCard", () => {
   });
 
   it("expose nom et stats courantes comme nom accessible", () => {
-    render(
-      <InspectableCard
-        card={card}
-        size="xs"
-        stats={{ atk: 150, hp: 300 }}
-        onInspect={vi.fn()}
-      />,
-    );
+    render(<InspectableCard card={card} size="xs" stats={{ atk: 150, hp: 300 }} />);
 
     expect(
       screen.getByRole("button", { name: "Gobelin, 150 ATK, 300 PV" }),
     ).toBeInTheDocument();
   });
 
-  it("clic et Entrée jouent la carte, appui long l'inspecte", () => {
-    vi.useFakeTimers();
+  it("clic et Entrée jouent la carte", () => {
     const onClick = vi.fn();
-    const onInspect = vi.fn();
-    render(
-      <InspectableCard
-        card={card}
-        size="xs"
-        onClick={onClick}
-        onInspect={onInspect}
-      />,
-    );
+    render(<InspectableCard card={card} size="xs" onClick={onClick} />);
     const el = screen.getByRole("button", { name: /Gobelin/ });
 
     fireEvent.click(el);
     fireEvent.keyDown(el, { key: "Enter" });
     expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
+  it("le bouton i est absent tant que la carte n'est pas sélectionnée", () => {
+    render(<InspectableCard card={card} size="xs" onInfo={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "Informations" })).toBeNull();
+  });
+
+  it("le bouton i apparaît sur la carte sélectionnée", () => {
+    render(<InspectableCard card={card} size="xs" selected onInfo={vi.fn()} />);
+    expect(
+      screen.getByRole("button", { name: "Informations" }),
+    ).toBeInTheDocument();
+  });
+
+  it("cliquer sur i appelle onInfo mais pas onClick", () => {
+    const onClick = vi.fn();
+    const onInfo = vi.fn();
+    render(
+      <InspectableCard
+        card={card}
+        size="xs"
+        selected
+        onClick={onClick}
+        onInfo={onInfo}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Informations" }));
+    expect(onInfo).toHaveBeenCalledTimes(1);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("un appui maintenu n'ouvre rien", () => {
+    vi.useFakeTimers();
+    const onInfo = vi.fn();
+    render(<InspectableCard card={card} size="xs" onInfo={onInfo} />);
+    const el = screen.getByRole("button", { name: /Gobelin/ });
 
     fireEvent.pointerDown(el, { clientX: 0, clientY: 0, button: 0 });
-    act(() => vi.advanceTimersByTime(400));
+    act(() => vi.advanceTimersByTime(800));
     fireEvent.pointerUp(el);
-    fireEvent.click(el);
 
-    expect(onInspect).toHaveBeenCalledTimes(1);
-    expect(onClick).toHaveBeenCalledTimes(2);
+    expect(onInfo).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Informations" })).toBeNull();
   });
 });
