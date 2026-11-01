@@ -236,9 +236,12 @@ body.in-fight .fp-root {
   --z: var(--zs);
 }
 
-/* Le bouton « i » garde une taille tactile malgré la miniature */
+/* Le bouton « i » garde une taille tactile malgré la miniature, mais déborde
+   du coin pour ne pas couvrir la carte */
 .fp-fight-area .zr-card .icard-info {
-  zoom: calc(1 / var(--z, 0.5));
+  zoom: calc(0.85 / var(--z, 0.5));
+  top: -6px;
+  right: -6px;
 }
 
 /* HUD resserré pour laisser la hauteur au plateau */

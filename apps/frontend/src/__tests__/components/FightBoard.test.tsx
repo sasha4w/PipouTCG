@@ -472,6 +472,13 @@ function recycleState(opts: { cost: number; energy?: number }): GameState {
   return gs;
 }
 
+describe("FightBoard — cadre de l'app", () => {
+  it("seul, il ne masque pas l'en-tête ni le pied de page (bac à sable)", () => {
+    renderBoard(recycleState({ cost: 2 }));
+    expect(document.body).not.toHaveClass("in-fight");
+  });
+});
+
 describe("FightBoard — confirmations et recyclage rapide", () => {
   beforeAll(async () => {
     await i18n.changeLanguage("fr");

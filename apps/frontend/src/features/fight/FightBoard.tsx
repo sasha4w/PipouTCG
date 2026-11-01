@@ -24,7 +24,6 @@ import FightLog from "./FightLog";
 import GraveyardPile from "./GraveyardPile";
 import EnergyCounter from "./EnergyCounter";
 import TurnBanner from "./TurnBanner";
-import { useHideAppChrome } from "./useHideAppChrome";
 import ConfirmActionSheet from "./ConfirmActionSheet";
 import { confirmText, type PendingAction } from "./pendingAction";
 import { paymentBalance } from "./payment";
@@ -108,7 +107,6 @@ export default function FightBoard({
   const phase = gs.phase;
 
   const { reduced } = useAnimationPrefs();
-  useHideAppChrome();
   const fx = useMemo(
     // `?? []` : état envoyé par un backend pas encore redéployé
     () => boardFxFromEvents(gs.events ?? [], gs.me.userId),
