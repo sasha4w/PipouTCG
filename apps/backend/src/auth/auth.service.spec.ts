@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { sseTicketSecret } from './sse-ticket';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
@@ -60,6 +61,25 @@ describe('AuthService', () => {
   });
 
   afterEach(() => jest.clearAllMocks());
+
+  describe('createSseTicket', () => {
+    const original = process.env.JWT_SECRET;
+    afterEach(() => (process.env.JWT_SECRET = original));
+
+    it('signe un ticket de 2 min avec un secret distinct de la session', () => {
+      process.env.JWT_SECRET = 'secret-de-test-assez-long-pour-hs256';
+      expect(service.createSseTicket({ userId: 3, isAdmin: true })).toEqual({
+        ticket: 'jwt_token',
+      });
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        { sub: 3, is_admin: true },
+        {
+          secret: sseTicketSecret('secret-de-test-assez-long-pour-hs256'),
+          expiresIn: '2m',
+        },
+      );
+    });
+  });
 
   // ======= LOGIN =======
   describe('login', () => {

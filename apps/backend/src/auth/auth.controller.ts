@@ -53,6 +53,9 @@ export class AuthController {
     return {
       message: 'Connexion réussie',
       autoClaimedRewards: result.autoClaimedRewards,
+      // Repli pour les navigateurs qui bloquent les cookies tiers (Opera GX,
+      // Safari) : le front renvoie ce jeton en `Authorization: Bearer`.
+      access_token: result.access_token,
     };
   }
 
@@ -73,6 +76,14 @@ export class AuthController {
     return req.user;
   }
   // -------------------------------
+
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 60000, limit: isTest ? 999999 : 30 } })
+  @HttpCode(200)
+  @Post('sse-ticket')
+  sseTicket(@Request() req: AuthenticatedRequest) {
+    return this.authService.createSseTicket(req.user);
+  }
 
   @Throttle({ default: { ttl: 60000, limit: isTest ? 999999 : 3 } })
   @Post('forgot-password')

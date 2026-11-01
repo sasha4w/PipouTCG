@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { openEventStream } from "../api/eventStream";
 
 /** Payload de listing.sold (TransactionController, SSE privé du vendeur). */
 export interface ListingSoldEvent {
@@ -17,8 +18,6 @@ export interface MarketUpdateEvent {
   [key: string]: unknown;
 }
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 // ── SSE privé : listing.sold → vendeur uniquement ──────────────────────────
 export function useSseNotifications(
   onSold: (event: ListingSoldEvent) => void,
@@ -28,27 +27,24 @@ export function useSseNotifications(
     onSoldRef.current = onSold;
   }, [onSold]);
 
-  useEffect(() => {
-    const es = new EventSource(
-      `${API_URL}/transactions/events`,
-      { withCredentials: true },
-    );
+  useEffect(
+    () =>
+      openEventStream("/transactions/events", (es) => {
+        es.addEventListener("listing.sold", (event) => {
+          try {
+            const data = JSON.parse(event.data as string) as ListingSoldEvent;
+            onSoldRef.current(data);
+          } catch (e) {
+            console.error("Erreur de parsing SSE listing.sold", e);
+          }
+        });
 
-    es.addEventListener("listing.sold", (event) => {
-      try {
-        const data = JSON.parse(event.data as string) as ListingSoldEvent;
-        onSoldRef.current(data);
-      } catch (e) {
-        console.error("Erreur de parsing SSE listing.sold", e);
-      }
-    });
-
-    es.onerror = (err) => {
-      console.error("SSE listing.sold disconnected", err);
-    };
-
-    return () => es.close();
-  }, []);
+        es.onerror = (err) => {
+          console.error("SSE listing.sold disconnected", err);
+        };
+      }),
+    [],
+  );
 }
 
 // ── SSE public : market.update → tout le monde ────────────────────────────
@@ -61,25 +57,22 @@ export function useSseNewListings(
     onUpdateRef.current = onUpdate;
   }, [onUpdate]);
 
-  useEffect(() => {
-    const es = new EventSource(
-      `${API_URL}/transactions/events/new-listings`,
-      { withCredentials: true },
-    );
+  useEffect(
+    () =>
+      openEventStream("/transactions/events/new-listings", (es) => {
+        es.addEventListener("market.update", (event) => {
+          try {
+            const data = JSON.parse(event.data as string) as MarketUpdateEvent;
+            onUpdateRef.current(data);
+          } catch (e) {
+            console.error("Erreur de parsing SSE market.update", e);
+          }
+        });
 
-    es.addEventListener("market.update", (event) => {
-      try {
-        const data = JSON.parse(event.data as string) as MarketUpdateEvent;
-        onUpdateRef.current(data);
-      } catch (e) {
-        console.error("Erreur de parsing SSE market.update", e);
-      }
-    });
-
-    es.onerror = (err) => {
-      console.error("SSE market.update disconnected", err);
-    };
-
-    return () => es.close();
-  }, []);
+        es.onerror = (err) => {
+          console.error("SSE market.update disconnected", err);
+        };
+      }),
+    [],
+  );
 }

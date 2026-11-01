@@ -1,9 +1,14 @@
 import { api } from "../api/api";
+import { clearAuthToken, setAuthToken } from "../api/authToken";
 
 export const authService = {
   async login(email: string, password: string, rememberMe = false) {
     const res = await api.post("/auth/login", { email, password, rememberMe });
 
+    // Repli pour les navigateurs qui bloquent le cookie tiers
+    if (typeof res.data?.access_token === "string") {
+      setAuthToken(res.data.access_token, rememberMe);
+    }
     return res.data;
   },
 
@@ -13,7 +18,11 @@ export const authService = {
   },
 
   async logout() {
-    return await api.post("/auth/logout");
+    try {
+      return await api.post("/auth/logout");
+    } finally {
+      clearAuthToken();
+    }
   },
   async checkAuth() {
     try {

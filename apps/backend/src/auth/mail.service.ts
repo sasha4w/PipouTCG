@@ -20,8 +20,12 @@ export class MailService {
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
-    await this.resend.emails.send({
-      from: 'TCG App <onboarding@resend.dev>', // ← remplace par ton domaine vérifié plus tard
+    // Le SDK Resend ne lève pas d'exception : il renvoie `{ error }`. On le
+    // journalise sans rien révéler au client (forgot-password répond toujours
+    // pareil, pour ne pas dévoiler quels emails existent).
+    const { error } = await this.resend.emails.send({
+      // Sans domaine vérifié, onboarding@resend.dev n'écrit qu'au compte Resend (403).
+      from: process.env.MAIL_FROM ?? 'TCG App <onboarding@resend.dev>',
       to: email,
       subject: '🔑 Réinitialisation de ton mot de passe',
       html: `
@@ -34,5 +38,11 @@ export class MailService {
         <p>Si tu n'as pas demandé ça, ignore cet email.</p>
       `,
     });
+
+    if (error) {
+      this.logger.error(
+        `Email de réinitialisation non envoyé (${error.name} ${error.statusCode ?? ''}): ${error.message}`,
+      );
+    }
   }
 }

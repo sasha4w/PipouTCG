@@ -52,6 +52,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.handshake.headers.cookie,
       this.jwtService,
       this.configService.getOrThrow<string>('JWT_SECRET'),
+      client.handshake.auth?.token,
     );
     if (!user) {
       console.error('WS auth error: jeton absent ou invalide');

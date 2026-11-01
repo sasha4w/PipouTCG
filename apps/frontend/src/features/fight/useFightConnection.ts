@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
+import { getAuthToken } from "../../api/authToken";
 import {
   FIGHT_NAMESPACE,
   type ClientToServerEvents,
@@ -105,6 +106,8 @@ export function useFightConnection({
       `${import.meta.env.VITE_API_URL}${FIGHT_NAMESPACE}`,
       {
         withCredentials: true,
+        // Repli quand le cookie tiers est bloqué (Opera GX, Safari)
+        auth: (cb) => cb({ token: getAuthToken() }),
         transports: ["websocket"],
       },
     );
