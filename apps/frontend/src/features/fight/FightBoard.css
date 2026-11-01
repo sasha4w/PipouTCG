@@ -154,14 +154,9 @@ body.in-fight .fp-root {
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 2px;
   padding-left: 28px;
-}
-
-/* Sur un écran haut, les deux camps se rapprochent du centre */
-.fp-fight-area .fb-side-row--opp .fb-zones-col {
-  justify-content: flex-end;
 }
 
 .fp-fight-area .zr-wrap {
@@ -189,7 +184,7 @@ body.in-fight .fp-root {
 }
 
 .fp-fight-area .zr-zone {
-  padding: 2px;
+  padding: 1px;
 }
 
 /*
@@ -201,7 +196,7 @@ body.in-fight .fp-root {
 .fp-fight-area .fb-zones-col {
   --zm: 0.20;
   --zs: 0.15;
-  --zw: 0.47;
+  --zw: 0.49;
 }
 
 @container (min-height: 100px) {
@@ -213,183 +208,183 @@ body.in-fight .fp-root {
 
 @container (min-height: 108px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.21;
-    --zs: 0.15;
+    --zm: 0.23;
+    --zs: 0.17;
   }
 }
 
 @container (min-height: 116px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.24;
-    --zs: 0.18;
+    --zm: 0.26;
+    --zs: 0.19;
   }
 }
 
 @container (min-height: 124px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.27;
-    --zs: 0.20;
+    --zm: 0.29;
+    --zs: 0.22;
   }
 }
 
 @container (min-height: 132px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.30;
-    --zs: 0.22;
+    --zm: 0.32;
+    --zs: 0.24;
   }
 }
 
 @container (min-height: 140px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.33;
-    --zs: 0.25;
+    --zm: 0.35;
+    --zs: 0.26;
   }
 }
 
 @container (min-height: 148px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.36;
-    --zs: 0.27;
+    --zm: 0.38;
+    --zs: 0.29;
   }
 }
 
 @container (min-height: 156px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.39;
-    --zs: 0.29;
+    --zm: 0.41;
+    --zs: 0.31;
   }
 }
 
 @container (min-height: 164px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.42;
-    --zs: 0.31;
+    --zm: 0.44;
+    --zs: 0.33;
   }
 }
 
 @container (min-height: 172px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.45;
-    --zs: 0.34;
+    --zm: 0.47;
+    --zs: 0.35;
   }
 }
 
 @container (min-height: 180px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.48;
-    --zs: 0.36;
+    --zm: 0.50;
+    --zs: 0.38;
   }
 }
 
 @container (min-height: 188px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.51;
-    --zs: 0.38;
+    --zm: 0.53;
+    --zs: 0.40;
   }
 }
 
 @container (min-height: 196px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.54;
-    --zs: 0.41;
+    --zm: 0.56;
+    --zs: 0.42;
   }
 }
 
 @container (min-height: 204px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.57;
-    --zs: 0.43;
+    --zm: 0.59;
+    --zs: 0.45;
   }
 }
 
 @container (min-height: 212px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.60;
-    --zs: 0.45;
+    --zm: 0.62;
+    --zs: 0.47;
   }
 }
 
 @container (min-height: 220px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.63;
-    --zs: 0.47;
+    --zm: 0.66;
+    --zs: 0.49;
   }
 }
 
 @container (min-height: 228px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.66;
-    --zs: 0.50;
+    --zm: 0.69;
+    --zs: 0.51;
   }
 }
 
 @container (min-height: 236px) {
-  .fp-fight-area .fb-zones-col {
-    --zm: 0.69;
-    --zs: 0.52;
-  }
-}
-
-@container (min-height: 244px) {
   .fp-fight-area .fb-zones-col {
     --zm: 0.72;
     --zs: 0.54;
   }
 }
 
-@container (min-height: 252px) {
+@container (min-height: 244px) {
   .fp-fight-area .fb-zones-col {
     --zm: 0.75;
-    --zs: 0.57;
+    --zs: 0.56;
+  }
+}
+
+@container (min-height: 252px) {
+  .fp-fight-area .fb-zones-col {
+    --zm: 0.78;
+    --zs: 0.58;
   }
 }
 
 @container (min-height: 260px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.78;
-    --zs: 0.59;
+    --zm: 0.81;
+    --zs: 0.61;
   }
 }
 
 @container (min-height: 268px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.82;
-    --zs: 0.61;
+    --zm: 0.84;
+    --zs: 0.63;
   }
 }
 
 @container (min-height: 276px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.85;
-    --zs: 0.63;
+    --zm: 0.87;
+    --zs: 0.65;
   }
 }
 
 @container (min-height: 284px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.88;
-    --zs: 0.66;
+    --zm: 0.90;
+    --zs: 0.67;
   }
 }
 
 @container (min-height: 292px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.91;
-    --zs: 0.68;
+    --zm: 0.93;
+    --zs: 0.70;
   }
 }
 
 @container (min-height: 300px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.94;
-    --zs: 0.70;
+    --zm: 0.96;
+    --zs: 0.72;
   }
 }
 
 @container (min-height: 308px) {
   .fp-fight-area .fb-zones-col {
-    --zm: 0.97;
-    --zs: 0.73;
+    --zm: 0.99;
+    --zs: 0.74;
   }
 }
 
@@ -493,125 +488,335 @@ body.in-fight .fp-root {
 
 @container (min-width: 200px) {
   .fp-fight-area .fb-zones-col {
-    --zw: 0.47;
-  }
-}
-
-@container (min-width: 208px) {
-  .fp-fight-area .fb-zones-col {
     --zw: 0.49;
   }
 }
 
-@container (min-width: 216px) {
+@container (min-width: 203px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.50;
+  }
+}
+
+@container (min-width: 206px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.51;
+  }
+}
+
+@container (min-width: 209px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.52;
   }
 }
 
-@container (min-width: 224px) {
+@container (min-width: 212px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.53;
+  }
+}
+
+@container (min-width: 215px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.54;
+  }
+}
+
+@container (min-width: 218px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.55;
   }
 }
 
-@container (min-width: 232px) {
+@container (min-width: 221px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.56;
+  }
+}
+
+@container (min-width: 224px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.57;
   }
 }
 
-@container (min-width: 240px) {
+@container (min-width: 227px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.58;
+  }
+}
+
+@container (min-width: 230px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.59;
+  }
+}
+
+@container (min-width: 233px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.60;
   }
 }
 
-@container (min-width: 248px) {
+@container (min-width: 236px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.61;
+  }
+}
+
+@container (min-width: 239px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.62;
+  }
+}
+
+@container (min-width: 242px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.63;
   }
 }
 
-@container (min-width: 256px) {
+@container (min-width: 245px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.64;
+  }
+}
+
+@container (min-width: 248px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.65;
   }
 }
 
-@container (min-width: 264px) {
+@container (min-width: 251px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.66;
+  }
+}
+
+@container (min-width: 254px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.67;
+  }
+}
+
+@container (min-width: 257px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.68;
   }
 }
 
-@container (min-width: 272px) {
+@container (min-width: 260px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.69;
+  }
+}
+
+@container (min-width: 263px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.70;
+  }
+}
+
+@container (min-width: 266px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.71;
   }
 }
 
-@container (min-width: 280px) {
+@container (min-width: 269px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.72;
+  }
+}
+
+@container (min-width: 272px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.73;
   }
 }
 
-@container (min-width: 288px) {
+@container (min-width: 275px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.74;
+  }
+}
+
+@container (min-width: 278px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.75;
+  }
+}
+
+@container (min-width: 281px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.76;
   }
 }
 
-@container (min-width: 296px) {
+@container (min-width: 284px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.77;
+  }
+}
+
+@container (min-width: 287px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.78;
+  }
+}
+
+@container (min-width: 290px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.79;
   }
 }
 
-@container (min-width: 304px) {
+@container (min-width: 293px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.80;
+  }
+}
+
+@container (min-width: 296px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.81;
   }
 }
 
-@container (min-width: 312px) {
+@container (min-width: 299px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.82;
+  }
+}
+
+@container (min-width: 302px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.83;
+  }
+}
+
+@container (min-width: 305px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.84;
   }
 }
 
-@container (min-width: 320px) {
+@container (min-width: 308px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.85;
+  }
+}
+
+@container (min-width: 311px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.86;
+  }
+}
+
+@container (min-width: 314px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.87;
   }
 }
 
-@container (min-width: 328px) {
+@container (min-width: 317px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.88;
+  }
+}
+
+@container (min-width: 320px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.89;
   }
 }
 
-@container (min-width: 336px) {
+@container (min-width: 323px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.90;
+  }
+}
+
+@container (min-width: 326px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.91;
+  }
+}
+
+@container (min-width: 329px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.92;
   }
 }
 
-@container (min-width: 344px) {
+@container (min-width: 332px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.93;
+  }
+}
+
+@container (min-width: 335px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.94;
+  }
+}
+
+@container (min-width: 338px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.95;
   }
 }
 
-@container (min-width: 352px) {
+@container (min-width: 341px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.96;
+  }
+}
+
+@container (min-width: 344px) {
   .fp-fight-area .fb-zones-col {
     --zw: 0.97;
   }
 }
 
-@container (min-width: 360px) {
+@container (min-width: 347px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.98;
+  }
+}
+
+@container (min-width: 350px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 0.99;
+  }
+}
+
+@container (min-width: 353px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 356px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 359px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 362px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 365px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -623,13 +828,43 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 376px) {
+@container (min-width: 371px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
 }
 
-@container (min-width: 384px) {
+@container (min-width: 374px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 377px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 380px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 383px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 386px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 389px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -641,13 +876,43 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 400px) {
+@container (min-width: 395px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
 }
 
-@container (min-width: 408px) {
+@container (min-width: 398px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 401px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 404px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 407px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 410px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 413px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -659,13 +924,43 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 424px) {
+@container (min-width: 419px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
 }
 
-@container (min-width: 432px) {
+@container (min-width: 422px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 425px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 428px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 431px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 434px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 437px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -677,13 +972,43 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 448px) {
+@container (min-width: 443px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
 }
 
-@container (min-width: 456px) {
+@container (min-width: 446px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 449px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 452px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 455px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 458px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 461px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -695,13 +1020,43 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 472px) {
+@container (min-width: 467px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
 }
 
-@container (min-width: 480px) {
+@container (min-width: 470px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 473px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 476px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 479px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 482px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 485px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -713,13 +1068,43 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 496px) {
+@container (min-width: 491px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
 }
 
-@container (min-width: 504px) {
+@container (min-width: 494px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 497px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 500px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 503px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 506px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 509px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -731,7 +1116,13 @@ body.in-fight .fp-root {
   }
 }
 
-@container (min-width: 520px) {
+@container (min-width: 515px) {
+  .fp-fight-area .fb-zones-col {
+    --zw: 1.00;
+  }
+}
+
+@container (min-width: 518px) {
   .fp-fight-area .fb-zones-col {
     --zw: 1.00;
   }
@@ -747,11 +1138,16 @@ body.in-fight .fp-root {
 
 /* La case suit la taille de sa carte (+ boutons de mode pour les monstres) */
 .fp-fight-area .zr-wrap:not(.zr-wrap--support) .zr-zone {
-  min-height: calc(var(--zc) * 150px + 44px);
+  min-height: calc(var(--zc) * 150px + 40px);
+}
+
+/* Pas de boutons de mode chez l'adversaire : la case colle à la carte */
+.fp-fight-area .zr-wrap--opponent:not(.zr-wrap--support) .zr-zone {
+  min-height: calc(var(--zc) * 150px + 6px);
 }
 
 .fp-fight-area .zr-wrap--support .zr-zone {
-  min-height: calc(var(--zc) * 150px + 8px);
+  min-height: calc(var(--zc) * 150px + 6px);
 }
 
 .fp-fight-area .zr-card {
