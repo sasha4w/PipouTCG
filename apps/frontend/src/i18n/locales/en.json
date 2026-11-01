@@ -799,7 +799,7 @@
     "hand": {
       "free": "FREE",
       "payCard": "Payment card",
-      "discard": "discard"
+      "releve": "Relief available"
     },
     "pick": {
       "source": {

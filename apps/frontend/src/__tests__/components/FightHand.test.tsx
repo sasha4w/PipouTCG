@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import FightHand from "../../features/fight/FightHand";
 import type { HandCard } from "../../features/fight/handCard";
 import i18n from "../../i18n";
@@ -91,5 +91,22 @@ describe("FightHand", () => {
     act(() => vi.advanceTimersByTime(800));
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("phase de contrôle, main pleine : ni étiquette « défausser » sur chaque carte ni contour d'alerte", () => {
+    const hand = Array.from({ length: 8 }, (_, i) => handCard(`Carte${i}`));
+    renderHand({ hand, phase: "end" });
+    expect(screen.queryByText("défausser")).toBeNull();
+    expect(document.querySelector(".fhand-card--discard-hint")).toBeNull();
+  });
+
+  it("la carte qui a une Relève disponible est signalée, pas les autres", () => {
+    renderHand({ releveInstanceIds: new Set(["Gobelin#1"]) });
+    const gobelin = screen.getByRole("button", { name: /Gobelin/ });
+    const ogre = screen.getByRole("button", { name: /Ogre/ });
+    expect(
+      within(gobelin).getByLabelText("Relève disponible"),
+    ).toBeInTheDocument();
+    expect(within(ogre).queryByLabelText("Relève disponible")).toBeNull();
   });
 });

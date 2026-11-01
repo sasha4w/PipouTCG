@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { IconBolt, IconCheck } from "../../components/Icons";
+import { IconBolt, IconCheck, IconReleve } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
@@ -21,6 +21,8 @@ interface Props {
   selectedCard: number | null;
   payIndices: number[];
   freeSummonInstanceIds: string[];
+  /** Cartes dont la Relève est disponible (assez d'alliés Pipou). */
+  releveInstanceIds?: ReadonlySet<string>;
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -31,11 +33,11 @@ export default function FightHand({
   selectedCard,
   payIndices,
   freeSummonInstanceIds,
+  releveInstanceIds,
   onCardClick,
 }: Props) {
   const { t } = useTranslation();
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
-  const mustDiscard = phase === "end" && isMyTurn && hand.length > 7;
 
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const inspected =
@@ -79,7 +81,6 @@ export default function FightHand({
               isPaying ? "fhand-card--paying" : "",
               isInteractive ? "fhand-card--interactive" : "",
               isPayable && !isPaying ? "fhand-card--payable" : "",
-              phase === "end" && isMyTurn ? "fhand-card--discard-hint" : "",
               isFree ? "fhand-card--free" : "",
             ]
               .filter(Boolean)
@@ -111,10 +112,14 @@ export default function FightHand({
                 <IconCheck size={9} />
               </div>
             )}
-            {mustDiscard && (
-              <div className="fhand-discard-label">
-                {t("fight.hand.discard")}
-              </div>
+            {releveInstanceIds?.has(card.instanceId) && (
+              <span
+                className="fhand-releve-badge"
+                aria-label={t("fight.hand.releve")}
+                title={t("fight.hand.releve")}
+              >
+                <IconReleve size={11} />
+              </span>
             )}
           </InspectableCard>
         );

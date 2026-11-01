@@ -740,7 +740,7 @@
     "hand": {
       "free": "무료",
       "payCard": "지불 카드",
-      "discard": "버리기"
+      "releve": "교대 가능"
     },
     "pick": {
       "source": {

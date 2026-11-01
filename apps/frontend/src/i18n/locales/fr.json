@@ -801,7 +801,7 @@
     "hand": {
       "free": "GRATUIT",
       "payCard": "Carte de paiement",
-      "discard": "défausser"
+      "releve": "Relève disponible"
     },
     "pick": {
       "source": {

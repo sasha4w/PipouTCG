@@ -291,6 +291,14 @@ export default function FightBoard({
     selectedInstance && canSummonFromHand(selectedInstance.baseCard)
       ? releveOptions(selectedInstance.baseCard, gs.me.monsterZones, myId)
       : null;
+  // Cartes de la main dont la Relève est jouable maintenant (signalées dans la main)
+  const releveReadyIds = new Set(
+    isMyMain
+      ? gs.me.hand
+          .filter((c) => releveOptions(c.baseCard, gs.me.monsterZones, myId))
+          .map((c) => c.instanceId)
+      : [],
+  );
   const evolvesOnly =
     !!selectedInstance && !canSummonFromHand(selectedInstance.baseCard);
   const evolvableTargets: MonsterOnBoard[] =
@@ -823,6 +831,7 @@ export default function FightBoard({
         selectedCard={selectedCard}
         payIndices={payIndices}
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
+        releveInstanceIds={releveReadyIds}
         onCardClick={handleCardClick}
       />
 
