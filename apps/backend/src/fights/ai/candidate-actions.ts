@@ -4,9 +4,11 @@ import {
   DrakonStage,
   HAND_LIMIT,
   SupportType,
+  canEquip,
   canEvolveNow,
   canEvolveOnto,
   canImplantOn,
+  canPlaceInSupportZone,
   canSummonFromHand,
   canSummonOnEnemySide,
   canTransform,
@@ -217,17 +219,43 @@ function mainCandidates(
     }
 
     if (card.type === CardType.SUPPORT) {
-      if (card.supportType === SupportType.EQUIPMENT)
-        for (const m of [...myMonsters, ...myPlanted])
+      if (card.supportType === SupportType.EQUIPMENT) {
+        for (const m of [...myMonsters, ...myPlanted]) {
+          const check = canEquip(m.equipments, card);
+          if (check.kind === 'ok')
+            out.push({
+              type: 'play_support',
+              handIndex,
+              targetInstanceId: m.instanceId,
+            });
+          else if (check.kind === 'slot_full')
+            for (const replaceInstanceId of check.replaceable)
+              out.push({
+                type: 'play_support',
+                handIndex,
+                targetInstanceId: m.instanceId,
+                replaceInstanceId,
+              });
+        }
+      } else if (
+        card.supportType === SupportType.PERSISTENT ||
+        card.supportType === SupportType.CHARGE
+      ) {
+        const placement = canPlaceInSupportZone(me.supportZones, card);
+        if (placement.kind === 'replace_terrain')
           out.push({
             type: 'play_support',
             handIndex,
-            targetInstanceId: m.instanceId,
+            zoneIndex: placement.zoneIndex,
+            replaceInstanceId: me.supportZones[placement.zoneIndex]!.instanceId,
           });
-      else if (card.supportType === SupportType.PERSISTENT)
-        for (const zoneIndex of freeZones(me.supportZones))
-          out.push({ type: 'play_support', handIndex, zoneIndex });
-      else {
+        else if (placement.kind === 'ok')
+          out.push({
+            type: 'play_support',
+            handIndex,
+            zoneIndex: me.supportZones.findIndex((z) => z === null),
+          });
+      } else {
         const side = ephemeralTargetSide(card.effects);
         if (!side) out.push({ type: 'play_support', handIndex });
         else

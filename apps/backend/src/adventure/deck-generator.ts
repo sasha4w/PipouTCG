@@ -119,7 +119,14 @@ function pixelmanPlan(
   random: () => number,
 ): Plan {
   const isNoyau = (c: Card) => isMonster(c) && c.name.startsWith('Noyau');
-  const forced = [{ card: sig, quantity: 2 + (random() < 0.5 ? 1 : 0) }];
+  // Un équipement d'emplacement limité n'est pas joué à plus de 2 exemplaires
+  const sigQty = 2 + (random() < 0.5 ? 1 : 0);
+  const forced = [
+    {
+      card: sig,
+      quantity: sig.supportType === SupportType.EQUIPMENT ? 2 : sigQty,
+    },
+  ];
   for (const c of set)
     if (c.supportType === SupportType.EQUIPMENT && c.id !== sig.id)
       forced.push({ card: c, quantity: 1 });

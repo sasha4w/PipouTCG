@@ -1,8 +1,22 @@
 import type { GameAction } from '@pipou/shared';
 import type { GameState } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
-import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
-import { act, effect, ephemeralCard, monsterCard } from '../testing/cards';
+import {
+  ActionType,
+  EffectTarget,
+  EffectTrigger,
+  EquipmentSlot,
+} from '@pipou/shared';
+import {
+  act,
+  chargeCard,
+  effect,
+  ephemeralCard,
+  equipmentCard,
+  monsterCard,
+  persistentCard,
+  terrainCard,
+} from '../testing/cards';
 import { P1_ID, P2_ID, monsterNamed, scenario } from '../testing/scenario';
 import { AiPlayer } from './ai-player';
 import type { AiProfile } from './ai-player';
@@ -419,5 +433,71 @@ describe('fins de suite', () => {
     expect(
       scoreAfterChoice(engine, game, 'p1', (s) => evaluate(s, 'p1', 'pipou')),
     ).toBe(evaluate(game, 'p1', 'pipou'));
+  });
+});
+
+describe('candidats de support : emplacements et remplacements', () => {
+  const plays = (game: GameState) =>
+    listCandidates(game, 'p1').filter((c) => c.type === 'play_support');
+
+  it("ne propose pas d'équiper un accessoire déjà porté", () => {
+    const module = () =>
+      equipmentCard('Module', [], { equipmentSlot: EquipmentSlot.ACCESSORY });
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [module()],
+        monsters: [{ card: monsterCard('A'), equipments: [module()] }],
+      },
+    });
+    expect(plays(game)).toHaveLength(0);
+  });
+
+  it("propose un remplacement quand l'emplacement est plein", () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [equipmentCard('Canon', [])],
+        monsters: [
+          {
+            card: monsterCard('A'),
+            equipments: [equipmentCard('Processeur', [])],
+          },
+        ],
+      },
+    });
+    const old = monsterNamed(game, 'p1', 'A').equipments[0].instanceId;
+    expect(plays(game)).toContainEqual(
+      expect.objectContaining({ replaceInstanceId: old }),
+    );
+    expect(plays(game).every((c) => 'replaceInstanceId' in c)).toBe(true);
+  });
+
+  it('pose une Charge sur une case libre', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { hand: [chargeCard('Batterie', 3, [])] },
+    });
+    expect(plays(game)).toContainEqual(
+      expect.objectContaining({ type: 'play_support', zoneIndex: 0 }),
+    );
+  });
+
+  it('propose de remplacer le Terrain en place', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [terrainCard('Forêt B', [])],
+        supports: [persistentCard('Aura', []), terrainCard('Forêt A', [])],
+      },
+    });
+    const old = game.player1.supportZones[1]!.instanceId;
+    expect(plays(game)).toContainEqual(
+      expect.objectContaining({ zoneIndex: 1, replaceInstanceId: old }),
+    );
   });
 });

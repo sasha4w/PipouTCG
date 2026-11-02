@@ -1,5 +1,5 @@
 import { DrakonStage } from '@pipou/shared';
-import { equipmentCard, monsterCard } from '../testing/cards';
+import { chargeCard, equipmentCard, monsterCard } from '../testing/cards';
 import { scenario } from '../testing/scenario';
 import { ARCHETYPE_PROFILES } from './archetype-profiles';
 import { evaluate, handPotential } from './evaluate';
@@ -186,5 +186,20 @@ describe('evaluate sans préparation', () => {
     expect(
       evaluate(withMatch, 'p1', 'dragon') - evaluate(withOther, 'p1', 'dragon'),
     ).toBeCloseTo(0);
+  });
+
+  it('une Charge presque pleine vaut plus qu’une Charge vide', () => {
+    const build = (counters: number) => {
+      const game = scenario({
+        turn: 'p1',
+        phase: 'main',
+        p1: { supports: [chargeCard('Batterie', 4, [])] },
+      });
+      game.player1.supportZones[0]!.chargeCounters = counters;
+      return game;
+    };
+    expect(evaluate(build(3), 'p1', 'dragon', true)).toBeGreaterThan(
+      evaluate(build(0), 'p1', 'dragon', true),
+    );
   });
 });
