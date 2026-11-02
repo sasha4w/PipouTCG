@@ -1,7 +1,8 @@
 import { createEngine } from '../testing/engine';
 import { monsterCard } from '../testing/cards';
 import { effectiveAtk } from '../helpers/game-state.helper';
-import { realCard } from '../testing/real-cards';
+import { SupportType } from '@pipou/shared';
+import { allRealCards, realCard } from '../testing/real-cards';
 import {
   attackWith,
   graveyardNames,
@@ -458,5 +459,14 @@ describe('vraies cartes — combos', () => {
       expect(monsterNamed(game, 'p2', 'Hôte').currentHp).toBe(1500);
       expect(effectiveAtk(monsterNamed(game, 'p2', 'Hôte'))).toBe(1000);
     });
+  });
+});
+
+describe('vraies cartes — emplacements', () => {
+  it('les vrais équipements ont tous un emplacement', () => {
+    const missing = allRealCards().filter(
+      (c) => c.supportType === SupportType.EQUIPMENT && !c.equipmentSlot,
+    );
+    expect(missing.map((c) => c.name)).toEqual([]);
   });
 });

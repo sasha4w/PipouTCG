@@ -138,8 +138,43 @@ describe('applySetup', () => {
         instanceId: card.instanceId,
         to: { zone: 'support', index: 0 },
       }).error,
-    ).toBe('Seul un Terrain va en zone support');
+    ).toBe('Seul un Persistant ou une Charge va en zone support');
     expect(handNames(game, 'p1')).toEqual(['Nouveau']);
+  });
+
+  it('refuse (sans remplacer) un équipement dont l emplacement est plein ou un second Terrain', () => {
+    const game = scenario({
+      p1: {
+        monsters: [
+          {
+            card: monsterCard('Porteur'),
+            equipments: [equipmentCard('A', [])],
+          },
+        ],
+        hand: [equipmentCard('B', []), terrainCard('Plaine', [])],
+        supports: [terrainCard('Forêt', [])],
+      },
+    });
+    const host = monsterNamed(game, 'p1', 'Porteur');
+
+    expect(
+      applySetup(game, {
+        type: 'move_card',
+        seat: 'p1',
+        instanceId: game.player1.hand[0].instanceId,
+        to: { zone: 'equipment', hostInstanceId: host.instanceId },
+      }).error,
+    ).toBe('Emplacement plein : confirme le remplacement');
+    expect(
+      applySetup(game, {
+        type: 'move_card',
+        seat: 'p1',
+        instanceId: game.player1.hand[1].instanceId,
+        to: { zone: 'support', index: 2 },
+      }).error,
+    ).toBe('Confirme le remplacement de ton Terrain');
+    expect(names(host.equipments)).toEqual(['A']);
+    expect(handNames(game, 'p1')).toEqual(['B', 'Plaine']);
   });
 
   it('retire un monstre du terrain vers la main, ses équipements au cimetière', () => {

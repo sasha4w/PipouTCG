@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-const SLOTS: [string, 'OFFENSIVE' | 'DEFENSIVE' | 'ACCESSORY'][] = [
+export const SLOTS: [string, 'OFFENSIVE' | 'DEFENSIVE' | 'ACCESSORY'][] = [
   ['Processeur de Calcul .bin', 'OFFENSIVE'],
   ['Canon à Particules .vxd', 'OFFENSIVE'],
   ['Module Bluetooth .v2', 'OFFENSIVE'],

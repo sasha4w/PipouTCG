@@ -1,3 +1,4 @@
+import { SupportType } from '@pipou/shared';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Card } from '../../cards/card.entity';
@@ -15,6 +16,7 @@ import {
   DRAKON_NEW_CARDS,
   DRAKON_PATCHES,
 } from '../../database/drakon-set-patches';
+import { SLOTS } from '../../database/migrations/1791000000022-SupportRework';
 import { normalizeCardName } from '../effects/card-name';
 
 const SNAPSHOT = JSON.parse(
@@ -161,7 +163,30 @@ export function allRealCards(): Card[] {
         } as Card)
       : c;
   });
-  return withTeros([...withAncetres(cards), ...extensionCards(cards)]);
+  return withSupportRework(
+    withTeros([...withAncetres(cards), ...extensionCards(cards)]),
+  );
+}
+
+/** Reproduit la migration SupportRework : Terrains → Persistants, emplacements d'équipement. */
+function withSupportRework(cards: Card[]): Card[] {
+  return cards.map((c) => {
+    // L'instantané précède les colonnes : valeurs par défaut de la migration.
+    const base: Card = {
+      ...c,
+      equipmentSlot: c.equipmentSlot ?? null,
+      isTerrain: c.isTerrain ?? false,
+      chargeMax: c.chargeMax ?? null,
+      chargeMode: c.chargeMode ?? null,
+    };
+    if ((c.supportType as string | null) === 'TERRAIN')
+      return { ...base, supportType: SupportType.PERSISTENT, isTerrain: true };
+    if (c.supportType === SupportType.EQUIPMENT) {
+      const slot = SLOTS.find(([n]) => n === c.name.trim())?.[1];
+      return slot ? ({ ...base, equipmentSlot: slot } as Card) : base;
+    }
+    return base;
+  });
 }
 
 /** Nerf des Teros et de l'Écaille de Dragon, après le patch Garde et l'extension. */

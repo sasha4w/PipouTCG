@@ -224,7 +224,7 @@ function mainCandidates(
             handIndex,
             targetInstanceId: m.instanceId,
           });
-      else if (card.supportType === SupportType.TERRAIN)
+      else if (card.supportType === SupportType.PERSISTENT)
         for (const zoneIndex of freeZones(me.supportZones))
           out.push({ type: 'play_support', handIndex, zoneIndex });
       else {

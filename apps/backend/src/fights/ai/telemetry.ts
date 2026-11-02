@@ -158,7 +158,10 @@ export function blockReason(
     );
     return allies.length === 0 && !planted ? 'cible' : 'condition';
   }
-  if (card.supportType === SupportType.TERRAIN)
+  if (
+    card.supportType === SupportType.PERSISTENT ||
+    card.supportType === SupportType.CHARGE
+  )
     return me.supportZones.every(Boolean) ? 'zone' : 'condition';
   const side = ephemeralTargetSide(card.effects);
   if (side === 'ally' && allies.length === 0) return 'cible';
