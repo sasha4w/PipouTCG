@@ -113,11 +113,8 @@
 /* Equipment pips */
 .zr-card-anchor {
   position: relative;
-  width: min(100%, 100px);
-}
-
-.zr-card-anchor .zr-card {
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .zr-equip-pips {
