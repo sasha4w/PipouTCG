@@ -64,6 +64,7 @@ Le formulaire doit refléter le moteur : tout ce que le DTO `CreateCardDto` / `C
 - **Condition** : `EffectCondition` est plate (`type`, `value?`, `match?`, `element?`, `stage?`), pas d'imbrication. `valueIf` = une condition + une valeur, éditable comme trou d'action. Tout est éditable.
 - **Cartes existantes non représentables** : à l'édition, tout champ que l'éditeur ne sait pas afficher est conservé tel quel et signalé (« champ avancé conservé ») ; jamais perdu à la sauvegarde. *Choix de Claude.*
 - **Seed** : les fichiers `*-patches.ts` / `*-cards.ts` passent par des migrations jouées une seule fois ; ils n'écrasent pas les cartes créées ou modifiées dans le panneau.
+  *Vérifié (2026-11-02)* : ces patches ne sont appelés que depuis `apps/backend/src/database/migrations/` (jouées une seule fois) ; `applyBalancePatches` ne modifie pas une carte dont le contenu diffère de l'attendu (elle logue un avertissement). Aucun script de seed ne tourne au démarrage. Une carte créée ou modifiée dans le panneau n'est donc pas écrasée.
 
 ## Choix faits par Claude (à vérifier)
 - Les listes viennent des enums partagés avec un libellé FR, fallback nom technique.
