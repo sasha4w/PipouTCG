@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { EquipmentSlot, type CardEffect } from "@pipou/shared";
-import { useTranslation } from "react-i18next";
+import type { CardEffect, EquipmentSlot } from "@pipou/shared";
 import CardFace, {
   type CardFaceCard,
   type CardFaceStats,
 } from "../cards/CardFace";
 import type { BuffEntry } from "./BuffDebuffSections";
 import CardEffectSheet from "./CardEffectSheet";
+import EquipmentSlotList from "./EquipmentSlotList";
 import "./CardInspect.css";
 
 /** Carte inspectée : sa face, et de quoi rédiger ses effets. */
@@ -19,23 +19,10 @@ export type InspectCard = CardFaceCard & {
   equipmentSlot?: EquipmentSlot | null;
 };
 
-/** Quatre emplacements : Offensif, Défensif, 2 Accessoires. */
-const SLOT_ROWS: EquipmentSlot[] = [
-  EquipmentSlot.OFFENSIVE,
-  EquipmentSlot.DEFENSIVE,
-  EquipmentSlot.ACCESSORY,
-  EquipmentSlot.ACCESSORY,
-];
-
-function slotRows(equipments: InspectCard[]) {
-  const pool = [...equipments];
-  return SLOT_ROWS.map((slot) => {
-    const i = pool.findIndex(
-      (e) => (e.equipmentSlot ?? EquipmentSlot.ACCESSORY) === slot,
-    );
-    return { slot, card: i >= 0 ? pool.splice(i, 1)[0] : null };
-  });
-}
+/** Équipements posés : l'emplacement est indispensable pour les ranger. */
+export type InspectEquipment = InspectCard & {
+  equipmentSlot: EquipmentSlot | null;
+};
 
 interface Props {
   card: InspectCard;
@@ -44,7 +31,7 @@ interface Props {
   /** État en direct d'un monstre en jeu (stats, statuts actifs). */
   status?: BuffEntry[];
   /** Équipements posés sur le monstre inspecté. */
-  equipments?: InspectCard[];
+  equipments?: InspectEquipment[];
   onClose: () => void;
 }
 
@@ -57,7 +44,6 @@ export default function CardInspect({
   equipments,
   onClose,
 }: Props) {
-  const { t } = useTranslation();
   // Stats déjà sur la grande carte : seuls les statuts actifs sont listés.
   const statuses = status.filter((e) => !e.variant);
   const pressedRef = useRef(false);
@@ -96,16 +82,7 @@ export default function CardInspect({
           stats={stats}
           guard={guard}
         />
-        {equipments && (
-          <ul className="ci-slots">
-            {slotRows(equipments).map(({ slot, card: eq }, i) => (
-              <li key={i} className="ci-slot">
-                <span className="ci-slot__label">{t(`equipmentSlot.${slot}`)}</span>
-                <span className="ci-slot__name">{eq ? eq.name : "—"}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        {equipments && <EquipmentSlotList equipments={equipments} />}
         <CardEffectSheet
           sources={[
             { card },

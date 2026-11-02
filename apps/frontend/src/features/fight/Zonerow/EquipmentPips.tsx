@@ -17,7 +17,7 @@ export function EquipmentPips({ equipments }: { equipments: CardInstance[] }) {
     <div className="zr-equip-pips">
       {sorted.map((eq) => {
         const slot = eq.baseCard.equipmentSlot ?? EquipmentSlot.ACCESSORY;
-        const label = `${t(`equipmentSlot.${slot}`)} : ${eq.baseCard.name}`;
+        const label = `${t(`glossary.equipmentSlot.${slot}`)} : ${eq.baseCard.name}`;
         return (
           <span
             key={eq.instanceId}

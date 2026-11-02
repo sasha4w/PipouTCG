@@ -7,7 +7,8 @@ import CardFace, {
 } from "../cards/CardFace";
 import type { BuffEntry } from "./BuffDebuffSections";
 import CardEffectSheet from "./CardEffectSheet";
-import type { InspectCard } from "./CardInspect";
+import type { InspectCard, InspectEquipment } from "./CardInspect";
+import EquipmentSlotList from "./EquipmentSlotList";
 import { describeCardEffects, effectSummary } from "./effectText";
 import KeywordIcon from "./KeywordIcon";
 import "./CardDrawer.css";
@@ -19,7 +20,7 @@ interface Props {
   /** État en direct d'un monstre en jeu (stats, statuts actifs). */
   status?: BuffEntry[];
   /** Équipements posés sur le monstre inspecté. */
-  equipments?: InspectCard[];
+  equipments?: InspectEquipment[];
   onClose: () => void;
 }
 
@@ -32,7 +33,7 @@ export default function CardDrawer({
   stats,
   guard,
   status = [],
-  equipments = [],
+  equipments,
   onClose,
 }: Props) {
   const { t } = useTranslation();
@@ -89,6 +90,7 @@ export default function CardDrawer({
               </ul>
             )}
             {summary && <p className="cdw-line">{summary}</p>}
+            {equipments && <EquipmentSlotList equipments={equipments} />}
           </div>
         </div>
       </div>
@@ -96,7 +98,7 @@ export default function CardDrawer({
         <CardEffectSheet
           sources={[
             { card },
-            ...equipments.map((eq) => ({ card: eq, title: eq.name })),
+            ...(equipments ?? []).map((eq) => ({ card: eq, title: eq.name })),
           ]}
           statuses={statuses}
         />

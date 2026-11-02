@@ -2,10 +2,7 @@ import { useTranslation } from "react-i18next";
 import { EquipmentPips } from "./EquipmentPips";
 import { hasSpentAttacks, monsterFaceStats } from "./zoneRow.helpers";
 import InspectableCard from "../InspectableCard";
-import {
-  IconGuard,
-  IconSwords,
-} from "../../../components/Icons";
+import { IconGuard, IconSwords } from "../../../components/Icons";
 import type { MonsterOnBoard } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
 import StatusBadges from "./StatusBadges";
@@ -31,19 +28,20 @@ export default function MonsterZoneContent({
 
   return (
     <div className="zr-monster">
-      <InspectableCard
-        className="zr-card"
-        card={zone.card.baseCard}
-        size="xs"
-        stats={monsterFaceStats(zone)}
-        guard={zone.mode === "guard"}
-        spent={hasSpentAttacks(zone)}
-        badges={<StatusBadges monster={zone} />}
-        selected={selected}
-        onInfo={onInfo}
-      />
-
-      <EquipmentPips equipments={zone.equipments ?? []} />
+      <div className="zr-card-anchor">
+        <InspectableCard
+          className="zr-card"
+          card={zone.card.baseCard}
+          size="xs"
+          stats={monsterFaceStats(zone)}
+          guard={zone.mode === "guard"}
+          spent={hasSpentAttacks(zone)}
+          badges={<StatusBadges monster={zone} />}
+          selected={selected}
+          onInfo={onInfo}
+        />
+        <EquipmentPips equipments={zone.equipments ?? []} />
+      </div>
 
       {!isOpponent && onModeChange && !zone.forcedAttackMode && (
         <div className="zr-mode-btns">

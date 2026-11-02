@@ -59,6 +59,7 @@ describe("CardInspect", () => {
             name: "Épée",
             type: "support",
             supportType: "EQUIPMENT",
+            equipmentSlot: "OFFENSIVE" as never,
             effects: [
               {
                 trigger: "PASSIVE",
@@ -73,6 +74,9 @@ describe("CardInspect", () => {
 
     expect(screen.getByText("Perçant")).toBeInTheDocument();
     expect(screen.getAllByText(/Épée/).length).toBeGreaterThan(0);
+    expect(screen.getByText("Offensif")).toBeInTheDocument();
+    expect(screen.getByText("Défensif")).toBeInTheDocument();
+    expect(screen.getAllByText("Accessoire")).toHaveLength(2);
     expect(screen.getAllByText("—")).toHaveLength(3);
     expect(
       screen.getByText("Le monstre équipé gagne +100 ATK."),

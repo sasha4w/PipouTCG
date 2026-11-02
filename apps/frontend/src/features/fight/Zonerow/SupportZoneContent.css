@@ -1,17 +1,46 @@
 .zr-support {
+  position: relative;
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-.zr-support { position: relative; }
-.zr-support__terrain { position: absolute; left: 2px; bottom: 2px; z-index: 2; color: #fff; background: rgba(0,0,0,.55); border-radius: 50%; padding: 2px; display: inline-flex; }
-.zr-charge__frame { position: relative; border-radius: 6px; }
-.zr-charge__frame::after {
-  content: ""; position: absolute; inset: -3px; border-radius: 8px; pointer-events: none;
-  background: conic-gradient(#ffb43a var(--charge), rgba(255,255,255,.35) 0);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude; padding: 3px;
-  transition: background .4s ease;
+.zr-support__terrain {
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  z-index: 2;
+  display: inline-flex;
+  padding: 2px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
 }
-.zr-charge__count { display: block; text-align: center; font: 700 9px/1 inherit; margin-top: 2px; }
+
+.zr-charge__frame {
+  position: relative;
+  border-radius: 6px;
+}
+
+.zr-charge__frame::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  padding: 3px;
+  border-radius: 8px;
+  pointer-events: none;
+  background: conic-gradient(#ffb43a var(--charge), rgba(255, 255, 255, 0.35) 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  transition: background 0.4s ease;
+}
+
+.zr-charge__count {
+  display: block;
+  margin-top: 2px;
+  font: 700 9px/1 inherit;
+  text-align: center;
+}
