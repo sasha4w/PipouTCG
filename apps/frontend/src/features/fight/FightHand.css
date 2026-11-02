@@ -136,7 +136,7 @@
   z-index: 3;
 }
 
-.fhand-card--unplayable {
+.fhand-card--unplayable .card-face {
   filter: grayscale(1) brightness(0.75);
 }
 
