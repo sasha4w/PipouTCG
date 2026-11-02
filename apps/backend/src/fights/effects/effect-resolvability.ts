@@ -1,4 +1,5 @@
 import { ActionType, EffectTarget, isPlantedBy } from '@pipou/shared';
+import { chargesOf } from '../helpers/charges';
 import type { EffectAction } from '@pipou/shared';
 import { EffectContext } from './effect-context.interface';
 import { resolveTargets } from './effect-targets.resolver';
@@ -51,6 +52,8 @@ export function canResolveAction(
     case ActionType.GAIN_RECYCLE_ENERGY:
     case ActionType.SET_FREE_SUMMON:
       return true;
+    case ActionType.ADD_CHARGE_COUNTERS:
+      return targets.players.some((p) => chargesOf(p).length > 0);
     default:
       return targets.monsters.length > 0 || targets.players.length > 0;
   }
