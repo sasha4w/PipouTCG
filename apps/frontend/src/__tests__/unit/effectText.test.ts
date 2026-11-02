@@ -589,3 +589,25 @@ describe("immunités fusionnées", () => {
     expect(text.keywords).toEqual(["monsterStatusImmunity"]);
   });
 });
+
+describe("déclencheur ON_CHARGED d'une Charge", () => {
+  const expected = {
+    fr: "Quand cette Charge est pleine",
+    en: "When this Charge is full",
+    ko: "이 충전 카드가 가득 찼을 때",
+  } as const;
+  it.each(Object.keys(LOCALES) as Lng[])("est rédigé en %s", async (lng) => {
+    const t = await makeT(lng);
+    const text = describeCardEffects(
+      support("CHARGE", [
+        {
+          trigger: "ON_CHARGED",
+          condition: null,
+          actions: [{ type: "DRAW", target: "PLAYER", value: 1 }],
+        },
+      ] as never),
+      t,
+    );
+    expect(text.rules[0].trigger).toBe(expected[lng]);
+  });
+});
