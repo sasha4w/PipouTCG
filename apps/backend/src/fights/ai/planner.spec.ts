@@ -5,6 +5,7 @@ import {
   ActionType,
   EffectTarget,
   EffectTrigger,
+  ChargeMode,
   EquipmentSlot,
 } from '@pipou/shared';
 import {
@@ -469,10 +470,10 @@ describe('candidats de support : emplacements et remplacements', () => {
       },
     });
     const old = monsterNamed(game, 'p1', 'A').equipments[0].instanceId;
+    expect(plays(game)).toHaveLength(1);
     expect(plays(game)).toContainEqual(
       expect.objectContaining({ replaceInstanceId: old }),
     );
-    expect(plays(game).every((c) => 'replaceInstanceId' in c)).toBe(true);
   });
 
   it('pose une Charge sur une case libre', () => {
@@ -499,5 +500,44 @@ describe('candidats de support : emplacements et remplacements', () => {
     expect(plays(game)).toContainEqual(
       expect.objectContaining({ zoneIndex: 1, replaceInstanceId: old }),
     );
+  });
+
+  it('ne propose pas une Charge cyclique (refusée par le moteur)', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [chargeCard('Cycle', 3, [], { chargeMode: ChargeMode.CYCLIC })],
+      },
+    });
+    expect(plays(game)).toHaveLength(0);
+  });
+
+  it('ne propose pas un Persistant déjà en jeu (même nom)', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [persistentCard('Aura', [])],
+        supports: [persistentCard('Aura', [])],
+      },
+    });
+    expect(plays(game)).toHaveLength(0);
+  });
+
+  it('ne propose rien quand les 3 cases sont pleines sans Terrain', () => {
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: {
+        hand: [persistentCard('Nouveau', [])],
+        supports: [
+          persistentCard('A', []),
+          persistentCard('B', []),
+          persistentCard('C', []),
+        ],
+      },
+    });
+    expect(plays(game)).toHaveLength(0);
   });
 });

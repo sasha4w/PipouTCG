@@ -1,6 +1,7 @@
 import {
   Archetype,
   CardType,
+  ChargeMode,
   DrakonStage,
   HAND_LIMIT,
   SupportType,
@@ -239,7 +240,8 @@ function mainCandidates(
         }
       } else if (
         card.supportType === SupportType.PERSISTENT ||
-        card.supportType === SupportType.CHARGE
+        (card.supportType === SupportType.CHARGE &&
+          card.chargeMode !== ChargeMode.CYCLIC)
       ) {
         const placement = canPlaceInSupportZone(me.supportZones, card);
         if (placement.kind === 'replace_terrain')
