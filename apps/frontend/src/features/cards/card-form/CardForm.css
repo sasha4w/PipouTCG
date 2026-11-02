@@ -1,0 +1,38 @@
+.card-form__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+  align-items: start;
+}
+
+.card-preview {
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-preview__effects {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.card-form__problems {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  color: #b3261e;
+}
+
+@media (max-width: 640px) {
+  .card-form__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card-preview {
+    position: static;
+    align-items: center;
+  }
+}

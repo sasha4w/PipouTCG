@@ -57,29 +57,31 @@ function renderManager() {
 
 const user = () => userEvent.setup();
 
-/** Ouvre le formulaire de création, remplit l'étape 1 et passe à l'étape 2 en Support. */
-async function toSupportStep(u: ReturnType<typeof user>) {
+const next = (u: ReturnType<typeof user>) =>
+  u.click(screen.getByRole("button", { name: /suivant/i }));
+
+/** Crée un Support du sous-type voulu et laisse l'utilisateur sur l'étape suivante (identité). */
+async function startSupport(u: ReturnType<typeof user>, subtype: string) {
   await u.click(await screen.findByRole("button", { name: /nouvelle/i }));
-  await u.type(screen.getByPlaceholderText("Nom de la carte"), "Ma carte");
-  const setSelect = screen
-    .getAllByRole("combobox")
-    .find((s) => s.querySelector('option[value="1"]'))!;
-  await waitFor(() =>
-    expect(setSelect.querySelector('option[value="1"]')).not.toBeNull(),
-  );
-  await u.selectOptions(setSelect, "1");
-  await u.click(screen.getByRole("button", { name: /suivant/i }));
-  const typeSelect = screen
-    .getAllByRole("combobox")
-    .find((s) => s.querySelector('option[value="support"]'))!;
-  await u.selectOptions(typeSelect, "support");
+  await u.selectOptions(screen.getByLabelText("Type de carte"), "support");
+  await u.selectOptions(screen.getByLabelText("Type de support"), subtype);
+  await next(u);
 }
 
-const supportSelect = () =>
-  screen.getByLabelText("Type de Support") as HTMLSelectElement;
+/** Remplit l'identité (nom + set) puis passe à l'étape suivante. */
+async function fillBase(u: ReturnType<typeof user>) {
+  await u.type(screen.getByLabelText("Nom *"), "Ma carte");
+  await waitFor(() =>
+    expect(screen.getByRole("option", { name: "PipouSquad" })).toBeInTheDocument(),
+  );
+  await u.selectOptions(screen.getByLabelText("Card Set *"), "1");
+  await next(u);
+}
 
+/** Depuis les réglages : effets, image, puis création. */
 async function submit(u: ReturnType<typeof user>) {
-  await u.click(screen.getByRole("button", { name: /suivant/i }));
+  await next(u);
+  await next(u);
   await u.click(screen.getByRole("button", { name: /créer la carte/i }));
 }
 
@@ -98,8 +100,8 @@ describe("CardManager — champs selon le type de support", () => {
   it("Équipement : le choix de l'emplacement apparaît et est envoyé", async () => {
     const u = user();
     renderManager();
-    await toSupportStep(u);
-    await u.selectOptions(supportSelect(), "EQUIPMENT");
+    await startSupport(u, "EQUIPMENT");
+    await fillBase(u);
     await u.selectOptions(screen.getByLabelText("Emplacement"), "ACCESSORY");
     await submit(u);
 
@@ -116,21 +118,19 @@ describe("CardManager — champs selon le type de support", () => {
   it("Équipement sans emplacement : bloque l'étape", async () => {
     const u = user();
     renderManager();
-    await toSupportStep(u);
-    await u.selectOptions(supportSelect(), "EQUIPMENT");
-    await u.click(screen.getByRole("button", { name: /suivant/i }));
+    await startSupport(u, "EQUIPMENT");
+    await fillBase(u);
+    await next(u);
 
-    expect(screen.getByText("Choisis un emplacement")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /créer la carte/i }),
-    ).toBeNull();
+    expect(screen.getByText("Choisis un emplacement.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /créer la carte/i })).toBeNull();
   });
 
   it("Persistant : case Terrain", async () => {
     const u = user();
     renderManager();
-    await toSupportStep(u);
-    await u.selectOptions(supportSelect(), "PERSISTENT");
+    await startSupport(u, "PERSISTENT");
+    await fillBase(u);
     await u.click(screen.getByRole("checkbox", { name: /terrain/i }));
     await submit(u);
 
@@ -144,8 +144,8 @@ describe("CardManager — champs selon le type de support", () => {
   it("Charge : charge max, cyclique désactivé", async () => {
     const u = user();
     renderManager();
-    await toSupportStep(u);
-    await u.selectOptions(supportSelect(), "CHARGE");
+    await startSupport(u, "CHARGE");
+    await fillBase(u);
 
     expect(screen.getByRole("option", { name: /cyclique/i })).toBeDisabled();
     expect(screen.getByLabelText("Charge max")).toHaveValue(3);
@@ -165,12 +165,16 @@ describe("CardManager — champs selon le type de support", () => {
   it("changer de sous-type retire les champs de l'ancien", async () => {
     const u = user();
     renderManager();
-    await toSupportStep(u);
-    await u.selectOptions(supportSelect(), "EQUIPMENT");
+    await startSupport(u, "EQUIPMENT");
+    await fillBase(u);
     await u.selectOptions(screen.getByLabelText("Emplacement"), "ACCESSORY");
-    await u.selectOptions(supportSelect(), "EPHEMERAL");
-    expect(screen.queryByLabelText("Emplacement")).toBeNull();
-    await submit(u);
+    await u.click(screen.getByRole("button", { name: /précédent/i }));
+    await u.click(screen.getByRole("button", { name: /précédent/i }));
+    await u.selectOptions(screen.getByLabelText("Type de support"), "EPHEMERAL");
+    await next(u); // identité, déjà remplie
+    await next(u); // éphémère : pas d'étape de réglages, on arrive aux effets
+    await next(u); // image
+    await u.click(screen.getByRole("button", { name: /créer la carte/i }));
 
     await waitFor(() => expect(cardService.create).toHaveBeenCalled());
     const payload = vi.mocked(cardService.create).mock.calls[0][0];
@@ -180,15 +184,14 @@ describe("CardManager — champs selon le type de support", () => {
 
   it("édition : recharge les champs support", async () => {
     vi.mocked(cardService.findAll).mockResolvedValue({
-      data: [
-        existing({ supportType: "EQUIPMENT", equipmentSlot: "DEFENSIVE" }),
-      ],
+      data: [existing({ supportType: "EQUIPMENT", equipmentSlot: "DEFENSIVE" })],
       meta,
     } as never);
     const u = user();
     renderManager();
     await u.click(await screen.findByRole("button", { name: "Modifier" }));
-    await u.click(screen.getByRole("button", { name: /suivant/i }));
+    await next(u);
+    await next(u);
 
     expect(screen.getByLabelText("Emplacement")).toHaveValue("DEFENSIVE");
   });

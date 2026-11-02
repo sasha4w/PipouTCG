@@ -4,26 +4,14 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  cardService,
-  Rarity,
-  CardType,
-  SupportType,
-  EquipmentSlot,
-  ChargeMode,
-  DrakonElement,
-  DrakonStage,
-} from "../../services/card.service";
+import { cardService, Rarity } from "../../services/card.service";
 import { cardSetService } from "../../services/card-set.service";
-import { imageService } from "../../services/image.service";
-import type { Card, CreateCardData } from "../../services/card.service";
+import type { Card } from "../../services/card.service";
 import type { CardSet } from "../../services/card-set.service";
-import type { Image } from "../../services/image.service";
 import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
 import { QUERY_KEYS } from "../../utils/querykeys";
-import { apiErrorMessage } from "../../utils/errors";
 import Button from "../../components/Button";
 import {
   IconArrowLeft,
@@ -32,49 +20,11 @@ import {
   IconTrash,
 } from "../../components/Icons";
 import "../../components/manager.css";
+import CardForm from "./card-form/CardForm";
 
 // Références stables tant que les requêtes ne sont pas résolues (dépendances de useMemo)
 const NO_CARDS: Card[] = [];
 const NO_SETS: CardSet[] = [];
-const NO_IMAGES: Image[] = [];
-
-const STEPS = [{ label: "Identité" }, { label: "Stats" }, { label: "Image" }];
-
-const SUPPORT_LABELS: Record<SupportType, string> = {
-  EPHEMERAL: "Éphémère",
-  EQUIPMENT: "Équipement",
-  PERSISTENT: "Persistant",
-  CHARGE: "Charge",
-};
-const SLOT_LABELS: Record<EquipmentSlot, string> = {
-  OFFENSIVE: "Offensif",
-  DEFENSIVE: "Défensif",
-  ACCESSORY: "Accessoire",
-};
-
-/** Un monstre n'envoie aucun champ de support ; un support, ceux de son sous-type seulement. */
-function toCardPayload(form: CreateCardData): CreateCardData {
-  const data: CreateCardData = { ...form };
-  const st = data.type === CardType.SUPPORT ? data.supportType : undefined;
-  if (!st) delete data.supportType;
-  if (st !== SupportType.EQUIPMENT) delete data.equipmentSlot;
-  if (st !== SupportType.PERSISTENT) delete data.isTerrain;
-  if (st !== SupportType.CHARGE) {
-    delete data.chargeMax;
-    delete data.chargeMode;
-  }
-  return data;
-}
-
-const emptyForm: CreateCardData = {
-  name: "",
-  rarity: Rarity.COMMON,
-  type: CardType.MONSTER,
-  atk: 0,
-  hp: 0,
-  cost: 1,
-  cardSetId: 0,
-};
 
 type View = "list" | "edit";
 
@@ -88,14 +38,7 @@ export default function CardManager() {
   });
   const sets = setsQuery.data?.data ?? NO_SETS;
   const [view, setView] = useState<View>("list");
-  const [step, setStep] = useState(1);
   const [editing, setEditing] = useState<Card | null>(null);
-  const [form, setForm] = useState<CreateCardData>(emptyForm);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageName, setImageName] = useState("");
-  const [uploadMode, setUploadMode] = useState<"existing" | "new">("existing");
-  const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
-  const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [groupBySet, setGroupBySet] = useState(false);
 
@@ -140,16 +83,11 @@ export default function CardManager() {
     queryFn: () => cardService.findAll(page, 10),
     placeholderData: keepPreviousData,
   });
-  const imagesQuery = useQuery({
-    queryKey: QUERY_KEYS.imageOptions,
-    queryFn: () => imageService.findAll(),
-  });
   const cards = cardsQuery.data?.data ?? NO_CARDS;
   const total = cardsQuery.data?.meta.totalPages ?? 0;
-  const images = imagesQuery.data ?? NO_IMAGES;
   const loading = cardsQuery.isPending;
   const loadError =
-    cardsQuery.isError || setsQuery.isError || imagesQuery.isError
+    cardsQuery.isError || setsQuery.isError
       ? "Erreur de chargement"
       : "";
 
@@ -202,40 +140,11 @@ export default function CardManager() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
-    setImageFile(null);
-    setImageName("");
-    setSelectedImageId(null);
-    setUploadMode("existing");
-    setStep(1);
     setError("");
     setView("edit");
   };
   const openEdit = (c: Card) => {
     setEditing(c);
-    setForm({
-      name: c.name,
-      description: c.description ?? "",
-      rarity: c.rarity,
-      type: c.type,
-      atk: c.atk,
-      hp: c.hp,
-      cost: c.cost,
-      cardSetId: c.cardSet.id,
-      supportType: c.supportType ?? undefined,
-      equipmentSlot: c.equipmentSlot ?? undefined,
-      isTerrain: c.isTerrain ?? undefined,
-      chargeMax: c.chargeMax ?? undefined,
-      chargeMode: c.chargeMode ?? undefined,
-      archetype: c.archetype ?? undefined,
-      element: c.element ?? undefined,
-      lineage: c.lineage ?? undefined,
-      stage: c.stage ?? undefined,
-      effects: c.effects ?? [],
-    });
-    setSelectedImageId(c.image?.id ?? null);
-    setUploadMode("existing");
-    setStep(1);
     setError("");
     setView("edit");
   };
@@ -243,55 +152,6 @@ export default function CardManager() {
     setView("list");
     setEditing(null);
     setError("");
-  };
-
-  const validateStep = (s: number): string | null => {
-    if (s === 1) {
-      if (!form.name.trim()) return "Le nom est requis.";
-      if (!form.cardSetId) return "Veuillez sélectionner un Card Set.";
-    }
-    if (s === 2 && form.type === CardType.SUPPORT) {
-      if (form.supportType === SupportType.EQUIPMENT && !form.equipmentSlot)
-        return "Choisis un emplacement";
-    }
-    return null;
-  };
-
-  const goNext = () => {
-    const err = validateStep(step);
-    if (err) {
-      setError(err);
-      return;
-    }
-    setError("");
-    setStep((s) => s + 1);
-  };
-  const goPrev = () => {
-    setError("");
-    setStep((s) => s - 1);
-  };
-
-  const handleSubmit = async () => {
-    if (!form.name || !form.cardSetId) return;
-    setSaving(true);
-    try {
-      const data = toCardPayload(form);
-      if (uploadMode === "new" && imageFile && imageName) {
-        const uploaded = await imageService.upload(imageFile, imageName);
-        data.imageId = uploaded.id;
-      } else if (uploadMode === "existing" && selectedImageId) {
-        data.imageId = selectedImageId;
-      }
-      if (editing) await cardService.update(editing.id, data);
-      else await cardService.create(data);
-      backToList();
-      void refreshList();
-    } catch (err) {
-      console.error(err);
-      setError(apiErrorMessage(err) || "Erreur lors de la sauvegarde");
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleDelete = async (id: number) => {
@@ -303,21 +163,6 @@ export default function CardManager() {
       setError("Erreur lors de la suppression");
     }
   };
-
-  const setSupportType = (st: SupportType | "") =>
-    setForm((f) => ({
-      ...f,
-      supportType: st || undefined,
-      equipmentSlot: st === SupportType.EQUIPMENT ? f.equipmentSlot : undefined,
-      isTerrain: st === SupportType.PERSISTENT ? f.isTerrain : undefined,
-      chargeMax: st === SupportType.CHARGE ? (f.chargeMax ?? 3) : undefined,
-      chargeMode: st === SupportType.CHARGE ? ChargeMode.ONE_SHOT : undefined,
-    }));
-
-  const setField = <K extends keyof CreateCardData>(
-    k: K,
-    v: CreateCardData[K],
-  ) => setForm((f) => ({ ...f, [k]: v }));
 
   const renderCard = (c: Card) => (
     <div key={c.id} className="manager-item">
@@ -362,8 +207,6 @@ export default function CardManager() {
       </div>
     </div>
   );
-
-  const isLast = step === STEPS.length;
 
   // ══ VUE LISTE ════════════════════════════════════════════════════════════════
   if (view === "list")
@@ -466,449 +309,14 @@ export default function CardManager() {
       </div>
     );
 
-  // ══ VUE WIZARD ═══════════════════════════════════════════════════════════════
+  // ══ VUE FORMULAIRE ═══════════════════════════════════════════════════════════
   return (
-    <div className="manager">
-      <div className="manager__header">
-        <Button variant="ghost-bordeaux" onClick={backToList}>
-          <IconArrowLeft size={16} />
-          Retour
-        </Button>
-        <h2 className="manager__title">
-          {editing ? "Modifier" : "Nouvelle"} carte
-        </h2>
-      </div>
-
-      {/* ── Stepper ── */}
-      <div className="bm-stepper">
-        {STEPS.map((s, i) => {
-          const n = i + 1;
-          const done = n < step;
-          const active = n === step;
-          return (
-            <div key={n} className="bm-stepper__item">
-              {i < STEPS.length - 1 && (
-                <div
-                  className={`bm-stepper__line${done ? " bm-stepper__line--done" : ""}`}
-                />
-              )}
-              <button
-                className={`bm-stepper__dot${active ? " bm-stepper__dot--active" : done ? " bm-stepper__dot--done" : ""}`}
-                onClick={() => {
-                  if (done) {
-                    setError("");
-                    setStep(n);
-                  }
-                }}
-                disabled={!done && !active}
-                aria-label={s.label}
-              >
-                {done ? "✓" : n}
-              </button>
-              <span
-                className={`bm-stepper__label${active ? " bm-stepper__label--active" : ""}`}
-              >
-                {s.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {error && <p className="manager-error">{error}</p>}
-
-      {/* ── Étape 1 : Identité ── */}
-      {step === 1 && (
-        <div className="manager-form">
-          <p className="manager-form__title">Identité</p>
-          <div className="manager-form__row">
-            <label className="manager-form__label">Nom *</label>
-            <input
-              className="manager-form__input"
-              value={form.name}
-              onChange={(e) => setField("name", e.target.value)}
-              placeholder="Nom de la carte"
-              autoFocus
-            />
-          </div>
-          <div className="manager-form__row">
-            <label className="manager-form__label">Description</label>
-            <textarea
-              className="manager-form__textarea"
-              value={form.description ?? ""}
-              onChange={(e) => setField("description", e.target.value)}
-              placeholder="Description..."
-            />
-          </div>
-          <div className="manager-form__grid">
-            <div className="manager-form__row">
-              <label className="manager-form__label">Rareté</label>
-              <select
-                className="manager-form__select"
-                value={form.rarity}
-                onChange={(e) => setField("rarity", e.target.value as Rarity)}
-              >
-                {Object.values(Rarity).map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="manager-form__row">
-              <label className="manager-form__label">Card Set *</label>
-              <select
-                className="manager-form__select"
-                value={form.cardSetId}
-                onChange={(e) => setField("cardSetId", Number(e.target.value))}
-              >
-                <option value={0}>-- Choisir --</option>
-                {sets.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="manager-form__grid">
-            <div className="manager-form__row">
-              <label className="manager-form__label">Élément</label>
-              <select
-                className="manager-form__select"
-                value={form.element ?? ""}
-                onChange={(e) =>
-                  setField(
-                    "element",
-                    e.target.value
-                      ? (e.target.value as DrakonElement)
-                      : undefined,
-                  )
-                }
-              >
-                <option value="">--</option>
-                {Object.values(DrakonElement).map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="manager-form__row">
-              <label className="manager-form__label">Stade</label>
-              <select
-                className="manager-form__select"
-                value={form.stage ?? ""}
-                onChange={(e) =>
-                  setField(
-                    "stage",
-                    e.target.value
-                      ? (e.target.value as DrakonStage)
-                      : undefined,
-                  )
-                }
-              >
-                <option value="">--</option>
-                {Object.values(DrakonStage).map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="manager-form__row">
-            <label className="manager-form__label">Lignée</label>
-            <input
-              className="manager-form__input"
-              value={form.lineage ?? ""}
-              maxLength={50}
-              onChange={(e) => setField("lineage", e.target.value || undefined)}
-              placeholder="ex. feros"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* ── Étape 2 : Stats ── */}
-      {step === 2 && (
-        <div className="manager-form">
-          <p className="manager-form__title">Stats & type</p>
-          <div className="manager-form__grid">
-            <div className="manager-form__row">
-              <label className="manager-form__label">Type</label>
-              <select
-                className="manager-form__select"
-                value={form.type}
-                onChange={(e) => {
-                  const newType = e.target.value as CardType;
-                  setField("type", newType);
-                  if (newType === CardType.SUPPORT) {
-                    setForm((f) => ({ ...f, atk: 0, hp: 0, cost: 0 }));
-                  }
-                }}
-              >
-                {Object.values(CardType).map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="manager-form__row">
-              <label className="manager-form__label">Coût</label>
-              <input
-                className="manager-form__input"
-                type="number"
-                value={form.cost}
-                onChange={(e) => setField("cost", Number(e.target.value))}
-              />
-            </div>
-          </div>
-
-          {form.type === CardType.MONSTER && (
-            <div className="manager-form__grid">
-              <div className="manager-form__row">
-                <label className="manager-form__label">ATK</label>
-                <input
-                  className="manager-form__input"
-                  type="number"
-                  value={form.atk}
-                  onChange={(e) => setField("atk", Number(e.target.value))}
-                />
-              </div>
-              <div className="manager-form__row">
-                <label className="manager-form__label">HP</label>
-                <input
-                  className="manager-form__input"
-                  type="number"
-                  value={form.hp}
-                  onChange={(e) => setField("hp", Number(e.target.value))}
-                />
-              </div>
-            </div>
-          )}
-
-          {form.type === CardType.SUPPORT && (
-            <>
-              <div className="manager-form__row">
-                <label
-                  className="manager-form__label"
-                  htmlFor="card-support-type"
-                >
-                  Type de Support
-                </label>
-                <select
-                  id="card-support-type"
-                  className="manager-form__select"
-                  value={form.supportType || ""}
-                  onChange={(e) =>
-                    setSupportType(e.target.value as SupportType | "")
-                  }
-                >
-                  <option value="">-- Sélectionner --</option>
-                  {Object.values(SupportType).map((st) => (
-                    <option key={st} value={st}>
-                      {SUPPORT_LABELS[st]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {form.supportType === SupportType.EQUIPMENT && (
-                <div className="manager-form__row">
-                  <label
-                    className="manager-form__label"
-                    htmlFor="card-equipment-slot"
-                  >
-                    Emplacement
-                  </label>
-                  <select
-                    id="card-equipment-slot"
-                    className="manager-form__select"
-                    value={form.equipmentSlot ?? ""}
-                    onChange={(e) =>
-                      setField("equipmentSlot", e.target.value as EquipmentSlot)
-                    }
-                    required
-                  >
-                    <option value="" disabled>
-                      —
-                    </option>
-                    {Object.values(EquipmentSlot).map((sl) => (
-                      <option key={sl} value={sl}>
-                        {SLOT_LABELS[sl]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {form.supportType === SupportType.PERSISTENT && (
-                <div className="manager-form__row">
-                  <label className="manager-form__label">
-                    <input
-                      type="checkbox"
-                      checked={!!form.isTerrain}
-                      onChange={(e) => setField("isTerrain", e.target.checked)}
-                    />{" "}
-                    Terrain
-                  </label>
-                </div>
-              )}
-              {form.supportType === SupportType.CHARGE && (
-                <div className="manager-form__grid">
-                  <div className="manager-form__row">
-                    <label
-                      className="manager-form__label"
-                      htmlFor="card-charge-max"
-                    >
-                      Charge max
-                    </label>
-                    <input
-                      id="card-charge-max"
-                      className="manager-form__input"
-                      type="number"
-                      min={1}
-                      max={10}
-                      value={form.chargeMax ?? 3}
-                      onChange={(e) =>
-                        setField("chargeMax", Number(e.target.value))
-                      }
-                    />
-                  </div>
-                  <div className="manager-form__row">
-                    <label
-                      className="manager-form__label"
-                      htmlFor="card-charge-mode"
-                    >
-                      Mode
-                    </label>
-                    <select
-                      id="card-charge-mode"
-                      className="manager-form__select"
-                      value={form.chargeMode ?? ChargeMode.ONE_SHOT}
-                      onChange={(e) =>
-                        setField("chargeMode", e.target.value as ChargeMode)
-                      }
-                    >
-                      <option value={ChargeMode.ONE_SHOT}>Usage unique</option>
-                      <option value={ChargeMode.CYCLIC} disabled>
-                        Cyclique (bientôt)
-                      </option>
-                    </select>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ── Étape 3 : Image ── */}
-      {step === 3 && (
-        <div className="manager-form">
-          <p className="manager-form__title">
-            Image <span className="bm-optional">(optionnel)</span>
-          </p>
-          <div className="manager-form__row">
-            <label className="manager-form__label">Source</label>
-            <select
-              className="manager-form__select"
-              value={uploadMode}
-              onChange={(e) => {
-                setUploadMode(e.target.value as "existing" | "new");
-                setSelectedImageId(null);
-                setImageFile(null);
-                setImageName("");
-              }}
-            >
-              <option value="existing">Image existante</option>
-              <option value="new">Upload nouvelle image</option>
-            </select>
-          </div>
-
-          {uploadMode === "existing" ? (
-            <div className="manager-form__row">
-              <select
-                className="manager-form__select"
-                value={selectedImageId ?? ""}
-                onChange={(e) =>
-                  setSelectedImageId(Number(e.target.value) || null)
-                }
-              >
-                <option value="">-- Aucune image --</option>
-                {images.map((img) => (
-                  <option key={img.id} value={img.id}>
-                    {img.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : (
-            <>
-              <div className="manager-form__row">
-                <label className="manager-form__label">Nom de l'image</label>
-                <input
-                  className="manager-form__input"
-                  value={imageName}
-                  onChange={(e) => setImageName(e.target.value)}
-                  placeholder="Nom de l'image"
-                />
-              </div>
-              <div className="manager-form__row">
-                <label className="manager-form__label">Fichier</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                  style={{ fontSize: "0.82rem" }}
-                />
-              </div>
-            </>
-          )}
-
-          {selectedImageId &&
-            uploadMode === "existing" &&
-            (() => {
-              const img = images.find((i) => i.id === selectedImageId);
-              return img ? (
-                <img src={img.url} alt={img.name} className="bm-img-preview" />
-              ) : null;
-            })()}
-          {imageFile && uploadMode === "new" && (
-            <img
-              src={URL.createObjectURL(imageFile)}
-              alt="preview"
-              className="bm-img-preview"
-            />
-          )}
-        </div>
-      )}
-
-      {/* ── Navigation wizard ── */}
-      <div className="bm-nav">
-        {step > 1 ? (
-          <Button variant="ghost-bordeaux" onClick={goPrev}>
-            <IconArrowLeft size={16} />
-            Précédent
-          </Button>
-        ) : (
-          <div />
-        )}
-        {isLast ? (
-          <Button
-            className="manager-form__submit"
-            onClick={handleSubmit}
-            disabled={saving}
-          >
-            {saving ? "..." : editing ? "Modifier" : "Créer la carte"}
-          </Button>
-        ) : (
-          <Button className="manager-form__submit" onClick={goNext}>
-            Suivant
-            <IconArrowRight size={16} />
-          </Button>
-        )}
-      </div>
-    </div>
+    <CardForm
+      card={editing}
+      onDone={() => {
+        backToList();
+        void refreshList();
+      }}
+    />
   );
 }
