@@ -53,13 +53,13 @@ Chaque monstre a 4 emplacements :
 - `CardInstance.chargeCounters?`.
 - `CreateCardRequest` : mêmes champs, optionnels.
 - `PlaySupportPayload.replaceInstanceId?`.
-- Événements de jeu : `terrain_played` devient `persistent_played` ; ajout de `charge_progress` et `charge_triggered`.
-- Helpers purs dans `game/rules.ts` : `equipSlotCapacity(slot)`, `canEquip(monster, card)` → `ok | slot_full (candidats) | duplicate`, `terrainToReplace(player, card)`. Utilisés par le back (validation) et le front (surbrillance, modale).
+- Événements de jeu : `terrain_played` devient `support_placed` (pose d'un Persistant ou d'une Charge) ; ajout de `charge_progress` et `charge_triggered`.
+- Helpers purs dans `game/support-rules.ts` : `equipSlotCapacity(slot)`, `canEquip(monster, card)` → `ok | slot_full (candidats) | duplicate`, `terrainToReplace(player, card)`. Utilisés par le back (validation) et le front (surbrillance, modale).
 
 ### Migration TypeORM (une seule)
 1. Ajouter `PERSISTENT` et `CHARGE` à l'enum `support_type` ; ajouter les colonnes `equipment_slot`, `is_terrain` (défaut 0), `charge_max`, `charge_mode`.
 2. `TERRAIN → PERSISTENT` avec `is_terrain = 1` (Tactique Gang Gang, Mont Drakon).
-3. Renseigner `equipment_slot` des 8 équipements selon le tableau ci-dessus.
+3. Renseigner `equipment_slot` des 7 équipements selon le tableau ci-dessus.
 4. Retirer `TERRAIN` de l'enum.
 5. `down` inverse.
 
