@@ -333,6 +333,19 @@ export default function FightBoard({
     isZoneSupport && selectedCard !== null
       ? zoneIntent(gs.me.supportZones, gs.me.hand[selectedCard]!.baseCard)
       : null;
+  // Monstres qui ne peuvent pas recevoir l'équipement sélectionné : grisés
+  const blockedEquipIds = new Set<string>();
+  if (isEquipment && isMyMain && equipCard) {
+    for (const m of [...gs.me.monsterZones, ...gs.opponent.monsterZones]) {
+      if (
+        m &&
+        !implantedIds.has(m.instanceId) &&
+        (gs.me.monsterZones.includes(m) || plantedByMeIds.has(m.instanceId)) &&
+        equipIntent(m, equipCard).kind === "blocked"
+      )
+        blockedEquipIds.add(m.instanceId);
+    }
+  }
   const myHighlightIds = new Set([...evolvableIds, ...equippableIds]);
 
   /** Monstres qu'un Éphémère peut viser dans ce camp (immunisés exclus). */
@@ -700,18 +713,43 @@ export default function FightBoard({
     selectedCard !== null
       ? ephemeralTargetSide(gs.me.hand[selectedCard]?.baseCard.effects)
       : null;
-  const supportBlockedReason =
-    !isMyMain || !selectedHandCard
-      ? undefined
-      : isZoneSupport && supportIntent?.kind === "blocked"
-        ? t(
-            supportIntent.reason === "full"
-              ? "fight.unplayable.supportZonesFull"
-              : "fight.unplayable.alreadyInPlay",
-          )
-        : isEquipment && equipCard && equippableIds.size === 0
-          ? t("fight.unplayable.noEquipTarget")
-          : undefined;
+  /** Cartes support de la main qu'aucune cible ni case ne peut accueillir. */
+  const unplayableReasons = new Map<string, string>();
+  if (isMyMain) {
+    const equipTargets = [
+      ...gs.me.monsterZones.filter(
+        (m): m is MonsterOnBoard => !!m && !implantedIds.has(m.instanceId),
+      ),
+      ...gs.opponent.monsterZones.filter(
+        (m): m is MonsterOnBoard => !!m && plantedByMeIds.has(m.instanceId),
+      ),
+    ];
+    for (const c of gs.me.hand) {
+      const base = c.baseCard;
+      if (base.type !== "support") continue;
+      if (base.supportType === "EQUIPMENT") {
+        if (equipTargets.every((m) => equipIntent(m, base).kind === "blocked"))
+          unplayableReasons.set(c.instanceId, t("fight.unplayable.noEquipTarget"));
+      } else if (
+        base.supportType === SupportType.PERSISTENT ||
+        base.supportType === SupportType.CHARGE
+      ) {
+        const z = zoneIntent(gs.me.supportZones, base);
+        if (z.kind === "blocked")
+          unplayableReasons.set(
+            c.instanceId,
+            t(
+              z.reason === "full"
+                ? "fight.unplayable.supportZonesFull"
+                : "fight.unplayable.alreadyInPlay",
+            ),
+          );
+      }
+    }
+  }
+  const supportBlockedReason = selectedInstance
+    ? unplayableReasons.get(selectedInstance.instanceId)
+    : undefined;
   const playBlockedReason =
     supportBlockedReason ??
     (selectedTargetSide !== null &&
@@ -799,6 +837,7 @@ export default function FightBoard({
             isOpponent
             damagedZones={damagedOppZones}
             highlightOpponentEmpty={isMyMain && isZeta && canImplant}
+            dimInstanceIds={blockedEquipIds}
             highlightInstanceIds={
               isEquipment && isMyMain ? plantedByMeIds : undefined
             }
@@ -858,6 +897,7 @@ export default function FightBoard({
               !evolvesOnly
             }
             highlightInstanceIds={myHighlightIds}
+            dimInstanceIds={blockedEquipIds}
             attackTargetIds={disinfectableIds}
             lockedInstances={lockedZetas}
             noModeChangeIds={implantedIds}
@@ -880,6 +920,7 @@ export default function FightBoard({
               isZoneSupport &&
               supportIntent?.kind !== "blocked"
             }
+            highlightAllEmpty={supportIntent?.kind === "confirm_terrain"}
             dim={
               gs.isMyTurn &&
               phase === "main" &&
@@ -898,6 +939,7 @@ export default function FightBoard({
         payIndices={payIndices}
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
         releveInstanceIds={releveReadyIds}
+        unplayableReasons={unplayableReasons}
         onCardClick={handleCardClick}
       />
 

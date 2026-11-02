@@ -33,3 +33,7 @@
   background: #2e6fd0;
   color: #fff;
 }
+
+.cas-actions--column {
+  flex-direction: column;
+}

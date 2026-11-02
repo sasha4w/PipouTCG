@@ -135,3 +135,23 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
   z-index: 3;
 }
+
+.fhand-card--unplayable {
+  filter: grayscale(1) brightness(0.75);
+}
+
+.fhand-unplayable-badge {
+  position: absolute;
+  bottom: 18px;
+  left: -5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #6b6b6b;
+  color: #fff;
+  border: 1.5px solid #fff;
+  z-index: 3;
+}

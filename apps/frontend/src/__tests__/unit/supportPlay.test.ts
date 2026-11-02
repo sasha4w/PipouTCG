@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { equipIntent, zoneIntent } from "../../features/fight/supportPlay";
 
 const inst = (name: string, extra: object = {}) =>
-  ({ instanceId: name, baseCard: { name, supportType: "EQUIPMENT", equipmentSlot: "OFFENSIVE", isTerrain: false, ...extra } }) as { instanceId: string; baseCard: never };
+  ({ instanceId: `id-${name}`, baseCard: { name, supportType: "EQUIPMENT", equipmentSlot: "OFFENSIVE", isTerrain: false, ...extra } }) as { instanceId: string; baseCard: never };
 
 describe("equipIntent", () => {
   it("joue directement si l'emplacement est libre", () => {
@@ -10,7 +10,7 @@ describe("equipIntent", () => {
   });
   it("demande confirmation si plein", () => {
     expect(equipIntent({ equipments: [inst("Proc")] } as never, inst("Canon").baseCard)).toEqual({
-      kind: "confirm", replaceable: ["Proc"],
+      kind: "confirm", replaceable: ["id-Proc"],
     });
   });
   it("bloque un doublon d'accessoire", () => {
@@ -23,7 +23,7 @@ describe("zoneIntent", () => {
   it("demande confirmation pour remplacer un Terrain", () => {
     const old = inst("Mont", { supportType: "PERSISTENT", isTerrain: true });
     const card = inst("Tactique", { supportType: "PERSISTENT", isTerrain: true }).baseCard;
-    expect(zoneIntent([null, old, null] as never, card)).toEqual({ kind: "confirm_terrain", zoneIndex: 1, old: "Mont" });
+    expect(zoneIntent([null, old, null] as never, card)).toEqual({ kind: "confirm_terrain", zoneIndex: 1, oldInstanceId: "id-Mont" });
   });
   it("bloque si les 3 cases sont pleines", () => {
     const p = (n: string) => inst(n, { supportType: "PERSISTENT" });

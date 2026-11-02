@@ -20,7 +20,7 @@ export function equipIntent(
 
 export type ZoneIntent =
   | { kind: "play" }
-  | { kind: "confirm_terrain"; zoneIndex: number; old: string }
+  | { kind: "confirm_terrain"; zoneIndex: number; oldInstanceId: string }
   | { kind: "blocked"; reason: "full" | "duplicate" };
 
 /** Que se passe-t-il si on pose `card` (Persistant, Charge, Terrain) en zone support ? */
@@ -34,7 +34,7 @@ export function zoneIntent(
     return {
       kind: "confirm_terrain",
       zoneIndex: p.zoneIndex,
-      old: supportZones[p.zoneIndex]!.instanceId,
+      oldInstanceId: supportZones[p.zoneIndex]!.instanceId,
     };
   return { kind: "blocked", reason: p.kind };
 }

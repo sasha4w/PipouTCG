@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { IconBolt, IconCheck, IconReleve } from "../../components/Icons";
+import { IconLock, IconBolt, IconCheck, IconReleve } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
@@ -23,6 +23,8 @@ interface Props {
   freeSummonInstanceIds: string[];
   /** Cartes dont la Relève est disponible (assez d'alliés Pipou). */
   releveInstanceIds?: ReadonlySet<string>;
+  /** instanceId -> raison pour laquelle la carte ne peut pas être jouée. */
+  unplayableReasons?: ReadonlyMap<string, string>;
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -34,6 +36,7 @@ export default function FightHand({
   payIndices,
   freeSummonInstanceIds,
   releveInstanceIds,
+  unplayableReasons,
   onCardClick,
 }: Props) {
   const { t } = useTranslation();
@@ -82,6 +85,9 @@ export default function FightHand({
               isInteractive ? "fhand-card--interactive" : "",
               isPayable && !isPaying ? "fhand-card--payable" : "",
               isFree ? "fhand-card--free" : "",
+              unplayableReasons?.has(card.instanceId)
+                ? "fhand-card--unplayable"
+                : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -100,6 +106,14 @@ export default function FightHand({
             {isFree && (
               <span className="fhand-free-label">
                 {t("fight.hand.free")} <IconBolt size={8} />
+              </span>
+            )}
+            {unplayableReasons?.has(card.instanceId) && (
+              <span
+                className="fhand-unplayable-badge"
+                title={unplayableReasons.get(card.instanceId)}
+              >
+                <IconLock size={11} />
               </span>
             )}
             {isPaying && (

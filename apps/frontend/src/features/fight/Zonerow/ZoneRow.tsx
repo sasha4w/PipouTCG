@@ -29,6 +29,10 @@ interface Props {
   highlightFilled?: boolean;
   /** Surligne uniquement les cartes en jeu dont l'instanceId est listé. */
   highlightInstanceIds?: ReadonlySet<string>;
+  /** Cartes en jeu à griser (cible invalide). */
+  dimInstanceIds?: ReadonlySet<string>;
+  /** Surligne aussi les cases occupées (remplacement de Terrain). */
+  highlightAllEmpty?: boolean;
   highlightOpponentEmpty?: boolean;
   /** Monstres ciblables par l'attaque en cours (ex. Zeta à désinfecter). */
   attackTargetIds?: ReadonlySet<string>;
@@ -54,6 +58,8 @@ export default function ZoneRow({
   highlightEmpty = false,
   highlightFilled = false,
   highlightInstanceIds,
+  dimInstanceIds,
+  highlightAllEmpty = false,
   highlightOpponentEmpty = false,
   attackTargetIds,
   lockedInstances,
@@ -111,7 +117,9 @@ export default function ZoneRow({
 
           const zoneClasses = [
             "zr-zone",
-            dim ? "zr-zone--dim" : "",
+            dim || (!!zone && !!dimInstanceIds?.has(zone.instanceId))
+              ? "zr-zone--dim"
+              : "",
             zone
               ? "zr-zone--filled"
               : isShattering
@@ -119,7 +127,8 @@ export default function ZoneRow({
                 : "zr-zone--empty",
             selectedZone === idx ? "zr-zone--selected" : "",
             onZoneClick || (zone && onMonsterClick) ? "zr-zone--clickable" : "",
-            highlightEmpty && !zone && !isShattering
+            (highlightEmpty && !zone && !isShattering) ||
+            (highlightAllEmpty && !isShattering)
               ? "zr-zone--pulse-target"
               : "",
             (highlightFilled && !!zone) ||

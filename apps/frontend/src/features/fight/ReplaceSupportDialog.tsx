@@ -42,7 +42,7 @@ export function ReplaceSupportDialog({
   return (
     <BottomSheet title={title} closeLabel={t("fight.confirm.close")} onClose={onCancel}>
       {!single && (
-        <div className="cas-actions" style={{ flexDirection: "column" }}>
+        <div className="cas-actions cas-actions--column">
           {candidates.map((c) => (
             <button
               key={c.instanceId}
