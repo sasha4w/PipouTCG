@@ -408,13 +408,14 @@
       "ON_DEFEND": "When this monster is attacked",
       "ON_PLAY": "When you play this card",
       "ON_PLAY_equipment": "When you equip this card",
-      "ON_PLAY_terrain": "When you place this Terrain",
+      "ON_PLAY_persistent": "When you place this Persistent",
       "ON_TURN_START": "At the start of your turn",
       "ON_TURN_END": "At the end of your turn",
       "ON_ALLY_SUMMON": "When you summon a monster while this card is in your hand",
       "PASSIVE": "Always",
       "PASSIVE_equipment": "While this card is equipped",
-      "PASSIVE_terrain": "While this Terrain is in play",
+      "PASSIVE_persistent": "While this Persistent is in play",
+      "ON_CHARGED": "When this Charge is full",
       "ON_RECYCLE": "When you recycle this card",
       "ON_BATTLE_PHASE_START": "At the start of your battle phase",
       "ON_SELF_DESTRUCT": "On self-destruct",
@@ -732,6 +733,9 @@
       "finished": "Finished"
     },
     "confirm": {
+      "replaceEquipment": "Replace {{old}} with {{card}}?",
+      "replaceTerrain": "Replace {{old}} with {{card}}?",
+      "chooseAccessory": "Which accessory to replace?",
       "summon": "Summon {{card}}?",
       "summonRecycling": "Summon {{card}} by recycling {{recycled}}?",
       "recycle": "Recycle {{card}}?",
@@ -757,6 +761,7 @@
       "play": "Play",
       "terrainHint": "Tap an empty support zone",
       "equipHint": "Tap an allied monster to equip",
+      "equipHintSlot": "Tap an allied monster to equip ({{slot}})",
       "recycle": "Recycle",
       "confirmSurrender": "Surrender?",
       "recycleTitle": "Recycle the card: +1 energy",
@@ -957,12 +962,13 @@
       "setup3": "<b>Starting hand:</b> {{count}} cards. <b>Mulligan:</b> once, you may shuffle your hand into the deck and draw {{count}} new cards.",
       "setup4": "The first player is <b>chosen at random</b>.",
       "board1": "<b>3 Monster Zones</b> for summons.",
-      "board2": "<b>3 Support Zones</b> for Terrains.",
+      "board2": "<b>3 Support Zones</b> for Persistents and Charges.",
       "board3": "<b>1 Prime Zone</b> with {{count}} face-down cards.",
       "monsters": "<b>Monsters:</b> ATK / HP, archetype, cost from 0 to 3 Energy, passive or triggered effects. A monster can attack as soon as it is summoned, unless its card says otherwise.",
       "supports": "<b>Support cards:</b>",
       "ephemeral": "Single use, then discarded. Some require choosing a target monster.",
-      "terrain": "Permanent, affects your monsters only.",
+      "persistent": "Permanent, affects your monsters only.",
+      "charge": "Gains a counter at the start of each of your turns; its effect triggers once full.",
       "equipment": "Attached to one of your monsters; some effects only work on a specific monster.",
       "energy1": "<b>Generate:</b> recycle cards from your hand during the Main Phase. <b>1 card = 1 Energy.</b>",
       "energy2": "Without enough energy, you pay the rest by discarding cards when summoning.",
@@ -989,6 +995,11 @@
       "stepOf": "Step {{n}} / {{total}}",
       "prev": "Previous",
       "next": "Next"
+    },
+    "unplayable": {
+      "supportZonesFull": "Support zones full",
+      "alreadyInPlay": "Already in play",
+      "noEquipTarget": "No summoned monster can carry this equipment"
     },
     "yourTurn": "Your turn!"
   },
@@ -1225,9 +1236,17 @@
     "kind": {
       "monster": "Monster",
       "EQUIPMENT": "Equipment",
-      "TERRAIN": "Terrain",
+      "PERSISTENT": "Persistent",
+      "CHARGE": "Charge",
       "EPHEMERAL": "Ephemeral"
     },
+    "equipmentSlot": {
+      "OFFENSIVE": "Offensive",
+      "DEFENSIVE": "Defensive",
+      "ACCESSORY": "Accessory"
+    },
+    "terrainTag": "Terrain",
+    "charge": { "progress": "{{n}}/{{max}}" },
     "filters": "Filters",
     "rarity": "Rarity",
     "cost": "Cost",

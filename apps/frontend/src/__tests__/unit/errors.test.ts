@@ -140,3 +140,17 @@ describe("apiErrorMessage / apiErrorStatus", () => {
     expect(apiErrorStatus("nope")).toBeUndefined();
   });
 });
+
+describe("parseApiError - message tableau (ValidationPipe)", () => {
+  it("joins array messages", () => {
+    const err = parseApiError({
+      config: {},
+      response: {
+        status: 400,
+        data: { message: ["effects must be an array", "name too short"] },
+      },
+    });
+    expect(err.message).toBe("effects must be an array, name too short");
+    expect(apiErrorMessage(err)).toBe("effects must be an array, name too short");
+  });
+});

@@ -130,3 +130,129 @@ Feature: Gestion des cartes
   Scenario: Un utilisateur ne peut pas supprimer une carte renvoie 403
     When j'envoie une requête DELETE authentifiée sur "/cards/{cardId}"
     Then le statut de réponse est 403
+
+  # ── Création par type de carte ───────────────────────────────
+
+  Scenario: Un admin peut créer un monstre
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Monstre",
+        "rarity": "common",
+        "type": "monster",
+        "atk": 10,
+        "hp": 10,
+        "archetype": "pipou",
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 201
+
+  Scenario: Un admin peut créer un support éphémère
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Ephemere",
+        "rarity": "common",
+        "type": "support",
+        "atk": 0,
+        "hp": 0,
+        "supportType": "EPHEMERAL",
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 201
+
+  Scenario: Un admin peut créer un équipement
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Equipement",
+        "rarity": "common",
+        "type": "support",
+        "atk": 0,
+        "hp": 0,
+        "supportType": "EQUIPMENT",
+        "equipmentSlot": "OFFENSIVE",
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 201
+
+  Scenario: Un admin peut créer un persistant Terrain
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Terrain",
+        "rarity": "common",
+        "type": "support",
+        "atk": 0,
+        "hp": 0,
+        "supportType": "PERSISTENT",
+        "isTerrain": true,
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 201
+
+  Scenario: Un admin peut créer une charge
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Charge",
+        "rarity": "common",
+        "type": "support",
+        "atk": 0,
+        "hp": 0,
+        "supportType": "CHARGE",
+        "chargeMax": 3,
+        "chargeMode": "ONE_SHOT",
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 201
+
+  Scenario: Un équipement sans emplacement renvoie 400
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Equipement KO",
+        "rarity": "common",
+        "type": "support",
+        "atk": 0,
+        "hp": 0,
+        "supportType": "EQUIPMENT",
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 400
+
+  Scenario: Un emplacement sur un éphémère renvoie 400
+    Given je suis connecté en tant qu'admin
+    When j'envoie une requête POST authentifiée sur "/cards" avec le body:
+      """
+      {
+        "name": "Test Slot KO",
+        "rarity": "common",
+        "type": "support",
+        "atk": 0,
+        "hp": 0,
+        "supportType": "EPHEMERAL",
+        "equipmentSlot": "OFFENSIVE",
+
+        "cardSetId": {setId}
+      }
+      """
+    Then le statut de réponse est 400

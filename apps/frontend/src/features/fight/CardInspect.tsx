@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import type { CardEffect } from "@pipou/shared";
+import type { CardEffect, EquipmentSlot } from "@pipou/shared";
 import CardFace, {
   type CardFaceCard,
   type CardFaceStats,
 } from "../cards/CardFace";
 import type { BuffEntry } from "./BuffDebuffSections";
 import CardEffectSheet from "./CardEffectSheet";
+import EquipmentSlotList from "./EquipmentSlotList";
 import "./CardInspect.css";
 
 /** Carte inspectée : sa face, et de quoi rédiger ses effets. */
@@ -15,6 +16,12 @@ export type InspectCard = CardFaceCard & {
   effects?: readonly CardEffect[] | null;
   /** Stade Drakon (règle « uniquement par évolution »). */
   stage?: string | null;
+  equipmentSlot?: EquipmentSlot | null;
+};
+
+/** Équipements posés : l'emplacement est indispensable pour les ranger. */
+export type InspectEquipment = InspectCard & {
+  equipmentSlot: EquipmentSlot | null;
 };
 
 interface Props {
@@ -24,7 +31,7 @@ interface Props {
   /** État en direct d'un monstre en jeu (stats, statuts actifs). */
   status?: BuffEntry[];
   /** Équipements posés sur le monstre inspecté. */
-  equipments?: InspectCard[];
+  equipments?: InspectEquipment[];
   onClose: () => void;
 }
 
@@ -34,7 +41,7 @@ export default function CardInspect({
   stats,
   guard,
   status = [],
-  equipments = [],
+  equipments,
   onClose,
 }: Props) {
   // Stats déjà sur la grande carte : seuls les statuts actifs sont listés.
@@ -75,10 +82,11 @@ export default function CardInspect({
           stats={stats}
           guard={guard}
         />
+        {equipments && <EquipmentSlotList equipments={equipments} />}
         <CardEffectSheet
           sources={[
             { card },
-            ...equipments.map((eq) => ({ card: eq, title: eq.name })),
+            ...(equipments ?? []).map((eq) => ({ card: eq, title: eq.name })),
           ]}
           statuses={statuses}
         />

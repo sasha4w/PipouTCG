@@ -22,6 +22,10 @@ export interface PortfolioCard {
   rarity: Card['rarity'];
   type: Card['type'];
   supportType: Card['supportType'];
+  equipmentSlot: Card['equipmentSlot'];
+  isTerrain: boolean;
+  chargeMax: Card['chargeMax'];
+  chargeMode: Card['chargeMode'];
   atk: number;
   hp: number;
   cost: number;
@@ -208,6 +212,10 @@ export class UsersService {
           set: uc.card.cardSet?.name,
           setId: uc.card.cardSet?.id,
           supportType: uc.card.supportType ?? null,
+          equipmentSlot: uc.card.equipmentSlot ?? null,
+          isTerrain: uc.card.isTerrain ?? false,
+          chargeMax: uc.card.chargeMax ?? null,
+          chargeMode: uc.card.chargeMode ?? null,
           image: uc.card.image
             ? { id: uc.card.image.id, url: uc.card.image.url }
             : null,
@@ -402,6 +410,10 @@ export class UsersService {
         rarity: card.rarity,
         type: card.type,
         supportType: card.supportType ?? null,
+        equipmentSlot: card.equipmentSlot ?? null,
+        isTerrain: card.isTerrain ?? false,
+        chargeMax: card.chargeMax ?? null,
+        chargeMode: card.chargeMode ?? null,
         atk: card.atk,
         hp: card.hp,
         cost: card.cost,

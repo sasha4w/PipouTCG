@@ -1,8 +1,10 @@
 import type {
   Archetype,
   CardType,
+  ChargeMode,
   DrakonElement,
   DrakonStage,
+  EquipmentSlot,
   Rarity,
   SupportType,
 } from "../enums/card";
@@ -54,6 +56,10 @@ export interface CreateCardRequest {
   imageId?: number;
   cost?: number;
   supportType?: SupportType;
+  equipmentSlot?: EquipmentSlot;
+  isTerrain?: boolean;
+  chargeMax?: number;
+  chargeMode?: ChargeMode;
   archetype?: Archetype;
   element?: DrakonElement;
   lineage?: string;

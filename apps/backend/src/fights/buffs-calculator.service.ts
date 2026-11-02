@@ -68,14 +68,17 @@ export class BuffsCalculatorService {
     // Un monstre implanté (Zeta) ne reçoit aucun bonus d'allié de son hôte
     const allies = monsters.filter((m) => !isImplanted(m, player.userId));
 
-    // 2. Terrains : uniquement les monstres de leur propriétaire
-    for (const terrain of player.supportZones) {
-      if (!terrain || terrain.baseCard.supportType !== SupportType.TERRAIN)
+    // 2. Persistants : uniquement les monstres de leur propriétaire
+    for (const persistent of player.supportZones) {
+      if (
+        !persistent ||
+        persistent.baseCard.supportType !== SupportType.PERSISTENT
+      )
         continue;
-      for (const eff of passiveEffects(terrain)) {
-        if (!checkCondition(eff, ctx(terrain))) continue;
+      for (const eff of passiveEffects(persistent)) {
+        if (!checkCondition(eff, ctx(persistent))) continue;
         for (const action of eff.actions) {
-          for (const m of terrainTargets(action, terrain, allies))
+          for (const m of terrainTargets(action, persistent, allies))
             applyPassive(m, action);
         }
       }

@@ -124,7 +124,7 @@ export function scenario(spec: ScenarioSpec = {}): GameState {
     log: [],
     pendingChoices: [],
     pendingEvents: [],
-    terrainSeq: 0,
+    supportSeq: 0,
   };
 }
 

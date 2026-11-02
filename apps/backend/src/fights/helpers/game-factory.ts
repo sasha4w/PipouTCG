@@ -53,6 +53,6 @@ export function createGameState(
     log: [],
     pendingChoices: [],
     pendingEvents: [],
-    terrainSeq: 0,
+    supportSeq: 0,
   };
 }

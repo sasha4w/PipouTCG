@@ -6,7 +6,8 @@ import "./CardFace.css";
 const SUPPORT_TYPE_LABELS: Record<string, string> = {
   EPHEMERAL: "Éphémère",
   EQUIPMENT: "Équipement",
-  TERRAIN: "Terrain",
+  PERSISTENT: "Persistant",
+  CHARGE: "Charge",
 };
 
 /** Forme minimale : satisfaite par Card (card.service) et par ClientCard (@pipou/shared). */

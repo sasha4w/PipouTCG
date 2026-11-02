@@ -1,4 +1,9 @@
-import { CardType, SupportType } from '@pipou/shared';
+import {
+  canEquip,
+  canPlaceInSupportZone,
+  CardType,
+  SupportType,
+} from '@pipou/shared';
 import type {
   SandboxDestination,
   SandboxMonsterPatch,
@@ -127,18 +132,40 @@ function destinationError(
       if (to.index < 0 || to.index > 2) return 'Zone invalide (0-2)';
       if (player.monsterZones[to.index]) return 'Zone monstre occupée';
       return null;
-    case 'support':
-      if (card.baseCard.supportType !== SupportType.TERRAIN)
-        return 'Seul un Terrain va en zone support';
+    case 'support': {
+      const st = card.baseCard.supportType;
+      if (st !== SupportType.PERSISTENT && st !== SupportType.CHARGE)
+        return 'Seul un Persistant ou une Charge va en zone support';
       if (to.index < 0 || to.index > 2) return 'Zone invalide (0-2)';
       if (player.supportZones[to.index]) return 'Zone support occupée';
+      // La carte déplacée ne compte pas dans les zones où elle se trouve déjà.
+      const others = player.supportZones.map((z) =>
+        z?.instanceId === card.instanceId ? null : z,
+      );
+      const placement = canPlaceInSupportZone(others, card.baseCard);
+      if (placement.kind === 'duplicate') return 'Cette carte est déjà en jeu';
+      if (placement.kind === 'replace_terrain')
+        return 'Confirme le remplacement de ton Terrain';
       return null;
-    case 'equipment':
+    }
+    case 'equipment': {
       if (card.baseCard.supportType !== SupportType.EQUIPMENT)
         return "Seul un Équipement s'attache à un monstre";
-      if (!player.monsterZones.some((m) => m?.instanceId === to.hostInstanceId))
-        return 'Monstre porteur introuvable';
+      const host = player.monsterZones.find(
+        (m) => m?.instanceId === to.hostInstanceId,
+      );
+      if (!host) return 'Monstre porteur introuvable';
+      const check = canEquip(
+        host.equipments.filter((e) => e.instanceId !== card.instanceId),
+        card.baseCard,
+      );
+      if (check.kind === 'no_slot') return 'Équipement sans emplacement';
+      if (check.kind === 'duplicate')
+        return 'Ce monstre porte déjà cet accessoire';
+      if (check.kind === 'slot_full')
+        return 'Emplacement plein : confirme le remplacement';
       return null;
+    }
     default:
       return null;
   }

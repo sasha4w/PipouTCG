@@ -101,7 +101,7 @@ describe('scenario-serializer', () => {
     const game = savedGame();
     const state = serializeGame(game);
     delete state.pendingEvents;
-    delete state.terrainSeq;
+    delete state.supportSeq;
 
     const restored = deserializeGame(state, cardsOf(game), {
       matchId: -2,
@@ -110,6 +110,6 @@ describe('scenario-serializer', () => {
     });
 
     expect(restored.pendingEvents).toEqual([]);
-    expect(restored.terrainSeq).toBe(0);
+    expect(restored.supportSeq).toBe(0);
   });
 });

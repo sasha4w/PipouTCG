@@ -9,6 +9,8 @@ import {
   Rarity,
   CardType,
   SupportType,
+  EquipmentSlot,
+  ChargeMode,
   DrakonElement,
   DrakonStage,
 } from "../../services/card.service";
@@ -21,6 +23,7 @@ import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import { apiErrorMessage } from "../../utils/errors";
 import Button from "../../components/Button";
 import {
   IconArrowLeft,
@@ -36,6 +39,32 @@ const NO_SETS: CardSet[] = [];
 const NO_IMAGES: Image[] = [];
 
 const STEPS = [{ label: "Identité" }, { label: "Stats" }, { label: "Image" }];
+
+const SUPPORT_LABELS: Record<SupportType, string> = {
+  EPHEMERAL: "Éphémère",
+  EQUIPMENT: "Équipement",
+  PERSISTENT: "Persistant",
+  CHARGE: "Charge",
+};
+const SLOT_LABELS: Record<EquipmentSlot, string> = {
+  OFFENSIVE: "Offensif",
+  DEFENSIVE: "Défensif",
+  ACCESSORY: "Accessoire",
+};
+
+/** Un monstre n'envoie aucun champ de support ; un support, ceux de son sous-type seulement. */
+function toCardPayload(form: CreateCardData): CreateCardData {
+  const data: CreateCardData = { ...form };
+  const st = data.type === CardType.SUPPORT ? data.supportType : undefined;
+  if (!st) delete data.supportType;
+  if (st !== SupportType.EQUIPMENT) delete data.equipmentSlot;
+  if (st !== SupportType.PERSISTENT) delete data.isTerrain;
+  if (st !== SupportType.CHARGE) {
+    delete data.chargeMax;
+    delete data.chargeMode;
+  }
+  return data;
+}
 
 const emptyForm: CreateCardData = {
   name: "",
@@ -186,16 +215,23 @@ export default function CardManager() {
     setEditing(c);
     setForm({
       name: c.name,
-      description: c.description,
+      description: c.description ?? "",
       rarity: c.rarity,
       type: c.type,
       atk: c.atk,
       hp: c.hp,
       cost: c.cost,
       cardSetId: c.cardSet.id,
+      supportType: c.supportType ?? undefined,
+      equipmentSlot: c.equipmentSlot ?? undefined,
+      isTerrain: c.isTerrain ?? undefined,
+      chargeMax: c.chargeMax ?? undefined,
+      chargeMode: c.chargeMode ?? undefined,
+      archetype: c.archetype ?? undefined,
       element: c.element ?? undefined,
       lineage: c.lineage ?? undefined,
       stage: c.stage ?? undefined,
+      effects: c.effects ?? [],
     });
     setSelectedImageId(c.image?.id ?? null);
     setUploadMode("existing");
@@ -213,6 +249,10 @@ export default function CardManager() {
     if (s === 1) {
       if (!form.name.trim()) return "Le nom est requis.";
       if (!form.cardSetId) return "Veuillez sélectionner un Card Set.";
+    }
+    if (s === 2 && form.type === CardType.SUPPORT) {
+      if (form.supportType === SupportType.EQUIPMENT && !form.equipmentSlot)
+        return "Choisis un emplacement";
     }
     return null;
   };
@@ -235,7 +275,7 @@ export default function CardManager() {
     if (!form.name || !form.cardSetId) return;
     setSaving(true);
     try {
-      const data: CreateCardData = { ...form };
+      const data = toCardPayload(form);
       if (uploadMode === "new" && imageFile && imageName) {
         const uploaded = await imageService.upload(imageFile, imageName);
         data.imageId = uploaded.id;
@@ -248,7 +288,7 @@ export default function CardManager() {
       void refreshList();
     } catch (err) {
       console.error(err);
-      setError("Erreur lors de la sauvegarde");
+      setError(apiErrorMessage(err) || "Erreur lors de la sauvegarde");
     } finally {
       setSaving(false);
     }
@@ -263,6 +303,16 @@ export default function CardManager() {
       setError("Erreur lors de la suppression");
     }
   };
+
+  const setSupportType = (st: SupportType | "") =>
+    setForm((f) => ({
+      ...f,
+      supportType: st || undefined,
+      equipmentSlot: st === SupportType.EQUIPMENT ? f.equipmentSlot : undefined,
+      isTerrain: st === SupportType.PERSISTENT ? f.isTerrain : undefined,
+      chargeMax: st === SupportType.CHARGE ? (f.chargeMax ?? 3) : undefined,
+      chargeMode: st === SupportType.CHARGE ? ChargeMode.ONE_SHOT : undefined,
+    }));
 
   const setField = <K extends keyof CreateCardData>(
     k: K,
@@ -640,23 +690,115 @@ export default function CardManager() {
           )}
 
           {form.type === CardType.SUPPORT && (
-            <div className="manager-form__row">
-              <label className="manager-form__label">Type de Support</label>
-              <select
-                className="manager-form__select"
-                value={form.supportType || ""}
-                onChange={(e) =>
-                  setField("supportType", e.target.value as SupportType)
-                }
-              >
-                <option value="">-- Sélectionner --</option>
-                {Object.values(SupportType).map((st) => (
-                  <option key={st} value={st}>
-                    {st}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <>
+              <div className="manager-form__row">
+                <label
+                  className="manager-form__label"
+                  htmlFor="card-support-type"
+                >
+                  Type de Support
+                </label>
+                <select
+                  id="card-support-type"
+                  className="manager-form__select"
+                  value={form.supportType || ""}
+                  onChange={(e) =>
+                    setSupportType(e.target.value as SupportType | "")
+                  }
+                >
+                  <option value="">-- Sélectionner --</option>
+                  {Object.values(SupportType).map((st) => (
+                    <option key={st} value={st}>
+                      {SUPPORT_LABELS[st]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {form.supportType === SupportType.EQUIPMENT && (
+                <div className="manager-form__row">
+                  <label
+                    className="manager-form__label"
+                    htmlFor="card-equipment-slot"
+                  >
+                    Emplacement
+                  </label>
+                  <select
+                    id="card-equipment-slot"
+                    className="manager-form__select"
+                    value={form.equipmentSlot ?? ""}
+                    onChange={(e) =>
+                      setField("equipmentSlot", e.target.value as EquipmentSlot)
+                    }
+                    required
+                  >
+                    <option value="" disabled>
+                      —
+                    </option>
+                    {Object.values(EquipmentSlot).map((sl) => (
+                      <option key={sl} value={sl}>
+                        {SLOT_LABELS[sl]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {form.supportType === SupportType.PERSISTENT && (
+                <div className="manager-form__row">
+                  <label className="manager-form__label">
+                    <input
+                      type="checkbox"
+                      checked={!!form.isTerrain}
+                      onChange={(e) => setField("isTerrain", e.target.checked)}
+                    />{" "}
+                    Terrain
+                  </label>
+                </div>
+              )}
+              {form.supportType === SupportType.CHARGE && (
+                <div className="manager-form__grid">
+                  <div className="manager-form__row">
+                    <label
+                      className="manager-form__label"
+                      htmlFor="card-charge-max"
+                    >
+                      Charge max
+                    </label>
+                    <input
+                      id="card-charge-max"
+                      className="manager-form__input"
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={form.chargeMax ?? 3}
+                      onChange={(e) =>
+                        setField("chargeMax", Number(e.target.value))
+                      }
+                    />
+                  </div>
+                  <div className="manager-form__row">
+                    <label
+                      className="manager-form__label"
+                      htmlFor="card-charge-mode"
+                    >
+                      Mode
+                    </label>
+                    <select
+                      id="card-charge-mode"
+                      className="manager-form__select"
+                      value={form.chargeMode ?? ChargeMode.ONE_SHOT}
+                      onChange={(e) =>
+                        setField("chargeMode", e.target.value as ChargeMode)
+                      }
+                    >
+                      <option value={ChargeMode.ONE_SHOT}>Usage unique</option>
+                      <option value={ChargeMode.CYCLIC} disabled>
+                        Cyclique (bientôt)
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

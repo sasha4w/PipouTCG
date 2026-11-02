@@ -81,6 +81,13 @@ export class EffectsResolverService {
             log: ctx.log,
           });
         },
+        (owner, charge) => {
+          this.resolve(charge, EffectTrigger.ON_CHARGED, {
+            game: ctx.game,
+            ownerUserId: owner.userId,
+            log: ctx.log,
+          });
+        },
       );
       changed = true;
     }

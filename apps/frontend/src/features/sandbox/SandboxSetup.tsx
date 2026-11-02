@@ -31,7 +31,8 @@ const KINDS: { key: Kind; label: string }[] = [
 const SUPPORT_LABEL: Record<string, string> = {
   EPHEMERAL: "Éphémère",
   EQUIPMENT: "Équipement",
-  TERRAIN: "Terrain",
+  PERSISTENT: "Persistant",
+  CHARGE: "Charge",
 };
 
 function cardMeta(c: Card): string {

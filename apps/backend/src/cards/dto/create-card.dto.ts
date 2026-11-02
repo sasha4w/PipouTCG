@@ -13,6 +13,8 @@ import {
   IsInt,
   Max,
   IsIn,
+  IsBoolean,
+  ValidateIf,
   Validate,
   ValidatorConstraint,
 } from 'class-validator';
@@ -20,11 +22,13 @@ import type {
   ValidationArguments,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
   CardType,
   Rarity,
   SupportType,
+  EquipmentSlot,
+  ChargeMode,
   Archetype,
   DrakonElement,
   DrakonStage,
@@ -166,6 +170,27 @@ export class CardEffectDto implements CardEffect {
   actions!: EffectActionDto[];
 }
 
+/** Champs propres à un sous-type : interdits ailleurs. */
+@ValidatorConstraint({ name: 'supportFieldsMatchType' })
+class SupportFieldsMatchType implements ValidatorConstraintInterface {
+  validate(_: unknown, args: ValidationArguments): boolean {
+    const o = args.object as CreateCardDto;
+    if (o.equipmentSlot != null && o.supportType !== SupportType.EQUIPMENT)
+      return false;
+    if (o.isTerrain && o.supportType !== SupportType.PERSISTENT) return false;
+    if (
+      (o.chargeMax != null || o.chargeMode != null) &&
+      o.supportType !== SupportType.CHARGE
+    )
+      return false;
+    return true;
+  }
+
+  defaultMessage(): string {
+    return 'Champ incompatible avec ce type de support';
+  }
+}
+
 export class CreateCardDto implements CreateCardRequest {
   @IsString()
   @IsNotEmpty()
@@ -217,7 +242,40 @@ export class CreateCardDto implements CreateCardRequest {
 
   @IsOptional()
   @IsEnum(SupportType)
+  @Validate(SupportFieldsMatchType)
   supportType?: SupportType;
+
+  @ValidateIf(
+    (o: CreateCardDto) =>
+      o.supportType === SupportType.EQUIPMENT || o.equipmentSlot != null,
+  )
+  @IsEnum(EquipmentSlot)
+  @Validate(SupportFieldsMatchType)
+  equipmentSlot?: EquipmentSlot;
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
+  @IsBoolean()
+  @Validate(SupportFieldsMatchType)
+  isTerrain?: boolean;
+
+  @ValidateIf(
+    (o: CreateCardDto) =>
+      o.supportType === SupportType.CHARGE || o.chargeMax != null,
+  )
+  @IsInt()
+  @Min(1)
+  @Max(10)
+  @Type(() => Number)
+  @Validate(SupportFieldsMatchType)
+  chargeMax?: number;
+
+  @IsOptional()
+  @IsEnum(ChargeMode)
+  @Validate(SupportFieldsMatchType)
+  chargeMode?: ChargeMode;
 
   @IsOptional()
   @IsEnum(Archetype)
@@ -236,7 +294,20 @@ export class CreateCardDto implements CreateCardRequest {
   @MaxLength(50)
   lineage?: string;
 
+  // En multipart (FormData) les effets arrivent sérialisés en JSON texte.
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (typeof value !== 'string') return value;
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      // @Type ne voit pas le résultat : on instancie les DTO ici
+      return Array.isArray(parsed)
+        ? plainToInstance(CardEffectDto, parsed)
+        : parsed;
+    } catch {
+      return value;
+    }
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CardEffectDto)

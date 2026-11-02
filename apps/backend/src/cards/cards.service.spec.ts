@@ -6,7 +6,13 @@ import { Card } from './card.entity';
 import { CardSet } from '../card-sets/card-set.entity';
 import { Image } from '../images/image.entity';
 import { ImagesService } from '../images/images.service'; // ← remplace UploadService
-import { Rarity, CardType } from '@pipou/shared';
+import {
+  Rarity,
+  CardType,
+  SupportType,
+  EquipmentSlot,
+  ChargeMode,
+} from '@pipou/shared';
 
 const mockCardRepo = {
   findAndCount: jest.fn(),
@@ -204,6 +210,72 @@ describe('CardsService', () => {
 
       expect(mockImagesService.uploadAndSave).not.toHaveBeenCalled();
       expect(result.name).toBe('Dragon V2');
+    });
+
+    describe('colonnes de support', () => {
+      const support = (extra: Partial<Card>) =>
+        ({
+          ...fakeCard,
+          type: CardType.SUPPORT,
+          supportType: null,
+          equipmentSlot: null,
+          isTerrain: false,
+          chargeMax: null,
+          chargeMode: null,
+          ...extra,
+        }) as Card;
+      const saved = () => (mockCardRepo.save.mock.calls.at(-1) as [Card])[0];
+
+      it('Terrain -> Équipement garde isTerrain à false', async () => {
+        mockCardRepo.findOne.mockResolvedValue(
+          support({ supportType: SupportType.PERSISTENT, isTerrain: true }),
+        );
+        await service.update(1, undefined, {
+          supportType: SupportType.EQUIPMENT,
+          equipmentSlot: EquipmentSlot.OFFENSIVE,
+        });
+        expect(saved().isTerrain).toBe(false);
+        expect(saved().equipmentSlot).toBe(EquipmentSlot.OFFENSIVE);
+      });
+
+      it('Équipement -> Éphémère vide l emplacement', async () => {
+        mockCardRepo.findOne.mockResolvedValue(
+          support({
+            supportType: SupportType.EQUIPMENT,
+            equipmentSlot: EquipmentSlot.ACCESSORY,
+          }),
+        );
+        await service.update(1, undefined, {
+          supportType: SupportType.EPHEMERAL,
+        });
+        expect(saved().equipmentSlot).toBeNull();
+      });
+
+      it('Charge -> Persistant vide les compteurs', async () => {
+        mockCardRepo.findOne.mockResolvedValue(
+          support({
+            supportType: SupportType.CHARGE,
+            chargeMax: 3,
+            chargeMode: ChargeMode.ONE_SHOT,
+          }),
+        );
+        await service.update(1, undefined, {
+          supportType: SupportType.PERSISTENT,
+        });
+        expect(saved().chargeMax).toBeNull();
+        expect(saved().chargeMode).toBeNull();
+      });
+
+      it('Support -> Monstre vide tout', async () => {
+        mockCardRepo.findOne.mockResolvedValue(
+          support({ supportType: SupportType.PERSISTENT, isTerrain: true }),
+        );
+        await service.update(1, undefined, {
+          type: CardType.MONSTER,
+          supportType: null,
+        } as never);
+        expect(saved().isTerrain).toBe(false);
+      });
     });
 
     it('should throw NotFoundException if card not found', async () => {

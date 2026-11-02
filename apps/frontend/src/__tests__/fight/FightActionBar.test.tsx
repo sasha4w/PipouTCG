@@ -159,7 +159,7 @@ describe("FightActionBar", () => {
   it("aucun libellé de bouton ne contient d'emoji", () => {
     for (const over of [
       {},
-      { selectedCard: support("TERRAIN") },
+      { selectedCard: support("PERSISTENT") },
       { phase: "end" as const, overHandLimit: true },
       { phase: "battle" as const, attackerSelected: true },
     ]) {
@@ -207,12 +207,12 @@ describe("mainSlot", () => {
     ).toBe("fight.evolveHint");
   });
 
-  it("Terrain : Jouer grisé avec l'indication de zone", () => {
+  it("Persistant : Jouer grisé avec l'indication de zone", () => {
     expect(
       mainSlot({
         phase: "main",
         isMyTurn: true,
-        card: support("TERRAIN"),
+        card: support("PERSISTENT"),
         attackerSelected: false,
         transformUsed: false,
       }),

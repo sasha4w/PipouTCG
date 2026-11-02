@@ -7,14 +7,25 @@ import type {
 import {
   Archetype,
   CardType,
+  ChargeMode,
   DrakonElement,
   DrakonStage,
+  EquipmentSlot,
   Rarity,
   SupportType,
   type CardEffect,
 } from "@pipou/shared";
 
-export { Archetype, CardType, DrakonElement, DrakonStage, Rarity, SupportType };
+export {
+  Archetype,
+  CardType,
+  ChargeMode,
+  DrakonElement,
+  DrakonStage,
+  EquipmentSlot,
+  Rarity,
+  SupportType,
+};
 export type { CardEffect };
 
 export interface Card {
@@ -27,6 +38,10 @@ export interface Card {
   hp: number;
   cost: number;
   supportType?: SupportType | null;
+  equipmentSlot?: EquipmentSlot | null;
+  isTerrain?: boolean | null;
+  chargeMax?: number | null;
+  chargeMode?: ChargeMode | null;
   archetype?: Archetype | null;
   element?: DrakonElement | null;
   lineage?: string | null;

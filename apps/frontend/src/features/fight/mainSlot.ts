@@ -1,4 +1,4 @@
-import { canTransform } from "@pipou/shared";
+import { SupportType, canTransform } from "@pipou/shared";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
 
@@ -56,7 +56,8 @@ export function mainSlot({
         labelKey: "fight.bar.play",
         enabled: playBlockedReason === undefined,
       };
-    case "TERRAIN":
+    case SupportType.PERSISTENT:
+    case SupportType.CHARGE:
       return {
         labelKey: "fight.bar.play",
         enabled: false,

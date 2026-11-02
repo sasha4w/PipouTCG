@@ -23,7 +23,7 @@ describe("boardFxFromEvents", () => {
     const events: FightEvent[] = [
       { kind: "monster_summoned", ownerId: ME, zoneIndex: 1, instanceId: "a", rarity: "epic" },
       { kind: "monster_destroyed", ownerId: OPP, zoneIndex: 0, instanceId: "b", cause: "sacrifice" },
-      { kind: "terrain_played", ownerId: OPP, zoneIndex: 2, instanceId: "t" },
+      { kind: "support_placed", ownerId: OPP, zoneIndex: 2, instanceId: "t" },
     ];
 
     const fx = boardFxFromEvents(events, ME);
@@ -32,6 +32,19 @@ describe("boardFxFromEvents", () => {
     expect(fx.opponent.monsters.get(0)).toEqual({ destroyCause: "sacrifice" });
     expect(fx.opponent.supports.get(2)).toEqual({ terrainPlayed: true });
     expect(fx.me.supports.size).toBe(0);
+  });
+
+  it("charge_progress donne un pulse, charge_triggered un burst", () => {
+    const fx = boardFxFromEvents(
+      [
+        { kind: "charge_progress", ownerId: ME, zoneIndex: 0, instanceId: "c", counters: 1, max: 3 },
+        { kind: "charge_progress", ownerId: ME, zoneIndex: 1, instanceId: "d", counters: 3, max: 3 },
+        { kind: "charge_triggered", ownerId: ME, zoneIndex: 1, instanceId: "d" },
+      ] as never,
+      ME,
+    );
+    expect(fx.me.supports.get(0)?.chargeFx).toBe("pulse");
+    expect(fx.me.supports.get(1)?.chargeFx).toBe("burst");
   });
 
   it("fusionne destruction et invocation sur la même zone", () => {

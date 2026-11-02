@@ -18,6 +18,8 @@ export type GameAction =
       handIndex: number;
       zoneIndex?: number;
       targetInstanceId?: string;
+      /** Équipement ou Terrain remplacé (confirmé par le joueur). */
+      replaceInstanceId?: string;
     }
   | {
       type: "evolve";

@@ -3,7 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Card } from './card.entity';
-import { Rarity } from '@pipou/shared';
+import { CardType, Rarity, SupportType } from '@pipou/shared';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { ImagesService } from '../images/images.service';
@@ -76,7 +76,19 @@ export class CardsService {
 
     if (cardSetId) card.cardSet = { id: cardSetId } as CardSet;
     Object.assign(card, cardData); // ← plus d'imageId ni cardSetId dans le spread
+    this.resetForeignSupportColumns(card);
     return this.cardRepository.save(card);
+  }
+
+  /** Remet à zéro les colonnes de support qui n'appartiennent pas au type résultant. */
+  private resetForeignSupportColumns(card: Card) {
+    const st = card.type === CardType.SUPPORT ? card.supportType : null;
+    if (st !== SupportType.EQUIPMENT) card.equipmentSlot = null;
+    if (st !== SupportType.PERSISTENT) card.isTerrain = false;
+    if (st !== SupportType.CHARGE) {
+      card.chargeMax = null;
+      card.chargeMode = null;
+    }
   }
 
   async remove(id: number) {

@@ -1624,3 +1624,11 @@ export function IconFlag(props: IconProps) {
     </StrokeIcon>
   );
 }
+
+export function IconTerrain(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M3 20h18L14 7l-4 7-2-3z" />
+    </StrokeIcon>
+  );
+}

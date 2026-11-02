@@ -33,6 +33,10 @@ describe('buildClientState — candidats de choix', () => {
       hp: 500,
       rarity: 'common',
       supportType: null,
+      equipmentSlot: null,
+      isTerrain: false,
+      chargeMax: null,
+      chargeMode: null,
       cost: 3,
       image: { url: 'https://cdn.test/gobelin.png' },
       description: 'Un gobelin',
@@ -123,7 +127,7 @@ describe('buildClientState — candidats de choix', () => {
 
 describe('buildClientState / emitGameState — événements', () => {
   const ev: FightEvent = {
-    kind: 'terrain_played',
+    kind: 'support_placed',
     ownerId: P1_ID,
     zoneIndex: 0,
     instanceId: 't1',
