@@ -257,7 +257,7 @@ function mainCandidates(
             handIndex,
             zoneIndex: me.supportZones.findIndex((z) => z === null),
           });
-      } else {
+      } else if (card.supportType !== SupportType.CHARGE) {
         const side = ephemeralTargetSide(card.effects);
         if (!side) out.push({ type: 'play_support', handIndex });
         else
