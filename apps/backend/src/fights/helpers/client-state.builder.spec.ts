@@ -123,7 +123,7 @@ describe('buildClientState — candidats de choix', () => {
 
 describe('buildClientState / emitGameState — événements', () => {
   const ev: FightEvent = {
-    kind: 'terrain_played',
+    kind: 'support_placed',
     ownerId: P1_ID,
     zoneIndex: 0,
     instanceId: 't1',

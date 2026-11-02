@@ -12,6 +12,7 @@ import {
   effect,
   ephemeralCard,
   monsterCard,
+  persistentCard,
   terrainCard,
 } from '../testing/cards';
 import {
@@ -206,9 +207,9 @@ describe('GameEngine — événements de duel', () => {
     ]);
   });
 
-  it('pose de terrains : terrain_played et placedSeq croissant', () => {
+  it('pose de supports : support_placed et placedSeq croissant', () => {
     const game = scenario({
-      p1: { hand: [terrainCard('Forêt', []), terrainCard('Volcan', [])] },
+      p1: { hand: [persistentCard('Forêt', []), persistentCard('Volcan', [])] },
     });
 
     engine.dispatch(game, 'p1', {
@@ -227,13 +228,13 @@ describe('GameEngine — événements de duel', () => {
     expect(volcan?.placedSeq).toBe(2);
     expect(game.pendingEvents).toEqual([
       {
-        kind: 'terrain_played',
+        kind: 'support_placed',
         ownerId: P1_ID,
         zoneIndex: 2,
         instanceId: foret?.instanceId,
       },
       {
-        kind: 'terrain_played',
+        kind: 'support_placed',
         ownerId: P1_ID,
         zoneIndex: 0,
         instanceId: volcan?.instanceId,

@@ -225,7 +225,7 @@ describe('SandboxService', () => {
   it('vide pendingEvents après avoir émis sandbox:state (via resume)', async () => {
     const { service, server, last } = await inGame();
     const ev: FightEvent = {
-      kind: 'terrain_played',
+      kind: 'support_placed',
       ownerId: ADMIN.userId,
       zoneIndex: 0,
       instanceId: 't1',

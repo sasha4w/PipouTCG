@@ -11,6 +11,8 @@ import {
   hasImmunity,
   DrakonStage,
   SupportType,
+  ChargeMode,
+  canPlaceInSupportZone,
   canTransform,
   EffectTrigger,
   ephemeralDestroysChosenTarget,
@@ -29,6 +31,7 @@ import {
   isCurrentPlayer,
   leaveGuard,
   queueChoice,
+  sendToGraveyard,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
 
@@ -42,6 +45,7 @@ export class SupportService {
     handIndex: number,
     zoneIndex: number | undefined,
     targetInstanceId: string | undefined,
+    replaceInstanceId: string | undefined,
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
@@ -148,35 +152,55 @@ export class SupportService {
         break;
       }
 
-      case SupportType.TERRAIN: {
-        if (zoneIndex === undefined || zoneIndex < 0 || zoneIndex > 2) {
+      case SupportType.PERSISTENT:
+      case SupportType.CHARGE: {
+        const placement = canPlaceInSupportZone(
+          player.supportZones,
+          support.baseCard,
+        );
+        const undo = (error: string) => {
           player.hand.splice(handIndex, 0, support);
-          return { error: 'Zone invalide (0-2)' };
-        }
-        if (player.supportZones[zoneIndex]) {
-          player.hand.splice(handIndex, 0, support);
-          return { error: 'Zone de support occupée' };
-        }
-        // Un seul exemplaire d'un même terrain en jeu par joueur
+          return { error };
+        };
+        if (placement.kind === 'duplicate')
+          return undo('Cette carte est déjà en jeu');
+        if (placement.kind === 'full') return undo('Zones support pleines');
         if (
-          player.supportZones.some(
-            (z) => z?.baseCard.name === support.baseCard.name,
-          )
-        ) {
-          player.hand.splice(handIndex, 0, support);
-          return { error: 'Ce terrain est déjà en jeu' };
+          support.baseCard.supportType === SupportType.CHARGE &&
+          support.baseCard.chargeMode === ChargeMode.CYCLIC
+        )
+          return undo('Mode de charge cyclique pas encore disponible');
+
+        let zone: number;
+        if (placement.kind === 'replace_terrain') {
+          const old = player.supportZones[placement.zoneIndex]!;
+          if (replaceInstanceId !== old.instanceId)
+            return undo('Confirme le remplacement de ton Terrain');
+          player.supportZones[placement.zoneIndex] = null;
+          sendToGraveyard(player, old);
+          addLog(game, `${player.username} remplace ${old.baseCard.name}`);
+          zone = placement.zoneIndex;
+        } else {
+          if (zoneIndex === undefined || zoneIndex < 0 || zoneIndex > 2)
+            return undo('Zone invalide (0-2)');
+          if (player.supportZones[zoneIndex])
+            return undo('Zone de support occupée');
+          zone = zoneIndex;
         }
-        support.placedSeq = ++game.terrainSeq;
-        player.supportZones[zoneIndex] = support;
+
+        support.placedSeq = ++game.supportSeq;
+        if (support.baseCard.supportType === SupportType.CHARGE)
+          support.chargeCounters = 0;
+        player.supportZones[zone] = support;
         game.pendingEvents.push({
-          kind: 'terrain_played',
+          kind: 'support_placed',
           ownerId: player.userId,
-          zoneIndex,
+          zoneIndex: zone,
           instanceId: support.instanceId,
         });
         addLog(
           game,
-          `${player.username} pose ${support.baseCard.name} en zone ${zoneIndex}`,
+          `${player.username} pose ${support.baseCard.name} en zone ${zone}`,
         );
         this.effectsResolver.resolve(support, EffectTrigger.ON_PLAY, {
           game,
