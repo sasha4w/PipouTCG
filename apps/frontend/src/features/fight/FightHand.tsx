@@ -114,14 +114,6 @@ export default function FightHand({
                 {t("fight.hand.free")} <IconBolt size={8} />
               </span>
             )}
-            {unplayableReasons?.has(card.instanceId) && (
-              <span
-                className="fhand-unplayable-badge"
-                title={unplayableReasons.get(card.instanceId)}
-              >
-                <IconLock size={11} />
-              </span>
-            )}
             {card.supportType === SupportType.EQUIPMENT &&
               card.equipmentSlot && (
                 <span
