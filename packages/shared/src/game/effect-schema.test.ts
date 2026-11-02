@@ -31,6 +31,13 @@ describe("effect-schema", () => {
     }
   });
 
+  it("every action that can target ARCHETYPE_ALLIES takes an archetype", () => {
+    for (const [type, schema] of Object.entries(ACTION_SCHEMA)) {
+      if (schema.targets.includes(EffectTarget.ARCHETYPE_ALLIES))
+        expect(schema.fields, type).toContain("archetype");
+    }
+  });
+
   it("cardKindOf maps monsters and support subtypes", () => {
     expect(cardKindOf({ type: CardType.MONSTER, supportType: null })).toBe(
       "monster",
@@ -80,6 +87,19 @@ describe("effect-schema", () => {
           },
         ]),
       ).toEqual([{ effect: 0, code: "trigger_not_allowed" }]);
+    });
+
+    it("flags an unknown action type without throwing", () => {
+      expect(
+        validateEffects("monster", [
+          {
+            trigger: EffectTrigger.ON_SUMMON,
+            actions: [
+              { type: "FUTURE" as ActionType, target: EffectTarget.SELF },
+            ],
+          },
+        ]),
+      ).toEqual([{ effect: 0, action: 0, code: "unknown_action" }]);
     });
 
     it("accepts a valid effect", () => {

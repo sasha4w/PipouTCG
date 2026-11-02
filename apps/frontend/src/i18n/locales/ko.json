@@ -400,7 +400,8 @@
         "issue": {
           "trigger_not_allowed": "Ce déclencheur n'existe pas pour ce type de carte.",
           "target_not_allowed": "Cette action ne peut pas viser cette cible.",
-          "no_actions": "Un effet doit avoir au moins une action."
+          "no_actions": "Un effet doit avoir au moins une action.",
+          "unknown_action": "Action inconnue de ce formulaire : elle est conservée telle quelle."
         },
         "condition": {
           "ARCHETYPE_ON_BOARD": "un monstre de l'archétype est en jeu",

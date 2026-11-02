@@ -9,6 +9,7 @@ import {
   TRIGGERS_BY_KIND,
 } from "@pipou/shared";
 import {
+  advancedKeys,
   newEffect,
   setActionType,
   setConditionType,
@@ -53,6 +54,12 @@ describe("effectDraft", () => {
       EffectConditionType.HP_BELOW,
     );
     expect(out).toEqual({ type: EffectConditionType.HP_BELOW });
+  });
+
+  it("advancedKeys does not throw on an unknown action type", () => {
+    expect(
+      advancedKeys({ type: "FUTURE" as ActionType, target: EffectTarget.SELF, value: 1 }),
+    ).toEqual(["value"]);
   });
 
   it("newEffect first trigger for a monster is ON_SUMMON", () => {

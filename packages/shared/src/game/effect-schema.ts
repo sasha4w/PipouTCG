@@ -49,7 +49,14 @@ const PLAYER_ONLY: readonly EffectTarget[] = [T.PLAYER];
 const s = (
   targets: readonly EffectTarget[],
   ...fields: ActionField[]
-): ActionSchema => ({ targets, fields });
+): ActionSchema => ({
+  targets,
+  // Le moteur lit l'archétype de l'action pour viser les monstres d'un archétype
+  fields:
+    targets.includes(T.ARCHETYPE_ALLIES) && !fields.includes("archetype")
+      ? [...fields, "archetype"]
+      : fields,
+});
 
 /**
  * Ce que chaque action accepte. Déduit des cartes réelles et du moteur ;
@@ -149,7 +156,11 @@ export const CONDITION_FIELDS: Record<
 export interface EffectIssue {
   effect: number;
   action?: number;
-  code: "trigger_not_allowed" | "target_not_allowed" | "no_actions";
+  code:
+    | "trigger_not_allowed"
+    | "target_not_allowed"
+    | "no_actions"
+    | "unknown_action";
 }
 
 /** Problèmes bloquants d'une liste d'effets pour une sorte de carte. */
@@ -163,7 +174,9 @@ export function validateEffects(
       issues.push({ effect, code: "trigger_not_allowed" });
     if (e.actions.length === 0) issues.push({ effect, code: "no_actions" });
     e.actions.forEach((a, action) => {
-      if (!ACTION_SCHEMA[a.type].targets.includes(a.target))
+      const schema: ActionSchema | undefined = ACTION_SCHEMA[a.type];
+      if (!schema) issues.push({ effect, action, code: "unknown_action" });
+      else if (!schema.targets.includes(a.target))
         issues.push({ effect, action, code: "target_not_allowed" });
     });
   });

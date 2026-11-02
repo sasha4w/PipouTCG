@@ -57,7 +57,7 @@ export function advancedKeys(action: EffectAction): string[] {
   const shown = new Set<string>([
     "type",
     "target",
-    ...ACTION_SCHEMA[action.type].fields,
+    ...(ACTION_SCHEMA[action.type]?.fields ?? []),
   ]);
   return Object.keys(action).filter((k) => !shown.has(k));
 }
