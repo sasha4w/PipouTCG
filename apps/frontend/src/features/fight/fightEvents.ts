@@ -93,7 +93,11 @@ export function boardFxFromEvents(
           merge(side.supports, e.zoneIndex, { chargeFx: "pulse" });
         break;
       case "charge_triggered":
-        merge(side.supports, e.zoneIndex, { chargeFx: "burst" });
+        // La zone se vide aussitôt : durée de disparition >= burst (0,45 s)
+        merge(side.supports, e.zoneIndex, {
+          chargeFx: "burst",
+          destroyCause: "effect",
+        });
         break;
     }
   }

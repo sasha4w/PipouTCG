@@ -10,7 +10,8 @@ import SupportZoneContent from "./SupportZoneContent";
 import CardFace from "../../cards/CardFace";
 import CardDrawer from "../CardDrawer";
 import { isMonsterZone, type BoardZone } from "../fight.types";
-import type { CombatMode } from "@pipou/shared";
+import { SupportType, type CombatMode } from "@pipou/shared";
+import { ChargeFrame } from "./ChargeFrame";
 import { IconLock, IconVirus } from "../../../components/Icons";
 import { useAnimationPrefs } from "../../../contexts/useAnimationPrefs";
 import type { ZoneFxMap } from "../fightEvents";
@@ -239,7 +240,22 @@ export default function ZoneRow({
                         guard={dyingData.mode === "guard"}
                       />
                     ) : (
-                      <CardFace card={dyingData.baseCard} size="xs" />
+                      dyingData.baseCard.supportType === SupportType.CHARGE &&
+                      fx?.get(idx)?.chargeFx === "burst" ? (
+                        <ChargeFrame
+                          counters={
+                            dyingData.chargeCounters ??
+                            dyingData.baseCard.chargeMax ??
+                            1
+                          }
+                          max={dyingData.baseCard.chargeMax ?? 1}
+                          fx="burst"
+                        >
+                          <CardFace card={dyingData.baseCard} size="xs" />
+                        </ChargeFrame>
+                      ) : (
+                        <CardFace card={dyingData.baseCard} size="xs" />
+                      )
                     )}
                   </div>
                 </div>
