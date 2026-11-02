@@ -2,12 +2,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { SupportType } from "@pipou/shared";
-import {
-  IconLock,
-  IconBolt,
-  IconCheck,
-  IconReleve,
-} from "../../components/Icons";
+import { IconBolt, IconCheck, IconReleve } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
