@@ -268,4 +268,21 @@ describe('CreateCardDto — sous-types de support', () => {
       }),
     ).not.toHaveLength(0);
   });
+  it('formes multipart : booleen et nombre en chaine', async () => {
+    expect(
+      await errorsOf({ supportType: 'PERSISTENT', isTerrain: 'true' }),
+    ).toHaveLength(0);
+    expect(
+      await errorsOf({ supportType: 'PERSISTENT', isTerrain: 'false' }),
+    ).toHaveLength(0);
+    expect(
+      await errorsOf({ supportType: 'CHARGE', chargeMax: '3' }),
+    ).toHaveLength(0);
+    const dto = plainToInstance(CreateCardDto, {
+      ...base,
+      supportType: 'PERSISTENT',
+      isTerrain: 'true',
+    });
+    expect(dto.isTerrain).toBe(true);
+  });
 });

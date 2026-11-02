@@ -254,6 +254,9 @@ export class CreateCardDto implements CreateCardRequest {
   equipmentSlot?: EquipmentSlot;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    value === 'true' ? true : value === 'false' ? false : value,
+  )
   @IsBoolean()
   @Validate(SupportFieldsMatchType)
   isTerrain?: boolean;

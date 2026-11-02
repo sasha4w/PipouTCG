@@ -110,3 +110,24 @@ export const chargeCard = (
     chargeMode: ChargeMode.ONE_SHOT,
     ...overrides,
   });
+
+/** Carte sans effet, pour remplir decks et Primes. */
+export function fillerCard(name = 'Remplissage'): Card {
+  return monsterCard(name, { atk: 0, hp: 100 });
+}
+
+export function effect(
+  trigger: EffectTrigger,
+  actions: EffectAction[],
+  condition: EffectCondition | null = null,
+): CardEffect {
+  return { trigger, condition, actions };
+}
+
+export function act(
+  type: ActionType,
+  target: EffectTarget,
+  extra: Partial<EffectAction> = {},
+): EffectAction {
+  return { type, target, ...extra };
+}

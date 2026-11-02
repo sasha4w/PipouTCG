@@ -29,6 +29,13 @@ export class SupportRework1791000000022 implements MigrationInterface {
         "UPDATE `card` SET `equipment_slot` = ? WHERE TRIM(`name`) = ? AND `support_type` = 'EQUIPMENT'",
         [slot, name],
       );
+    const orphans = (await q.query(
+      "SELECT `name` FROM `card` WHERE `support_type` = 'EQUIPMENT' AND `equipment_slot` IS NULL",
+    )) as { name: string }[];
+    if (orphans.length > 0)
+      console.warn(
+        `SupportRework : équipements sans emplacement : ${orphans.map((r) => r.name).join(', ')}`,
+      );
     await q.query(
       "ALTER TABLE `card` MODIFY `support_type` enum ('EPHEMERAL','EQUIPMENT','PERSISTENT','CHARGE') NULL",
     );
@@ -41,11 +48,18 @@ export class SupportRework1791000000022 implements MigrationInterface {
     )) as { n: string | number }[];
     if (Number(n) > 0)
       throw new Error('Des cartes Charge existent : rollback manuel requis');
+    const [{ p }] = (await q.query(
+      "SELECT COUNT(*) AS p FROM `card` WHERE `support_type` = 'PERSISTENT' AND `is_terrain` = 0",
+    )) as { p: string | number }[];
+    if (Number(p) > 0)
+      throw new Error(
+        'Des Persistants non-Terrain existent : rollback manuel requis',
+      );
     await q.query(
       "ALTER TABLE `card` MODIFY `support_type` enum ('EPHEMERAL','EQUIPMENT','TERRAIN','PERSISTENT','CHARGE') NULL",
     );
     await q.query(
-      "UPDATE `card` SET `support_type` = 'TERRAIN' WHERE `support_type` = 'PERSISTENT'",
+      "UPDATE `card` SET `support_type` = 'TERRAIN' WHERE `support_type` = 'PERSISTENT' AND `is_terrain` = 1",
     );
     await q.query(
       "ALTER TABLE `card` DROP COLUMN `charge_mode`, DROP COLUMN `charge_max`, DROP COLUMN `is_terrain`, DROP COLUMN `equipment_slot`",
