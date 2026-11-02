@@ -13,6 +13,7 @@ import {
   SupportType,
   ChargeMode,
   canPlaceInSupportZone,
+  canEquip,
   canTransform,
   EffectTrigger,
   ephemeralDestroysChosenTarget,
@@ -136,6 +137,27 @@ export class SupportService {
         if (!target) {
           player.hand.splice(handIndex, 0, support);
           return { error: 'Monstre cible introuvable' };
+        }
+        const check = canEquip(target.equipments, support.baseCard);
+        const undo = (error: string) => {
+          player.hand.splice(handIndex, 0, support);
+          return { error };
+        };
+        if (check.kind === 'no_slot')
+          return undo('Équipement sans emplacement');
+        if (check.kind === 'duplicate')
+          return undo('Ce monstre porte déjà cet accessoire');
+        if (check.kind === 'slot_full') {
+          if (!replaceInstanceId)
+            return undo('Emplacement plein : confirme le remplacement');
+          if (!check.replaceable.includes(replaceInstanceId))
+            return undo('Équipement à remplacer introuvable');
+          const idx = target.equipments.findIndex(
+            (e) => e.instanceId === replaceInstanceId,
+          );
+          const [old] = target.equipments.splice(idx, 1);
+          sendToGraveyard(player, old);
+          addLog(game, `${old.baseCard.name} est remplacé`);
         }
         target.equipments.push(support);
         addLog(
