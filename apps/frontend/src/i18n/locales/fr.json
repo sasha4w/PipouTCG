@@ -763,6 +763,7 @@
       "play": "Jouer",
       "terrainHint": "Clique sur une zone support vide",
       "equipHint": "Clique sur un monstre allié à équiper",
+      "equipHintSlot": "Clique sur un monstre allié à équiper ({{slot}})",
       "recycle": "Recycler",
       "confirmSurrender": "Abandonner ?",
       "recycleTitle": "Recycle la carte : +1 énergie",

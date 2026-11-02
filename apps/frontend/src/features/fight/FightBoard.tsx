@@ -150,9 +150,9 @@ export default function FightBoard({
 
   const [showSummonModal, setShowSummonModal] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
-  const [graveyardSide, setGraveyardSide] = useState<
-    "me" | "opponent" | null
-  >(null);
+  const [graveyardSide, setGraveyardSide] = useState<"me" | "opponent" | null>(
+    null,
+  );
   // Relève sur une zone occupée : l'allié de cette zone est sacrifié d'office
   const [releveLockedId, setReleveLockedId] = useState<string | null>(null);
   // Action de carte en attente de confirmation, liée au tour, à la phase et à
@@ -174,9 +174,10 @@ export default function FightBoard({
   // Confirmation périmée (autre tour, phase ou carte) : on l'oublie pour de bon
   if (pending !== null && activePending === null) setPending(null);
   // Message d'énergie manquante, affiché 2 s au-dessus du dock
-  const [shortage, setShortage] = useState<{ count: number; id: number } | null>(
-    null,
-  );
+  const [shortage, setShortage] = useState<{
+    count: number;
+    id: number;
+  } | null>(null);
   useEffect(() => {
     if (shortage === null) return;
     const id = setTimeout(() => setShortage(null), 2000);
@@ -285,7 +286,9 @@ export default function FightBoard({
       else disinfectableIds.add(m.instanceId);
     }
   }
-  const equipCard = isEquipment ? gs.me.hand[selectedCard!]?.baseCard : undefined;
+  const equipCard = isEquipment
+    ? gs.me.hand[selectedCard!]?.baseCard
+    : undefined;
   // Cibles d'un équipement : mes monstres (hors Zeta implanté) ou mon Zeta implanté
   const equippableIds = new Set(
     isEquipment && isMyMain && equipCard
@@ -409,7 +412,9 @@ export default function FightBoard({
 
   /** Coût de la carte : 0 si l'invocation est gratuite. */
   const summonCost = (card: HandCard): number =>
-    gs.me.freeSummonInstanceIds.includes(card.instanceId) ? 0 : (card.cost ?? 0);
+    gs.me.freeSummonInstanceIds.includes(card.instanceId)
+      ? 0
+      : (card.cost ?? 0);
 
   /**
    * Ouvre la confirmation d'une action payante, sauf s'il manque de l'énergie :
@@ -579,7 +584,10 @@ export default function FightBoard({
   const handleSupportZoneClick = (idx: number) => {
     if (!gs.isMyTurn || phase !== "main" || selectedCard === null) return;
     if (!isZoneSupport) return;
-    const intent = zoneIntent(gs.me.supportZones, gs.me.hand[selectedCard]!.baseCard);
+    const intent = zoneIntent(
+      gs.me.supportZones,
+      gs.me.hand[selectedCard]!.baseCard,
+    );
     if (intent.kind === "blocked") return;
     if (intent.kind === "confirm_terrain") {
       setReplacing({
@@ -592,7 +600,11 @@ export default function FightBoard({
     }
     if (gs.me.supportZones[idx]) return;
 
-    openPending({ kind: "playSupport", handIndex: selectedCard, zoneIndex: idx });
+    openPending({
+      kind: "playSupport",
+      handIndex: selectedCard,
+      zoneIndex: idx,
+    });
   };
 
   /** Envoie l'action confirmée puis vide la sélection. */
@@ -729,7 +741,10 @@ export default function FightBoard({
       if (base.type !== "support") continue;
       if (base.supportType === "EQUIPMENT") {
         if (equipTargets.every((m) => equipIntent(m, base).kind === "blocked"))
-          unplayableReasons.set(c.instanceId, t("fight.unplayable.noEquipTarget"));
+          unplayableReasons.set(
+            c.instanceId,
+            t("fight.unplayable.noEquipTarget"),
+          );
       } else if (
         base.supportType === SupportType.PERSISTENT ||
         base.supportType === SupportType.CHARGE
@@ -772,9 +787,18 @@ export default function FightBoard({
   });
   const hintText =
     gs.isMyTurn && selectedHandCard !== null
-      ? hintSlot.hintKey
-        ? t(hintSlot.hintKey)
-        : (playBlockedReason ?? "")
+      ? supportBlockedReason
+        ? supportBlockedReason
+        : hintSlot.hintKey === "fight.bar.equipHint" &&
+            selectedHandCard.equipmentSlot
+          ? t("fight.bar.equipHintSlot", {
+              slot: t(
+                `glossary.equipmentSlot.${selectedHandCard.equipmentSlot}`,
+              ),
+            })
+          : hintSlot.hintKey
+            ? t(hintSlot.hintKey)
+            : (playBlockedReason ?? "")
       : "";
 
   // ── Render ────────────────────────────────────────────────────────────────

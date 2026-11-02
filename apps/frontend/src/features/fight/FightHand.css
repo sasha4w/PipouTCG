@@ -140,18 +140,9 @@
   filter: grayscale(1) brightness(0.75);
 }
 
-.fhand-unplayable-badge {
+.fhand-slot-pip {
   position: absolute;
   bottom: 18px;
   left: -5px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #6b6b6b;
-  color: #fff;
-  border: 1.5px solid #fff;
   z-index: 3;
 }

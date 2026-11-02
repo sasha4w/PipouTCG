@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { IconLock, IconBolt, IconCheck, IconReleve } from "../../components/Icons";
+import { SupportType } from "@pipou/shared";
+import { IconBolt, IconCheck, IconReleve } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
@@ -108,14 +109,13 @@ export default function FightHand({
                 {t("fight.hand.free")} <IconBolt size={8} />
               </span>
             )}
-            {unplayableReasons?.has(card.instanceId) && (
-              <span
-                className="fhand-unplayable-badge"
-                title={unplayableReasons.get(card.instanceId)}
-              >
-                <IconLock size={11} />
-              </span>
-            )}
+            {card.supportType === SupportType.EQUIPMENT &&
+              card.equipmentSlot && (
+                <span
+                  className={`zr-equip-pip fhand-slot-pip zr-equip-pip--${card.equipmentSlot.toLowerCase()}`}
+                  title={t(`glossary.equipmentSlot.${card.equipmentSlot}`)}
+                />
+              )}
             {isPaying && (
               <div className="fhand-pay-badge" title={t("fight.hand.payCard")}>
                 <IconBolt size={10} />

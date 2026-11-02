@@ -761,6 +761,7 @@
       "play": "Play",
       "terrainHint": "Tap an empty support zone",
       "equipHint": "Tap an allied monster to equip",
+      "equipHintSlot": "Tap an allied monster to equip ({{slot}})",
       "recycle": "Recycle",
       "confirmSurrender": "Surrender?",
       "recycleTitle": "Recycle the card: +1 energy",

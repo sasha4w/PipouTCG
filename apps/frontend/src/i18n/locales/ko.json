@@ -705,6 +705,7 @@
       "play": "사용",
       "terrainHint": "빈 서포트 구역을 터치하세요",
       "equipHint": "장착할 아군 몬스터를 터치하세요",
+      "equipHintSlot": "장착할 아군 몬스터를 터치하세요 ({{slot}})",
       "recycle": "재활용",
       "confirmSurrender": "항복할까요?",
       "recycleTitle": "카드를 재활용: 에너지 +1",

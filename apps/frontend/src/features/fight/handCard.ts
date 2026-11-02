@@ -3,6 +3,7 @@ import type {
   CardEffect,
   CardType,
   DrakonStage,
+  EquipmentSlot,
   Rarity,
   SupportType,
 } from "@pipou/shared";
@@ -19,6 +20,7 @@ export interface HandCard {
   cost: number;
   rarity: Rarity;
   supportType?: SupportType;
+  equipmentSlot?: EquipmentSlot;
   image: { url: string } | null;
   // ── Enrichis pour l'inspection ───────────────────────────────────────────
   effects?: CardEffect[] | null;
@@ -42,6 +44,7 @@ export function toHandCard(c: CardInstance): HandCard {
     cost: c.baseCard.cost,
     rarity: c.baseCard.rarity,
     supportType: c.baseCard.supportType ?? undefined,
+    equipmentSlot: c.baseCard.equipmentSlot ?? undefined,
     image: c.baseCard.image,
     effects: c.baseCard.effects ?? null,
     archetype: c.baseCard.archetype ?? null,
