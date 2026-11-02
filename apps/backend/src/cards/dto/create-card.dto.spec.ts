@@ -155,3 +155,30 @@ describe('CreateCardDto — Drakon', () => {
     ).not.toEqual([]);
   });
 });
+
+describe('CreateCardDto — corps multipart du formulaire admin', () => {
+  it('accepte les effets envoyés en JSON texte (FormData)', async () => {
+    const dto = plainToInstance(CreateCardDto, {
+      name: 'Éphémère test',
+      rarity: 'common',
+      type: 'support',
+      atk: '0',
+      hp: '0',
+      cost: '0',
+      cardSetId: '1',
+      supportType: 'EPHEMERAL',
+      effects: JSON.stringify([
+        {
+          trigger: 'ON_PLAY',
+          actions: [{ type: 'DEAL_DAMAGE', target: 'ENEMY_MONSTER', value: 100 }],
+        },
+      ]),
+    });
+    const errors = await validate(dto, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    expect(errors).toEqual([]);
+    expect(Array.isArray(dto.effects)).toBe(true);
+  });
+});

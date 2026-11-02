@@ -21,6 +21,7 @@ import SearchBar from "../../components/Searchbar";
 import FilterPanel from "../../components/FilterPanel";
 import { useFilters } from "../../hooks/useFilters";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import { apiErrorMessage } from "../../utils/errors";
 import Button from "../../components/Button";
 import {
   IconArrowLeft,
@@ -186,16 +187,19 @@ export default function CardManager() {
     setEditing(c);
     setForm({
       name: c.name,
-      description: c.description,
+      description: c.description ?? "",
       rarity: c.rarity,
       type: c.type,
       atk: c.atk,
       hp: c.hp,
       cost: c.cost,
       cardSetId: c.cardSet.id,
+      supportType: c.supportType ?? undefined,
+      archetype: c.archetype ?? undefined,
       element: c.element ?? undefined,
       lineage: c.lineage ?? undefined,
       stage: c.stage ?? undefined,
+      effects: c.effects ?? [],
     });
     setSelectedImageId(c.image?.id ?? null);
     setUploadMode("existing");
@@ -248,7 +252,7 @@ export default function CardManager() {
       void refreshList();
     } catch (err) {
       console.error(err);
-      setError("Erreur lors de la sauvegarde");
+      setError(apiErrorMessage(err) || "Erreur lors de la sauvegarde");
     } finally {
       setSaving(false);
     }

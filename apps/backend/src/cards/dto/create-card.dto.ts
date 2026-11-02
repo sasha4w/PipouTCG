@@ -20,7 +20,7 @@ import type {
   ValidationArguments,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
   CardType,
   Rarity,
@@ -236,7 +236,20 @@ export class CreateCardDto implements CreateCardRequest {
   @MaxLength(50)
   lineage?: string;
 
+  // En multipart (FormData) les effets arrivent sérialisés en JSON texte.
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (typeof value !== 'string') return value;
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      // @Type ne voit pas le résultat : on instancie les DTO ici
+      return Array.isArray(parsed)
+        ? plainToInstance(CardEffectDto, parsed)
+        : parsed;
+    } catch {
+      return value;
+    }
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CardEffectDto)
