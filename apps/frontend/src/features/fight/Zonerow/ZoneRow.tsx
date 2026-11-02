@@ -220,6 +220,7 @@ export default function ZoneRow({
                   <SupportZoneContent
                     zone={zone}
                     selected={pickedId === zone.instanceId}
+                    chargeFx={fx?.get(idx)?.chargeFx}
                     onInfo={() => setInspectId(zone.instanceId)}
                   />
                 )

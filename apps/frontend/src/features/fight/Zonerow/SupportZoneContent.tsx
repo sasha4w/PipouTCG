@@ -9,12 +9,14 @@ interface Props {
   zone: CardInstance;
   /** Carte touchée : le bouton « i » apparaît. */
   selected?: boolean;
+  chargeFx?: "pulse" | "burst";
   onInfo: () => void;
 }
 
 export default function SupportZoneContent({
   zone,
   selected,
+  chargeFx,
   onInfo,
 }: Props) {
   const card = (
@@ -32,6 +34,7 @@ export default function SupportZoneContent({
         <ChargeFrame
           counters={zone.chargeCounters ?? 0}
           max={zone.baseCard.chargeMax ?? 1}
+          fx={chargeFx}
         >
           {card}
         </ChargeFrame>

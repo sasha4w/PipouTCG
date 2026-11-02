@@ -37,6 +37,8 @@ export interface ZoneFx {
   summonTier?: SummonTier;
   destroyCause?: DestroyCause;
   terrainPlayed?: boolean;
+  /** Charge : gain de compteur (pulse) ou déclenchement (burst). */
+  chargeFx?: "pulse" | "burst";
 }
 
 export type ZoneFxMap = ReadonlyMap<number, ZoneFx>;
@@ -85,6 +87,13 @@ export function boardFxFromEvents(
         break;
       case "support_placed":
         merge(side.supports, e.zoneIndex, { terrainPlayed: true });
+        break;
+      case "charge_progress":
+        if (side.supports.get(e.zoneIndex)?.chargeFx !== "burst")
+          merge(side.supports, e.zoneIndex, { chargeFx: "pulse" });
+        break;
+      case "charge_triggered":
+        merge(side.supports, e.zoneIndex, { chargeFx: "burst" });
         break;
     }
   }

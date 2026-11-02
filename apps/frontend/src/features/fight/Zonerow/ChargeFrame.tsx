@@ -1,10 +1,10 @@
 import type { CSSProperties, ReactNode } from "react";
 
 /** Contour de l'illustration qui se remplit avec la charge, « n/max » en dessous. */
-export function ChargeFrame({ counters, max, children }: { counters: number; max: number; children: ReactNode }) {
+export function ChargeFrame({ counters, max, fx, children }: { counters: number; max: number; fx?: "pulse" | "burst"; children: ReactNode }) {
   const pct = Math.min(100, Math.round((counters / Math.max(1, max)) * 100));
   return (
-    <div className="zr-charge">
+    <div className={`zr-charge${fx ? ` zr-charge--${fx}` : ""}`}>
       <div
         className="zr-charge__frame"
         style={{ "--charge": `${pct}%` } as CSSProperties}

@@ -34,6 +34,19 @@ describe("boardFxFromEvents", () => {
     expect(fx.me.supports.size).toBe(0);
   });
 
+  it("charge_progress donne un pulse, charge_triggered un burst", () => {
+    const fx = boardFxFromEvents(
+      [
+        { kind: "charge_progress", ownerId: ME, zoneIndex: 0, instanceId: "c", counters: 1, max: 3 },
+        { kind: "charge_progress", ownerId: ME, zoneIndex: 1, instanceId: "d", counters: 3, max: 3 },
+        { kind: "charge_triggered", ownerId: ME, zoneIndex: 1, instanceId: "d" },
+      ] as never,
+      ME,
+    );
+    expect(fx.me.supports.get(0)?.chargeFx).toBe("pulse");
+    expect(fx.me.supports.get(1)?.chargeFx).toBe("burst");
+  });
+
   it("fusionne destruction et invocation sur la même zone", () => {
     const fx = boardFxFromEvents(
       [

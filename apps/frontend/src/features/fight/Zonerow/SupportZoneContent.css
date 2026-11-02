@@ -44,3 +44,11 @@
   font: 700 9px/1 inherit;
   text-align: center;
 }
+
+@keyframes zr-charge-pulse { 50% { filter: drop-shadow(0 0 6px #ffb43a); } }
+@keyframes zr-charge-burst { to { transform: scale(1.15); opacity: 0; } }
+.zr-charge--pulse .zr-charge__frame { animation: zr-charge-pulse .5s ease; }
+.zr-charge--burst { animation: zr-charge-burst .45s ease forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .zr-charge--pulse .zr-charge__frame, .zr-charge--burst { animation: none; }
+}
