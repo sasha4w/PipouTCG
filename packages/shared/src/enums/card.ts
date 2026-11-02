@@ -17,9 +17,31 @@ export type CardType = (typeof CardType)[keyof typeof CardType];
 export const SupportType = {
   EPHEMERAL: "EPHEMERAL",
   EQUIPMENT: "EQUIPMENT",
-  TERRAIN: "TERRAIN",
+  PERSISTENT: "PERSISTENT",
+  CHARGE: "CHARGE",
 } as const;
 export type SupportType = (typeof SupportType)[keyof typeof SupportType];
+
+export const EquipmentSlot = {
+  OFFENSIVE: "OFFENSIVE",
+  DEFENSIVE: "DEFENSIVE",
+  ACCESSORY: "ACCESSORY",
+} as const;
+export type EquipmentSlot = (typeof EquipmentSlot)[keyof typeof EquipmentSlot];
+
+/** Équipements portables par monstre, par emplacement. */
+export const EQUIP_SLOT_CAPACITY: Record<EquipmentSlot, number> = {
+  [EquipmentSlot.OFFENSIVE]: 1,
+  [EquipmentSlot.DEFENSIVE]: 1,
+  [EquipmentSlot.ACCESSORY]: 2,
+};
+
+/** ONE_SHOT : se déclenche une fois puis part au cimetière. CYCLIC : pas encore géré. */
+export const ChargeMode = {
+  ONE_SHOT: "ONE_SHOT",
+  CYCLIC: "CYCLIC",
+} as const;
+export type ChargeMode = (typeof ChargeMode)[keyof typeof ChargeMode];
 
 export const Archetype = {
   PIPOU: "pipou",

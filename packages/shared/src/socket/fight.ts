@@ -34,6 +34,8 @@ export interface PlaySupportPayload {
   handIndex: number;
   zoneIndex?: number;
   targetInstanceId?: string;
+  /** Équipement ou Terrain remplacé (confirmé par le joueur). */
+  replaceInstanceId?: string;
 }
 
 export interface RecycleSupportPayload {

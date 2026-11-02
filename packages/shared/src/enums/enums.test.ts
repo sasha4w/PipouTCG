@@ -5,11 +5,13 @@ import {
   BannerItemType,
   CardNumber,
   CardType,
+  ChargeMode,
   ConditionOperator,
   DailyRewardType,
   EffectConditionType,
   EffectTarget,
   EffectTrigger,
+  EquipmentSlot,
   MatchEndReason,
   MatchStatus,
   ProductType,
@@ -27,7 +29,9 @@ describe("enum values match the backend database values", () => {
   it.each([
     ["Rarity", Rarity, ["common", "uncommon", "rare", "epic", "legendary", "secret"]],
     ["CardType", CardType, ["monster", "support"]],
-    ["SupportType", SupportType, ["EPHEMERAL", "EQUIPMENT", "TERRAIN"]],
+    ["SupportType", SupportType, ["EPHEMERAL", "EQUIPMENT", "PERSISTENT", "CHARGE"]],
+    ["EquipmentSlot", EquipmentSlot, ["OFFENSIVE", "DEFENSIVE", "ACCESSORY"]],
+    ["ChargeMode", ChargeMode, ["ONE_SHOT", "CYCLIC"]],
     ["Archetype", Archetype, ["pipou", "dragon", "pixelman"]],
     ["ProductType", ProductType, ["CARD", "BOOSTER", "BUNDLE"]],
     ["TransactionStatus", TransactionStatus, ["PENDING", "COMPLETED", "CANCELLED"]],
@@ -48,7 +52,7 @@ describe("enum values match the backend database values", () => {
     [
       "EffectTrigger",
       EffectTrigger,
-      ["ON_SUMMON", "ON_DEATH", "ON_ATTACK", "ON_DEFEND", "ON_PLAY", "ON_TURN_START", "ON_TURN_END", "ON_ALLY_SUMMON", "PASSIVE", "ON_RECYCLE", "ON_BATTLE_PHASE_START", "ON_SELF_DESTRUCT"],
+      ["ON_SUMMON", "ON_DEATH", "ON_ATTACK", "ON_DEFEND", "ON_PLAY", "ON_TURN_START", "ON_TURN_END", "ON_ALLY_SUMMON", "PASSIVE", "ON_RECYCLE", "ON_BATTLE_PHASE_START", "ON_SELF_DESTRUCT", "ON_CHARGED"],
     ],
     [
       "EffectConditionType",
@@ -76,7 +80,7 @@ describe("enum values match the backend database values", () => {
       "SUMMONABLE_ON_ENEMY_SIDE", "SET_COMBAT_IMMUNITY", "SET_DISINFECT_IMMUNITY", "SET_SUPPORT_DESTROY_IMMUNITY", "IGNORE_TAUNT",
       "SET_HATCH_COUNTER", "ADVANCE_HATCH", "SUMMON_FROM_DECK", "EVOLUTION_JOKER",
       "DUPLICATE_MONSTER", "INSTANT_EVOLUTION", "ALLOW_EVOLUTION_THIS_TURN", "VIRUS_ATK_DEBUFF", "REFLECT_DAMAGE", "RELEVE", "SUMMON_IF_ALL_ELEMENTS", "COPY_GRAVEYARD_EFFECTS",
-      "SET_COMBAT_DESTRUCTION_IMMUNITY", "SET_SUPPORT_DEBUFF_IMMUNITY", "SET_MONSTER_DEBUFF_IMMUNITY", "SET_MONSTER_STATUS_IMMUNITY",
+      "SET_COMBAT_DESTRUCTION_IMMUNITY", "SET_SUPPORT_DEBUFF_IMMUNITY", "SET_MONSTER_DEBUFF_IMMUNITY", "SET_MONSTER_STATUS_IMMUNITY", "ADD_CHARGE_COUNTERS",
     ]);
   });
 

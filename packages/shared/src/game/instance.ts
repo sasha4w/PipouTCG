@@ -11,8 +11,10 @@ export interface CardInstance<C = ClientCard> {
   atkBuff?: number;
   hpBuff?: number;
   status?: string[];
-  /** Ordre de pose d'un terrain en zone Support (croissant sur la partie). */
+  /** Ordre de pose en zone Support (croissant sur la partie). */
   placedSeq?: number;
+  /** Charge posée : compteurs accumulés. */
+  chargeCounters?: number;
   /** Copie créée en jeu : disparaît au lieu d'aller au cimetière ou en main. */
   token?: boolean;
 }

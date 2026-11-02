@@ -28,6 +28,12 @@ describe("fight socket events", () => {
     >().toEqualTypeOf<{ matchId: number; handIndex: number }>();
   });
 
+  it("allows replacing an equipment or terrain when playing a support", () => {
+    expectTypeOf<
+      Parameters<ClientToServerEvents["fight:play_support"]>[0]
+    >().toMatchTypeOf<{ replaceInstanceId?: string }>();
+  });
+
   it("starts an adventure fight", () => {
     expectTypeOf<
       Parameters<ClientToServerEvents["adventure:start"]>[0]
