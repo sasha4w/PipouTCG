@@ -100,12 +100,14 @@ export function useBoardControls(
         handIndex: number,
         zoneIndex?: number,
         targetInstanceId?: string,
+        replaceInstanceId?: string,
       ) => {
         send({
           type: "play_support",
           handIndex,
           ...(zoneIndex !== undefined && { zoneIndex }),
           ...(targetInstanceId !== undefined && { targetInstanceId }),
+          ...(replaceInstanceId !== undefined && { replaceInstanceId }),
         });
         clearSelection();
       },

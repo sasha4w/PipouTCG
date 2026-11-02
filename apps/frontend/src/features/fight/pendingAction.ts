@@ -25,6 +25,7 @@ export type PendingAction =
       handIndex: number;
       zoneIndex?: number;
       targetInstanceId?: string;
+      replaceInstanceId?: string;
     }
   | { kind: "transform"; handIndex: number }
   | { kind: "recycle"; handIndex: number }

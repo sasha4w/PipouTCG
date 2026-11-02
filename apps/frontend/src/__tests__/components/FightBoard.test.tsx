@@ -223,6 +223,7 @@ const equipmentCard = (): CardInstance["baseCard"] => ({
   name: "Épée",
   type: "support",
   supportType: "EQUIPMENT",
+  equipmentSlot: "OFFENSIVE",
   atk: 0,
   hp: 0,
 });
