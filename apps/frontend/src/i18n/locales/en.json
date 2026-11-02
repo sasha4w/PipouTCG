@@ -999,7 +999,7 @@
     "unplayable": {
       "supportZonesFull": "Support zones full",
       "alreadyInPlay": "Already in play",
-      "noEquipTarget": "No monster can carry this equipment"
+      "noEquipTarget": "No summoned monster can carry this equipment"
     },
     "yourTurn": "Your turn!"
   },

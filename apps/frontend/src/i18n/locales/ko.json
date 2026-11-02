@@ -933,7 +933,7 @@
     "unplayable": {
       "supportZonesFull": "서포트 구역이 가득 찼습니다",
       "alreadyInPlay": "이미 필드에 있습니다",
-      "noEquipTarget": "이 장비를 착용할 수 있는 몬스터가 없습니다"
+      "noEquipTarget": "이 장비를 착용할 수 있는 소환된 몬스터가 없습니다"
     },
     "yourTurn": "당신의 차례!"
   },

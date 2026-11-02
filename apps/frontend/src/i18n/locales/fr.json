@@ -1001,7 +1001,7 @@
     "unplayable": {
       "supportZonesFull": "Zones support pleines",
       "alreadyInPlay": "Déjà en jeu",
-      "noEquipTarget": "Aucun monstre ne peut porter cet équipement"
+      "noEquipTarget": "Aucun monstre invoqué ne peut porter cet équipement"
     },
     "yourTurn": "À toi de jouer !"
   },
