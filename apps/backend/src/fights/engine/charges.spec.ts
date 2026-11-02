@@ -31,7 +31,9 @@ describe('Charges', () => {
   });
 
   it('+1 au début de chaque tour de son propriétaire, puis déclenchement et cimetière', () => {
-    const game = scenario({ p1: { supports: [chargeCard('Rituel', 2, [draw2])] } });
+    const game = scenario({
+      p1: { supports: [chargeCard('Rituel', 2, [draw2])] },
+    });
     game.player1.supportZones[0]!.chargeCounters = 0;
     passTurns(game, 1);
     expect(game.player1.supportZones[0]?.chargeCounters).toBe(1);
@@ -39,10 +41,16 @@ describe('Charges', () => {
     game.pendingEvents = [];
     passTurns(game, 1);
     expect(game.player1.supportZones[0]).toBeNull();
-    expect(game.player1.graveyard.map((c) => c.baseCard.name)).toContain('Rituel');
+    expect(game.player1.graveyard.map((c) => c.baseCard.name)).toContain(
+      'Rituel',
+    );
     expect(game.player1.hand.length).toBe(handBefore + 1 + 2); // pioche du tour + DRAW 2
-    expect(game.pendingEvents.some((e) => e.kind === 'charge_triggered')).toBe(true);
-    expect(game.pendingEvents.some((e) => e.kind === 'charge_progress')).toBe(true);
+    expect(game.pendingEvents.some((e) => e.kind === 'charge_triggered')).toBe(
+      true,
+    );
+    expect(game.pendingEvents.some((e) => e.kind === 'charge_progress')).toBe(
+      true,
+    );
   });
 
   it('ADD_CHARGE_COUNTERS accélère la charge', () => {
@@ -60,13 +68,17 @@ describe('Charges', () => {
       engine.dispatch(game, 'p1', { type: 'play_support', handIndex: 0 }).error,
     ).toBeUndefined();
     expect(game.player1.supportZones[0]).toBeNull(); // 1 + 2 = 3 → déclenchée
-    expect(game.player1.graveyard.map((c) => c.baseCard.name)).toContain('Rituel');
+    expect(game.player1.graveyard.map((c) => c.baseCard.name)).toContain(
+      'Rituel',
+    );
     expect(game.player1.hand.length).toBe(handBefore - 1 + 2);
   });
 
   it('mode cyclique refusé', () => {
     const game = scenario({
-      p1: { hand: [chargeCard('Cycle', 2, [], { chargeMode: 'CYCLIC' as never })] },
+      p1: {
+        hand: [chargeCard('Cycle', 2, [], { chargeMode: 'CYCLIC' as never })],
+      },
     });
     expect(
       engine.dispatch(game, 'p1', {

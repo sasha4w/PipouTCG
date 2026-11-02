@@ -171,7 +171,9 @@ describe('CreateCardDto — corps multipart du formulaire admin', () => {
       effects: JSON.stringify([
         {
           trigger: 'ON_PLAY',
-          actions: [{ type: 'DEAL_DAMAGE', target: 'ENEMY_MONSTER', value: 100 }],
+          actions: [
+            { type: 'DEAL_DAMAGE', target: 'ENEMY_MONSTER', value: 100 },
+          ],
         },
       ]),
     });
@@ -203,7 +205,10 @@ describe('CreateCardDto — corps multipart du formulaire admin', () => {
   it('UpdateCardDto parse aussi les effets texte', async () => {
     const dto = plainToInstance(UpdateCardDto, {
       effects: JSON.stringify([
-        { trigger: 'ON_PLAY', actions: [{ type: 'SET_TAUNT', target: 'SELF' }] },
+        {
+          trigger: 'ON_PLAY',
+          actions: [{ type: 'SET_TAUNT', target: 'SELF' }],
+        },
       ]),
     });
     const errors = await validate(dto, {

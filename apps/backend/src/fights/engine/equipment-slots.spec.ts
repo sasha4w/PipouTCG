@@ -88,7 +88,7 @@ describe('emplacements d’équipement', () => {
     const canon = equipmentCard('Canon', buff(250), {
       equipmentSlot: EquipmentSlot.OFFENSIVE,
     });
-    const { game, host, equip } = setup([canon], [proc]);
+    const { host, equip } = setup([canon], [proc]);
     expect(equip(0, host.equipments[0].instanceId).error).toBeUndefined();
     expect(host.atkBuff).toBe(250);
   });

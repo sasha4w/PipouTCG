@@ -13,7 +13,6 @@ import {
   ephemeralCard,
   monsterCard,
   persistentCard,
-  terrainCard,
 } from '../testing/cards';
 import {
   attackWith,

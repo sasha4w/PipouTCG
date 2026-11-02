@@ -62,7 +62,7 @@ export class SupportRework1791000000022 implements MigrationInterface {
       "UPDATE `card` SET `support_type` = 'TERRAIN' WHERE `support_type` = 'PERSISTENT' AND `is_terrain` = 1",
     );
     await q.query(
-      "ALTER TABLE `card` DROP COLUMN `charge_mode`, DROP COLUMN `charge_max`, DROP COLUMN `is_terrain`, DROP COLUMN `equipment_slot`",
+      'ALTER TABLE `card` DROP COLUMN `charge_mode`, DROP COLUMN `charge_max`, DROP COLUMN `is_terrain`, DROP COLUMN `equipment_slot`',
     );
     await q.query(
       "ALTER TABLE `card` MODIFY `support_type` enum ('EPHEMERAL','EQUIPMENT','TERRAIN') NULL",

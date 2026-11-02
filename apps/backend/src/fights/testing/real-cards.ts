@@ -183,7 +183,7 @@ function withSupportRework(cards: Card[]): Card[] {
       return { ...base, supportType: SupportType.PERSISTENT, isTerrain: true };
     if (c.supportType === SupportType.EQUIPMENT) {
       const slot = SLOTS.find(([n]) => n === c.name.trim())?.[1];
-      return slot ? ({ ...base, equipmentSlot: slot } as Card) : base;
+      return slot ? { ...base, equipmentSlot: slot } : base;
     }
     return base;
   });
