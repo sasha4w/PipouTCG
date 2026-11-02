@@ -72,7 +72,8 @@ describe("CardInspect", () => {
     );
 
     expect(screen.getByText("Perçant")).toBeInTheDocument();
-    expect(screen.getByText(/Épée/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Épée/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("—")).toHaveLength(3);
     expect(
       screen.getByText("Le monstre équipé gagne +100 ATK."),
     ).toBeInTheDocument();

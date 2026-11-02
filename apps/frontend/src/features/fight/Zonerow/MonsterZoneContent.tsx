@@ -1,11 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { equipmentSummary } from "./zoneRow.effects";
+import { EquipmentPips } from "./EquipmentPips";
 import { hasSpentAttacks, monsterFaceStats } from "./zoneRow.helpers";
 import InspectableCard from "../InspectableCard";
 import {
   IconGuard,
   IconSwords,
-  IconWrench,
 } from "../../../components/Icons";
 import type { MonsterOnBoard } from "../fight.types";
 import type { CombatMode } from "@pipou/shared";
@@ -44,26 +43,7 @@ export default function MonsterZoneContent({
         onInfo={onInfo}
       />
 
-      {Array.isArray(zone.equipments) && zone.equipments.length > 0 && (
-        <div className="zr-equipment-list">
-          {zone.equipments.map((eq, eIdx) => {
-            const effectSummary = equipmentSummary(eq, t);
-            const shortName =
-              (eq.baseCard?.name ?? "?").length > 10
-                ? (eq.baseCard?.name ?? "?").slice(0, 9) + "…"
-                : (eq.baseCard?.name ?? "?");
-            return (
-              <span
-                key={eIdx}
-                className="zr-equipment-chip"
-                title={`${eq.baseCard?.name ?? "?"}\n${effectSummary}`}
-              >
-                <IconWrench size={10} /> {shortName}
-              </span>
-            );
-          })}
-        </div>
-      )}
+      <EquipmentPips equipments={zone.equipments ?? []} />
 
       {!isOpponent && onModeChange && !zone.forcedAttackMode && (
         <div className="zr-mode-btns">

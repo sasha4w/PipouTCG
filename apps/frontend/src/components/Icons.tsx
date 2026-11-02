@@ -1624,3 +1624,31 @@ export function IconFlag(props: IconProps) {
     </StrokeIcon>
   );
 }
+
+export function IconTerrain({
+  size = 16,
+  color = "currentColor",
+  className,
+  style,
+}: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M3 20h18L14 7l-4 7-2-3z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
