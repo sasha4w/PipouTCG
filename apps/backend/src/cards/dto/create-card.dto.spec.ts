@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateCardDto } from './create-card.dto';
+import { UpdateCardDto } from './update-card.dto';
 
 async function errorsFor(effects: unknown) {
   const dto = plainToInstance(CreateCardDto, {
@@ -172,6 +173,37 @@ describe('CreateCardDto — corps multipart du formulaire admin', () => {
           trigger: 'ON_PLAY',
           actions: [{ type: 'DEAL_DAMAGE', target: 'ENEMY_MONSTER', value: 100 }],
         },
+      ]),
+    });
+    const errors = await validate(dto, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    expect(errors).toEqual([]);
+    expect(Array.isArray(dto.effects)).toBe(true);
+  });
+
+  it('refuse des effets en JSON malformé', async () => {
+    const dto = plainToInstance(CreateCardDto, {
+      name: 'Carte test',
+      rarity: 'common',
+      type: 'support',
+      atk: '0',
+      hp: '0',
+      cardSetId: '1',
+      effects: '[{oops',
+    });
+    const errors = await validate(dto, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
+    expect(errors).not.toEqual([]);
+  });
+
+  it('UpdateCardDto parse aussi les effets texte', async () => {
+    const dto = plainToInstance(UpdateCardDto, {
+      effects: JSON.stringify([
+        { trigger: 'ON_PLAY', actions: [{ type: 'SET_TAUNT', target: 'SELF' }] },
       ]),
     });
     const errors = await validate(dto, {

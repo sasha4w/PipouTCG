@@ -90,8 +90,15 @@ export function parseApiError(error: unknown): AppError {
         ? (data as Record<string, unknown>).message ||
           (data as Record<string, unknown>).error
         : null) || "API error";
+    // ValidationPipe renvoie un tableau de messages
     const errorMessage =
-      typeof rawMessage === "string" ? rawMessage : "API error";
+      typeof rawMessage === "string"
+        ? rawMessage
+        : Array.isArray(rawMessage) &&
+            rawMessage.length > 0 &&
+            rawMessage.every((m) => typeof m === "string")
+          ? rawMessage.join(", ")
+          : "API error";
 
     const userMessage =
       (status && HTTP_ERROR_MESSAGES[status]) || "Une erreur est survenue";
