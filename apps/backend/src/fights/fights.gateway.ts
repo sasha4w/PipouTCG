@@ -217,6 +217,7 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       handIndex: data.handIndex,
       zoneIndex: data.zoneIndex,
       targetInstanceId: data.targetInstanceId,
+      replaceInstanceId: data.replaceInstanceId,
     });
   }
 

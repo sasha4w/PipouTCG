@@ -232,6 +232,7 @@ export class GameEngine {
           action.handIndex,
           action.zoneIndex,
           action.targetInstanceId,
+          action.replaceInstanceId,
         );
       case 'recycle':
         return this.support.recycleFromHand(game, userId, action.handIndex);

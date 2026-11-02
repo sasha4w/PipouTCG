@@ -129,3 +129,26 @@ describe("ZoneRow surbrillance", () => {
     expect(third).not.toHaveClass("zr-zone--pulse-equipment");
   });
 });
+
+describe("ZoneRow Charge déclenchée", () => {
+  it("affiche le contour en burst pendant la disparition", () => {
+    const charge = monster().card;
+    charge.baseCard.type = "support";
+    charge.baseCard.supportType = "CHARGE";
+    charge.baseCard.chargeMax = 3;
+    charge.chargeCounters = 3;
+    const { container, rerender } = render(
+      <ZoneRow label="S" zones={[charge]} isSupport />,
+    );
+    rerender(
+      <ZoneRow
+        label="S"
+        zones={[null]}
+        isSupport
+        fx={new Map([[0, { chargeFx: "burst" as const, destroyCause: "effect" as const }]])}
+      />,
+    );
+    expect(container.querySelector(".zr-charge--burst")).not.toBeNull();
+    expect(screen.getByText("3/3")).toBeInTheDocument();
+  });
+});

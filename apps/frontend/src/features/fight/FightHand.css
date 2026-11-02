@@ -135,3 +135,14 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
   z-index: 3;
 }
+
+.fhand-card--unplayable .card-face {
+  filter: grayscale(1) brightness(0.75);
+}
+
+.fhand-slot-pip {
+  position: absolute;
+  bottom: 18px;
+  left: -5px;
+  z-index: 3;
+}

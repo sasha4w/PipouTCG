@@ -36,7 +36,7 @@ async function makeT(lng: Lng): Promise<TFunction> {
 const monster = (effects: CardEffect[], archetype = "pipou") =>
   ({ type: "monster", supportType: null, archetype, effects }) as const;
 const support = (
-  supportType: "EQUIPMENT" | "TERRAIN" | "EPHEMERAL",
+  supportType: "EQUIPMENT" | "PERSISTENT" | "CHARGE" | "EPHEMERAL",
   effects: CardEffect[],
 ) => ({ type: "support", supportType, archetype: null, effects }) as const;
 
@@ -144,9 +144,9 @@ describe("describeCardEffects (fr)", () => {
     });
   });
 
-  it("terrain : accord au pluriel sur tes monstres", () => {
+  it("persistant : accord au pluriel sur tes monstres", () => {
     const text = describeCardEffects(
-      support("TERRAIN", [
+      support("PERSISTENT", [
         {
           trigger: "PASSIVE",
           actions: [{ type: "BUFF_ATK", value: 200, target: "ALL_ALLIES" }],
@@ -155,7 +155,7 @@ describe("describeCardEffects (fr)", () => {
       t,
     );
 
-    expect(text.rules[0].trigger).toBe("Tant que ce terrain est en jeu");
+    expect(text.rules[0].trigger).toBe("Tant que ce Persistant est en jeu");
     expect(text.rules[0].lines[0].text).toBe("Tes monstres gagnent +200 ATK.");
   });
 
@@ -409,7 +409,7 @@ describe.each(Object.keys(LOCALES) as Lng[])(
     const cards: EffectSourceCard[] = [
       monster([]),
       support("EQUIPMENT", []),
-      support("TERRAIN", []),
+      support("PERSISTENT", []),
       support("EPHEMERAL", []),
     ];
 
@@ -587,5 +587,27 @@ describe("immunités fusionnées", () => {
     );
     expect(text.rules[0].lines[0].text).not.toContain("Effects.action");
     expect(text.keywords).toEqual(["monsterStatusImmunity"]);
+  });
+});
+
+describe("déclencheur ON_CHARGED d'une Charge", () => {
+  const expected = {
+    fr: "Quand cette Charge est pleine",
+    en: "When this Charge is full",
+    ko: "이 충전 카드가 가득 찼을 때",
+  } as const;
+  it.each(Object.keys(LOCALES) as Lng[])("est rédigé en %s", async (lng) => {
+    const t = await makeT(lng);
+    const text = describeCardEffects(
+      support("CHARGE", [
+        {
+          trigger: "ON_CHARGED",
+          condition: null,
+          actions: [{ type: "DRAW", target: "PLAYER", value: 1 }],
+        },
+      ] as never),
+      t,
+    );
+    expect(text.rules[0].trigger).toBe(expected[lng]);
   });
 });

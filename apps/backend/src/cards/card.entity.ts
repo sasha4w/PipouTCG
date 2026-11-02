@@ -14,6 +14,8 @@ import {
   CardType,
   Rarity,
   SupportType,
+  EquipmentSlot,
+  ChargeMode,
   CardEffect,
   Archetype,
   DrakonElement,
@@ -51,6 +53,18 @@ export class Card {
     default: null,
   })
   supportType!: SupportType | null;
+
+  @Column({ type: 'enum', enum: EquipmentSlot, nullable: true, default: null })
+  equipmentSlot!: EquipmentSlot | null;
+
+  @Column({ type: 'boolean', default: false })
+  isTerrain!: boolean;
+
+  @Column({ type: 'int', nullable: true, default: null })
+  chargeMax!: number | null;
+
+  @Column({ type: 'enum', enum: ChargeMode, nullable: true, default: null })
+  chargeMode!: ChargeMode | null;
 
   @Column({
     type: 'enum',

@@ -11,6 +11,7 @@ export const EffectTrigger = {
   ON_RECYCLE: "ON_RECYCLE",
   ON_BATTLE_PHASE_START: "ON_BATTLE_PHASE_START",
   ON_SELF_DESTRUCT: "ON_SELF_DESTRUCT",
+  ON_CHARGED: "ON_CHARGED",
 } as const;
 export type EffectTrigger = (typeof EffectTrigger)[keyof typeof EffectTrigger];
 
@@ -76,6 +77,7 @@ export const ActionType = {
   SET_SUPPORT_DEBUFF_IMMUNITY: "SET_SUPPORT_DEBUFF_IMMUNITY",
   SET_MONSTER_DEBUFF_IMMUNITY: "SET_MONSTER_DEBUFF_IMMUNITY",
   SET_MONSTER_STATUS_IMMUNITY: "SET_MONSTER_STATUS_IMMUNITY",
+  ADD_CHARGE_COUNTERS: "ADD_CHARGE_COUNTERS",
 } as const;
 export type ActionType = (typeof ActionType)[keyof typeof ActionType];
 

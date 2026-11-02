@@ -408,13 +408,14 @@
       "ON_DEFEND": "Quand ce monstre est attaqué",
       "ON_PLAY": "Quand tu joues cette carte",
       "ON_PLAY_equipment": "Quand tu équipes cette carte",
-      "ON_PLAY_terrain": "Quand tu poses ce terrain",
+      "ON_PLAY_persistent": "Quand tu poses ce Persistant",
       "ON_TURN_START": "Au début de ton tour",
       "ON_TURN_END": "À la fin de ton tour",
       "ON_ALLY_SUMMON": "Quand tu invoques un monstre, si cette carte est dans ta main",
       "PASSIVE": "En permanence",
       "PASSIVE_equipment": "Tant que cette carte est équipée",
-      "PASSIVE_terrain": "Tant que ce terrain est en jeu",
+      "PASSIVE_persistent": "Tant que ce Persistant est en jeu",
+      "ON_CHARGED": "Quand cette Charge est pleine",
       "ON_RECYCLE": "Quand tu recycles cette carte",
       "ON_BATTLE_PHASE_START": "Au début de ta phase de combat",
       "ON_SELF_DESTRUCT": "À son autodestruction",
@@ -734,6 +735,9 @@
       "finished": "Terminé"
     },
     "confirm": {
+      "replaceEquipment": "Remplacer {{old}} par {{card}} ?",
+      "replaceTerrain": "Remplacer {{old}} par {{card}} ?",
+      "chooseAccessory": "Quel accessoire remplacer ?",
       "summon": "Invoquer {{card}} ?",
       "summonRecycling": "Invoquer {{card}} en recyclant {{recycled}} ?",
       "recycle": "Recycler {{card}} ?",
@@ -759,6 +763,7 @@
       "play": "Jouer",
       "terrainHint": "Clique sur une zone support vide",
       "equipHint": "Clique sur un monstre allié à équiper",
+      "equipHintSlot": "Clique sur un monstre allié à équiper ({{slot}})",
       "recycle": "Recycler",
       "confirmSurrender": "Abandonner ?",
       "recycleTitle": "Recycle la carte : +1 énergie",
@@ -959,12 +964,13 @@
       "setup3": "<b>Main de départ :</b> {{count}} cartes. <b>Mulligan :</b> une fois, tu peux remélanger ta main dans le deck et repiocher {{count}} cartes.",
       "setup4": "Le premier joueur est <b>tiré au sort</b>.",
       "board1": "<b>3 Zones Monstre</b> pour les invocations.",
-      "board2": "<b>3 Zones Support</b> pour les Terrains.",
+      "board2": "<b>3 Zones Support</b> pour les Persistants et les Charges.",
       "board3": "<b>1 Zone Prime</b> avec {{count}} cartes face cachée.",
       "monsters": "<b>Monstres :</b> ATK / PV, archétype, coût de 0 à 3 Énergies, effets passifs ou déclenchés. Un monstre peut attaquer dès son invocation, sauf si sa carte dit le contraire.",
       "supports": "<b>Cartes Support :</b>",
       "ephemeral": "Utilisation unique puis défausse. Certaines demandent de choisir un monstre cible.",
-      "terrain": "Permanent, agit sur tes monstres uniquement.",
+      "persistent": "Permanent, agit sur tes monstres uniquement.",
+      "charge": "Gagne un compteur à chaque début de ton tour ; son effet se déclenche une fois plein.",
       "equipment": "Attaché à un de tes monstres ; certains effets ne s'activent que sur un monstre précis.",
       "energy1": "<b>Générer :</b> recycle des cartes de ta main pendant la Main Phase. <b>1 carte = 1 Énergie.</b>",
       "energy2": "Sans assez d'énergie, tu paies le reste en défaussant des cartes au moment d'invoquer.",
@@ -991,6 +997,11 @@
       "stepOf": "Étape {{n}} / {{total}}",
       "prev": "Précédent",
       "next": "Suivant"
+    },
+    "unplayable": {
+      "supportZonesFull": "Zones support pleines",
+      "alreadyInPlay": "Déjà en jeu",
+      "noEquipTarget": "Aucun monstre invoqué ne peut porter cet équipement"
     },
     "yourTurn": "À toi de jouer !"
   },
@@ -1229,9 +1240,17 @@
     "kind": {
       "monster": "Monstre",
       "EQUIPMENT": "Équipement",
-      "TERRAIN": "Terrain",
+      "PERSISTENT": "Persistant",
+      "CHARGE": "Charge",
       "EPHEMERAL": "Éphémère"
     },
+    "equipmentSlot": {
+      "OFFENSIVE": "Offensif",
+      "DEFENSIVE": "Défensif",
+      "ACCESSORY": "Accessoire"
+    },
+    "terrainTag": "Terrain",
+    "charge": { "progress": "{{n}}/{{max}}" },
     "filters": "Filtres",
     "rarity": "Rareté",
     "cost": "Coût",

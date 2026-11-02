@@ -21,6 +21,7 @@ import type {
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { effectiveAtk, seatPlayer } from '../helpers/game-state.helper';
+import { chargesOf } from '../helpers/charges';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { ARCHETYPE_PROFILES } from './archetype-profiles';
 import type { ArchetypeProfile } from './archetype-profiles';
@@ -30,7 +31,23 @@ const PRIME = 2500;
 /** Présence d'un monstre sur le terrain, en plus de ses statistiques. */
 const MONSTER_PRESENCE = 100;
 const EQUIPMENT_VALUE = 100;
-const TERRAIN_VALUE = 150;
+const PERSISTENT_VALUE = 150;
+const CHARGE_VALUE = 120;
+
+const persistentCount = (p: PlayerGameState) =>
+  p.supportZones.filter(
+    (z) => z?.baseCard.supportType === SupportType.PERSISTENT,
+  ).length;
+
+/** Une Charge vaut plus à mesure qu'elle approche de son seuil. */
+const chargeValue = (p: PlayerGameState) =>
+  chargesOf(p).reduce(
+    (sum, c) =>
+      sum +
+      CHARGE_VALUE *
+        (1 + (c.chargeCounters ?? 0) / (c.baseCard.chargeMax ?? 1)),
+    0,
+  );
 const ENERGY_VALUE = 50;
 const HAND_CARD_BASE = 100;
 /** Prime que l'adversaire peut prendre à son prochain tour (estimation). */
@@ -359,7 +376,8 @@ export type ScorePart =
   | 'primes'
   | 'hand'
   | 'energy'
-  | 'terrains'
+  | 'persistents'
+  | 'charges'
   | 'counters'
   | 'myBoard'
   | 'oppBoard'
@@ -406,8 +424,10 @@ export function evaluate(
   for (const c of me.hand)
     add('hand', HAND_CARD_BASE + 0.1 * cardUsefulness(c.baseCard));
   add('energy', ENERGY_VALUE * me.recycleEnergy);
-  add('terrains', TERRAIN_VALUE * me.supportZones.filter(Boolean).length);
-  add('terrains', -TERRAIN_VALUE * opp.supportZones.filter(Boolean).length);
+  add('persistents', PERSISTENT_VALUE * persistentCount(me));
+  add('persistents', -PERSISTENT_VALUE * persistentCount(opp));
+  add('charges', chargeValue(me));
+  add('charges', -chargeValue(opp));
 
   const mine = me.monsterZones.filter((m) => m !== null);
   const theirs = opp.monsterZones.filter((m) => m !== null);

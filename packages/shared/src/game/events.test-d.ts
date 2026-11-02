@@ -15,7 +15,9 @@ describe("fight events", () => {
     expectTypeOf<FightEvent["kind"]>().toEqualTypeOf<
       | "monster_summoned"
       | "monster_destroyed"
-      | "terrain_played"
+      | "support_placed"
+      | "charge_progress"
+      | "charge_triggered"
       | "monster_healed"
     >();
   });

@@ -24,6 +24,7 @@ import {
 } from '../helpers/game-state.helper';
 import { pickCandidates } from './pick-candidates';
 import { hatchEgg } from '../helpers/hatching';
+import { addChargeCounters, chargesOf } from '../helpers/charges';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -48,6 +49,9 @@ export function applyActions(
   ) => void,
   /** Résout l'ON_SUMMON d'un monstre apparu en jeu (copie). */
   summoned: (owner: PlayerGameState, monster: MonsterOnBoard) => void = () =>
+    undefined,
+  /** Résout l'ON_CHARGED d'une Charge arrivée à son maximum. */
+  charged: (owner: PlayerGameState, charge: CardInstance) => void = () =>
     undefined,
 ): void {
   for (const rawAction of effect.actions) {
@@ -367,6 +371,19 @@ export function applyActions(
             `♻️ ${p.username} gagne ${action.value} énergie de recyclage`,
           );
         }
+        break;
+
+      case ActionType.ADD_CHARGE_COUNTERS:
+        for (const p of targets.players)
+          for (const charge of chargesOf(p))
+            addChargeCounters(
+              ctx.game,
+              p,
+              charge,
+              action.value ?? 1,
+              (c) => charged(p, c),
+              ctx.log,
+            );
         break;
 
       // Drakon des Origines : choisir un Adulte ou un Ancestral du cimetière

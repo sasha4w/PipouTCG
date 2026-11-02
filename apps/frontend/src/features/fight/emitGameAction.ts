@@ -42,6 +42,9 @@ export function emitGameAction(
         ...(action.targetInstanceId !== undefined && {
           targetInstanceId: action.targetInstanceId,
         }),
+        ...(action.replaceInstanceId !== undefined && {
+          replaceInstanceId: action.replaceInstanceId,
+        }),
       });
       return;
     case "recycle":

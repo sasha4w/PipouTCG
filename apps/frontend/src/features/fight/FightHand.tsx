@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
+import { SupportType } from "@pipou/shared";
 import { IconBolt, IconCheck, IconReleve } from "../../components/Icons";
 import "./FightHand.css";
 import type { Phase } from "./fight.types";
@@ -23,6 +24,8 @@ interface Props {
   freeSummonInstanceIds: string[];
   /** Cartes dont la Relève est disponible (assez d'alliés Pipou). */
   releveInstanceIds?: ReadonlySet<string>;
+  /** instanceId -> raison pour laquelle la carte ne peut pas être jouée. */
+  unplayableReasons?: ReadonlyMap<string, string>;
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -34,6 +37,7 @@ export default function FightHand({
   payIndices,
   freeSummonInstanceIds,
   releveInstanceIds,
+  unplayableReasons,
   onCardClick,
 }: Props) {
   const { t } = useTranslation();
@@ -82,6 +86,9 @@ export default function FightHand({
               isInteractive ? "fhand-card--interactive" : "",
               isPayable && !isPaying ? "fhand-card--payable" : "",
               isFree ? "fhand-card--free" : "",
+              unplayableReasons?.has(card.instanceId)
+                ? "fhand-card--unplayable"
+                : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -102,6 +109,13 @@ export default function FightHand({
                 {t("fight.hand.free")} <IconBolt size={8} />
               </span>
             )}
+            {card.supportType === SupportType.EQUIPMENT &&
+              card.equipmentSlot && (
+                <span
+                  className={`zr-equip-pip fhand-slot-pip zr-equip-pip--${card.equipmentSlot.toLowerCase()}`}
+                  title={t(`glossary.equipmentSlot.${card.equipmentSlot}`)}
+                />
+              )}
             {isPaying && (
               <div className="fhand-pay-badge" title={t("fight.hand.payCard")}>
                 <IconBolt size={10} />

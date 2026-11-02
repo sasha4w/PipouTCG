@@ -142,7 +142,7 @@ describe('couverture des effets', () => {
           handIndex: 0,
           targetInstanceId: ally.instanceId,
         });
-      if (card.supportType === SupportType.TERRAIN)
+      if (card.supportType === SupportType.PERSISTENT)
         return engine.dispatch(game, 'p1', {
           type: 'play_support',
           handIndex: 0,

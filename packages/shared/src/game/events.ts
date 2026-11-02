@@ -22,7 +22,21 @@ export type FightEvent =
       cause: DestroyCause;
     }
   | {
-      kind: "terrain_played";
+      kind: "support_placed";
+      ownerId: number;
+      zoneIndex: number;
+      instanceId: string;
+    }
+  | {
+      kind: "charge_progress";
+      ownerId: number;
+      zoneIndex: number;
+      instanceId: string;
+      counters: number;
+      max: number;
+    }
+  | {
+      kind: "charge_triggered";
       ownerId: number;
       zoneIndex: number;
       instanceId: string;

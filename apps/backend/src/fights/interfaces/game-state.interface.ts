@@ -96,5 +96,5 @@ export interface GameState {
   /** Événements de la dernière action, vidés après chaque envoi d'état. */
   pendingEvents: FightEvent[];
   /** Dernier numéro d'ordre attribué à un terrain posé. */
-  terrainSeq: number;
+  supportSeq: number;
 }

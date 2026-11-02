@@ -384,7 +384,8 @@ export const BALANCE_NEW_CARDS: BalanceNewCard[] = [
     name: 'Mont Drakon',
     rarity: 'epic',
     type: 'support',
-    supportType: 'TERRAIN',
+    // Patch historique : l'enum BDD contient encore TERRAIN (migration ...022 le convertit ensuite)
+    supportType: 'TERRAIN' as SupportType,
     archetype: 'dragon',
     setOf: 'Bébé Teros',
     atk: 0,

@@ -72,7 +72,12 @@ export interface CardEffectText {
   keywords: KeywordId[];
 }
 
-type CardKind = "monster" | "equipment" | "terrain" | "ephemeral";
+type CardKind =
+  | "monster"
+  | "equipment"
+  | "persistent"
+  | "charge"
+  | "ephemeral";
 
 // ── Tables (miroir du moteur : effect-actions.applier, buffs-calculator) ──
 
@@ -292,7 +297,8 @@ const KNOWN_TARGETS = new Set<string>(Object.values(EffectTarget));
 function cardKind(card: EffectSourceCard): CardKind {
   if (card.type.toLowerCase() !== "support") return "monster";
   if (card.supportType === "EQUIPMENT") return "equipment";
-  if (card.supportType === "TERRAIN") return "terrain";
+  if (card.supportType === "PERSISTENT") return "persistent";
+  if (card.supportType === "CHARGE") return "charge";
   return "ephemeral";
 }
 

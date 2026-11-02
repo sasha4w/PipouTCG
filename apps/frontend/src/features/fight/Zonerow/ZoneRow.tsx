@@ -10,7 +10,8 @@ import SupportZoneContent from "./SupportZoneContent";
 import CardFace from "../../cards/CardFace";
 import CardDrawer from "../CardDrawer";
 import { isMonsterZone, type BoardZone } from "../fight.types";
-import type { CombatMode } from "@pipou/shared";
+import { SupportType, type CombatMode } from "@pipou/shared";
+import { ChargeFrame } from "./ChargeFrame";
 import { IconLock, IconVirus } from "../../../components/Icons";
 import { useAnimationPrefs } from "../../../contexts/useAnimationPrefs";
 import type { ZoneFxMap } from "../fightEvents";
@@ -29,6 +30,10 @@ interface Props {
   highlightFilled?: boolean;
   /** Surligne uniquement les cartes en jeu dont l'instanceId est listé. */
   highlightInstanceIds?: ReadonlySet<string>;
+  /** Cartes en jeu à griser (cible invalide). */
+  dimInstanceIds?: ReadonlySet<string>;
+  /** Surligne aussi les cases occupées (remplacement de Terrain). */
+  highlightAllEmpty?: boolean;
   highlightOpponentEmpty?: boolean;
   /** Monstres ciblables par l'attaque en cours (ex. Zeta à désinfecter). */
   attackTargetIds?: ReadonlySet<string>;
@@ -54,6 +59,8 @@ export default function ZoneRow({
   highlightEmpty = false,
   highlightFilled = false,
   highlightInstanceIds,
+  dimInstanceIds,
+  highlightAllEmpty = false,
   highlightOpponentEmpty = false,
   attackTargetIds,
   lockedInstances,
@@ -111,7 +118,9 @@ export default function ZoneRow({
 
           const zoneClasses = [
             "zr-zone",
-            dim ? "zr-zone--dim" : "",
+            dim || (!!zone && !!dimInstanceIds?.has(zone.instanceId))
+              ? "zr-zone--dim"
+              : "",
             zone
               ? "zr-zone--filled"
               : isShattering
@@ -119,7 +128,8 @@ export default function ZoneRow({
                 : "zr-zone--empty",
             selectedZone === idx ? "zr-zone--selected" : "",
             onZoneClick || (zone && onMonsterClick) ? "zr-zone--clickable" : "",
-            highlightEmpty && !zone && !isShattering
+            (highlightEmpty && !zone && !isShattering) ||
+            (highlightAllEmpty && !isShattering)
               ? "zr-zone--pulse-target"
               : "",
             (highlightFilled && !!zone) ||
@@ -211,6 +221,7 @@ export default function ZoneRow({
                   <SupportZoneContent
                     zone={zone}
                     selected={pickedId === zone.instanceId}
+                    chargeFx={fx?.get(idx)?.chargeFx}
                     onInfo={() => setInspectId(zone.instanceId)}
                   />
                 )
@@ -229,7 +240,22 @@ export default function ZoneRow({
                         guard={dyingData.mode === "guard"}
                       />
                     ) : (
-                      <CardFace card={dyingData.baseCard} size="xs" />
+                      dyingData.baseCard.supportType === SupportType.CHARGE &&
+                      fx?.get(idx)?.chargeFx === "burst" ? (
+                        <ChargeFrame
+                          counters={
+                            dyingData.chargeCounters ??
+                            dyingData.baseCard.chargeMax ??
+                            1
+                          }
+                          max={dyingData.baseCard.chargeMax ?? 1}
+                          fx="burst"
+                        >
+                          <CardFace card={dyingData.baseCard} size="xs" />
+                        </ChargeFrame>
+                      ) : (
+                        <CardFace card={dyingData.baseCard} size="xs" />
+                      )
                     )}
                   </div>
                 </div>

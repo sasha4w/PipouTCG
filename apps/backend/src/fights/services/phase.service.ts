@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { addChargeCounters, chargesOf } from '../helpers/charges';
 import {
   DestroyCause,
   EffectTrigger,
@@ -136,6 +137,20 @@ export class PhaseService {
       m.hatchCounter -= 1;
       if (m.hatchCounter <= 0) hatchEgg(game, player, m, log);
     }
+    for (const charge of chargesOf(player))
+      addChargeCounters(
+        game,
+        player,
+        charge,
+        1,
+        (card) =>
+          this.effectsResolver.resolve(card, EffectTrigger.ON_CHARGED, {
+            game,
+            ownerUserId: player.userId,
+            log,
+          }),
+        log,
+      );
     this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);
     for (const m of player.monsterZones) {
       if (!m?.doubleAtkNextTurn) continue;
@@ -190,7 +205,7 @@ export class PhaseService {
 
   /**
    * Déclenche `trigger` pour les monstres, leurs équipements (SELF = porteur) et
-   * les terrains. Un monstre implanté (et ses équipements) se résout pour son
+   * les supports posés. Un monstre implanté (et ses équipements) se résout pour son
    * poseur, au tour du poseur, et jamais pour son hôte.
    */
   private resolveForBoard(
@@ -225,9 +240,9 @@ export class PhaseService {
       if (!zone || !isPlantedBy(zone, player.userId)) continue;
       resolveMonster(opponent, zone);
     }
-    for (const terrain of player.supportZones) {
-      if (!terrain) continue;
-      this.effectsResolver.resolve(terrain, trigger, {
+    for (const support of player.supportZones) {
+      if (!support) continue;
+      this.effectsResolver.resolve(support, trigger, {
         game,
         ownerUserId: player.userId,
         log,

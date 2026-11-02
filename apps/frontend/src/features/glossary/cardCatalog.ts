@@ -5,8 +5,19 @@ import { QUERY_KEYS } from "../../utils/querykeys";
 /** Toutes les cartes tiennent en une page (plafond du back : 500). */
 const CATALOG_LIMIT = 500;
 
-export type Kind = "monster" | "EQUIPMENT" | "TERRAIN" | "EPHEMERAL";
-export const KINDS: Kind[] = ["monster", "EQUIPMENT", "TERRAIN", "EPHEMERAL"];
+export type Kind =
+  | "monster"
+  | "EQUIPMENT"
+  | "PERSISTENT"
+  | "CHARGE"
+  | "EPHEMERAL";
+export const KINDS: Kind[] = [
+  "monster",
+  "EQUIPMENT",
+  "PERSISTENT",
+  "CHARGE",
+  "EPHEMERAL",
+];
 
 export const RARITIES = Object.values(Rarity);
 

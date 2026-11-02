@@ -63,7 +63,8 @@
 }
 
 .zr-zone--dim {
-  opacity: 0.8;
+  opacity: 0.45;
+  filter: grayscale(0.8);
 }
 
 .zr-zone--clickable {
