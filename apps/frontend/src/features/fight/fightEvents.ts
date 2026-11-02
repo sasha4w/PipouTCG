@@ -83,7 +83,7 @@ export function boardFxFromEvents(
       case "monster_destroyed":
         merge(side.monsters, e.zoneIndex, { destroyCause: e.cause });
         break;
-      case "terrain_played":
+      case "support_placed":
         merge(side.supports, e.zoneIndex, { terrainPlayed: true });
         break;
     }

@@ -142,9 +142,9 @@ function buildSteps(t: TFunction): Step[] {
                 </div>
                 <div className="fr-rule-text">
                   <span className="fr-tag fr-tag--support">
-                    {t("glossary.kind.TERRAIN")}
+                    {t("glossary.kind.PERSISTENT")}
                   </span>
-                  {t("fight.rules.terrain")}
+                  {t("fight.rules.persistent")}
                 </div>
                 <div className="fr-rule-text">
                   <span className="fr-tag fr-tag--support">

@@ -1,4 +1,4 @@
-import { SupportType, type CardInstance } from "@pipou/shared";
+import { type CardInstance } from "@pipou/shared";
 import type { ZoneFxMap } from "./fightEvents";
 
 /** Terrain affiché en fond : le dernier posé encore en jeu. */
@@ -7,7 +7,7 @@ export function pickActiveTerrain(
 ): CardInstance | null {
   let best: CardInstance | null = null;
   for (const zone of zones) {
-    if (zone?.baseCard.supportType !== SupportType.TERRAIN) continue;
+    if (!zone || !zone.baseCard.isTerrain) continue;
     if (!best || (zone.placedSeq ?? -1) > (best.placedSeq ?? -1)) best = zone;
   }
   return best;

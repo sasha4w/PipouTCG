@@ -47,6 +47,7 @@ import {
   isPlantedBy,
   isTargetableByEphemeral,
   type CardEffect,
+  SupportType,
   type CombatMode,
 } from "@pipou/shared";
 
@@ -228,9 +229,10 @@ export default function FightBoard({
   const selectedHandCard =
     selectedCard !== null ? mappedHand[selectedCard] : null;
 
-  const isTerrain =
+  const isZoneSupport =
     selectedHandCard?.type === "support" &&
-    selectedHandCard.supportType === "TERRAIN";
+    (selectedHandCard.supportType === SupportType.PERSISTENT ||
+      selectedHandCard.supportType === SupportType.CHARGE);
 
   const isEquipment =
     selectedHandCard?.type === "support" &&
@@ -424,7 +426,7 @@ export default function FightBoard({
   const handleZoneClick = (idx: number) => {
     if (phase === "main") {
       if (selectedCard !== null) {
-        if (isTerrain || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
+        if (isZoneSupport || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
         const occupant = gs.me.monsterZones[idx];
         if (occupant && implantedIds.has(occupant.instanceId)) return; // Zeta adverse : intouchable
         if (
@@ -528,7 +530,7 @@ export default function FightBoard({
 
   const handleSupportZoneClick = (idx: number) => {
     if (!gs.isMyTurn || phase !== "main" || selectedCard === null) return;
-    if (!isTerrain) return;
+    if (!isZoneSupport) return;
     if (gs.me.supportZones[idx]) return;
 
     openPending({ kind: "playSupport", handIndex: selectedCard, zoneIndex: idx });
@@ -809,16 +811,16 @@ export default function FightBoard({
             isSupport
             recycleEnergy={gs.me.recycleEnergy}
             onZoneClick={
-              gs.isMyTurn && phase === "main" && isTerrain
+              gs.isMyTurn && phase === "main" && isZoneSupport
                 ? handleSupportZoneClick
                 : undefined
             }
-            highlightEmpty={gs.isMyTurn && phase === "main" && isTerrain}
+            highlightEmpty={gs.isMyTurn && phase === "main" && isZoneSupport}
             dim={
               gs.isMyTurn &&
               phase === "main" &&
               selectedHandCard?.type === "support" &&
-              !isTerrain
+              !isZoneSupport
             }
           />
         </div>

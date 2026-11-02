@@ -23,7 +23,7 @@ describe("boardFxFromEvents", () => {
     const events: FightEvent[] = [
       { kind: "monster_summoned", ownerId: ME, zoneIndex: 1, instanceId: "a", rarity: "epic" },
       { kind: "monster_destroyed", ownerId: OPP, zoneIndex: 0, instanceId: "b", cause: "sacrifice" },
-      { kind: "terrain_played", ownerId: OPP, zoneIndex: 2, instanceId: "t" },
+      { kind: "support_placed", ownerId: OPP, zoneIndex: 2, instanceId: "t" },
     ];
 
     const fx = boardFxFromEvents(events, ME);

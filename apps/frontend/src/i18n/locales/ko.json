@@ -407,13 +407,14 @@
       "ON_DEFEND": "이 몬스터가 공격받을 때",
       "ON_PLAY": "이 카드를 사용할 때",
       "ON_PLAY_equipment": "이 카드를 장착할 때",
-      "ON_PLAY_terrain": "이 필드 카드를 배치할 때",
+      "ON_PLAY_persistent": "이 지속 카드를 배치할 때",
       "ON_TURN_START": "내 턴 시작 시",
       "ON_TURN_END": "내 턴 종료 시",
       "ON_ALLY_SUMMON": "이 카드가 손패에 있을 때 몬스터를 소환하면",
       "PASSIVE": "지속 효과",
       "PASSIVE_equipment": "장착되어 있는 동안",
-      "PASSIVE_terrain": "이 필드 카드가 있는 동안",
+      "PASSIVE_persistent": "이 지속 카드가 있는 동안",
+      "ON_CHARGED": "이 충전 카드가 가득 찼을 때",
       "ON_RECYCLE": "이 카드를 재활용할 때",
       "ON_BATTLE_PHASE_START": "내 배틀 페이즈 시작 시",
       "ON_SELF_DESTRUCT": "자폭할 때",
@@ -677,6 +678,9 @@
       "finished": "종료"
     },
     "confirm": {
+      "replaceEquipment": "{{old}}을(를) {{card}}(으)로 교체할까요?",
+      "replaceTerrain": "{{old}}을(를) {{card}}(으)로 교체할까요?",
+      "chooseAccessory": "어떤 장신구를 교체할까요?",
       "summon": "{{card}}을(를) 소환할까요?",
       "summonRecycling": "{{recycled}}을(를) 재활용해 {{card}}을(를) 소환할까요?",
       "recycle": "{{card}}을(를) 재활용할까요?",
@@ -891,12 +895,13 @@
       "setup3": "<b>시작 손패:</b> {{count}}장. <b>멀리건:</b> 한 번, 손패를 덱에 섞고 {{count}}장을 다시 뽑을 수 있습니다.",
       "setup4": "선공은 <b>무작위</b>로 정해집니다.",
       "board1": "소환용 <b>몬스터 구역 3칸</b>.",
-      "board2": "필드 카드용 <b>서포트 구역 3칸</b>.",
+      "board2": "지속 카드와 충전 카드용 <b>서포트 구역 3칸</b>.",
       "board3": "뒷면 카드 {{count}}장이 놓인 <b>프라임 구역 1칸</b>.",
       "monsters": "<b>몬스터:</b> ATK / HP, 아키타입, 0~3 에너지 비용, 지속 또는 발동 효과. 카드에 따로 적혀 있지 않으면 소환 즉시 공격할 수 있습니다.",
       "supports": "<b>서포트 카드:</b>",
       "ephemeral": "한 번 사용 후 버려집니다. 일부는 대상 몬스터를 골라야 합니다.",
-      "terrain": "지속되며, 내 몬스터에게만 작용합니다.",
+      "persistent": "지속되며, 내 몬스터에게만 작용합니다.",
+      "charge": "내 턴이 시작될 때마다 카운터를 얻고, 가득 차면 효과가 발동합니다.",
       "equipment": "내 몬스터 하나에 장착됩니다. 일부 효과는 특정 몬스터에서만 발동합니다.",
       "energy1": "<b>생성:</b> 메인 페이즈에 손패의 카드를 재활용합니다. <b>카드 1장 = 에너지 1.</b>",
       "energy2": "에너지가 부족하면 소환할 때 나머지를 카드를 버려 지불합니다.",
@@ -923,6 +928,11 @@
       "stepOf": "{{n}} / {{total}} 단계",
       "prev": "이전",
       "next": "다음"
+    },
+    "unplayable": {
+      "supportZonesFull": "서포트 구역이 가득 찼습니다",
+      "alreadyInPlay": "이미 필드에 있습니다",
+      "noEquipTarget": "이 장비를 착용할 수 있는 몬스터가 없습니다"
     },
     "yourTurn": "당신의 차례!"
   },
@@ -1157,9 +1167,17 @@
     "kind": {
       "monster": "몬스터",
       "EQUIPMENT": "장비",
-      "TERRAIN": "필드",
+      "PERSISTENT": "지속",
+      "CHARGE": "충전",
       "EPHEMERAL": "일회성"
     },
+    "equipmentSlot": {
+      "OFFENSIVE": "공격",
+      "DEFENSIVE": "방어",
+      "ACCESSORY": "장신구"
+    },
+    "terrainTag": "필드",
+    "charge": { "progress": "{{n}}/{{max}}" },
     "filters": "필터",
     "rarity": "희귀도",
     "cost": "코스트",
