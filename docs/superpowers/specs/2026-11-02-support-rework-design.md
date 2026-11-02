@@ -34,7 +34,8 @@ Chaque monstre a 4 emplacements :
 - Équiper un accessoire déjà porté par ce monstre → refusé.
 - Les cibles autorisées restent celles d'aujourd'hui (ses monstres hors implantés chez soi, ou ses monstres implantés chez l'adversaire).
 
-### Charge (nouveau type)
+### Charge (nouveau type de carte Support)
+- Quatrième `SupportType`, au même niveau qu'Éphémère, Équipement et Persistant (carte de type `support`, `supportType = CHARGE`).
 - Posée dans une case support libre, compteurs à 0.
 - +1 compteur au début de chaque tour de son propriétaire.
 - L'action `ADD_CHARGE_COUNTERS` permet aux effets d'en ajouter.
