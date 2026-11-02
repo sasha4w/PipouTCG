@@ -1,4 +1,10 @@
-import { CardType, Rarity, SupportType } from '@pipou/shared';
+import {
+  CardType,
+  Rarity,
+  SupportType,
+  EquipmentSlot,
+  ChargeMode,
+} from '@pipou/shared';
 import type {
   ActionType,
   CardEffect,
@@ -23,6 +29,10 @@ function baseCard(overrides: CardOverrides): Card {
     hp: 0,
     cost: 0,
     supportType: null,
+    equipmentSlot: null,
+    isTerrain: false,
+    chargeMax: null,
+    chargeMode: null,
     archetype: null,
     element: null,
     lineage: null,
@@ -70,31 +80,33 @@ export const equipmentCard = (
   name: string,
   effects: CardEffect[],
   overrides: CardOverrides = {},
-) => supportCard(name, SupportType.EQUIPMENT, effects, overrides);
+) =>
+  supportCard(name, SupportType.EQUIPMENT, effects, {
+    equipmentSlot: EquipmentSlot.OFFENSIVE,
+    ...overrides,
+  });
 
+export const persistentCard = (
+  name: string,
+  effects: CardEffect[],
+  overrides: CardOverrides = {},
+) => supportCard(name, SupportType.PERSISTENT, effects, overrides);
+
+/** Persistant de la famille Terrain (un seul à la fois). */
 export const terrainCard = (
   name: string,
   effects: CardEffect[],
   overrides: CardOverrides = {},
-) => supportCard(name, SupportType.TERRAIN, effects, overrides);
+) => persistentCard(name, effects, { isTerrain: true, ...overrides });
 
-/** Carte sans effet, pour remplir decks et Primes. */
-export function fillerCard(name = 'Remplissage'): Card {
-  return monsterCard(name, { atk: 0, hp: 100 });
-}
-
-export function effect(
-  trigger: EffectTrigger,
-  actions: EffectAction[],
-  condition: EffectCondition | null = null,
-): CardEffect {
-  return { trigger, condition, actions };
-}
-
-export function act(
-  type: ActionType,
-  target: EffectTarget,
-  extra: Partial<EffectAction> = {},
-): EffectAction {
-  return { type, target, ...extra };
-}
+export const chargeCard = (
+  name: string,
+  chargeMax: number,
+  effects: CardEffect[],
+  overrides: CardOverrides = {},
+) =>
+  supportCard(name, SupportType.CHARGE, effects, {
+    chargeMax,
+    chargeMode: ChargeMode.ONE_SHOT,
+    ...overrides,
+  });

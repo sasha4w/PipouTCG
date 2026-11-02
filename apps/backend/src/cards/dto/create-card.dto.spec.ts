@@ -214,3 +214,58 @@ describe('CreateCardDto — corps multipart du formulaire admin', () => {
     expect(Array.isArray(dto.effects)).toBe(true);
   });
 });
+
+describe('CreateCardDto — sous-types de support', () => {
+  const base = {
+    name: 'Test',
+    rarity: 'common',
+    type: 'support',
+    atk: 0,
+    hp: 0,
+    cardSetId: 1,
+  };
+  const errorsOf = async (extra: object) =>
+    validate(plainToInstance(CreateCardDto, { ...base, ...extra }));
+
+  it('équipement sans emplacement refusé', async () => {
+    expect(await errorsOf({ supportType: 'EQUIPMENT' })).not.toHaveLength(0);
+  });
+  it('équipement avec emplacement accepté', async () => {
+    expect(
+      await errorsOf({ supportType: 'EQUIPMENT', equipmentSlot: 'ACCESSORY' }),
+    ).toHaveLength(0);
+  });
+  it('emplacement interdit hors équipement', async () => {
+    expect(
+      await errorsOf({ supportType: 'EPHEMERAL', equipmentSlot: 'OFFENSIVE' }),
+    ).not.toHaveLength(0);
+  });
+  it('emplacement interdit sans supportType', async () => {
+    expect(await errorsOf({ equipmentSlot: 'OFFENSIVE' })).not.toHaveLength(0);
+  });
+  it('charge : chargeMax ≥ 1 obligatoire', async () => {
+    expect(await errorsOf({ supportType: 'CHARGE' })).not.toHaveLength(0);
+    expect(
+      await errorsOf({ supportType: 'CHARGE', chargeMax: 0 }),
+    ).not.toHaveLength(0);
+    expect(
+      await errorsOf({
+        supportType: 'CHARGE',
+        chargeMax: 3,
+        chargeMode: 'ONE_SHOT',
+      }),
+    ).toHaveLength(0);
+  });
+  it('Terrain : uniquement sur un Persistant', async () => {
+    expect(
+      await errorsOf({ supportType: 'PERSISTENT', isTerrain: true }),
+    ).toHaveLength(0);
+    expect(
+      await errorsOf({
+        supportType: 'EQUIPMENT',
+        equipmentSlot: 'OFFENSIVE',
+        isTerrain: true,
+      }),
+    ).not.toHaveLength(0);
+  });
+});
