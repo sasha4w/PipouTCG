@@ -1,6 +1,7 @@
 import { SupportType } from "@pipou/shared";
 import InspectableCard from "../InspectableCard";
 import type { CardInstance } from "../fight.types";
+import type { ChargeFx } from "../fightEvents";
 import { IconTerrain } from "../../../components/Icons";
 import { ChargeFrame } from "./ChargeFrame";
 import "./SupportZoneContent.css";
@@ -9,7 +10,9 @@ interface Props {
   zone: CardInstance;
   /** Carte touchée : le bouton « i » apparaît. */
   selected?: boolean;
-  chargeFx?: "pulse" | "burst";
+  chargeFx?: ChargeFx;
+  /** Charge sans cible possible : avertissement sous le décompte. */
+  warning?: string;
   onInfo: () => void;
 }
 
@@ -17,6 +20,7 @@ export default function SupportZoneContent({
   zone,
   selected,
   chargeFx,
+  warning,
   onInfo,
 }: Props) {
   const card = (
@@ -35,6 +39,8 @@ export default function SupportZoneContent({
           counters={zone.chargeCounters ?? 0}
           max={zone.baseCard.chargeMax ?? 1}
           fx={chargeFx}
+          live
+          warning={warning}
         >
           {card}
         </ChargeFrame>

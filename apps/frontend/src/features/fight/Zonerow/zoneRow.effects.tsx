@@ -6,6 +6,7 @@ import {
   describeCardEffects,
   effectPlainText,
 } from "../effectText";
+import { attacksAllowed } from "./zoneRow.helpers";
 import {
   IconEgg,
   IconEvolve,
@@ -92,10 +93,10 @@ export function getMonsterStatusEntries(
           }),
       type: "buff",
     });
-  if (zone.attacksPerTurn > 1)
+  if (attacksAllowed(zone) > 1)
     entries.push({
       icon: <KeywordIcon id="multiAttack" />,
-      label: t("effects.status.multiAttack", { count: zone.attacksPerTurn }),
+      label: t("effects.status.multiAttack", { count: attacksAllowed(zone) }),
       type: "buff",
     });
   if (zone.doubleAtkNextTurn)

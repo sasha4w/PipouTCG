@@ -36,6 +36,7 @@ import type { PhaseOption } from "./phaseOptions";
 import SummonCostModal from "./SummonCostModal";
 import CardPickModal from "./CardPickModal";
 import { releveOptions } from "./releve";
+import { unmetChargeRequirements } from "./chargeRequirements";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
 import {
   HAND_LIMIT,
@@ -286,6 +287,28 @@ export default function FightBoard({
       else disinfectableIds.add(m.instanceId);
     }
   }
+  // Charges posées dont l'effet n'aurait aucune cible en l'état du terrain
+  const unmetCharges = (
+    supports: (CardInstance | null)[],
+    monsters: typeof gs.me.monsterZones,
+    ownerId: number,
+  ) => {
+    const out = new Map<string, string>();
+    for (const s of supports)
+      if (s && unmetChargeRequirements(s.baseCard, monsters, ownerId).length)
+        out.set(s.instanceId, t("fight.chargeUnmet"));
+    return out;
+  };
+  const myUnmetCharges = unmetCharges(
+    gs.me.supportZones,
+    gs.me.monsterZones,
+    gs.me.userId,
+  );
+  const oppUnmetCharges = unmetCharges(
+    gs.opponent.supportZones,
+    gs.opponent.monsterZones,
+    gs.opponent.userId,
+  );
   const equipCard = isEquipment
     ? gs.me.hand[selectedCard!]?.baseCard
     : undefined;
@@ -750,7 +773,20 @@ export default function FightBoard({
         base.supportType === SupportType.CHARGE
       ) {
         const z = zoneIntent(gs.me.supportZones, base);
-        if (z.kind === "blocked")
+        // Se pose seulement avec une carte précise sur le terrain (Alerte générale)
+        const required = unmetChargeRequirements(
+          base,
+          gs.me.monsterZones,
+          gs.me.userId,
+        ).find((r) => r.kind === "card");
+        if (required)
+          unplayableReasons.set(
+            c.instanceId,
+            t("fight.unplayable.needsCard", {
+              name: required.filter?.name ?? "",
+            }),
+          );
+        else if (z.kind === "blocked")
           unplayableReasons.set(
             c.instanceId,
             t(
@@ -853,6 +889,7 @@ export default function FightBoard({
             fx={fx.opponent.supports}
             isSupport
             dim
+            warnInstances={oppUnmetCharges}
           />
           <ZoneRow
             label={t("fight.zone.oppMonsters")}
@@ -932,6 +969,7 @@ export default function FightBoard({
             zones={gs.me.supportZones}
             fx={fx.me.supports}
             isSupport
+            warnInstances={myUnmetCharges}
             recycleEnergy={gs.me.recycleEnergy}
             onZoneClick={
               gs.isMyTurn && phase === "main" && isZoneSupport

@@ -50,9 +50,9 @@ const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   discard: "#fff5f5",
   summon_to_zone: "#f3faf5",
   copy_effects: "#f4f1fb",
-  transfer_atk_source: "#e8f4fb",
-  transfer_atk_target: "#e8f4fb",
-  force_evolve: "#f3faf5",
+  transfer_atk_source: "#fdf6f9",
+  transfer_atk_target: "#fdf6f9",
+  force_evolve: "#fdf6f9",
 };
 
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
@@ -60,9 +60,9 @@ const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   discard: "#c0392b",
   summon_to_zone: "#1f6b3a",
   copy_effects: "#4b2a85",
-  transfer_atk_source: "#1c5a7a",
-  transfer_atk_target: "#1c5a7a",
-  force_evolve: "#1f6b3a",
+  transfer_atk_source: "#7a1c3b",
+  transfer_atk_target: "#7a1c3b",
+  force_evolve: "#7a1c3b",
 };
 
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
@@ -70,9 +70,9 @@ const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   discard: "#c0392b",
   summon_to_zone: "#1f6b3a",
   copy_effects: "#4b2a85",
-  transfer_atk_source: "#1c5a7a",
-  transfer_atk_target: "#1c5a7a",
-  force_evolve: "#1f6b3a",
+  transfer_atk_source: "#7a1c3b",
+  transfer_atk_target: "#7a1c3b",
+  force_evolve: "#7a1c3b",
 };
 
 const SOURCE_ICON: Record<ClientChoiceCandidate["source"], string> = {
@@ -196,6 +196,12 @@ export default function CardPickModal({
             <Button variant="danger" onClick={onCancel}>
               {t("fight.pick.cancel")}
             </Button>
+          )}
+          {/* Effet d'une Charge : le joueur peut ne pas l'appliquer */}
+          {choice.skippable && (
+            <button className="cpm-btn-skip" onClick={() => onConfirm([])}>
+              {t("fight.pick.skip")}
+            </button>
           )}
           <button
             className="cpm-btn-confirm"

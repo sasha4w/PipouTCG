@@ -1,7 +1,10 @@
 import type { TFunction } from "i18next";
 import { GUARD_MAX_TURNS, Immunity, hasImmunity } from "@pipou/shared";
 import type { MonsterOnBoard } from "./fight.types";
-import { isBlockedFromAttacking } from "./Zonerow/zoneRow.helpers";
+import {
+  attacksAllowed,
+  isBlockedFromAttacking,
+} from "./Zonerow/zoneRow.helpers";
 
 /** Badges sous le nom d'un monstre, dans l'ordre d'affichage. */
 export const STATUS_BADGE_IDS = [
@@ -50,8 +53,9 @@ export function immunityQuarters(monster: MonsterOnBoard): ImmunityQuarters {
 /** Attaques encore possibles ce tour, ou 2 si la double attaque attend le prochain. */
 function attacksBadge(monster: MonsterOnBoard): StatusBadge | null {
   if (monster.doubleAtkNextTurn) return { id: "attacks", count: 2 };
-  const left = monster.attacksPerTurn - monster.attacksUsedThisTurn;
-  if (monster.attacksPerTurn > 1 && left > 0 && !isBlockedFromAttacking(monster))
+  const allowed = attacksAllowed(monster);
+  const left = allowed - monster.attacksUsedThisTurn;
+  if (allowed > 1 && left > 0 && !isBlockedFromAttacking(monster))
     return { id: "attacks", count: left };
   return null;
 }

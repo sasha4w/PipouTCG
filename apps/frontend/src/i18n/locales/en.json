@@ -499,6 +499,13 @@
   "effects": {
     "ui": {
       "summonRule": "Summoning",
+      "chargeRequirement": "Activation requirement",
+      "chargeNeeds": {
+        "card": "Needs a card{{filter}} on your field to be played; fades if that card leaves.",
+        "receiver": "Needs one of your monsters{{filter}} on the field to receive the ATK, otherwise the charge does nothing.",
+        "evolvable": "Needs one of your monsters{{filter}} able to evolve (Baby or Young), otherwise the charge does nothing.",
+        "ally": "Needs at least one of your monsters on the field, otherwise the charge does nothing."
+      },
       "evolutionOnly": "Only enters play by evolution or through an Egg's effect.",
       "title": "Effects",
       "keywords": "Keywords",
@@ -655,6 +662,13 @@
       "ALLOW_EVOLUTION_THIS_TURN": "{{target}} can evolve this turn.",
       "ALLOW_EVOLUTION_THIS_TURN_many": "{{target}} can evolve this turn.",
       "unknown": "Special effect ({{type}}).",
+      "GRANT_EXTRA_ATTACK": "{{target}} can attack one more time this turn.",
+      "GRANT_EXTRA_ATTACK_many": "{{target}} can attack one more time this turn.",
+      "TRANSFER_HALF_ATK": "{{target}} chooses a monster: half of its ATK goes to an allied monster{{filter}} this turn.",
+      "TRANSFER_HALF_ATK_you": "Choose a monster: half of its ATK goes to one of your monsters{{filter}} this turn.",
+      "FORCE_EVOLVE": "{{target}} evolves one of their monsters{{filter}} to the next stage, without the card.",
+      "FORCE_EVOLVE_you": "One of your monsters{{filter}} evolves to the next stage, without needing the card.",
+      "REQUIRES_CARD_ON_BOARD": "Can only be played with a card{{filter}} on your field, and fades if it leaves.",
       "REFLECT_DAMAGE": "{{target}} gains **{{kw}}**: {{value}}% of the combat damage taken is sent back to the attacker.",
       "REFLECT_DAMAGE_many": "{{target}} gain **{{kw}}**: {{value}}% of the combat damage taken is sent back to the attacker.",
       "RELEVE": "**{{kw}}** ({{value}}): can be summoned by sending {{value}} Pipou allies from your field to the graveyard instead of paying its cost.",
@@ -821,6 +835,7 @@
     "zetaProtected": "Protected until the opponent's next turn",
     "zetaImplantHint": "Select an empty opposing zone to implant {{name}}",
     "zetaAlreadyImplanted": "A Zeta is already implanted on the opponent's side",
+    "chargeUnmet": "No target",
     "zetaDisinfectHint": "Attack the Zeta implanted on your side to disinfect it",
     "releve": {
       "stats": "{{atk}} ATK · {{hp}} HP",
@@ -913,6 +928,7 @@
       "releve": "Relief available"
     },
     "pick": {
+      "skip": "Don't apply the effect",
       "source": {
         "graveyard": "Graveyard",
         "deck": "Deck",
@@ -1111,6 +1127,7 @@
     "unplayable": {
       "supportZonesFull": "Support zones full",
       "alreadyInPlay": "Already in play",
+      "needsCard": "Needs {{name}} in play",
       "noEquipTarget": "No summoned monster can carry this equipment"
     },
     "yourTurn": "Your turn!"

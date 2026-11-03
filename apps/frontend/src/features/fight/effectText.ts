@@ -9,6 +9,7 @@ import {
   EFFECT_IMMUNITIES,
   IMMUNITIES_BY_ACTION,
 } from "@pipou/shared";
+import { chargeRequirements } from "./chargeRequirements";
 
 // ── Mots-clés (glossaire partagé avec les règles) ──────────────────────────
 
@@ -65,6 +66,8 @@ export interface EffectRule {
   trigger: string;
   condition: string | null;
   lines: EffectLine[];
+  /** Condition d'activation d'une Charge : mise en avant à l'affichage. */
+  requirement?: boolean;
 }
 
 export interface CardEffectText {
@@ -278,6 +281,10 @@ const ACTIONS: Record<string, ActionSpec> = {
   },
   SUMMON_IF_ALL_ELEMENTS: { tone: "neutral", subject: "card" },
   COPY_GRAVEYARD_EFFECTS: { tone: "buff", subject: "player" },
+  GRANT_EXTRA_ATTACK: { tone: "buff", subject: "monster", defaultValue: 1 },
+  TRANSFER_HALF_ATK: { tone: "buff", subject: "player" },
+  FORCE_EVOLVE: { tone: "buff", subject: "player" },
+  REQUIRES_CARD_ON_BOARD: { tone: "neutral", subject: "card" },
 };
 
 /** Cibles qui désignent plusieurs monstres (accord du verbe). */
@@ -546,10 +553,32 @@ export function describeCardEffects(
       ],
     });
 
+  // Ce qu'il faut sur le terrain pour que la Charge ait prise, en tête
+  const requirements = chargeRequirements(card);
+  if (requirements.length > 0)
+    rules.push({
+      icon: "",
+      trigger: t("effects.ui.chargeRequirement"),
+      condition: null,
+      requirement: true,
+      lines: requirements.map((r) => ({
+        text: t(`effects.ui.chargeNeeds.${r.kind}`, {
+          filter: describeFilter(t, r.filter),
+        }),
+        tone: "neutral",
+      })),
+    });
+
   for (const effect of card.effects ?? []) {
     const trigger = String(effect.trigger);
     const lines: EffectLine[] = [];
     for (const action of mergeImmunities(effect.actions ?? [])) {
+      // Déjà dans la condition d'activation
+      if (
+        action.type === "REQUIRES_CARD_ON_BOARD" &&
+        requirements.length > 0
+      )
+        continue;
       const { line, keyword } = describeAction(t, action, kind, trigger, card);
       lines.push(line);
       if (keyword && !keywords.includes(keyword)) keywords.push(keyword);

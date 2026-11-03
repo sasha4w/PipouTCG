@@ -17,9 +17,28 @@
   border-radius: 50%;
 }
 
+/* Support plus petit qu'un monstre (moins d'informations sur la carte) */
+.zr-support .zr-card {
+  width: min(100%, 92px);
+}
+
+.zr-charge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 92px);
+}
+
+/* Épouse la carte : le contour de charge reste collé à son bord */
 .zr-charge__frame {
   position: relative;
+  width: 100%;
+  line-height: 0;
   border-radius: 6px;
+}
+
+.zr-charge .zr-card {
+  width: 100%;
 }
 
 .zr-charge__frame::after {
@@ -41,14 +60,78 @@
 .zr-charge__count {
   display: block;
   margin-top: 2px;
-  font: 700 9px/1 inherit;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
   text-align: center;
 }
 
+.zr-charge__warn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 2px;
+  padding: 1px 4px;
+  font-size: 8px;
+  font-weight: 700;
+  color: #4a2600;
+  background: #ffb43a;
+  border-radius: 4px;
+}
+
+/* Fumée grise de la Charge sans effet */
+.zr-charge__smoke {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 6px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(120, 110, 115, 0.75) 0 35%, transparent 70%);
+  opacity: 0;
+  animation: zr-charge-smoke .9s ease-out forwards;
+}
+
 @keyframes zr-charge-pulse { 50% { filter: drop-shadow(0 0 6px #ffb43a); } }
-@keyframes zr-charge-burst { to { transform: scale(1.15); opacity: 0; } }
+@keyframes zr-charge-full { 50% { filter: drop-shadow(0 0 8px #ffb43a); } }
+/* Résolue : éclat doré puis envol */
+@keyframes zr-charge-burst {
+  0% { filter: none; }
+  35% { transform: scale(1.12); filter: brightness(1.6) drop-shadow(0 0 14px #ffb43a); opacity: 1; }
+  100% { transform: scale(1.25) translateY(-8px); filter: brightness(2) drop-shadow(0 0 18px #ffb43a); opacity: 0; }
+}
+/* Résolue, la carte reste (cyclique) : éclat doré seul */
+@keyframes zr-charge-burst-live {
+  40% { transform: scale(1.1); filter: brightness(1.5) drop-shadow(0 0 14px #ffb43a); }
+}
+/* Sans effet : la carte grise, tremble, puis s'effrite */
+@keyframes zr-charge-fizzle {
+  0% { filter: none; }
+  15%, 45% { transform: translateX(-3px); }
+  30%, 60% { transform: translateX(3px); }
+  50% { filter: grayscale(1) brightness(0.8); opacity: 1; }
+  100% { transform: translateY(6px) scale(0.92); filter: grayscale(1) blur(2px); opacity: 0; }
+}
+@keyframes zr-charge-fizzle-live {
+  15%, 45% { transform: translateX(-3px); filter: grayscale(1); }
+  30%, 60% { transform: translateX(3px); filter: grayscale(1); }
+}
+@keyframes zr-charge-smoke {
+  30% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4) translateY(-10px); }
+}
+
 .zr-charge--pulse .zr-charge__frame { animation: zr-charge-pulse .5s ease; }
-.zr-charge--burst { animation: zr-charge-burst .45s ease forwards; }
+.zr-charge--full .zr-charge__frame { animation: zr-charge-full 1.2s ease-in-out infinite; }
+.zr-charge--burst { animation: zr-charge-burst .9s ease forwards; }
+.zr-charge--burst-live .zr-charge__frame { animation: zr-charge-burst-live .9s ease; }
+.zr-charge--fizzle { animation: zr-charge-fizzle .9s ease forwards; }
+.zr-charge--fizzle-live .zr-charge__frame { animation: zr-charge-fizzle-live .9s ease; }
 @media (prefers-reduced-motion: reduce) {
-  .zr-charge--pulse .zr-charge__frame, .zr-charge--burst { animation: none; }
+  .zr-charge--pulse .zr-charge__frame,
+  .zr-charge--full .zr-charge__frame,
+  .zr-charge--burst-live .zr-charge__frame,
+  .zr-charge--fizzle-live .zr-charge__frame,
+  .zr-charge__smoke { animation: none; }
+  .zr-charge--burst, .zr-charge--fizzle { animation: none; opacity: 0; }
 }

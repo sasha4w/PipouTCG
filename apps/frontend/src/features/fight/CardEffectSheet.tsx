@@ -40,7 +40,10 @@ export default function CardEffectSheet({ sources, statuses = [] }: Props) {
             <IconWrench size={12} /> {d.title}
           </h4>}
           {d.rules.map((rule, j) => (
-            <div key={j} className="ces-rule">
+            <div
+              key={j}
+              className={`ces-rule${rule.requirement ? " ces-rule--requirement" : ""}`}
+            >
               <div className="ces-trigger">
                 <span className="ces-trigger-icon" aria-hidden="true">
                   {rule.icon}
