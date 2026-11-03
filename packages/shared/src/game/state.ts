@@ -74,6 +74,8 @@ export interface ClientPendingChoice {
   /** Valeurs interpolées dans la consigne (`count`, `lineage`…). */
   promptParams?: Record<string, string | number>;
   resolution?: PendingChoiceResolution;
+  /** Le joueur peut refuser l'effet (choix d'une Charge) : aucune carte choisie. */
+  skippable?: boolean;
 }
 
 export interface MyClientState {
