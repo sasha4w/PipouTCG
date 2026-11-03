@@ -1,4 +1,4 @@
-import { SupportType } from '@pipou/shared';
+import { ChargeMode, SupportType } from '@pipou/shared';
 import type {
   CardInstance,
   GameState,
@@ -9,7 +9,7 @@ import { sendToGraveyard } from './game-state.helper';
 /**
  * Ajoute des compteurs à une Charge posée par `player`. À `chargeMax`, la carte
  * quitte sa case, `resolveCharged` exécute ON_CHARGED puis elle part au
- * cimetière (ONE_SHOT).
+ * cimetière (ONE_SHOT) ; une Charge CYCLIC reste en place et repart de 0.
  */
 export function addChargeCounters(
   game: GameState,
@@ -40,6 +40,12 @@ export function addChargeCounters(
     zoneIndex,
     instanceId: charge.instanceId,
   });
+  if (charge.baseCard.chargeMode === ChargeMode.CYCLIC) {
+    // Cyclique : l'effet se joue, la carte reste et recommence à 0
+    charge.chargeCounters = 0;
+    resolveCharged(charge);
+    return;
+  }
   player.supportZones[zoneIndex] = null;
   resolveCharged(charge);
   sendToGraveyard(player, charge);

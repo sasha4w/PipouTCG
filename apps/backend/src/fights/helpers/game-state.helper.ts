@@ -64,10 +64,23 @@ export function freshCandidates(
       case 'hand':
         return owner.hand.map((c) => c.instanceId);
       case 'board':
-        return owner.monsterZones.flatMap((m) => (m ? [m.instanceId] : []));
+        // Les choix sur le terrain peuvent viser les deux camps (ex. Extraction)
+        return [game.player1, game.player2].flatMap((p) =>
+          p.monsterZones.flatMap((m) => (m ? [m.instanceId] : [])),
+        );
     }
   };
   return choice.candidates.filter((c) => ids(c.source).includes(c.instanceId));
+}
+
+/** Monstre en jeu, dans l'un ou l'autre camp. */
+export function boardMonster(
+  game: GameState,
+  instanceId: string,
+): MonsterOnBoard | undefined {
+  for (const p of [game.player1, game.player2])
+    for (const m of p.monsterZones) if (m?.instanceId === instanceId) return m;
+  return undefined;
 }
 
 /**

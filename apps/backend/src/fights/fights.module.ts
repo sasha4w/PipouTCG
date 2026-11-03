@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { Match } from './entities/match.entity';
 import { PlayerStats } from './entities/player-stats.entity';
+import { Card } from '../cards/card.entity';
 import { DecksModule } from '../decks/decks.module';
 import { AdventureModule } from '../adventure/adventure.module';
 import { AiReviewModule } from '../ai-review/ai-review.module';
@@ -22,6 +23,7 @@ import { DeckSubmissionService } from './services/deck-submission.service';
 import { PhaseService } from './services/phase.service';
 import { SummonService } from './services/summon.service';
 import { EvolutionService } from './services/evolution.service';
+import { EvolutionCatalogLoader } from './services/evolution-catalog.loader';
 import { SupportService } from './services/support.service';
 import { BattleService } from './services/battle.service';
 import { PickService } from './services/pick.service';
@@ -36,7 +38,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Match, PlayerStats]),
+    TypeOrmModule.forFeature([Match, PlayerStats, Card]),
     DecksModule,
     AdventureModule,
     AiReviewModule,
@@ -59,6 +61,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     PhaseService,
     SummonService,
     EvolutionService,
+    EvolutionCatalogLoader,
     SupportService,
     BattleService,
     PickService,

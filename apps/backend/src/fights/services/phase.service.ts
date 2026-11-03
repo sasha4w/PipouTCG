@@ -154,7 +154,7 @@ export class PhaseService {
     this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);
     for (const m of player.monsterZones) {
       if (!m?.doubleAtkNextTurn) continue;
-      m.extraAttacksThisTurn = 1;
+      m.extraAttacksThisTurn += 1;
       m.doubleAtkNextTurn = false;
     }
     log.forEach((l) => addLog(game, l));

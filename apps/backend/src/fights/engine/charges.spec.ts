@@ -1,4 +1,9 @@
-import { ActionType, EffectTarget, EffectTrigger } from '@pipou/shared';
+import {
+  ActionType,
+  ChargeMode,
+  EffectTarget,
+  EffectTrigger,
+} from '@pipou/shared';
 import { createEngine } from '../testing/engine';
 import { act, chargeCard, effect, ephemeralCard } from '../testing/cards';
 import { passTurn, scenario } from '../testing/scenario';
@@ -74,10 +79,12 @@ describe('Charges', () => {
     expect(game.player1.hand.length).toBe(handBefore - 1 + 2);
   });
 
-  it('mode cyclique refusé', () => {
+  it('mode cyclique : posable', () => {
     const game = scenario({
       p1: {
-        hand: [chargeCard('Cycle', 2, [], { chargeMode: 'CYCLIC' as never })],
+        hand: [
+          chargeCard('Cycle', 2, [draw2], { chargeMode: ChargeMode.CYCLIC }),
+        ],
       },
     });
     expect(
@@ -86,7 +93,25 @@ describe('Charges', () => {
         handIndex: 0,
         zoneIndex: 0,
       }).error,
-    ).toBe('Mode de charge cyclique pas encore disponible');
+    ).toBeUndefined();
+  });
+
+  it('mode cyclique : se déclenche, reste en place et repart de 0', () => {
+    const game = scenario({
+      p1: {
+        supports: [
+          chargeCard('Cycle', 2, [draw2], { chargeMode: ChargeMode.CYCLIC }),
+        ],
+      },
+    });
+    game.player1.supportZones[0]!.chargeCounters = 1;
+    const handBefore = game.player1.hand.length;
+    passTurns(game, 1);
+    expect(game.player1.supportZones[0]?.baseCard.name).toBe('Cycle');
+    expect(game.player1.supportZones[0]?.chargeCounters).toBe(0);
+    expect(game.player1.hand.length).toBe(handBefore + 1 + 2);
+    passTurns(game, 2);
+    expect(game.player1.hand.length).toBe(handBefore + 1 + 2 + 2 + 2);
   });
 
   it('les charges adverses ne bougent pas pendant mon tour', () => {

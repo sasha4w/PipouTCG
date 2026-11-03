@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   CardInstance,
   GameState,
+  MonsterOnBoard,
   PlayerGameState,
 } from '../interfaces/game-state.interface';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
@@ -97,6 +98,27 @@ export class SummonService {
     });
     log.forEach((l) => addLog(game, l));
     return true;
+  }
+
+  /** Monstre apparu par évolution : ON_SUMMON, puis ON_ALLY_SUMMON des cartes en main. */
+  resolveEvolved(
+    game: GameState,
+    owner: PlayerGameState,
+    monster: MonsterOnBoard,
+    log: string[],
+  ): void {
+    this.effectsResolver.resolve(monster.card, EffectTrigger.ON_SUMMON, {
+      game,
+      ownerUserId: owner.userId,
+      sourceMonster: monster,
+      log,
+    });
+    for (const handCard of owner.hand)
+      this.effectsResolver.resolve(handCard, EffectTrigger.ON_ALLY_SUMMON, {
+        game,
+        ownerUserId: owner.userId,
+        log,
+      });
   }
 
   // ── Logique commune ────────────────────────────────────────────────────────

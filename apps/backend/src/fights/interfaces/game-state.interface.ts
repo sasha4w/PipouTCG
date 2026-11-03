@@ -3,6 +3,7 @@ import type {
   CardInstance as SharedCardInstance,
   ChoicePromptKey,
   ChoiceSource,
+  EffectFilter,
   FightEvent,
   GameEndReason,
   GamePhase,
@@ -77,6 +78,12 @@ export interface PendingChoice {
   sourceInstanceId?: string;
   /** summon_to_zone : zone visée. */
   zoneIndex?: number;
+  /** transfer_atk_target : ATK prise au monstre source. */
+  amount?: number;
+  /** transfer_atk_target : monstre qui perd l'ATK. */
+  fromInstanceId?: string;
+  /** transfer_atk_source : filtre des receveurs (Noyaux). */
+  filter?: EffectFilter;
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────

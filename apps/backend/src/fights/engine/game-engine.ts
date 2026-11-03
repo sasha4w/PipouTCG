@@ -21,8 +21,10 @@ import {
   freshCandidates,
   getPlayerState,
   seatPlayer,
+  sendToGraveyard,
 } from '../helpers/game-state.helper';
 import { finishGame } from '../helpers/game-end.helper';
+import { missingRequirement } from '../helpers/support-requirements';
 import { EffectsResolverService } from '../effects-resolver.service';
 import { BuffsCalculatorService } from '../buffs-calculator.service';
 
@@ -138,6 +140,7 @@ export class GameEngine {
     if (game.phase === 'finished') return;
     this.buffs.recalculate(game);
     this.reapDeadMonsters(game);
+    this.reapOrphanSupports(game);
 
     const outcome = checkWinCondition(game);
     if (outcome)
@@ -146,6 +149,17 @@ export class GameEngine {
         outcome.winnerUserId,
         outcome.winnerUserId === null ? 'double_ko' : 'primes_depleted',
       );
+  }
+
+  /** Un support qui exige une carte en jeu part au cimetière quand elle disparaît. */
+  private reapOrphanSupports(game: GameState): void {
+    for (const player of [game.player1, game.player2])
+      player.supportZones.forEach((s, i) => {
+        if (!s || !missingRequirement(s, player)) return;
+        player.supportZones[i] = null;
+        sendToGraveyard(player, s);
+        addLog(game, `💨 ${s.baseCard.name} se dissipe`);
+      });
   }
 
   /** Détruit les monstres à 0 PV (perte de bonus, dégâts), jusqu'à stabilité. */

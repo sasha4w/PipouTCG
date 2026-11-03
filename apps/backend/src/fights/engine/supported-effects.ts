@@ -85,6 +85,10 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.DUPLICATE_MONSTER,
   ActionType.INSTANT_EVOLUTION,
   ActionType.ALLOW_EVOLUTION_THIS_TURN,
+  ActionType.GRANT_EXTRA_ATTACK,
+  ActionType.TRANSFER_HALF_ATK,
+  ActionType.FORCE_EVOLVE,
+  ActionType.REQUIRES_CARD_ON_BOARD,
 ]);
 
 export const SUPPORTED_TARGETS: ReadonlySet<EffectTarget> = new Set(
