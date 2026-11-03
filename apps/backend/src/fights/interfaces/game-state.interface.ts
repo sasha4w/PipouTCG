@@ -84,6 +84,10 @@ export interface PendingChoice {
   fromInstanceId?: string;
   /** transfer_atk_source : filtre des receveurs (Noyaux). */
   filter?: EffectFilter;
+  /** Choix ouvert par une Charge : elle attend sur sa case qu'il soit résolu. */
+  chargeInstanceId?: string;
+  /** Le joueur peut refuser l'effet en ne choisissant rien. */
+  skippable?: boolean;
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────

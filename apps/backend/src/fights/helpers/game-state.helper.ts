@@ -8,6 +8,8 @@ import {
 } from '../interfaces/game-state.interface';
 import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from '@pipou/shared';
 import type { Seat } from '@pipou/shared';
+// Import circulaire sans risque : finishCharge n'est appelé qu'en cours de partie
+import { finishCharge } from './charges';
 
 const LOG_MAX = 50;
 
@@ -91,8 +93,15 @@ export function currentChoice(game: GameState): PendingChoice | undefined {
   while (
     game.pendingChoices.length > 0 &&
     freshCandidates(game, game.pendingChoices[0]).length === 0
-  )
-    game.pendingChoices.shift();
+  ) {
+    const dropped = game.pendingChoices.shift()!;
+    // La Charge qui attendait ce choix ne reste pas bloquée sur sa case
+    const owner = getPlayerState(game, dropped.forUserId);
+    const charge = owner.supportZones.find(
+      (z) => !!z && z.instanceId === dropped.chargeInstanceId,
+    );
+    if (charge) finishCharge(game, owner, charge, 'fizzled', game.log);
+  }
   return game.pendingChoices[0];
 }
 

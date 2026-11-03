@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { isImplanted } from '@pipou/shared';
-import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
+import {
+  GameState,
+  MonsterOnBoard,
+  PendingChoice,
+} from '../interfaces/game-state.interface';
+import { finishCharge, type ChargeOutcome } from '../helpers/charges';
 import {
   addLog,
   boardMonster,
@@ -34,12 +39,18 @@ export class PickService {
     const candidates = freshCandidates(game, choice);
     const expected = Math.min(choice.count, candidates.length);
     const picked = [...new Set(instanceIds)];
+    const player = getPlayerState(game, userId);
+    // Effet refusé : rien n'est choisi, la Charge se termine sans effet
+    if (picked.length === 0 && choice.skippable) {
+      game.pendingChoices.shift();
+      addLog(game, `🚫 ${player.username} n'applique pas l'effet`);
+      this.endCharge(game, choice, 'fizzled');
+      return {};
+    }
     if (picked.length !== expected)
       return { error: `Sélectionnez exactement ${expected} carte(s)` };
     if (picked.some((id) => !candidates.some((c) => c.instanceId === id)))
       return { error: 'Carte introuvable dans les choix disponibles' };
-
-    const player = getPlayerState(game, userId);
 
     if (choice.resolution === 'discard') {
       for (const id of picked) {
@@ -89,6 +100,8 @@ export class PickService {
         );
         if (receivers.length > 0)
           game.pendingChoices.splice(1, 0, {
+            chargeInstanceId: choice.chargeInstanceId,
+            skippable: choice.skippable,
             forUserId: userId,
             candidates: receivers.map((m) => ({
               instanceId: m.instanceId,
@@ -164,6 +177,35 @@ export class PickService {
     }
 
     game.pendingChoices.shift();
+    // Extraction : la Charge attend encore le choix du receveur
+    const followUp = game.pendingChoices.some(
+      (c) =>
+        !!choice.chargeInstanceId &&
+        c.chargeInstanceId === choice.chargeInstanceId,
+    );
+    if (!followUp)
+      this.endCharge(
+        game,
+        choice,
+        choice.resolution === 'transfer_atk_source' ? 'fizzled' : 'resolved',
+      );
     return {};
+  }
+
+  /** Termine la Charge qui a ouvert ce choix (animation, puis cimetière). */
+  private endCharge(
+    game: GameState,
+    choice: PendingChoice,
+    outcome: ChargeOutcome,
+  ): void {
+    if (!choice.chargeInstanceId) return;
+    const owner = getPlayerState(game, choice.forUserId);
+    const charge = owner.supportZones.find(
+      (z) => z?.instanceId === choice.chargeInstanceId,
+    );
+    if (!charge) return;
+    const log: string[] = [];
+    finishCharge(game, owner, charge, outcome, log);
+    log.forEach((l) => addLog(game, l));
   }
 }

@@ -71,6 +71,60 @@ describe('actions des cartes Charge', () => {
     expect(effectiveAtk(monsterNamed(game, 'p2', 'Colosse'))).toBe(1000);
   });
 
+  describe('choix d’une Charge', () => {
+    const setup = () => {
+      const game = scenario({
+        p1: {
+          supports: [extraction()],
+          monsters: [
+            monsterCard('Noyau Alpha', { atk: 500, archetype: 'pixelman' }),
+          ],
+        },
+        p2: { monsters: [monsterCard('Colosse', { atk: 1000 })] },
+      });
+      game.player1.supportZones[0]!.chargeCounters = 0;
+      passTurns(game, 1);
+      return game;
+    };
+
+    it('la Charge attend sur sa case et le choix peut être refusé', () => {
+      const game = setup();
+      expect(game.player1.supportZones[0]?.baseCard.name).toBe('Extraction');
+      expect(game.pendingChoices[0].skippable).toBe(true);
+      expect(
+        engine.dispatch(game, 'p1', { type: 'pick_cards', instanceIds: [] })
+          .error,
+      ).toBeUndefined();
+      expect(game.pendingChoices).toHaveLength(0);
+      expect(effectiveAtk(monsterNamed(game, 'p2', 'Colosse'))).toBe(1000);
+      expect(game.player1.supportZones[0]).toBeNull();
+      expect(game.player1.graveyard.map((c) => c.baseCard.name)).toContain(
+        'Extraction',
+      );
+    });
+
+    it('la Charge part au cimetière une fois le receveur choisi', () => {
+      const game = setup();
+      pick(game, 'Colosse');
+      expect(game.player1.supportZones[0]).not.toBeNull();
+      pick(game, 'Noyau Alpha');
+      expect(game.player1.supportZones[0]).toBeNull();
+    });
+
+    it('sans cible, la Charge se dissipe sans effet', () => {
+      const game = scenario({
+        p1: { supports: [extraction()], monsters: [monsterCard('Soldat')] },
+      });
+      game.player1.supportZones[0]!.chargeCounters = 0;
+      passTurns(game, 1);
+      expect(game.pendingChoices).toHaveLength(0);
+      expect(game.player1.supportZones[0]).toBeNull();
+      expect(game.log.some((l) => l.includes('se dissipe sans effet'))).toBe(
+        true,
+      );
+    });
+  });
+
   describe('FORCE_EVOLVE', () => {
     const meditation = () =>
       chargeCard('Méditation', 1, [

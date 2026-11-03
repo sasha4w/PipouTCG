@@ -144,11 +144,7 @@ export class PhaseService {
         charge,
         1,
         (card) =>
-          this.effectsResolver.resolve(card, EffectTrigger.ON_CHARGED, {
-            game,
-            ownerUserId: player.userId,
-            log,
-          }),
+          this.effectsResolver.resolveCharged(card, game, player.userId, log),
         log,
       );
     this.resolveForBoard(game, player, EffectTrigger.ON_TURN_START, log);

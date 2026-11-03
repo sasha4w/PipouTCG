@@ -45,6 +45,7 @@ export function buildClientState(
           promptKey: choice.promptKey,
           promptParams: choice.promptParams,
           resolution: choice.resolution,
+          skippable: choice.skippable,
         }
       : undefined;
 

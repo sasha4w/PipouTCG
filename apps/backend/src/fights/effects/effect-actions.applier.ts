@@ -28,7 +28,11 @@ import {
 import { matchesFilter, pickCandidates } from './pick-candidates';
 import { hatchEgg } from '../helpers/hatching';
 import { nextStageCard } from '../helpers/evolution-catalog';
-import { addChargeCounters, chargesOf } from '../helpers/charges';
+import {
+  addChargeCounters,
+  chargesOf,
+  type ChargeOutcome,
+} from '../helpers/charges';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -55,9 +59,18 @@ export function applyActions(
   summoned: (owner: PlayerGameState, monster: MonsterOnBoard) => void = () =>
     undefined,
   /** Résout l'ON_CHARGED d'une Charge arrivée à son maximum. */
-  charged: (owner: PlayerGameState, charge: CardInstance) => void = () =>
-    undefined,
+  charged: (
+    owner: PlayerGameState,
+    charge: CardInstance,
+  ) => ChargeOutcome = () => 'resolved',
 ): void {
+  // Choix ouvert par l'ON_CHARGED d'une Charge : la carte l'attend, et il se refuse
+  const chargeChoice = ctx.charge
+    ? { chargeInstanceId: card.instanceId, skippable: true }
+    : {};
+  const fizzle = () => {
+    if (ctx.charge) ctx.charge.fizzled = true;
+  };
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
     const targets = resolveTargets(
@@ -424,6 +437,7 @@ export function applyActions(
         break;
 
       case ActionType.GRANT_EXTRA_ATTACK:
+        if (targets.monsters.length === 0) fizzle();
         for (const m of targets.monsters) {
           m.extraAttacksThisTurn += action.value ?? 1;
           ctx.log.push(
@@ -443,6 +457,7 @@ export function applyActions(
           );
           if (receivers.length === 0) {
             ctx.log.push(`📡 ${card.baseCard.name} — aucun receveur en jeu`);
+            fizzle();
             continue;
           }
           const opponent = getOpponentState(ctx.game, p.userId);
@@ -457,8 +472,12 @@ export function applyActions(
                 isTargetableByEnemyEffects(m, 'support', action.type),
             ),
           ].filter((m) => effectiveAtk(m) > 1);
-          if (sources.length === 0) continue;
+          if (sources.length === 0) {
+            fizzle();
+            continue;
+          }
           queueChoice(ctx.game, {
+            ...chargeChoice,
             forUserId: p.userId,
             candidates: sources.map((m) => ({
               instanceId: m.instanceId,
@@ -488,9 +507,11 @@ export function applyActions(
             ctx.log.push(
               `🧘 ${card.baseCard.name} — aucun Drakon ne peut évoluer`,
             );
+            fizzle();
             continue;
           }
           queueChoice(ctx.game, {
+            ...chargeChoice,
             forUserId: p.userId,
             candidates: eligible.map((m) => ({
               instanceId: m.instanceId,

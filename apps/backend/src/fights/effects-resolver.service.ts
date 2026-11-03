@@ -15,6 +15,7 @@ import {
 import type { EffectContext } from './effects/effect-context.interface';
 import { checkCondition } from './effects/effect-conditions';
 import { applyActions } from './effects/effect-actions.applier';
+import type { ChargeOutcome } from './helpers/charges';
 import {
   drawCard,
   getPlayerState,
@@ -33,6 +34,23 @@ export type { EffectContext };
  */
 @Injectable()
 export class EffectsResolverService {
+  /** ON_CHARGED d'une Charge pleine, avec son issue (sans effet si aucune cible). */
+  resolveCharged(
+    card: CardInstance,
+    game: GameState,
+    ownerUserId: number,
+    log: string[],
+  ): ChargeOutcome {
+    const charge = { fizzled: false };
+    this.resolve(card, EffectTrigger.ON_CHARGED, {
+      game,
+      ownerUserId,
+      log,
+      charge,
+    });
+    return charge.fizzled ? 'fizzled' : 'resolved';
+  }
+
   resolve(
     card: CardInstance,
     trigger: EffectTrigger,
@@ -81,13 +99,8 @@ export class EffectsResolverService {
             log: ctx.log,
           });
         },
-        (owner, charge) => {
-          this.resolve(charge, EffectTrigger.ON_CHARGED, {
-            game: ctx.game,
-            ownerUserId: owner.userId,
-            log: ctx.log,
-          });
-        },
+        (owner, charge) =>
+          this.resolveCharged(charge, ctx.game, owner.userId, ctx.log),
       );
       changed = true;
     }
