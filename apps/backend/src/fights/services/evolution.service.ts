@@ -6,31 +6,16 @@ import {
   isImplanted,
   evolutionCost,
 } from '@pipou/shared';
-import { GameState, MonsterOnBoard } from '../interfaces/game-state.interface';
-import { createMonsterOnBoard } from '../helpers/monster.factory';
+import { GameState } from '../interfaces/game-state.interface';
 import { EffectsResolverService } from '../effects-resolver.service';
 import {
   addLog,
   getPlayerState,
   isCurrentPlayer,
-  boardCard,
-  sendToGraveyard,
 } from '../helpers/game-state.helper';
+import { evolveInPlace } from '../helpers/evolution';
 
-/** Part minimale des PV max qu'un monstre garde en évoluant, même très blessé. */
-export const EVOLUTION_MIN_HP_RATIO = 0.5;
-
-/**
- * PV du monstre évolué : la même part de ses PV max que l'ancien, au moins
- * EVOLUTION_MIN_HP_RATIO. Les PV de l'ancien compris les bonus de PV du moment.
- */
-export function evolvedHp(base: MonsterOnBoard, evolvedMaxHp: number): number {
-  const baseMax = base.card.baseCard.hp + base.hpBuff;
-  const ratio = baseMax > 0 ? base.currentHp / baseMax : 1;
-  return Math.ceil(
-    Math.min(1, Math.max(EVOLUTION_MIN_HP_RATIO, ratio)) * evolvedMaxHp,
-  );
-}
+export { EVOLUTION_MIN_HP_RATIO, evolvedHp } from '../helpers/evolution';
 
 @Injectable()
 export class EvolutionService {
@@ -91,36 +76,10 @@ export class EvolutionService {
     const shift = paid.filter((i) => i < handIndex).length;
     const [evolvedCard] = player.hand.splice(handIndex - shift, 1);
 
-    const evolved = createMonsterOnBoard(evolvedCard, {
-      ownerUserId: base.ownerUserId,
-    });
-    evolved.equipments = base.equipments;
-    evolved.currentHp = evolvedHp(base, evolvedCard.baseCard.hp);
-    evolved.mode = base.mode;
-    // La Garde continue : même compteur, même verrou, même délai de retour
-    evolved.guardTurns = base.guardTurns;
-    evolved.guardLocked = base.guardLocked;
-    evolved.guardCooldown = base.guardCooldown;
-    // Compte comme posé ce tour : pas de réévolution immédiate (n'empêche pas d'attaquer)
-    evolved.summonedThisTurn = true;
-    evolved.attacksUsedThisTurn = base.attacksUsedThisTurn;
-    evolved.hasAttackedThisTurn = base.hasAttackedThisTurn;
-
-    sendToGraveyard(player, boardCard(base));
-    player.monsterZones[zoneIndex] = evolved;
-    game.pendingEvents.push({
-      kind: 'monster_summoned',
-      ownerId: player.userId,
-      zoneIndex,
-      instanceId: evolved.instanceId,
-      rarity: evolvedCard.baseCard.rarity,
-    });
-    addLog(
-      game,
-      `🧬 ${base.card.baseCard.name} évolue en ${evolvedCard.baseCard.name}`,
-    );
-
     const log: string[] = [];
+    const evolved = evolveInPlace(game, player, zoneIndex, evolvedCard, log);
+    log.splice(0).forEach((l) => addLog(game, l));
+
     this.effectsResolver.resolve(evolvedCard, EffectTrigger.ON_SUMMON, {
       game,
       ownerUserId: userId,

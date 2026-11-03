@@ -15,14 +15,20 @@ export type GamePhase =
 export type GameEndReason = MatchEndReason;
 
 /**
- * - 'pick_to_hand' : récupère depuis le cimetière ou le deck
- * - 'discard'      : défausse depuis la main
+ * - 'pick_to_hand'        : récupère depuis le cimetière ou le deck
+ * - 'discard'             : défausse depuis la main
+ * - 'transfer_atk_source' : monstre dont la moitié de l'ATK est prise
+ * - 'transfer_atk_target' : Noyau allié qui la reçoit
+ * - 'force_evolve'        : Drakon allié qui évolue sans carte
  */
 export type PendingChoiceResolution =
   | "pick_to_hand"
   | "discard"
   | "summon_to_zone"
-  | "copy_effects";
+  | "copy_effects"
+  | "transfer_atk_source"
+  | "transfer_atk_target"
+  | "force_evolve";
 
 export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 
@@ -35,7 +41,10 @@ export type ChoicePromptKey =
   | "from_graveyard"
   | "from_graveyard_or_deck"
   | "discard"
-  | "baby_lineage";
+  | "baby_lineage"
+  | "extract_source"
+  | "extract_target"
+  | "meditate";
 
 export interface ClientChoiceCandidate {
   instanceId: string;
@@ -65,6 +74,8 @@ export interface ClientPendingChoice {
   /** Valeurs interpolées dans la consigne (`count`, `lineage`…). */
   promptParams?: Record<string, string | number>;
   resolution?: PendingChoiceResolution;
+  /** Le joueur peut refuser l'effet (choix d'une Charge) : aucune carte choisie. */
+  skippable?: boolean;
 }
 
 export interface MyClientState {

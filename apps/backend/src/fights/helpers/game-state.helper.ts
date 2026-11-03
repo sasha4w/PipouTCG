@@ -8,6 +8,8 @@ import {
 } from '../interfaces/game-state.interface';
 import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from '@pipou/shared';
 import type { Seat } from '@pipou/shared';
+// Import circulaire sans risque : finishCharge n'est appelé qu'en cours de partie
+import { finishCharge } from './charges';
 
 const LOG_MAX = 50;
 
@@ -64,10 +66,23 @@ export function freshCandidates(
       case 'hand':
         return owner.hand.map((c) => c.instanceId);
       case 'board':
-        return owner.monsterZones.flatMap((m) => (m ? [m.instanceId] : []));
+        // Les choix sur le terrain peuvent viser les deux camps (ex. Extraction)
+        return [game.player1, game.player2].flatMap((p) =>
+          p.monsterZones.flatMap((m) => (m ? [m.instanceId] : [])),
+        );
     }
   };
   return choice.candidates.filter((c) => ids(c.source).includes(c.instanceId));
+}
+
+/** Monstre en jeu, dans l'un ou l'autre camp. */
+export function boardMonster(
+  game: GameState,
+  instanceId: string,
+): MonsterOnBoard | undefined {
+  for (const p of [game.player1, game.player2])
+    for (const m of p.monsterZones) if (m?.instanceId === instanceId) return m;
+  return undefined;
 }
 
 /**
@@ -78,8 +93,15 @@ export function currentChoice(game: GameState): PendingChoice | undefined {
   while (
     game.pendingChoices.length > 0 &&
     freshCandidates(game, game.pendingChoices[0]).length === 0
-  )
-    game.pendingChoices.shift();
+  ) {
+    const dropped = game.pendingChoices.shift()!;
+    // La Charge qui attendait ce choix ne reste pas bloquée sur sa case
+    const owner = getPlayerState(game, dropped.forUserId);
+    const charge = owner.supportZones.find(
+      (z) => !!z && z.instanceId === dropped.chargeInstanceId,
+    );
+    if (charge) finishCharge(game, owner, charge, 'fizzled', game.log);
+  }
   return game.pendingChoices[0];
 }
 

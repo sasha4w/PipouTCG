@@ -156,13 +156,12 @@ export class BuffsCalculatorService {
       }
     }
 
-    // 5. Les PV courants suivent la variation des PV max, sans les dépasser
+    // 5. Un gain de PV max s'ajoute aux PV courants ; une perte ne retire rien,
+    //    elle plafonne seulement (un bonus qui disparaît ne tue pas le monstre)
     for (const m of monsters) {
       const after = maxHp(m);
-      m.currentHp = Math.min(
-        m.currentHp + (after - previousMaxHp.get(m)!),
-        after,
-      );
+      const gained = Math.max(0, after - previousMaxHp.get(m)!);
+      m.currentHp = Math.min(m.currentHp + gained, after);
     }
   }
 }

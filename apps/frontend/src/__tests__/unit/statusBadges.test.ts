@@ -47,6 +47,18 @@ describe("monsterBadges", () => {
     ]);
   });
 
+  it("le badge de réduction porte les tours restants", () => {
+    const badges = monsterBadges(
+      monster({ damageReduction: 2, reductionTurns: 1 }),
+    );
+    expect(badges.find((b) => b.id === "reduce")?.count).toBe(1);
+    expect(
+      monsterBadges(monster({ damageReduction: 2 })).find(
+        (b) => b.id === "reduce",
+      )?.count,
+    ).toBeUndefined();
+  });
+
   it("compte les attaques restantes, ou 2 pour la double attaque", () => {
     const [left] = monsterBadges(
       monster({ attacksPerTurn: 3, attacksUsedThisTurn: 1 }),

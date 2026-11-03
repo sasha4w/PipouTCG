@@ -74,9 +74,14 @@ export function monsterFaceStats(zone: MonsterOnBoard): CardFaceStats {
   };
 }
 
+/** Attaques permises ce tour, attaques accordées en plus comprises (miroir de battle.service). */
+export function attacksAllowed(zone: MonsterOnBoard): number {
+  return zone.attacksPerTurn + (zone.extraAttacksThisTurn ?? 0);
+}
+
 /** Toutes les attaques du tour ont été utilisées. */
 export function hasSpentAttacks(zone: MonsterOnBoard): boolean {
   return (
-    zone.hasAttackedThisTurn && zone.attacksUsedThisTurn >= zone.attacksPerTurn
+    zone.hasAttackedThisTurn && zone.attacksUsedThisTurn >= attacksAllowed(zone)
   );
 }

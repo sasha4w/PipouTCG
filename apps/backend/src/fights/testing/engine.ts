@@ -9,9 +9,12 @@ import { SupportService } from '../services/support.service';
 import { BattleService } from '../services/battle.service';
 import { PickService } from '../services/pick.service';
 import { fixedRng } from './fixed-rng';
+import { allRealCards } from './real-cards';
+import { setEvolutionCatalog } from '../helpers/evolution-catalog';
 
 /** Moteur câblé à la main, comme le ferait Nest, pour les tests. */
 export function createEngine(rng: Rng = fixedRng()): GameEngine {
+  setEvolutionCatalog(allRealCards());
   const effects = new EffectsResolverService();
   const summon = new SummonService(effects);
   return new GameEngine(

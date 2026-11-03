@@ -2,7 +2,9 @@ import {
   CardEffect,
   ActionType,
   DrakonStage,
+  isImplanted,
   isPlantedBy,
+  isTargetableByEnemyEffects,
   Immunity,
   IMMUNITIES_BY_ACTION,
   blocksEnemyAction,
@@ -19,12 +21,18 @@ import { resolveTargets } from './effect-targets.resolver';
 import {
   boardCard,
   drawCard,
+  effectiveAtk,
   getOpponentState,
   queueChoice,
 } from '../helpers/game-state.helper';
-import { pickCandidates } from './pick-candidates';
+import { matchesFilter, pickCandidates } from './pick-candidates';
 import { hatchEgg } from '../helpers/hatching';
-import { addChargeCounters, chargesOf } from '../helpers/charges';
+import { nextStageCard } from '../helpers/evolution-catalog';
+import {
+  addChargeCounters,
+  chargesOf,
+  type ChargeOutcome,
+} from '../helpers/charges';
 import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -51,9 +59,18 @@ export function applyActions(
   summoned: (owner: PlayerGameState, monster: MonsterOnBoard) => void = () =>
     undefined,
   /** Résout l'ON_CHARGED d'une Charge arrivée à son maximum. */
-  charged: (owner: PlayerGameState, charge: CardInstance) => void = () =>
-    undefined,
+  charged: (
+    owner: PlayerGameState,
+    charge: CardInstance,
+  ) => ChargeOutcome = () => 'resolved',
 ): void {
+  // Choix ouvert par l'ON_CHARGED d'une Charge : la carte l'attend, et il se refuse
+  const chargeChoice = ctx.charge
+    ? { chargeInstanceId: card.instanceId, skippable: true }
+    : {};
+  const fizzle = () => {
+    if (ctx.charge) ctx.charge.fizzled = true;
+  };
   for (const rawAction of effect.actions) {
     const action = withConditionalValue(rawAction, ctx);
     const targets = resolveTargets(
@@ -415,6 +432,96 @@ export function applyActions(
             promptKey: 'copy_power',
             resolution: 'copy_effects',
             sourceInstanceId: ctx.sourceMonster?.instanceId,
+          });
+        }
+        break;
+
+      case ActionType.GRANT_EXTRA_ATTACK:
+        if (targets.monsters.length === 0) fizzle();
+        for (const m of targets.monsters) {
+          m.extraAttacksThisTurn += action.value ?? 1;
+          ctx.log.push(
+            `🏹 ${m.card.baseCard.name} peut attaquer une fois de plus ce tour`,
+          );
+        }
+        break;
+
+      // Extraction de données : choisir le monstre ponctionné, puis le Noyau receveur
+      case ActionType.TRANSFER_HALF_ATK:
+        for (const p of targets.players) {
+          const receivers = p.monsterZones.filter(
+            (m): m is MonsterOnBoard =>
+              !!m &&
+              !isImplanted(m, p.userId) &&
+              matchesFilter(m.card, action.filter),
+          );
+          if (receivers.length === 0) {
+            ctx.log.push(`📡 ${card.baseCard.name} — aucun receveur en jeu`);
+            fizzle();
+            continue;
+          }
+          const opponent = getOpponentState(ctx.game, p.userId);
+          const sources = [
+            ...p.monsterZones.filter(
+              (m): m is MonsterOnBoard => !!m && !isImplanted(m, p.userId),
+            ),
+            ...opponent.monsterZones.filter(
+              (m): m is MonsterOnBoard =>
+                !!m &&
+                !isPlantedBy(m, p.userId) &&
+                isTargetableByEnemyEffects(m, 'support', action.type),
+            ),
+          ].filter((m) => effectiveAtk(m) > 1);
+          if (sources.length === 0) {
+            fizzle();
+            continue;
+          }
+          queueChoice(ctx.game, {
+            ...chargeChoice,
+            forUserId: p.userId,
+            candidates: sources.map((m) => ({
+              instanceId: m.instanceId,
+              baseCard: m.card.baseCard,
+              source: 'board' as const,
+            })),
+            count: 1,
+            prompt: "Choisis le monstre dont tu extrais la moitié de l'ATK",
+            promptKey: 'extract_source',
+            resolution: 'transfer_atk_source',
+            filter: action.filter,
+          });
+        }
+        break;
+
+      // Méditation céleste : un Drakon allié choisi évolue, sans carte
+      case ActionType.FORCE_EVOLVE:
+        for (const p of targets.players) {
+          const eligible = p.monsterZones.filter(
+            (m): m is MonsterOnBoard =>
+              !!m &&
+              !isImplanted(m, p.userId) &&
+              matchesFilter(m.card, action.filter) &&
+              !!nextStageCard(m),
+          );
+          if (eligible.length === 0) {
+            ctx.log.push(
+              `🧘 ${card.baseCard.name} — aucun Drakon ne peut évoluer`,
+            );
+            fizzle();
+            continue;
+          }
+          queueChoice(ctx.game, {
+            ...chargeChoice,
+            forUserId: p.userId,
+            candidates: eligible.map((m) => ({
+              instanceId: m.instanceId,
+              baseCard: m.card.baseCard,
+              source: 'board' as const,
+            })),
+            count: 1,
+            prompt: 'Choisis le Drakon qui évolue',
+            promptKey: 'meditate',
+            resolution: 'force_evolve',
           });
         }
         break;

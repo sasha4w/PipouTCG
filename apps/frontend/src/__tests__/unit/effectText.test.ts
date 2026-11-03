@@ -549,6 +549,10 @@ describe("describeCardEffects : patch Garde, Relève et Origines (fr)", () => {
       "RELEVE",
       "SUMMON_IF_ALL_ELEMENTS",
       "COPY_GRAVEYARD_EFFECTS",
+      "GRANT_EXTRA_ATTACK",
+      "TRANSFER_HALF_ATK",
+      "FORCE_EVOLVE",
+      "REQUIRES_CARD_ON_BOARD",
     ])
       expect(linesOf(monster([fx("PASSIVE", type, "SELF", 1)]))).not.toContain(
         unknown(type),

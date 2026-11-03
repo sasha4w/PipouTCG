@@ -11,7 +11,6 @@ import {
   hasImmunity,
   DrakonStage,
   SupportType,
-  ChargeMode,
   canPlaceInSupportZone,
   canEquip,
   canTransform,
@@ -35,6 +34,7 @@ import {
   sendToGraveyard,
 } from '../helpers/game-state.helper';
 import { CombatMode } from '../interfaces/game-state.interface';
+import { missingRequirement } from '../helpers/support-requirements';
 
 @Injectable()
 export class SupportService {
@@ -187,11 +187,8 @@ export class SupportService {
         if (placement.kind === 'duplicate')
           return undo('Cette carte est déjà en jeu');
         if (placement.kind === 'full') return undo('Zones support pleines');
-        if (
-          support.baseCard.supportType === SupportType.CHARGE &&
-          support.baseCard.chargeMode === ChargeMode.CYCLIC
-        )
-          return undo('Mode de charge cyclique pas encore disponible');
+        const missing = missingRequirement(support, player);
+        if (missing) return undo(`Il faut ${missing} sur le terrain`);
 
         let zone: number;
         if (placement.kind === 'replace_terrain') {

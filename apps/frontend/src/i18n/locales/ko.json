@@ -462,7 +462,11 @@
           "SET_SUPPORT_DEBUFF_IMMUNITY": "donne l'immunité aux malus de support",
           "SET_MONSTER_DEBUFF_IMMUNITY": "donne l'immunité aux malus de monstre",
           "SET_MONSTER_STATUS_IMMUNITY": "donne l'immunité aux statuts",
-          "ADD_CHARGE_COUNTERS": "ajoute des compteurs de charge"
+          "ADD_CHARGE_COUNTERS": "ajoute des compteurs de charge",
+          "GRANT_EXTRA_ATTACK": "이번 턴 추가 공격을 부여",
+          "TRANSFER_HALF_ATK": "몬스터 공격력의 절반을 코어에 이전",
+          "FORCE_EVOLVE": "카드 없이 드라콘을 진화",
+          "REQUIRES_CARD_ON_BOARD": "특정 카드가 필드에 있어야 함"
         }
       },
     "title": "관리자 대시보드",
@@ -494,6 +498,13 @@
   "effects": {
     "ui": {
       "summonRule": "소환",
+      "chargeRequirement": "발동 조건",
+      "chargeNeeds": {
+        "card": "내 필드에 카드{{filter}}가 있어야 놓을 수 있으며, 그 카드가 떠나면 사라집니다.",
+        "receiver": "ATK를 받을 내 몬스터{{filter}}가 필드에 있어야 합니다. 없으면 차지는 아무 효과도 없습니다.",
+        "evolvable": "진화할 수 있는 내 몬스터{{filter}}(유년체 또는 성장체)가 있어야 합니다. 없으면 차지는 아무 효과도 없습니다.",
+        "ally": "내 몬스터가 필드에 하나 이상 있어야 합니다. 없으면 차지는 아무 효과도 없습니다."
+      },
       "evolutionOnly": "진화 또는 알의 효과로만 필드에 나옵니다.",
       "title": "효과",
       "keywords": "키워드",
@@ -603,6 +614,13 @@
       "INSTANT_EVOLUTION": "{{target}}에게 **{{kw}}** 부여.",
       "ALLOW_EVOLUTION_THIS_TURN": "{{target}}: 이번 턴 진화 가능.",
       "unknown": "특수 효과 ({{type}}).",
+      "GRANT_EXTRA_ATTACK": "{{target}}: 이번 턴에 한 번 더 공격할 수 있습니다.",
+      "GRANT_EXTRA_ATTACK_many": "{{target}}: 이번 턴에 한 번 더 공격할 수 있습니다.",
+      "TRANSFER_HALF_ATK": "{{target}}: 몬스터 하나를 골라 ATK의 절반을 이번 턴 동안 아군 몬스터{{filter}}에게 넘깁니다.",
+      "TRANSFER_HALF_ATK_you": "몬스터 하나를 고르세요: ATK의 절반이 이번 턴 동안 내 몬스터{{filter}}에게 넘어갑니다.",
+      "FORCE_EVOLVE": "{{target}}: 몬스터{{filter}} 하나가 카드 없이 다음 단계로 진화합니다.",
+      "FORCE_EVOLVE_you": "내 몬스터{{filter}} 하나가 카드 없이 다음 단계로 진화합니다.",
+      "REQUIRES_CARD_ON_BOARD": "내 필드에 카드{{filter}}가 있을 때만 놓을 수 있으며, 그 카드가 떠나면 사라집니다.",
       "REFLECT_DAMAGE": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
       "REFLECT_DAMAGE_many": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
       "RELEVE": "**{{kw}}** ({{value}}): 비용 대신 내 필드의 Pipou 아군 {{value}}명을 묘지로 보내 소환할 수 있습니다.",
@@ -640,6 +658,7 @@
       "doubleAttack": "다음 턴 2회 공격",
       "multiAttack": "턴당 {{count}}회 공격",
       "damageReduction": "받는 피해 ÷{{value}}",
+      "damageReductionTurns_other": "받는 피해 ÷{{value}} ({{count}}턴 남음)",
       "freeze_other": "{{count}}턴 더 빙결",
       "countdown_other": "{{count}}턴 후 파괴",
       "hatch_other": "{{count}}턴 후 부화",
@@ -760,6 +779,7 @@
     "zetaProtected": "상대의 다음 턴까지 보호됨",
     "zetaImplantHint": "{{name}}을(를) 이식할 상대의 빈 구역을 선택하세요",
     "zetaAlreadyImplanted": "상대 진영에 이미 제타가 이식되어 있습니다",
+    "chargeUnmet": "대상 없음",
     "zetaDisinfectHint": "내 진영에 이식된 제타를 공격해 제거하세요",
     "releve": {
       "stats": "공격 {{atk}} · 체력 {{hp}}",
@@ -848,6 +868,7 @@
       "releve": "교대 가능"
     },
     "pick": {
+      "skip": "효과 적용 안 함",
       "source": {
         "graveyard": "묘지",
         "deck": "덱",
@@ -857,7 +878,10 @@
       "confirm": {
         "pick_to_hand": "가져오기",
         "discard": "버리기",
-        "copy_effects": "이 능력 복사"
+        "copy_effects": "이 능력 복사",
+        "transfer_atk_source": "추출",
+        "transfer_atk_target": "전송",
+        "force_evolve": "진화"
       },
       "hintTarget": "대상 몬스터를 선택하세요",
       "hint": "카드 {{count}}장을 선택하세요",
@@ -870,7 +894,10 @@
         "from_graveyard": "묘지에서 가져올 카드 {{count}}장을 고르세요",
         "from_graveyard_or_deck": "가져올 카드 1장을 고르세요 (묘지 또는 덱)",
         "discard": "버릴 카드 {{count}}장을 고르세요",
-        "baby_lineage": "가져올 베이비 {{lineage}}을(를) 고르세요 (묘지 또는 덱)"
+        "baby_lineage": "가져올 베이비 {{lineage}}을(를) 고르세요 (묘지 또는 덱)",
+        "extract_source": "공격력 절반을 빼앗을 몬스터를 선택하세요",
+        "extract_target": "공격력 {{amount}}을 받을 코어를 선택하세요",
+        "meditate": "진화할 드라콘을 선택하세요"
       }
     },
     "summon": {
@@ -1033,6 +1060,7 @@
     "unplayable": {
       "supportZonesFull": "서포트 구역이 가득 찼습니다",
       "alreadyInPlay": "이미 필드에 있습니다",
+      "needsCard": "필드에 {{name}} 필요",
       "noEquipTarget": "이 장비를 착용할 수 있는 소환된 몬스터가 없습니다"
     },
     "yourTurn": "당신의 차례!"

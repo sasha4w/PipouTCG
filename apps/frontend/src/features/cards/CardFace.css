@@ -173,7 +173,9 @@
   background: rgba(255, 255, 255, 0.92);
   border: 1.5px solid var(--card-border);
   border-radius: 20px;
-  padding: 1.5% 8%;
+  /* em : un padding en % s'écrase sur les petites cartes */
+  padding: 0.25em 0.9em;
+  line-height: 1.2;
   font-family: "Lilita One", cursive;
   font-size: clamp(0.28rem, 1.5cqi, 0.55rem);
   color: var(--card-text);
@@ -324,8 +326,8 @@
   font-size: 10px;
 }
 .card-face--xs .card-face__support-badge {
-  font-size: 6px;
-  padding: 1px 5px;
+  font-size: 7.5px;
+  padding: 2px 7px;
 }
 .card-face--xs .card-face__guard-shield {
   font-size: 22px;

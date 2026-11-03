@@ -111,10 +111,15 @@
 }
 
 /* Equipment pips */
+/* Largeur fixée ici : un parent fit-content ferait retomber la carte à sa
+   taille minimale. Un monstre porte plus d'informations qu'un support. */
 .zr-card-anchor {
   position: relative;
-  width: fit-content;
-  max-width: 100%;
+  width: min(100%, 116px);
+}
+
+.zr-card-anchor .zr-card {
+  width: 100%;
 }
 
 .zr-equip-pips {

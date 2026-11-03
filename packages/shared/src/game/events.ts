@@ -40,6 +40,10 @@ export type FightEvent =
       ownerId: number;
       zoneIndex: number;
       instanceId: string;
+      /** L'effet a eu prise, ou n'a rien fait (aucune cible, choix passé). */
+      outcome: "resolved" | "fizzled";
+      /** La carte reste en place (Charge cyclique). */
+      stays: boolean;
     }
   | {
       kind: "monster_healed";

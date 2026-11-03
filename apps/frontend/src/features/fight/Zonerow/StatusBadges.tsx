@@ -69,9 +69,14 @@ export default function StatusBadges({ monster }: { monster: MonsterOnBoard }) {
       case "reflect":
         return t("effects.status.reflect", { value: monster.reflectPercent });
       case "reduce":
-        return t("effects.status.damageReduction", {
-          value: monster.damageReduction,
-        });
+        return monster.reductionTurns
+          ? t("effects.status.damageReductionTurns", {
+              value: monster.damageReduction,
+              count: monster.reductionTurns,
+            })
+          : t("effects.status.damageReduction", {
+              value: monster.damageReduction,
+            });
       case "attacks":
         return monster.doubleAtkNextTurn
           ? t("effects.status.doubleAttack")

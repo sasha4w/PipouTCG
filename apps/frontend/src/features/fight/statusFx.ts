@@ -56,7 +56,10 @@ export function statusFlags(monster: MonsterOnBoard): ReadonlySet<StatusFxId> {
   if (has(Immunity.COMBAT_DESTRUCTION)) flags.add("combatEndure");
   if ((monster.reflectPercent ?? 0) > 0) flags.add("reflect");
   if (monster.ignoresTaunt) flags.add("ignoreTaunt");
-  if (monster.doubleAtkNextTurn || monster.attacksPerTurn > 1)
+  if (
+    monster.doubleAtkNextTurn ||
+    monster.attacksPerTurn + (monster.extraAttacksThisTurn ?? 0) > 1
+  )
     flags.add("charge");
   if ((monster.hatchCounter ?? 0) > 0) flags.add("hatch");
   if ((monster.turnCounter ?? 0) > 0) flags.add("countdown");

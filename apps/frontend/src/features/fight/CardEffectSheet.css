@@ -146,3 +146,21 @@
   line-height: 1.35;
   color: #5a3a46;
 }
+
+/* ── Condition d'activation d'une Charge ────────────────────────────────── */
+
+.ces-rule--requirement {
+  padding: 6px 8px;
+  background: #fff1d6;
+  border: 1.5px solid #ffb43a;
+  border-radius: 8px;
+}
+
+.ces-rule--requirement .ces-trigger {
+  color: #8a4b00;
+}
+
+.ces-rule--requirement .ces-line {
+  border-left-color: #ffb43a;
+  font-weight: 600;
+}

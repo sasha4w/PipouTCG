@@ -41,6 +41,8 @@ interface Props {
   lockedInstances?: ReadonlyMap<string, string>;
   /** Monstres dont le mode de combat ne se change pas (Zeta implanté). */
   noModeChangeIds?: ReadonlySet<string>;
+  /** Cartes actives mais sans effet possible : instanceId -> avertissement. */
+  warnInstances?: ReadonlyMap<string, string>;
   onSupportRecycle?: (idx: number) => void;
   selectedZone?: number | null;
   recycleEnergy?: number;
@@ -65,6 +67,7 @@ export default function ZoneRow({
   attackTargetIds,
   lockedInstances,
   noModeChangeIds,
+  warnInstances,
   onZoneClick,
   onMonsterClick,
   onModeChange,
@@ -111,6 +114,7 @@ export default function ZoneRow({
           const lockedReason = zone
             ? lockedInstances?.get(zone.instanceId)
             : undefined;
+          const warning = zone ? warnInstances?.get(zone.instanceId) : undefined;
           const isAttackTarget =
             !!zone && !!attackTargetIds?.has(zone.instanceId);
           const rarityColor =
@@ -222,6 +226,7 @@ export default function ZoneRow({
                     zone={zone}
                     selected={pickedId === zone.instanceId}
                     chargeFx={fx?.get(idx)?.chargeFx}
+                    warning={warning}
                     onInfo={() => setInspectId(zone.instanceId)}
                   />
                 )
@@ -241,7 +246,8 @@ export default function ZoneRow({
                       />
                     ) : (
                       dyingData.baseCard.supportType === SupportType.CHARGE &&
-                      fx?.get(idx)?.chargeFx === "burst" ? (
+                      (fx?.get(idx)?.chargeFx === "burst" ||
+                        fx?.get(idx)?.chargeFx === "fizzle") ? (
                         <ChargeFrame
                           counters={
                             dyingData.chargeCounters ??
@@ -249,7 +255,7 @@ export default function ZoneRow({
                             1
                           }
                           max={dyingData.baseCard.chargeMax ?? 1}
-                          fx="burst"
+                          fx={fx.get(idx)!.chargeFx}
                         >
                           <CardFace card={dyingData.baseCard} size="xs" />
                         </ChargeFrame>
