@@ -10,6 +10,10 @@ import {
   BALANCE_NEW_CARDS,
   BALANCE_PATCHES,
 } from '../../database/balance-2026-10-patches';
+import {
+  CHARGE_NEW_CARDS,
+  NOVEMBER_PATCHES,
+} from '../../database/cartes-2026-11-patches';
 import { DRAKON_ORIGINES_CARDS } from '../../database/drakon-origines-cards';
 import { GARDE_PATCHES } from '../../database/garde-2026-10-patches';
 import {
@@ -163,9 +167,51 @@ export function allRealCards(): Card[] {
         } as Card)
       : c;
   });
-  return withSupportRework(
-    withTeros([...withAncetres(cards), ...extensionCards(cards)]),
+  return withNovember(
+    withSupportRework(
+      withTeros([...withAncetres(cards), ...extensionCards(cards)]),
+    ),
   );
+}
+
+/** Patch 2026-11 : textes clarifiés, puis cartes Charge. */
+function withNovember(cards: Card[]): Card[] {
+  const patched = cards.map((c) => {
+    const patch = NOVEMBER_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          description: patch.after.description,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
+  const created = CHARGE_NEW_CARDS.map(
+    (c, i) =>
+      ({
+        id: 93_001 + i,
+        name: c.name,
+        rarity: c.rarity,
+        type: 'support',
+        atk: 0,
+        hp: 0,
+        cost: 0,
+        supportType: SupportType.CHARGE,
+        equipmentSlot: null,
+        isTerrain: false,
+        chargeMax: c.chargeMax,
+        chargeMode: c.chargeMode,
+        archetype: c.archetype,
+        effects: c.effects,
+        description: c.description,
+        element: null,
+        lineage: null,
+        stage: null,
+        image: null,
+        cardSet: patched.find((x) => x.name === c.setOf)?.cardSet,
+      }) as Card,
+  );
+  return [...patched, ...created];
 }
 
 /** Reproduit la migration SupportRework : Terrains → Persistants, emplacements d'équipement. */

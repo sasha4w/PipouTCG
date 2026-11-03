@@ -46,9 +46,10 @@ describe('LAUNCH_SIGNATURES', () => {
 
 describe('snapshot', () => {
   it('a la taille attendue des sets', () => {
-    expect(setOf('pipou')).toHaveLength(27);
-    expect(setOf('pixelman')).toHaveLength(26);
-    expect(setOf('dragon')).toHaveLength(28); // + 4 Ancestraux et le Drakon des Origines
+    expect(setOf('pipou')).toHaveLength(28); // + Alerte générale
+    expect(setOf('pixelman')).toHaveLength(27); // + Extraction de données
+    // + 4 Ancestraux, le Drakon des Origines et Méditation céleste
+    expect(setOf('dragon')).toHaveLength(29);
   });
 });
 

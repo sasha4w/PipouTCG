@@ -66,7 +66,13 @@ describe('couverture des effets', () => {
       // Jeune / Adulte Drakon : il n'arrive que par évolution, sur le stade
       // précédent de sa lignée
       const evolvesOnly = !canSummonFromHand(card);
-      const allyName = card.name === 'Force Plasma' ? 'Noyau Delta' : 'Allié';
+      // Force Plasma exige un Noyau en jeu, Alerte générale un Général Chatouille
+      const allyName =
+        card.name === 'Force Plasma'
+          ? 'Noyau Delta'
+          : card.name === 'Alerte générale'
+            ? 'Général Chatouille'
+            : 'Allié';
       const base = monsterCard('Base', {
         archetype: 'dragon',
         lineage: card.lineage,
@@ -142,7 +148,10 @@ describe('couverture des effets', () => {
           handIndex: 0,
           targetInstanceId: ally.instanceId,
         });
-      if (card.supportType === SupportType.PERSISTENT)
+      if (
+        card.supportType === SupportType.PERSISTENT ||
+        card.supportType === SupportType.CHARGE
+      )
         return engine.dispatch(game, 'p1', {
           type: 'play_support',
           handIndex: 0,
