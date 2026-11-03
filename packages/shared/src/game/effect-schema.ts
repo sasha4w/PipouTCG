@@ -113,6 +113,10 @@ export const ACTION_SCHEMA: Record<ActionType, ActionSchema> = {
   [A.SET_MONSTER_DEBUFF_IMMUNITY]: s(SELF_ONLY),
   [A.SET_MONSTER_STATUS_IMMUNITY]: s(SELF_ONLY),
   [A.ADD_CHARGE_COUNTERS]: s(PLAYER_ONLY, "value"),
+  [A.GRANT_EXTRA_ATTACK]: s(ALLIES, "value"),
+  [A.TRANSFER_HALF_ATK]: s(PLAYER_ONLY, "filter"),
+  [A.FORCE_EVOLVE]: s(PLAYER_ONLY, "filter"),
+  [A.REQUIRES_CARD_ON_BOARD]: s(SELF_ONLY, "filter"),
 };
 
 /** Monstre, ou sous-type de support. */

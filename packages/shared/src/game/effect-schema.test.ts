@@ -31,6 +31,19 @@ describe("effect-schema", () => {
     }
   });
 
+  it("actions des cartes Charge", () => {
+    expect(ACTION_SCHEMA[ActionType.GRANT_EXTRA_ATTACK].targets).toContain(
+      EffectTarget.ALL_ALLIES,
+    );
+    expect(ACTION_SCHEMA[ActionType.TRANSFER_HALF_ATK].targets).toEqual([
+      EffectTarget.PLAYER,
+    ]);
+    expect(ACTION_SCHEMA[ActionType.FORCE_EVOLVE].fields).toContain("filter");
+    expect(ACTION_SCHEMA[ActionType.REQUIRES_CARD_ON_BOARD].targets).toEqual([
+      EffectTarget.SELF,
+    ]);
+  });
+
   it("every action that can target ARCHETYPE_ALLIES takes an archetype", () => {
     for (const [type, schema] of Object.entries(ACTION_SCHEMA)) {
       if (schema.targets.includes(EffectTarget.ARCHETYPE_ALLIES))
