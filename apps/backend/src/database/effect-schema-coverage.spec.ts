@@ -6,9 +6,7 @@ describe('effect-schema vs cartes réelles', () => {
   it.each(allRealCards().map((c) => [c.name, c] as const))(
     '%s respecte le schéma',
     (_name, card) => {
-      expect(
-        validateEffects(cardKindOf(card), card.effects ?? []),
-      ).toEqual([]);
+      expect(validateEffects(cardKindOf(card), card.effects ?? [])).toEqual([]);
     },
   );
 
