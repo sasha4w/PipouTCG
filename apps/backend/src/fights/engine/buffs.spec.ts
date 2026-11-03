@@ -106,7 +106,7 @@ describe('GameEngine — buffs', () => {
     expect(bidouille.currentHp).toBe(500);
   });
 
-  it('un monstre qui tombe à 0 PV en perdant un bonus est détruit', () => {
+  it('perdre un bonus de PV max ne retire pas de PV courants et ne détruit pas', () => {
     const game = scenario({
       p1: {
         monsters: [
@@ -121,8 +121,8 @@ describe('GameEngine — buffs', () => {
 
     engine.settle(game);
 
-    expect(game.player1.monsterZones[0]).toBeNull();
-    expect(graveyardNames(game, 'p1')).toContain('Bidouille');
+    expect(monsterNamed(game, 'p1', 'Bidouille').currentHp).toBe(100);
+    expect(graveyardNames(game, 'p1')).not.toContain('Bidouille');
   });
 
   it("un terrain ARCHETYPE_ALLIES ne buffe que l'archétype visé", () => {
