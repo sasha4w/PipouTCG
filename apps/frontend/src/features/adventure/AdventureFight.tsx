@@ -184,6 +184,7 @@ function AdventureFight({ userId, opponentId, deckId: deckFromUrl }: Props) {
           unlockedWorlds={unlockedWorlds}
           onReplay={deckId !== null ? replay : undefined}
           onBack={backToWorld}
+          onWorlds={() => navigate("/adventure")}
         />
       ) : status === "playing" && gameState ? (
         <div className="fp-fight-area">

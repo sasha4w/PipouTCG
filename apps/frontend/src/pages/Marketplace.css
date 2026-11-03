@@ -3,7 +3,7 @@
 ══════════════════════════════════════════════ */
 .marketplace-page {
   position: relative;
-  min-height: 100vh;
+  min-height: 100%;
   padding: 2rem 1.5rem 4rem;
   overflow: hidden;
 }

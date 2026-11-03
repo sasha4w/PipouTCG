@@ -1,0 +1,91 @@
+.effect-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.effect-sentence {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid #e0c7cf;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.effect-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 14px;
+  border-left: 3px solid #e0c7cf;
+}
+
+.effect-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.effect-word {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #7a1c3b;
+}
+
+.hole {
+  padding: 3px 8px;
+  border: 1px dashed #7a1c3b;
+  border-radius: 8px;
+  background: #fdf3f6;
+  font: inherit;
+  font-size: 0.85rem;
+  max-width: 100%;
+}
+
+.hole--number {
+  width: 64px;
+}
+
+.hole--text {
+  width: 140px;
+}
+
+.effect-btn {
+  padding: 3px 10px;
+  border: 1px solid #7a1c3b;
+  border-radius: 8px;
+  background: transparent;
+  color: #7a1c3b;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.effect-btn:hover {
+  background: #fdf3f6;
+}
+
+.effect-issue {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #b3261e;
+}
+
+.effect-advanced {
+  align-self: flex-start;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f3e8c9;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.effect-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #7a6a6f;
+}
