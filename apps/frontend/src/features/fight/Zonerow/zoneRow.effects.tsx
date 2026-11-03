@@ -82,9 +82,14 @@ export function getMonsterStatusEntries(
   if (zone.damageReduction && zone.damageReduction > 1)
     entries.push({
       icon: <KeywordIcon id="damageReduction" />,
-      label: t("effects.status.damageReduction", {
-        value: zone.damageReduction,
-      }),
+      label: zone.reductionTurns
+        ? t("effects.status.damageReductionTurns", {
+            value: zone.damageReduction,
+            count: zone.reductionTurns,
+          })
+        : t("effects.status.damageReduction", {
+            value: zone.damageReduction,
+          }),
       type: "buff",
     });
   if (zone.attacksPerTurn > 1)

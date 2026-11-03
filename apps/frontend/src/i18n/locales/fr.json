@@ -463,7 +463,11 @@
           "SET_SUPPORT_DEBUFF_IMMUNITY": "donne l'immunité aux malus de support",
           "SET_MONSTER_DEBUFF_IMMUNITY": "donne l'immunité aux malus de monstre",
           "SET_MONSTER_STATUS_IMMUNITY": "donne l'immunité aux statuts",
-          "ADD_CHARGE_COUNTERS": "ajoute des compteurs de charge"
+          "ADD_CHARGE_COUNTERS": "ajoute des compteurs de charge",
+          "GRANT_EXTRA_ATTACK": "donne une attaque supplémentaire ce tour",
+          "TRANSFER_HALF_ATK": "transfère la moitié de l'ATK d'un monstre à un Noyau",
+          "FORCE_EVOLVE": "fait évoluer un Drakon sans carte",
+          "REQUIRES_CARD_ON_BOARD": "exige une carte précise sur le terrain"
         }
       },
     "title": "Dashboard Admin",
@@ -694,6 +698,8 @@
       "doubleAttack": "Double attaque au prochain tour",
       "multiAttack": "Attaque {{count}} fois par tour",
       "damageReduction": "Dégâts reçus ÷{{value}}",
+      "damageReductionTurns_one": "Dégâts reçus ÷{{value}} (encore {{count}} tour)",
+      "damageReductionTurns_other": "Dégâts reçus ÷{{value}} (encore {{count}} tours)",
       "freeze_one": "Gelé encore {{count}} tour",
       "freeze_other": "Gelé encore {{count}} tours",
       "countdown_one": "Détruit dans {{count}} tour",
@@ -918,7 +924,10 @@
       "confirm": {
         "pick_to_hand": "Récupérer",
         "discard": "Défausser",
-        "copy_effects": "Copier ce pouvoir"
+        "copy_effects": "Copier ce pouvoir",
+        "transfer_atk_source": "Extraire",
+        "transfer_atk_target": "Transférer",
+        "force_evolve": "Évoluer"
       },
       "hintTarget": "Sélectionne le monstre cible",
       "hint_one": "Sélectionne {{count}} carte",
@@ -934,7 +943,10 @@
         "from_graveyard_or_deck": "Choisis une carte à récupérer (cimetière ou deck)",
         "discard_one": "Choisis {{count}} carte à défausser",
         "discard_other": "Choisis {{count}} cartes à défausser",
-        "baby_lineage": "Choisis le Bébé {{lineage}} à récupérer (cimetière ou deck)"
+        "baby_lineage": "Choisis le Bébé {{lineage}} à récupérer (cimetière ou deck)",
+        "extract_source": "Choisis le monstre dont tu extrais la moitié de l'ATK",
+        "extract_target": "Choisis le Noyau qui reçoit {{amount}} ATK",
+        "meditate": "Choisis le Drakon qui évolue"
       }
     },
     "summon": {

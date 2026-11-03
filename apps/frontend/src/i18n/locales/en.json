@@ -463,7 +463,11 @@
           "SET_SUPPORT_DEBUFF_IMMUNITY": "donne l'immunité aux malus de support",
           "SET_MONSTER_DEBUFF_IMMUNITY": "donne l'immunité aux malus de monstre",
           "SET_MONSTER_STATUS_IMMUNITY": "donne l'immunité aux statuts",
-          "ADD_CHARGE_COUNTERS": "ajoute des compteurs de charge"
+          "ADD_CHARGE_COUNTERS": "ajoute des compteurs de charge",
+          "GRANT_EXTRA_ATTACK": "grants an extra attack this turn",
+          "TRANSFER_HALF_ATK": "moves half of a monster's ATK to a Core",
+          "FORCE_EVOLVE": "evolves a Drakon without a card",
+          "REQUIRES_CARD_ON_BOARD": "requires a specific card on the board"
         }
       },
     "title": "Admin Dashboard",
@@ -692,6 +696,8 @@
       "doubleAttack": "Double attack next turn",
       "multiAttack": "Attacks {{count}} times per turn",
       "damageReduction": "Damage taken ÷{{value}}",
+      "damageReductionTurns_one": "Damage taken ÷{{value}} ({{count}} turn left)",
+      "damageReductionTurns_other": "Damage taken ÷{{value}} ({{count}} turns left)",
       "freeze_one": "Frozen for {{count}} more turn",
       "freeze_other": "Frozen for {{count}} more turns",
       "countdown_one": "Destroyed in {{count}} turn",
@@ -916,7 +922,10 @@
       "confirm": {
         "pick_to_hand": "Retrieve",
         "discard": "Discard",
-        "copy_effects": "Copy this power"
+        "copy_effects": "Copy this power",
+        "transfer_atk_source": "Drain",
+        "transfer_atk_target": "Transfer",
+        "force_evolve": "Evolve"
       },
       "hintTarget": "Select the target monster",
       "hint_one": "Select {{count}} card",
@@ -932,7 +941,10 @@
         "from_graveyard_or_deck": "Choose a card to retrieve (graveyard or deck)",
         "discard_one": "Choose {{count}} card to discard",
         "discard_other": "Choose {{count}} cards to discard",
-        "baby_lineage": "Choose the Baby {{lineage}} to retrieve (graveyard or deck)"
+        "baby_lineage": "Choose the Baby {{lineage}} to retrieve (graveyard or deck)",
+        "extract_source": "Choose the monster to drain half its ATK",
+        "extract_target": "Choose the Core that gains {{amount}} ATK",
+        "meditate": "Choose the Drakon that evolves"
       }
     },
     "summon": {

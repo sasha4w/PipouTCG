@@ -90,6 +90,24 @@ describe("CardPickModal", () => {
     }
   });
 
+  it("consigne d'extraction traduite, avec le montant", async () => {
+    const extract: PendingChoice = {
+      ...choice,
+      prompt: "fallback",
+      promptKey: "extract_target",
+      promptParams: { amount: 500 },
+      resolution: "transfer_atk_target",
+    };
+    await i18n.changeLanguage("fr");
+    render(<CardPickModal choice={extract} onConfirm={vi.fn()} />);
+    expect(
+      screen.getByText(/Choisis le Noyau qui reçoit 500 ATK/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^Transférer \(0\/1\)$/ }),
+    ).toBeInTheDocument();
+  });
+
   it("sans clé, affiche la consigne telle que reçue", () => {
     render(<CardPickModal choice={choice} onConfirm={vi.fn()} />);
     expect(screen.getByText(/Récupérer une carte/)).toBeInTheDocument();

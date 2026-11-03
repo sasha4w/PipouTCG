@@ -64,7 +64,8 @@ export function monsterBadges(monster: MonsterOnBoard): StatusBadge[] {
   }
   if (hasImmunity(monster, Immunity.COMBAT_DESTRUCTION)) badges.push({ id: "endure" });
   if ((monster.reflectPercent ?? 0) > 0) badges.push({ id: "reflect" });
-  if ((monster.damageReduction ?? 0) > 1) badges.push({ id: "reduce" });
+  if ((monster.damageReduction ?? 0) > 1)
+    badges.push({ id: "reduce", count: monster.reductionTurns });
   badges.push(attacksBadge(monster));
   if (monster.hasPiercing) badges.push({ id: "piercing" });
   if (monster.ignoresTaunt) badges.push({ id: "ignoreTaunt" });
