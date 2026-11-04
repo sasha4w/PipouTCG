@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import InboxWidget from "../features/inbox/InboxWidget";
-import { IconCrown } from "./Icons";
+import { IconCards, IconCrown } from "./Icons";
 
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
@@ -281,6 +281,14 @@ export default function Header() {
             <span>{t("header.admin")}</span>
           </Button>
         )}
+        <Button
+          variant="ghost-bordeaux"
+          size="sm"
+          onClick={() => navigate("/collection")}
+        >
+          <IconCards size={13} color="#7A1C3B" />
+          <span>{t("header.collection")}</span>
+        </Button>
         <InboxWidget />
         <SoundButton />
       </div>

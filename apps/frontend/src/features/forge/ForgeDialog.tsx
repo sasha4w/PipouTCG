@@ -9,7 +9,7 @@ import {
 } from "@pipou/shared";
 import BottomSheet from "../../components/BottomSheet";
 import Button from "../../components/Button";
-import { IconDust, IconForge } from "../../components/Icons";
+import { IconForge } from "../../components/Icons";
 import { forgeService } from "../../services/forge.service";
 import type { UserCollection } from "../../services/user.service";
 import { apiErrorMessage } from "../../utils/errors";
@@ -47,8 +47,7 @@ export default function ForgeDialog({ collection, onClose }: Props) {
   const forgeableSets = collection.sets.filter(
     (s) => inputRarities(s.cards).length > 0,
   );
-  const set =
-    forgeableSets.find((s) => s.id === setChoice) ?? forgeableSets[0];
+  const set = forgeableSets.find((s) => s.id === setChoice) ?? forgeableSets[0];
   const rarities = set ? inputRarities(set.cards) : [];
   const rarity =
     rarityChoice && rarities.includes(rarityChoice)
@@ -60,9 +59,7 @@ export default function ForgeDialog({ collection, onClose }: Props) {
   const inputs = set
     ? set.cards.filter((c) => c.owned && c.rarity === rarity)
     : [];
-  const targets = set
-    ? set.cards.filter((c) => c.rarity === targetRarity)
-    : [];
+  const targets = set ? set.cards.filter((c) => c.rarity === targetRarity) : [];
   const total = selectionTotal(selection);
   const ready = canSubmitForge(selection, cost) && targetId !== null;
 
@@ -224,16 +221,5 @@ export default function ForgeDialog({ collection, onClose }: Props) {
         </div>
       )}
     </BottomSheet>
-  );
-}
-
-/** Solde de poussière affiché à côté des boutons de forge. */
-export function DustBalance({ dust }: { dust: number }) {
-  const { t } = useTranslation();
-  return (
-    <span className="forge-dust" title={t("forge.dust")}>
-      <IconDust size={16} color="currentColor" />
-      {dust.toLocaleString()}
-    </span>
   );
 }

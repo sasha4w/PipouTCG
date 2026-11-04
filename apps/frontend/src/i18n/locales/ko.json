@@ -45,7 +45,8 @@
     "settings": "설정"
   },
   "header": {
-    "admin": "관리자"
+    "admin": "관리자",
+    "collection": "컬렉션"
   },
   "settings": {
     "title": "설정",
@@ -98,7 +99,16 @@
     "all_sets": "모든 세트",
     "show_missing": "미획득 카드 표시",
     "not_owned": "미획득",
-    "owned_count": "{{owned}} / {{total}} 카드 획득"
+    "owned_count": "{{owned}} / {{total}} 카드 획득",
+    "page_title": "내 컬렉션",
+    "tab_collection": "컬렉션",
+    "tab_forge": "대장간",
+    "tab_destroy": "파괴",
+    "view": "{{name}} 보기",
+    "lock_label": "{{name}} 카드 잠금",
+    "locked_count_other": "{{count}}장 잠김",
+    "lock_error": "잠글 수 없습니다.",
+    "error": "컬렉션을 불러올 수 없습니다."
   },
   "quests": {
     "title": "퀘스트",

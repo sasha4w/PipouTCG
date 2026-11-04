@@ -45,7 +45,8 @@
     "settings": "Settings"
   },
   "header": {
-    "admin": "Admin"
+    "admin": "Admin",
+    "collection": "Collection"
   },
   "settings": {
     "title": "Settings",
@@ -99,7 +100,17 @@
     "all_sets": "All sets",
     "show_missing": "Show unowned cards",
     "not_owned": "Not owned",
-    "owned_count": "{{owned}} / {{total}} card{{plural}} owned"
+    "owned_count": "{{owned}} / {{total}} card{{plural}} owned",
+    "page_title": "My collection",
+    "tab_collection": "Collection",
+    "tab_forge": "Forge",
+    "tab_destroy": "Destruction",
+    "view": "View {{name}}",
+    "lock_label": "Lock copies of {{name}}",
+    "locked_count_one": "{{count}} locked",
+    "locked_count_other": "{{count}} locked",
+    "lock_error": "Could not lock.",
+    "error": "Could not load the collection."
   },
   "quests": {
     "title": "Quests",

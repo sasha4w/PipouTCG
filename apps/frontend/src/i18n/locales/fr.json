@@ -45,7 +45,8 @@
     "settings": "Réglages"
   },
   "header": {
-    "admin": "Admin"
+    "admin": "Admin",
+    "collection": "Collection"
   },
   "settings": {
     "title": "Réglages",
@@ -99,7 +100,17 @@
     "all_sets": "Tous les sets",
     "show_missing": "Afficher les cartes non obtenues",
     "not_owned": "Non obtenue",
-    "owned_count": "{{owned}} / {{total}} carte{{plural}} obtenue{{plural}}"
+    "owned_count": "{{owned}} / {{total}} carte{{plural}} obtenue{{plural}}",
+    "page_title": "Ma collection",
+    "tab_collection": "Collection",
+    "tab_forge": "Forge",
+    "tab_destroy": "Destruction",
+    "view": "Voir {{name}}",
+    "lock_label": "Verrouiller des copies de {{name}}",
+    "locked_count_one": "{{count}} verrouillée",
+    "locked_count_other": "{{count}} verrouillées",
+    "lock_error": "Impossible de verrouiller.",
+    "error": "Impossible de charger la collection."
   },
   "quests": {
     "title": "Missions",

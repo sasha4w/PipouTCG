@@ -1,0 +1,29 @@
+.collection-tab__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.collection-tab__lock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #7a1c3b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.collection-tab__lock-select {
+  padding: 2px 6px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  border-radius: 8px;
+  background: #fdfbf6;
+  color: #491021;
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+.collection-tab__lock-text {
+  color: #a08070;
+}
