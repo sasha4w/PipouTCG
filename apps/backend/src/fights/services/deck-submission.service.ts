@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DecksService } from '../../decks/decks.service';
@@ -10,6 +11,8 @@ import { seatOf, seatPlayer } from '../helpers/game-state.helper';
 
 @Injectable()
 export class DeckSubmissionService {
+  private readonly logger = new Logger(DeckSubmissionService.name);
+
   constructor(
     private decksService: DecksService,
     private engine: GameEngine,
@@ -38,7 +41,16 @@ export class DeckSubmissionService {
       return { error: 'Deck invalide ou inaccessible' };
     }
     const result = this.engine.setupDeck(game, seat, cards);
-    if (!result.error) await this.decksService.markUsed(deckId, userId);
+    if (!result.error) {
+      // Simple suivi : un échec ne doit pas défaire un deck déjà installé.
+      try {
+        await this.decksService.markUsed(deckId, userId);
+      } catch (err) {
+        this.logger.warn(
+          `Écriture du dernier deck utilisé impossible (deck ${deckId}, user ${userId}) : ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
     return result;
   }
 }

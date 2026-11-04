@@ -45,4 +45,11 @@ describe('DeckSubmissionService — dernier deck utilisé', () => {
     expect(await svc.submitDeck(game, 7, 4)).toEqual({ error: 'boom' });
     expect(decks.markUsed).not.toHaveBeenCalled();
   });
+
+  it("ignore un échec d'écriture du dernier deck", async () => {
+    const { svc, decks, game } = setup();
+    decks.markUsed.mockRejectedValue(new Error('db down'));
+    expect(await svc.submitDeck(game, 7, 4)).toEqual({});
+    expect(decks.markUsed).toHaveBeenCalledWith(4, 7);
+  });
 });
