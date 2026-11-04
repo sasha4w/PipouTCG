@@ -26,7 +26,17 @@
   white-space: nowrap;
 }
 
-/* ── Barre d'outils : recherche + filtres, puis tri ── */
+/* ── Barre d'outils : recherche + filtres, puis tri (reste en haut au scroll) ── */
+.cg__filterbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.3rem 0 0.5rem;
+  background: #f5efe0;
+}
 .cg__toolbar {
   display: flex;
   gap: 8px;

@@ -25,7 +25,11 @@ export class DecksService {
   ) {}
 
   async findAllByUser(userId: number): Promise<Deck[]> {
-    return this.deckRepo.find({ where: { userId } });
+    // La carte est nécessaire au front pour juger si le deck est jouable.
+    return this.deckRepo.find({
+      where: { userId },
+      relations: ['deckCards', 'deckCards.userCard', 'deckCards.userCard.card'],
+    });
   }
 
   async findOne(id: number, userId: number): Promise<Deck> {
@@ -33,6 +37,21 @@ export class DecksService {
     if (!deck) throw new NotFoundException(`Deck #${id} introuvable`);
     if (deck.userId !== userId) throw new ForbiddenException();
     return deck;
+  }
+
+  async setFavorite(
+    id: number,
+    userId: number,
+    favorite: boolean,
+  ): Promise<Deck> {
+    await this.findOne(id, userId); // ownership check
+    await this.deckRepo.update({ id }, { isFavorite: favorite });
+    return this.findOne(id, userId);
+  }
+
+  /** Retient le deck comme dernier utilisé : il sera proposé par défaut. */
+  async markUsed(id: number, userId: number): Promise<void> {
+    await this.deckRepo.update({ id, userId }, { lastUsedAt: new Date() });
   }
 
   /**

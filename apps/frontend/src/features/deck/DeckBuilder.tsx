@@ -11,7 +11,6 @@ import {
 import { userService } from "../../services/user.service";
 import { soundService } from "../../services/sound.service";
 import type { Card } from "../../services/card.service";
-import CardFace from "../cards/CardFace";
 import CardFilterBar from "../glossary/CardFilterBar";
 import {
   NO_FILTERS,
@@ -19,13 +18,17 @@ import {
   sortCards,
   useCardCatalog,
 } from "../glossary/cardCatalog";
+import DeckCardRow from "./DeckCardRow";
 import DeckCardSheet from "./DeckCardSheet";
+import { sortDecks } from "./deckPicker";
+import { useToggleFavorite } from "./useToggleFavorite";
 import Button from "../../components/Button";
 import Loading from "../../components/Loading";
 import {
   IconArrowLeft,
   IconCards,
   IconPencil,
+  IconStar,
   IconTrash,
 } from "../../components/Icons";
 import "../../components/manager.css";
@@ -77,6 +80,7 @@ export default function DeckBuilder() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("list");
   const queryClient = useQueryClient();
+  const toggleFavorite = useToggleFavorite();
   const decksQuery = useQuery({
     queryKey: QUERY_KEYS.decks,
     queryFn: () => deckService.getMyDecks(),
@@ -95,7 +99,9 @@ export default function DeckBuilder() {
   const [deckName, setDeckName] = useState("");
   const [cards, setCards] = useState<DeckCardEntry[]>([]);
   const [filters, setFilters] = useState(NO_FILTERS);
+  const [deckFilters, setDeckFilters] = useState(NO_FILTERS);
   const [sheet, setSheet] = useState<SheetTarget | null>(null);
+  const [tab, setTab] = useState<"deck" | "collection">("collection");
 
   const refreshDecks = () =>
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.decks });
@@ -106,6 +112,7 @@ export default function DeckBuilder() {
     setDeckName("");
     setCards([]);
     setFilters(NO_FILTERS);
+    setTab("collection");
     setView("editor");
   };
 
@@ -119,6 +126,7 @@ export default function DeckBuilder() {
       })),
     );
     setFilters(NO_FILTERS);
+    setTab(deck.deckCards.length > 0 ? "deck" : "collection");
     setView("editor");
   };
 
@@ -163,6 +171,13 @@ export default function DeckBuilder() {
       (a, b) =>
         a.info.cost - b.info.cost || a.info.name.localeCompare(b.info.name),
     );
+
+  // Mon deck : mêmes filtres et tri que la collection, ordre coût puis nom par défaut
+  const deckShown = sortCards(
+    deckCards.filter((d) => matchesFilters(fullCard(d.info), deckFilters)),
+    (d) => fullCard(d.info),
+    deckFilters,
+  );
 
   const totalCards = cards.reduce((s, c) => s + c.quantity, 0);
   const isValid =
@@ -213,7 +228,7 @@ export default function DeckBuilder() {
     const order =
       from === "grid"
         ? visible.map((c) => c.userCardId)
-        : deckCards.map((d) => d.userCardId);
+        : deckShown.map((d) => d.userCardId);
     // La carte a pu quitter sa liste (retirée du deck) : plus de ‹ ›
     const index = order.indexOf(userCardId);
     const goTo = (i: number) =>
@@ -272,7 +287,7 @@ export default function DeckBuilder() {
           </div>
         ) : (
           <div className="manager-list">
-            {decks.map((d) => {
+            {sortDecks(decks).map((d) => {
               const total = d.deckCards.reduce((s, c) => s + c.quantity, 0);
               const isValidDeck =
                 total >= DECK_RULES.MIN_CARDS && total <= DECK_RULES.MAX_CARDS;
@@ -292,6 +307,23 @@ export default function DeckBuilder() {
                     </div>
                   </div>
                   <div className="manager-item__actions">
+                    <Button
+                      variant="ghost-bordeaux"
+                      size="icon"
+                      aria-label={t(
+                        d.isFavorite
+                          ? "deckPicker.unfavorite"
+                          : "deckPicker.favorite",
+                        { name: d.name },
+                      )}
+                      aria-pressed={d.isFavorite}
+                      onClick={() => toggleFavorite(d)}
+                    >
+                      <IconStar
+                        size={16}
+                        className={d.isFavorite ? "deck-star--on" : undefined}
+                      />
+                    </Button>
                     <Button
                       variant="ghost-bordeaux"
                       size="icon"
@@ -343,78 +375,97 @@ export default function DeckBuilder() {
         />
       </div>
 
-      {/* Bandeau du deck */}
-      <section className="deck-strip" aria-label={t("deck.mine")}>
-        <div className="deck-strip__label">
-          {t("deck.mine")} · {totalCards} / {DECK_RULES.MAX_CARDS}
-        </div>
-        {deckCards.length === 0 ? (
-          <p className="deck-strip__empty">{t("deck.stripEmpty")}</p>
+      {/* Onglets */}
+      <div className="deck-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "deck"}
+          className={`deck-tabs__tab${tab === "deck" ? " deck-tabs__tab--on" : ""}`}
+          onClick={() => setTab("deck")}
+        >
+          {t("deck.tabDeck", { count: totalCards })}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "collection"}
+          className={`deck-tabs__tab${tab === "collection" ? " deck-tabs__tab--on" : ""}`}
+          onClick={() => setTab("collection")}
+        >
+          {t("deck.tabCollection")}
+        </button>
+      </div>
+
+      <div className="deck-tab-content" role="tabpanel">
+        {tab === "deck" ? (
+          deckCards.length === 0 ? (
+            <p className="deck-strip__empty">{t("deck.stripEmpty")}</p>
+          ) : (
+            <>
+              <CardFilterBar
+                filters={deckFilters}
+                cards={deckCards.map((d) => fullCard(d.info))}
+                onChange={setDeckFilters}
+              />
+              {deckShown.length === 0 && (
+                <div className="cg__state">{t("glossary.empty")}</div>
+              )}
+              <ul className="cg__list">
+                {deckShown.map(({ userCardId, quantity, info }) => (
+                  <li key={userCardId}>
+                    <DeckCardRow
+                      card={fullCard(info)}
+                      inDeck={quantity}
+                      copies={maxCopies(info)}
+                      canAdd={maxQtyOf(info) > quantity}
+                      onAdd={() => setQuantity(userCardId, quantity + 1)}
+                      onRemove={() => setQuantity(userCardId, quantity - 1)}
+                      onOpen={() => openSheet({ userCardId, from: "deck" })}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
         ) : (
-          <ul className="deck-strip__list">
-            {deckCards.map(({ userCardId, quantity, info }) => (
-              <li key={userCardId}>
-                <button
-                  type="button"
-                  className="deck-strip__card"
-                  aria-label={t("deck.viewQty", {
-                    name: info.name,
-                    qty: quantity,
-                  })}
-                  onClick={() => openSheet({ userCardId, from: "deck" })}
-                >
-                  <CardFace card={fullCard(info)} size="xs" />
-                  <span className="deck-strip__qty">{quantity}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <>
+            <CardFilterBar
+              filters={filters}
+              cards={ownedCards}
+              onChange={setFilters}
+            />
+            {visible.length === 0 && (
+              <div className="cg__state">
+                {owned.length === 0
+                  ? t("deck.collectionEmpty")
+                  : t("glossary.empty")}
+              </div>
+            )}
+            <ul className="cg__list">
+              {visible.map((c) => {
+                const inDeck = qtyOf(c.userCardId);
+                return (
+                  <li key={c.userCardId}>
+                    <DeckCardRow
+                      card={fullCard(c)}
+                      inDeck={inDeck}
+                      copies={maxCopies(c)}
+                      canAdd={maxQtyOf(c) > inDeck}
+                      onAdd={() => {
+                        soundService.play("select");
+                        setQuantity(c.userCardId, inDeck + 1);
+                      }}
+                      onOpen={() =>
+                        openSheet({ userCardId: c.userCardId, from: "grid" })
+                      }
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         )}
-      </section>
-
-      {/* Collection */}
-      <div className="deck-tab-content">
-        <CardFilterBar
-          filters={filters}
-          cards={ownedCards}
-          onChange={setFilters}
-        />
-
-        {visible.length === 0 && (
-          <div className="cg__state">
-            {owned.length === 0
-              ? t("deck.collectionEmpty")
-              : t("glossary.empty")}
-          </div>
-        )}
-
-        <ul className="deck-grid">
-          {visible.map((c) => {
-            const card = fullCard(c);
-            const inDeckQty = qtyOf(c.userCardId);
-            return (
-              <li key={c.userCardId}>
-                <button
-                  type="button"
-                  className={`deck-grid__card${inDeckQty > 0 ? " deck-grid__card--in" : ""}`}
-                  aria-label={
-                    inDeckQty > 0
-                      ? t("deck.viewQty", { name: card.name, qty: inDeckQty })
-                      : t("glossary.view", { name: card.name })
-                  }
-                  onClick={() =>
-                    openSheet({ userCardId: c.userCardId, from: "grid" })
-                  }
-                >
-                  <CardFace card={card} size="xs" />
-                  {inDeckQty > 0 && (
-                    <span className="deck-grid__qty">{inDeckQty}</span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
       </div>
 
       {/* Barre sticky bottom */}

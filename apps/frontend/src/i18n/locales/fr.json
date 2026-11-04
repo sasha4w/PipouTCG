@@ -1397,8 +1397,28 @@
     "set": "Set",
     "type": "Type"
   },
+  "deckPicker": {
+    "title": "Ton deck",
+    "change": "Changer",
+    "close": "Fermer",
+    "lastUsed": "dernier utilisé",
+    "cards_one": "{{count}} carte",
+    "cards_other": "{{count}} cartes",
+    "hidden_one": "{{count}} deck incomplet masqué",
+    "hidden_other": "{{count}} decks incomplets masqués",
+    "none": "Aucun deck jouable",
+    "complete": "Compléter un deck",
+    "favorite": "Ajouter {{name}} aux favoris",
+    "unfavorite": "Retirer {{name}} des favoris",
+    "loading": "Chargement…"
+  },
   "deck": {
     "title": "Mes Decks",
+"addOne": "Ajouter un exemplaire de {{name}}",
+    "removeOne": "Retirer un exemplaire de {{name}}",
+    "full": "{{name}} : maximum atteint",
+    "tabDeck": "Mon deck · {{count}}",
+    "tabCollection": "Collection",
     "new": "+ Nouveau",
     "loading": "Chargement...",
     "none": "Aucun deck créé",

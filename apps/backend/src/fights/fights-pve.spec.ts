@@ -61,7 +61,10 @@ function humanDeck() {
 
 function setup(aiCard: () => Card = () => fillerCard('Sbire')) {
   const { server, emitted } = fakeServer();
-  const decks = { loadDeckForMatch: jest.fn().mockResolvedValue(humanDeck()) };
+  const decks = {
+    loadDeckForMatch: jest.fn().mockResolvedValue(humanDeck()),
+    markUsed: jest.fn().mockResolvedValue(undefined),
+  };
   const gameEnd = { persistResult: jest.fn().mockResolvedValue(undefined) };
   const matchmaking = {
     leaveQueue: jest.fn(),

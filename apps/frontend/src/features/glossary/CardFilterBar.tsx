@@ -119,7 +119,7 @@ export default function CardFilterBar({ filters, cards, onChange }: Props) {
   );
 
   return (
-    <>
+    <div className="cg__filterbar">
       <div className="cg__toolbar">
         <label className="cg__search">
           <IconSearch />
@@ -217,6 +217,6 @@ export default function CardFilterBar({ filters, cards, onChange }: Props) {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 }

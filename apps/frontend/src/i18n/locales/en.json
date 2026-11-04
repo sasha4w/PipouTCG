@@ -1396,8 +1396,28 @@
     "set": "Set",
     "type": "Type"
   },
+  "deckPicker": {
+    "title": "Your deck",
+    "change": "Change",
+    "close": "Close",
+    "lastUsed": "last used",
+    "cards_one": "{{count}} card",
+    "cards_other": "{{count}} cards",
+    "hidden_one": "{{count}} incomplete deck hidden",
+    "hidden_other": "{{count}} incomplete decks hidden",
+    "none": "No playable deck",
+    "complete": "Complete a deck",
+    "favorite": "Add {{name}} to favorites",
+    "unfavorite": "Remove {{name}} from favorites",
+    "loading": "Loading…"
+  },
   "deck": {
     "title": "My Decks",
+"addOne": "Add a copy of {{name}}",
+    "removeOne": "Remove a copy of {{name}}",
+    "full": "{{name}}: maximum reached",
+    "tabDeck": "My deck · {{count}}",
+    "tabCollection": "Collection",
     "new": "+ New",
     "loading": "Loading...",
     "none": "No deck yet",

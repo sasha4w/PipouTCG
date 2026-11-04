@@ -20,7 +20,10 @@ const OUTSIDER = 99;
 
 function setup(game: GameState = scenario()) {
   const { server, emitted } = fakeServer();
-  const decks = { loadDeckForMatch: jest.fn() };
+  const decks = {
+    loadDeckForMatch: jest.fn(),
+    markUsed: jest.fn().mockResolvedValue(undefined),
+  };
   const gameEnd = { persistResult: jest.fn().mockResolvedValue(undefined) };
   const matchmaking = { leaveQueue: jest.fn() };
   const timer = new TurnTimeoutService();

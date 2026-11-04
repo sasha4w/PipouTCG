@@ -99,43 +99,45 @@ export default function OwnCardList({ collection }: OwnCardListProps) {
 
   return (
     <div className="own-cardlist">
-      {/* Sélecteur de set */}
-      <select
-        className="own-cardlist__search"
-        value={filterSet}
-        onChange={(e) => {
-          setFilterSet(
-            e.target.value === "all" ? "all" : Number(e.target.value),
-          );
-          setPage(1);
-        }}
-        style={{ cursor: "pointer" }}
-      >
-        <option value="all">{t("collection.all_sets")}</option>
-        {collection.sets.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.name} ({s.owned}/{s.total})
-          </option>
-        ))}
-      </select>
+      <div className="own-cardlist__bar">
+        {/* Sélecteur de set */}
+        <select
+          className="own-cardlist__search"
+          value={filterSet}
+          onChange={(e) => {
+            setFilterSet(
+              e.target.value === "all" ? "all" : Number(e.target.value),
+            );
+            setPage(1);
+          }}
+          style={{ cursor: "pointer" }}
+        >
+          <option value="all">{t("collection.all_sets")}</option>
+          {collection.sets.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.owned}/{s.total})
+            </option>
+          ))}
+        </select>
 
-      {/* Recherche + Filtres */}
-      <SearchBar
-        value={search}
-        onChange={(val) => applyFilter(() => setSearch(val))}
-        placeholder={t("search.placeholder")}
-        hasActiveFilters={hasActiveFilters}
-        filters={
-          <FilterPanel
-            config={filterConfig}
-            values={filterValues}
-            onChange={(key, val) => applyFilter(() => setFilter(key, val))}
-            onReset={
-              hasActiveFilters ? () => applyFilter(resetFilters) : undefined
-            }
-          />
-        }
-      />
+        {/* Recherche + Filtres */}
+        <SearchBar
+          value={search}
+          onChange={(val) => applyFilter(() => setSearch(val))}
+          placeholder={t("search.placeholder")}
+          hasActiveFilters={hasActiveFilters}
+          filters={
+            <FilterPanel
+              config={filterConfig}
+              values={filterValues}
+              onChange={(key, val) => applyFilter(() => setFilter(key, val))}
+              onReset={
+                hasActiveFilters ? () => applyFilter(resetFilters) : undefined
+              }
+            />
+          }
+        />
+      </div>
 
       {/* Toggle cartes manquantes */}
       <label className="own-cardlist__toggle-missing">

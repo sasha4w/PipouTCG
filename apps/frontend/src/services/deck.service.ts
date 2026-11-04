@@ -1,5 +1,9 @@
 import { api } from "../api/api";
-import type { CreateDeckRequest, DeckCardEntry } from "@pipou/shared";
+import type {
+  CreateDeckRequest,
+  DeckCardEntry,
+  SetDeckFavoriteRequest,
+} from "@pipou/shared";
 import type { CardType, Rarity, SupportType } from "./card.service";
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -31,6 +35,9 @@ export interface Deck {
   name: string;
   userId: number;
   deckCards: DeckCard[];
+  isFavorite: boolean;
+  /** Dernier lancement de combat avec ce deck (ISO), null si jamais joué. */
+  lastUsedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -62,6 +69,13 @@ export const deckService = {
   /** Update (replace) an existing deck. */
   async updateDeck(id: number, dto: CreateDeckDto): Promise<Deck> {
     const res = await api.put(`/decks/${id}`, dto);
+    return res.data;
+  },
+
+  /** Mark or unmark a deck as favorite. */
+  async setFavorite(id: number, favorite: boolean): Promise<Deck> {
+    const body: SetDeckFavoriteRequest = { favorite };
+    const res = await api.patch(`/decks/${id}/favorite`, body);
     return res.data;
   },
 
