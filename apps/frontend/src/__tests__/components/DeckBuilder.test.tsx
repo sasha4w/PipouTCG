@@ -148,20 +148,21 @@ describe("DeckBuilder — éditeur", () => {
     await userEvent.click(qty("2"));
     expect(qty("2")).toBeChecked();
 
-    const strip = screen.getByRole("region", { name: "Mon deck" });
+    await userEvent.click(screen.getByRole("tab", { name: /Mon deck/ }));
+    const list = screen.getByRole("tabpanel");
     expect(
-      within(strip).getByRole("button", { name: "Voir Ogre (x2)" }),
+      within(list).getByText("Ogre", { selector: ".cg__name" }),
     ).toBeInTheDocument();
     expect(screen.getByText(/^2 \/ 40/)).toBeInTheDocument();
 
     await userEvent.click(qty("1"));
     expect(
-      within(strip).getByRole("button", { name: "Voir Ogre (x1)" }),
+      screen.getByRole("tab", { name: /Mon deck.*1/ }),
     ).toBeInTheDocument();
 
     await userEvent.click(qty("0"));
     expect(
-      within(strip).queryByRole("button", { name: /Ogre/ }),
+      within(list).queryByText("Ogre", { selector: ".cg__name" }),
     ).not.toBeInTheDocument();
   });
 
@@ -194,7 +195,7 @@ describe("DeckBuilder — éditeur", () => {
     expect(screen.getByRole("dialog", { name: "Ogre" })).toBeInTheDocument();
   });
 
-  it("depuis le bandeau, la fiche permet de retirer la carte du deck", async () => {
+  it("depuis l'onglet Mon deck, la fiche permet de retirer la carte du deck", async () => {
     await openEditor();
     await userEvent.click(screen.getByRole("button", { name: "Voir Ogre" }));
     await userEvent.click(
@@ -204,14 +205,12 @@ describe("DeckBuilder — éditeur", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "Fermer" }));
 
-    const strip = screen.getByRole("region", { name: "Mon deck" });
-    await userEvent.click(
-      within(strip).getByRole("button", { name: "Voir Ogre (x1)" }),
-    );
+    await userEvent.click(screen.getByRole("tab", { name: /Mon deck/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Voir Ogre" }));
     const sheet = screen.getByRole("dialog", { name: "Ogre" });
     await userEvent.click(within(sheet).getByRole("radio", { name: "0" }));
 
-    // La carte a quitté le bandeau : la fiche reste ouverte, sans ‹ ›
+    // La carte a quitté la liste : la fiche reste ouverte, sans ‹ ›
     expect(
       screen.getByText("Ajoute des cartes depuis ta collection"),
     ).toBeInTheDocument();
@@ -219,5 +218,68 @@ describe("DeckBuilder — éditeur", () => {
     expect(
       within(sheet).getByRole("button", { name: "Carte suivante" }),
     ).toBeDisabled();
+  });
+
+  it("ouvre sur Collection pour un nouveau deck, bascule d'onglet", async () => {
+    await openEditor();
+    expect(screen.getByRole("tab", { name: "Collection" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await userEvent.click(screen.getByRole("tab", { name: /Mon deck/ }));
+    expect(
+      screen.getByText("Ajoute des cartes depuis ta collection"),
+    ).toBeInTheDocument();
+  });
+
+  it("+ ajoute depuis Collection, - retire depuis Mon deck", async () => {
+    await openEditor();
+    await userEvent.click(
+      screen.getByRole("button", { name: /Ajouter un exemplaire de Ogre/ }),
+    );
+    expect(
+      screen.getByRole("tab", { name: /Mon deck.*1/ }),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: /Mon deck/ }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /Retirer un exemplaire de Ogre/ }),
+    );
+    expect(
+      screen.getByText("Ajoute des cartes depuis ta collection"),
+    ).toBeInTheDocument();
+  });
+
+  it("ouvre sur Mon deck pour un deck contenant des cartes", async () => {
+    vi.mocked(deckService.getMyDecks).mockResolvedValue([
+      {
+        id: 1,
+        name: "Test",
+        deckCards: [
+          { quantity: 1, userCard: { id: 10, quantity: 2, card: catalog[0] } },
+        ],
+      },
+    ] as never);
+    vi.mocked(cardService.findAll).mockResolvedValue({
+      data: catalog,
+      meta: { total: 2, page: 1, limit: 500, totalPages: 1 },
+    } as never);
+    vi.mocked(userService.getMyInventory).mockResolvedValue({
+      cards: {
+        data: [owned(catalog[0], 10, 2)],
+        meta: { total: 1, page: 1, limit: 200, totalPages: 1 },
+      },
+    } as unknown as UserInventory);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <DeckBuilder />
+      </QueryClientProvider>,
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Modifier/ }),
+    );
+    expect(
+      await screen.findByRole("tab", { name: /Mon deck/ }),
+    ).toHaveAttribute("aria-selected", "true");
   });
 });
