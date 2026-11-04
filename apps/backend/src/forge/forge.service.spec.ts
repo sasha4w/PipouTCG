@@ -88,9 +88,32 @@ describe('ForgeService', () => {
       const result = await service.listUsable(1);
 
       expect(result).toEqual([
-        { cardId: 10, owned: 5, usable: 2 },
-        { cardId: 11, owned: 3, usable: 0 },
+        { cardId: 10, owned: 5, usable: 2, lockedQuantity: 0 },
+        { cardId: 11, owned: 3, usable: 0, lockedQuantity: 0 },
       ]);
+    });
+
+    it('expose le verrou et laisse le SQL calculer max(verrou, deck)', async () => {
+      mockUserCardRepo.find.mockResolvedValue([
+        { id: 100, quantity: 5, lockedQuantity: 2, card: { id: 10 } },
+        { id: 101, quantity: 5, lockedQuantity: 2, card: { id: 11 } },
+      ]);
+      // le SQL renvoie déjà GREATEST(verrou, max deck) : 2 puis max(2, 3) = 3
+      mockDataSource.query.mockResolvedValue([
+        { user_card_id: 100, protected_qty: '2' },
+        { user_card_id: 101, protected_qty: '3' },
+      ]);
+
+      const result = await service.listUsable(1);
+
+      expect(result).toEqual([
+        { cardId: 10, owned: 5, usable: 3, lockedQuantity: 2 },
+        { cardId: 11, owned: 5, usable: 2, lockedQuantity: 2 },
+      ]);
+      const [[queryArg]] = mockDataSource.query.mock.calls as [[string]];
+      const sql = queryArg;
+      expect(sql).toContain('GREATEST(uc.locked_quantity');
+      expect(sql).toContain('LEFT JOIN deck_card');
     });
   });
 
@@ -199,6 +222,48 @@ describe('ForgeService', () => {
         service.destroy(1, { cardId: 10, quantity: 4 }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(mockManager.save).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('verrou', () => {
+    it('refuse de détruire 4 copies quand 2 sont protégées sur 5', async () => {
+      stub({
+        userCards: [userCard(100, 10, 5)],
+        cards: [card(10, Rarity.COMMON)],
+        protectedRows: [{ user_card_id: 100, protected_qty: '2' }],
+      });
+      await expect(
+        service.destroy(1, { cardId: 10, quantity: 4 }),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockManager.save).not.toHaveBeenCalled();
+    });
+
+    it('ramène le verrou à la quantité après destruction', async () => {
+      const uc = { ...userCard(100, 10, 5), lockedQuantity: 3 };
+      stub({
+        userCards: [uc],
+        cards: [card(10, Rarity.COMMON)],
+        protectedRows: [{ user_card_id: 100, protected_qty: '2' }],
+      });
+      await service.destroy(1, { cardId: 10, quantity: 3 });
+      expect(uc.quantity).toBe(2);
+      expect(uc.lockedQuantity).toBe(2);
+    });
+
+    it('ramène le verrou à la quantité après forge', async () => {
+      const source = { ...userCard(100, 10, 12), lockedQuantity: 5 };
+      stub({
+        userCards: [source],
+        cards: [card(10, Rarity.COMMON), card(20, Rarity.UNCOMMON)],
+        protectedRows: [{ user_card_id: 100, protected_qty: '2' }],
+        target: null,
+      });
+      await service.forge(1, {
+        inputs: [{ cardId: 10, quantity: 10 }],
+        targetCardId: 20,
+      });
+      expect(source.quantity).toBe(2);
+      expect(source.lockedQuantity).toBe(2);
     });
   });
 

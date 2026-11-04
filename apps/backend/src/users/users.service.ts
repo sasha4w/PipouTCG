@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan, EntityManager, In } from 'typeorm';
 import { createHash } from 'crypto';
 import { CardType, Rarity } from '@pipou/shared';
+import type { CardLockResponse } from '@pipou/shared';
 
 import { User } from './user.entity';
 import { UserCard } from './user-card.entity';
@@ -33,6 +34,7 @@ export interface PortfolioCard {
   image: { id: number; url: string } | null;
   owned: boolean;
   quantity: number;
+  lockedQuantity: number;
 }
 
 const RARITY_ORDER: readonly string[] = Object.values(Rarity);
@@ -369,6 +371,7 @@ export class UsersService {
         { userId },
       )
       .addSelect('COALESCE(uc.quantity, 0)', 'quantity')
+      .addSelect('COALESCE(uc.locked_quantity, 0)', 'locked_quantity')
       .orderBy('cardSet.id', 'ASC')
       .getRawAndEntities();
 
@@ -384,10 +387,14 @@ export class UsersService {
       }
     >();
     // Colonne calculée (COALESCE) : TypeORM la renvoie dans raw, non typée
-    const raw = allCards.raw as { quantity: string | number | null }[];
+    const raw = allCards.raw as {
+      quantity: string | number | null;
+      locked_quantity: string | number | null;
+    }[];
 
     allCards.entities.forEach((card, i) => {
       const quantity = Number(raw[i].quantity ?? 0);
+      const lockedQuantity = Number(raw[i].locked_quantity ?? 0);
       const setId = card.cardSet.id;
 
       if (!setsMap.has(setId)) {
@@ -421,6 +428,7 @@ export class UsersService {
         image: card.image ? { id: card.image.id, url: card.image.url } : null,
         owned: quantity > 0,
         quantity,
+        lockedQuantity,
       });
     });
 
@@ -428,6 +436,31 @@ export class UsersService {
     sets.forEach((set) => set.cards.sort(comparePortfolioCards));
     return { sets };
   }
+  /** Règle le verrou d'une carte possédée : 0 <= locked <= quantité. */
+  async setCardLock(
+    userId: number,
+    cardId: number,
+    locked: number,
+  ): Promise<CardLockResponse> {
+    return this.userCardRepository.manager.transaction(async (manager) => {
+      const uc = await manager.findOne(UserCard, {
+        where: { user: { id: userId }, card: { id: cardId } },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!uc || uc.quantity < 1) {
+        throw new BadRequestException('Tu ne possèdes pas cette carte');
+      }
+      if (locked > uc.quantity) {
+        throw new BadRequestException(
+          `Verrou supérieur à la quantité possédée (${uc.quantity})`,
+        );
+      }
+      uc.lockedQuantity = locked;
+      await manager.save(uc);
+      return { cardId, lockedQuantity: locked };
+    });
+  }
+
   /* ===================== CARD MANAGEMENT ===================== */
   /** Parmi `cardIds`, ceux que le joueur possède déjà. */
   async findOwnedCardIds(

@@ -33,6 +33,17 @@ const saleOrder = (sort: SaleSort) =>
     ? { totalPrice: 'DESC' as const, updatedAt: 'DESC' as const }
     : { updatedAt: 'DESC' as const };
 
+/** Verrou de collection : seules les UserCard en ont un (0 pour boosters et bundles). */
+const lockedOf = (item: { lockedQuantity?: number }): number =>
+  item.lockedQuantity ?? 0;
+
+/** Ramène le verrou sous la quantité quand celle-ci vient de diminuer. */
+const clampLock = (item: { quantity: number; lockedQuantity?: number }) => {
+  if (item.lockedQuantity !== undefined) {
+    item.lockedQuantity = Math.min(item.lockedQuantity, item.quantity);
+  }
+};
+
 /** Annonce accompagnée de la carte vendue (null pour un booster / bundle). */
 export type ListingWithCard = Transaction & { card: Card | null };
 
@@ -186,7 +197,10 @@ export class TransactionService {
         lock: { mode: 'pessimistic_write' },
       });
 
-      if (!inventoryItem || inventoryItem.quantity < dto.quantity) {
+      if (
+        !inventoryItem ||
+        inventoryItem.quantity - lockedOf(inventoryItem) < dto.quantity
+      ) {
         throw new BadRequestException(
           `Quantité de ${dto.productType} insuffisante.`,
         );
@@ -195,6 +209,7 @@ export class TransactionService {
       const itemName =
         this.inventoryItemName(inventoryItem) ?? `Objet #${dto.productId}`;
       inventoryItem.quantity -= dto.quantity;
+      clampLock(inventoryItem);
       await manager.save(inventoryItem);
 
       const listing = manager.getRepository(Transaction).create({
@@ -281,12 +296,14 @@ export class TransactionService {
 
         if (diff > 0) {
           // On augmente la quantité en vente → on vérifie le stock dispo
-          if (inventoryItem.quantity < diff) {
+          const free = inventoryItem.quantity - lockedOf(inventoryItem);
+          if (free < diff) {
             throw new BadRequestException(
-              `Stock insuffisant. Disponible : ${inventoryItem.quantity}.`,
+              `Stock insuffisant. Disponible : ${free}.`,
             );
           }
           inventoryItem.quantity -= diff;
+          clampLock(inventoryItem);
         } else {
           // On réduit la quantité en vente → on restitue la différence
           inventoryItem.quantity += Math.abs(diff);

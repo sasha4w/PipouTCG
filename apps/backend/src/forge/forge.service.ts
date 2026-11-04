@@ -16,13 +16,18 @@ import { UserCard } from '../users/user-card.entity';
 import { Card } from '../cards/card.entity';
 import { ForgeCardInfo, ForgeInputCheck, validateForge } from './forge-rules';
 
-/** Plus grande quantité utilisée dans un seul deck, par UserCard du joueur. */
+/**
+ * Copies protégées par UserCard : max(verrou, plus grande quantité utilisée
+ * dans un seul deck). Un max, pas une somme : le verrou et un deck peuvent
+ * protéger les mêmes copies.
+ */
 const PROTECTED_SQL = `
-  SELECT dc.user_card_id AS user_card_id, MAX(dc.quantity) AS protected_qty
-  FROM deck_card dc
-  JOIN deck d ON d.id = dc.deck_id
-  WHERE d.user_id = ?
-  GROUP BY dc.user_card_id`;
+  SELECT uc.id AS user_card_id,
+    GREATEST(uc.locked_quantity, COALESCE(MAX(dc.quantity), 0)) AS protected_qty
+  FROM user_card uc
+  LEFT JOIN deck_card dc ON dc.user_card_id = uc.id
+  WHERE uc.user_id = ?
+  GROUP BY uc.id, uc.locked_quantity`;
 
 interface ProtectedRow {
   user_card_id: number;
@@ -61,6 +66,7 @@ export class ForgeService {
         cardId: uc.card.id,
         owned: uc.quantity,
         usable: Math.max(0, uc.quantity - (protectedMap.get(uc.id) ?? 0)),
+        lockedQuantity: uc.lockedQuantity ?? 0,
       }));
   }
 
@@ -99,7 +105,9 @@ export class ForgeService {
       if (error) throw new BadRequestException(error);
 
       for (const input of req.inputs) {
-        owned.get(input.cardId)!.quantity -= input.quantity;
+        const uc = owned.get(input.cardId)!;
+        uc.quantity -= input.quantity;
+        uc.lockedQuantity = Math.min(uc.lockedQuantity ?? 0, uc.quantity);
       }
       await manager.save([...owned.values()] as unknown as UserCard[]);
 
@@ -176,7 +184,9 @@ export class ForgeService {
       }
 
       for (const item of req.items) {
-        owned.get(item.cardId)!.quantity -= item.quantity;
+        const uc = owned.get(item.cardId)!;
+        uc.quantity -= item.quantity;
+        uc.lockedQuantity = Math.min(uc.lockedQuantity ?? 0, uc.quantity);
       }
       await manager.save([...owned.values()] as unknown as UserCard[]);
 

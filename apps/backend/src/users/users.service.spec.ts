@@ -32,6 +32,8 @@ const mockCardQb = {
   getRawAndEntities: jest.fn(),
 };
 
+const mockLockManager = { findOne: jest.fn(), save: jest.fn() };
+
 const mockUserCardRepo = {
   findAndCount: jest.fn(),
   findOne: jest.fn(),
@@ -39,6 +41,9 @@ const mockUserCardRepo = {
   save: jest.fn(),
   manager: {
     getRepository: () => ({ createQueryBuilder: () => mockCardQb }),
+    transaction: jest.fn((cb: (m: typeof mockLockManager) => unknown) =>
+      cb(mockLockManager),
+    ),
   },
 };
 
@@ -130,7 +135,10 @@ describe('UsersService', () => {
       ];
       mockCardQb.getRawAndEntities.mockResolvedValue({
         entities,
-        raw: entities.map((c) => ({ quantity: c.id === 4 ? 2 : 0 })),
+        raw: entities.map((c) => ({
+          quantity: c.id === 4 ? 2 : 0,
+          locked_quantity: c.id === 4 ? 1 : null,
+        })),
       });
 
       const { sets } = await service.getCollection(1);
@@ -148,7 +156,53 @@ describe('UsersService', () => {
       expect(sets[0].cards.find((c) => c.name === 'Rat')).toMatchObject({
         owned: true,
         quantity: 2,
+        lockedQuantity: 1,
       });
+      expect(sets[0].cards.find((c) => c.name === 'Chat')).toMatchObject({
+        lockedQuantity: 0,
+      });
+    });
+  });
+
+  // ======= VERROU =======
+  describe('setCardLock', () => {
+    it('enregistre le verrou sous verrou de ligne', async () => {
+      const uc = { id: 1, quantity: 5, lockedQuantity: 0 };
+      mockLockManager.findOne.mockResolvedValue(uc);
+      const res = await service.setCardLock(1, 10, 3);
+      expect(mockLockManager.findOne).toHaveBeenCalledWith(
+        UserCard,
+        expect.objectContaining({ lock: { mode: 'pessimistic_write' } }),
+      );
+      expect(uc.lockedQuantity).toBe(3);
+      expect(mockLockManager.save).toHaveBeenCalledWith(uc);
+      expect(res).toEqual({ cardId: 10, lockedQuantity: 3 });
+    });
+
+    it('accepte 0', async () => {
+      const uc = { id: 1, quantity: 5, lockedQuantity: 4 };
+      mockLockManager.findOne.mockResolvedValue(uc);
+      await service.setCardLock(1, 10, 0);
+      expect(uc.lockedQuantity).toBe(0);
+    });
+
+    it('refuse un verrou supérieur à la quantité', async () => {
+      mockLockManager.findOne.mockResolvedValue({
+        id: 1,
+        quantity: 2,
+        lockedQuantity: 0,
+      });
+      await expect(service.setCardLock(1, 10, 3)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockLockManager.save).not.toHaveBeenCalled();
+    });
+
+    it('refuse une carte non possédée', async () => {
+      mockLockManager.findOne.mockResolvedValue(null);
+      await expect(service.setCardLock(1, 10, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

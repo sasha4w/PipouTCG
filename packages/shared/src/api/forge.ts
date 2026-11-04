@@ -37,4 +37,16 @@ export interface UsableCard {
   cardId: number;
   owned: number;
   usable: number;
+  /** Copies verrouillées par le joueur (verrou de collection). */
+  lockedQuantity: number;
+}
+
+/** Corps de PATCH /users/me/cards/:cardId/lock : 0 <= locked <= quantité possédée. */
+export interface CardLockRequest {
+  locked: number;
+}
+
+export interface CardLockResponse {
+  cardId: number;
+  lockedQuantity: number;
 }
