@@ -1,7 +1,10 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import Button from "../components/Button";
+import { IconArrowLeft } from "../components/Icons";
+import { soundService } from "../services/sound.service";
 import CardInspect from "../features/fight/CardInspect";
 import CollectionTab from "../features/collection/CollectionTab";
 import ForgeTab from "../features/collection/ForgeTab";
@@ -21,6 +24,7 @@ function parseTab(value: string | null): CollectionTabKey {
 
 export default function Collection() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = parseTab(searchParams.get("tab"));
   const [inspected, setInspected] = useState<OwnedCard | null>(null);
@@ -33,6 +37,17 @@ export default function Collection() {
   return (
     <div className="collection-page">
       <div className="collection-page__header">
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          aria-label={t("collection.back")}
+          onClick={() => {
+            soundService.play("cancel");
+            navigate("/profile");
+          }}
+        >
+          <IconArrowLeft size={16} />
+        </Button>
         <h2 className="collection-page__title">{t("collection.page_title")}</h2>
         <DustBalance dust={me?.dust ?? 0} />
       </div>

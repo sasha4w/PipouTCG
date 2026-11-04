@@ -12,6 +12,8 @@
   margin-bottom: 12px;
 }
 .collection-page__title {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-family: "Lilita One", cursive;
   font-size: 1.4rem;

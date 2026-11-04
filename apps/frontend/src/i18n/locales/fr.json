@@ -45,8 +45,7 @@
     "settings": "Réglages"
   },
   "header": {
-    "admin": "Admin",
-    "collection": "Collection"
+    "admin": "Admin"
   },
   "settings": {
     "title": "Réglages",
@@ -102,6 +101,7 @@
     "not_owned": "Non obtenue",
     "owned_count": "{{owned}} / {{total}} carte{{plural}} obtenue{{plural}}",
     "page_title": "Ma collection",
+    "back": "Retour au profil",
     "tab_collection": "Collection",
     "tab_forge": "Forge",
     "tab_destroy": "Destruction",
