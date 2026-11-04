@@ -34,42 +34,6 @@
   gap: 0.75rem;
   font-family: "Comfortaa", system-ui, sans-serif;
 }
-/* ── Set + recherche + filtres : restent en haut au scroll ── */
-.collection-tab__bar {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.3rem 0 0.5rem;
-  max-height: 70vh;
-  overflow-y: auto;
-  background: #f5efe0;
-}
-/* ── Barre de recherche ── */
-.collection-tab__search {
-  width: 100%;
-  padding: 0.55rem 0.85rem;
-  border-radius: 10px;
-  border: 1.5px solid rgba(61, 16, 32, 0.15);
-  background: #fdfbf6;
-  font-family: "Comfortaa", sans-serif;
-  font-size: 0.82rem;
-  color: #491021;
-  outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  box-sizing: border-box;
-}
-.collection-tab__search:focus {
-  border-color: #f27aaa;
-  box-shadow: 0 0 0 3px rgba(242, 122, 170, 0.15);
-}
-.collection-tab__search::placeholder {
-  color: #c0a090;
-}
 /* ── Résultat count ── */
 .collection-tab__result-count {
   font-size: 0.72rem;

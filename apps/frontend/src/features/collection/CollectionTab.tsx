@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import FilterPanel from "../../components/FilterPanel";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -9,14 +8,12 @@ import {
 } from "../../components/Icons";
 import Button from "../../components/Button";
 import Loading from "../../components/Loading";
-import SearchBar from "../../components/Searchbar";
-import { useFilters } from "../../hooks/useFilters";
 import { soundService } from "../../services/sound.service";
 import { userService } from "../../services/user.service";
 import { apiErrorMessage } from "../../utils/errors";
 import { QUERY_KEYS } from "../../utils/querykeys";
-import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
-import { normalize } from "../glossary/cardCatalog";
+import CardFilterBar from "../glossary/CardFilterBar";
+import { matchesFilters, NO_FILTERS, sortCards } from "../glossary/cardCatalog";
 import { paginateBySet } from "./paginateBySet";
 import CardRow from "./CardRow";
 import type { OwnedCard } from "./ownedCards";
@@ -34,13 +31,9 @@ export default function CollectionTab({ onInspect }: Props) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { cards, isPending, isError } = useOwnedCards();
-  const filterConfig = useMemo(() => cardFilterGroups(t), [t]);
-  const { filterValues, setFilter, resetFilters, hasActiveFilters } =
-    useFilters(filterConfig);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState(NO_FILTERS);
   const [showMissing, setShowMissing] = useState(true);
-  const [filterSet, setFilterSet] = useState<number | "all">("all");
 
   const lockMutation = useMutation({
     mutationFn: (v: { cardId: number; locked: number }) =>
@@ -72,26 +65,32 @@ export default function CollectionTab({ onInspect }: Props) {
     return [...bySet.values()].sort((a, b) => a.id - b.id);
   }, [cards]);
 
-  const inSet = useMemo(
-    () =>
-      (filterSet === "all"
-        ? cards
-        : cards.filter((c) => c.card.cardSet.id === filterSet)
-      )
-        .map((c) => ({ ...c, setId: c.card.cardSet.id }))
-        .sort((a, b) => a.setId - b.setId),
-    [cards, filterSet],
+  const withSet = useMemo(
+    () => cards.map((c) => ({ ...c, setId: c.card.cardSet.id })),
+    [cards],
   );
 
+  /** Cartes du set choisi (ou de tous), avant recherche et filtres. */
+  const inSet = useMemo(
+    () =>
+      filters.setId === null
+        ? withSet
+        : withSet.filter((c) => c.setId === filters.setId),
+    [withSet, filters.setId],
+  );
+
+  /** Filtrées puis triées set par set, pour que la pagination garde un set par page. */
   const filtered = useMemo(() => {
-    const q = normalize(search.trim());
-    return inSet.filter(
-      (c) =>
-        (showMissing || c.owned > 0) &&
-        normalize(c.card.name).includes(q) &&
-        matchesCardFilters(filterValues, c.card),
+    const kept = inSet.filter(
+      (c) => (showMissing || c.owned > 0) && matchesFilters(c.card, filters),
     );
-  }, [inSet, search, showMissing, filterValues]);
+    const bySet = new Map<number, typeof kept>();
+    for (const c of kept)
+      bySet.set(c.setId, [...(bySet.get(c.setId) ?? []), c]);
+    return [...bySet.entries()]
+      .sort(([x], [y]) => x - y)
+      .flatMap(([, group]) => sortCards(group, (c) => c.card, filters));
+  }, [inSet, showMissing, filters]);
 
   const pages = useMemo(() => paginateBySet(filtered, PAGE_SIZE), [filtered]);
   const totalPages = pages.length;
@@ -114,41 +113,11 @@ export default function CollectionTab({ onInspect }: Props) {
 
   return (
     <div className="collection-tab">
-      <div className="collection-tab__bar">
-        <select
-          className="collection-tab__search"
-          aria-label={t("collection.all_sets")}
-          value={filterSet}
-          onChange={(e) =>
-            apply(() =>
-              setFilterSet(
-                e.target.value === "all" ? "all" : Number(e.target.value),
-              ),
-            )
-          }
-        >
-          <option value="all">{t("collection.all_sets")}</option>
-          {sets.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name} ({s.owned}/{s.total})
-            </option>
-          ))}
-        </select>
-        <SearchBar
-          value={search}
-          onChange={(val) => apply(() => setSearch(val))}
-          placeholder={t("search.placeholder")}
-          hasActiveFilters={hasActiveFilters}
-          filters={
-            <FilterPanel
-              config={filterConfig}
-              values={filterValues}
-              onChange={(key, val) => apply(() => setFilter(key, val))}
-              onReset={hasActiveFilters ? () => apply(resetFilters) : undefined}
-            />
-          }
-        />
-      </div>
+      <CardFilterBar
+        filters={filters}
+        cards={cards.map((c) => c.card)}
+        onChange={(f) => apply(() => setFilters(f))}
+      />
 
       <label className="collection-tab__toggle-missing">
         <input
