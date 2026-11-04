@@ -1,0 +1,12 @@
+.dcr { display: flex; align-items: center; gap: 6px; }
+.dcr__main { flex: 1; min-width: 0; }
+.dcr--in .dcr__main { border-color: rgba(122, 28, 59, 0.45); }
+.dcr__qty { flex: none; display: flex; align-items: center; gap: 4px; }
+.dcr__count { min-width: 28px; text-align: center; font-weight: 700; color: #7a1c3b; font-size: 0.8rem; }
+.dcr__btn {
+  width: 44px; height: 44px; border-radius: 10px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15); background: #fffaf4; color: #7a1c3b;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.dcr__btn--add { background: #7a1c3b; border-color: #7a1c3b; color: #fff; }
+.dcr__btn:disabled { background: #e8dcc6; border-color: #e8dcc6; color: #fff; cursor: default; }

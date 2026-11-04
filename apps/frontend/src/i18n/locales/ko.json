@@ -1342,6 +1342,11 @@
   },
   "deck": {
     "title": "내 덱",
+"addOne": "{{name}} 1장 추가",
+    "removeOne": "{{name}} 1장 제거",
+    "full": "{{name}}: 최대 수량",
+    "tabDeck": "내 덱 · {{count}}",
+    "tabCollection": "컬렉션",
     "new": "+ 새 덱",
     "loading": "불러오는 중...",
     "none": "만든 덱이 없습니다",

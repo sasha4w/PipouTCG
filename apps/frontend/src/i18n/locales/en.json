@@ -1413,6 +1413,11 @@
   },
   "deck": {
     "title": "My Decks",
+"addOne": "Add a copy of {{name}}",
+    "removeOne": "Remove a copy of {{name}}",
+    "full": "{{name}}: maximum reached",
+    "tabDeck": "My deck · {{count}}",
+    "tabCollection": "Collection",
     "new": "+ New",
     "loading": "Loading...",
     "none": "No deck yet",

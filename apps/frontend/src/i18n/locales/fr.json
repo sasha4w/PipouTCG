@@ -1414,6 +1414,11 @@
   },
   "deck": {
     "title": "Mes Decks",
+"addOne": "Ajouter un exemplaire de {{name}}",
+    "removeOne": "Retirer un exemplaire de {{name}}",
+    "full": "{{name}} : maximum atteint",
+    "tabDeck": "Mon deck · {{count}}",
+    "tabCollection": "Collection",
     "new": "+ Nouveau",
     "loading": "Chargement...",
     "none": "Aucun deck créé",
