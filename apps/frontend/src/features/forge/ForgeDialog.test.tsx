@@ -26,6 +26,7 @@ function card(id: number, name: string, rarity: Rarity, owned: boolean) {
     image: null,
     owned,
     quantity: owned ? 12 : 0,
+    lockedQuantity: 0,
   };
 }
 
@@ -73,8 +74,8 @@ describe("ForgeDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(forgeService.usable).mockResolvedValue([
-      { cardId: 1, owned: 12, usable: 0 },
-      { cardId: 2, owned: 12, usable: 12 },
+      { cardId: 1, owned: 12, usable: 0, lockedQuantity: 0 },
+      { cardId: 2, owned: 12, usable: 12, lockedQuantity: 0 },
     ]);
   });
 
