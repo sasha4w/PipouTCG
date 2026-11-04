@@ -14,10 +14,16 @@ import {
   hasHighRarity,
   joinOwnedCards,
   quickDestroyPlan,
+  refillForgeSelection,
   type OwnedCard,
 } from "./ownedCards";
 
-const card = (id: number, rarity: Rarity, setId = 1, extra: Partial<Card> = {}) =>
+const card = (
+  id: number,
+  rarity: Rarity,
+  setId = 1,
+  extra: Partial<Card> = {},
+) =>
   ({
     id,
     name: `c${id}`,
@@ -158,5 +164,61 @@ describe("hasHighRarity", () => {
     expect(hasHighRarity([line(Rarity.COMMON)])).toBe(false);
     expect(hasHighRarity([line(Rarity.COMMON), line(Rarity.EPIC)])).toBe(true);
     expect(hasHighRarity([line(Rarity.SECRET)])).toBe(true);
+  });
+});
+
+describe("refillForgeSelection", () => {
+  const c = (
+    id: number,
+    usable: number,
+    rarity: Rarity = Rarity.COMMON,
+    setId = 1,
+  ) => owned(card(id, rarity, setId), usable + 1, usable);
+
+  it("reprend d'abord les mêmes cartes, bornées par usable", () => {
+    const cards = [c(1, 3), c(2, 1), c(3, 9), c(50, 0, Rarity.UNCOMMON)];
+    const r = refillForgeSelection({ 1: 5, 2: 5 }, cards, 10, 50);
+    expect(r.selection[1]).toBe(3);
+    expect(r.selection[2]).toBe(1);
+    expect(r.selection[3]).toBe(6);
+    expect(r.complete).toBe(true);
+  });
+
+  it("complète par surplus décroissant", () => {
+    const cards = [
+      c(1, 2),
+      c(2, 1),
+      c(3, 4),
+      c(4, 3),
+      c(50, 0, Rarity.UNCOMMON),
+    ];
+    const r = refillForgeSelection({ 1: 2 }, cards, 6, 50);
+    expect(r.selection).toEqual({ 1: 2, 3: 4 });
+    const r2 = refillForgeSelection({ 1: 2 }, cards, 8, 50);
+    expect(r2.selection).toEqual({ 1: 2, 3: 4, 4: 2 });
+  });
+
+  it("n'utilise jamais une autre rareté ou un autre set", () => {
+    const cards = [
+      c(1, 1),
+      owned(card(2, Rarity.UNCOMMON), 9, 9),
+      owned(card(3, Rarity.COMMON, 2), 9, 9),
+    ];
+    const r = refillForgeSelection({ 1: 1 }, cards, 3, 2);
+    expect(r.selection).toEqual({ 1: 1 });
+    expect(r.complete).toBe(false);
+  });
+
+  it("n'utilise pas la cible", () => {
+    const cards = [c(1, 1), c(9, 9)];
+    const r = refillForgeSelection({ 1: 1 }, cards, 3, 9);
+    expect(r.selection).toEqual({ 1: 1 });
+    expect(r.complete).toBe(false);
+  });
+
+  it("renvoie un résultat incomplet", () => {
+    const r = refillForgeSelection({ 1: 4 }, [c(1, 2), c(2, 1)], 10, 99);
+    expect(r.selection).toEqual({ 1: 2, 2: 1 });
+    expect(r.complete).toBe(false);
   });
 });

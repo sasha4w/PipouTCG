@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import CardInspect from "../features/fight/CardInspect";
 import CollectionTab from "../features/collection/CollectionTab";
+import ForgeTab from "../features/collection/ForgeTab";
 import DustBalance from "../features/collection/DustBalance";
 import type { OwnedCard } from "../features/collection/ownedCards";
 import { userService } from "../services/user.service";
@@ -56,7 +57,7 @@ export default function Collection() {
 
       <div role="tabpanel">
         {tab === "collection" && <CollectionTab onInspect={setInspected} />}
-        {tab === "forge" && <div className="collection-page__slot" />}
+        {tab === "forge" && <ForgeTab onInspect={setInspected} />}
         {tab === "destroy" && <div className="collection-page__slot" />}
       </div>
 

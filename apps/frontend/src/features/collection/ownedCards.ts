@@ -6,6 +6,7 @@ import {
   Rarity,
   type UsableCard,
 } from "@pipou/shared";
+import type { ForgeSelection } from "../forge/forgeSelection";
 import type { Card } from "../../services/card.service";
 import type { UserCollection } from "../../services/user.service";
 
@@ -123,4 +124,45 @@ export const HIGH_RARITIES: Rarity[] = [
 
 export function hasHighRarity(lines: DestroyLine[]): boolean {
   return lines.some((l) => HIGH_RARITIES.includes(l.card.rarity));
+}
+
+/**
+ * Reconstitue une sélection de forge après une forge réussie : mêmes cartes
+ * (bornées par `usable` rafraîchi), puis autres copies utilisables du même set
+ * et de la même rareté par surplus décroissant. Jamais la cible.
+ */
+export function refillForgeSelection(
+  previous: ForgeSelection,
+  cards: OwnedCard[],
+  cost: number,
+  targetCardId: number,
+): { selection: ForgeSelection; complete: boolean } {
+  const reference = cards.find((c) => (previous[c.card.id] ?? 0) > 0);
+  const selection: ForgeSelection = {};
+  if (!reference) return { selection, complete: false };
+  const setId = reference.card.cardSet?.id;
+  const rarity = reference.card.rarity;
+  const pool = cards.filter(
+    (c) =>
+      c.card.id !== targetCardId &&
+      c.card.cardSet?.id === setId &&
+      c.card.rarity === rarity,
+  );
+  let total = 0;
+  const take = (c: OwnedCard, wanted: number) => {
+    const free = c.usable - (selection[c.card.id] ?? 0);
+    const qty = Math.min(wanted, free, cost - total);
+    if (qty <= 0) return;
+    selection[c.card.id] = (selection[c.card.id] ?? 0) + qty;
+    total += qty;
+  };
+  for (const c of pool) take(c, previous[c.card.id] ?? 0);
+  const rest = [...pool].sort(
+    (a, b) =>
+      b.usable -
+        (selection[b.card.id] ?? 0) -
+        (a.usable - (selection[a.card.id] ?? 0)) || a.card.id - b.card.id,
+  );
+  for (const c of rest) take(c, cost - total);
+  return { selection, complete: total === cost };
 }
