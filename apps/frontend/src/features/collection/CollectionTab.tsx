@@ -17,11 +17,10 @@ import { apiErrorMessage } from "../../utils/errors";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import { cardFilterGroups, matchesCardFilters } from "../cards/cardFilters";
 import { normalize } from "../glossary/cardCatalog";
-import { paginateBySet } from "../profile/paginateBySet";
+import { paginateBySet } from "./paginateBySet";
 import CardRow from "./CardRow";
 import type { OwnedCard } from "./ownedCards";
 import { useOwnedCards } from "./useOwnedCards";
-import "../profile/OwnCardList.css";
 import "./CollectionTab.css";
 
 const PAGE_SIZE = 8;
@@ -111,13 +110,13 @@ export default function CollectionTab({ onInspect }: Props) {
 
   if (isPending) return <Loading message={t("collection.loading")} />;
   if (isError)
-    return <p className="own-cardlist__empty">{t("collection.error")}</p>;
+    return <p className="collection-tab__empty">{t("collection.error")}</p>;
 
   return (
-    <div className="own-cardlist">
-      <div className="own-cardlist__bar">
+    <div className="collection-tab">
+      <div className="collection-tab__bar">
         <select
-          className="own-cardlist__search"
+          className="collection-tab__search"
           aria-label={t("collection.all_sets")}
           value={filterSet}
           onChange={(e) =>
@@ -151,7 +150,7 @@ export default function CollectionTab({ onInspect }: Props) {
         />
       </div>
 
-      <label className="own-cardlist__toggle-missing">
+      <label className="collection-tab__toggle-missing">
         <input
           type="checkbox"
           checked={showMissing}
@@ -160,7 +159,7 @@ export default function CollectionTab({ onInspect }: Props) {
         {t("collection.show_missing")}
       </label>
 
-      <span className="own-cardlist__result-count">
+      <span className="collection-tab__result-count">
         {t("collection.card_count", {
           owned: totalOwned,
           count: inSet.length,
@@ -168,16 +167,16 @@ export default function CollectionTab({ onInspect }: Props) {
       </span>
 
       {slice.length === 0 ? (
-        <p className="own-cardlist__empty">{t("collection.no_cards")}</p>
+        <p className="collection-tab__empty">{t("collection.no_cards")}</p>
       ) : (
         <div>
-          <div className="own-cardlist__set-header">
-            <span className="own-cardlist__set-name">
+          <div className="collection-tab__set-header">
+            <span className="collection-tab__set-name">
               {slice[0].card.cardSet.name}
             </span>
             {setData && (
               <span
-                className={`own-cardlist__set-count${isComplete ? " own-cardlist__set-count--complete" : ""}`}
+                className={`collection-tab__set-count${isComplete ? " collection-tab__set-count--complete" : ""}`}
               >
                 {setData.owned} / {setData.total}
               </span>
@@ -239,13 +238,13 @@ export default function CollectionTab({ onInspect }: Props) {
       )}
 
       {lockMutation.isError && (
-        <p className="own-cardlist__empty" role="alert">
+        <p className="collection-tab__empty" role="alert">
           {apiErrorMessage(lockMutation.error) ?? t("collection.lock_error")}
         </p>
       )}
 
       {totalPages > 1 && (
-        <div className="own-cardlist__pagination">
+        <div className="collection-tab__pagination">
           <Button
             variant="ghost-bordeaux"
             size="icon"
@@ -258,7 +257,7 @@ export default function CollectionTab({ onInspect }: Props) {
           >
             <IconArrowLeft size={16} />
           </Button>
-          <span className="own-cardlist__pagination-info">
+          <span className="collection-tab__pagination-info">
             {current} / {totalPages}
           </span>
           <Button

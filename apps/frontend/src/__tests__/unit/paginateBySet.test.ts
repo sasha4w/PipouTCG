@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { paginateBySet } from "../../features/profile/paginateBySet";
+import { paginateBySet } from "../../features/collection/paginateBySet";
 
 const item = (id: number, setId: number) => ({ id, setId });
 

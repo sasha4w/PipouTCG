@@ -38,7 +38,7 @@ interface CollectionPanelProps {
   onOpenBooster?: (target: OpeningTarget) => void;
 }
 
-type ActiveSection = "cards" | "boosters" | "bundles" | null;
+type ActiveSection = "boosters" | "bundles" | null;
 
 export default function CollectionPanel({
   inventory,

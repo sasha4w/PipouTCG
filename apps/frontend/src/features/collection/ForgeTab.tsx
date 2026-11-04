@@ -24,7 +24,6 @@ import {
   type OwnedCard,
 } from "./ownedCards";
 import { useOwnedCards } from "./useOwnedCards";
-import "../profile/OwnCardList.css";
 import "./CollectionTab.css";
 import "./ForgeTab.css";
 
@@ -140,7 +139,7 @@ export default function ForgeTab({ onInspect }: Props) {
 
   if (isPending) return <Loading message={t("collection.loading")} />;
   if (isError)
-    return <p className="own-cardlist__empty">{t("collection.error")}</p>;
+    return <p className="collection-tab__empty">{t("collection.error")}</p>;
 
   const meta = (item: OwnedCard) => {
     const rarity = t(`rarity.${item.card.rarity.toLowerCase()}`);
@@ -187,7 +186,7 @@ export default function ForgeTab({ onInspect }: Props) {
             }}
           />
           {inputs.length === 0 ? (
-            <p className="own-cardlist__empty">
+            <p className="collection-tab__empty">
               {t("collection.forge_no_inputs")}
             </p>
           ) : (
@@ -279,7 +278,7 @@ export default function ForgeTab({ onInspect }: Props) {
       {step === 2 && (
         <>
           {targets.length === 0 ? (
-            <p className="own-cardlist__empty">
+            <p className="collection-tab__empty">
               {t("collection.forge_no_target")}
             </p>
           ) : (
