@@ -1,0 +1,75 @@
+.forge-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 72px;
+}
+.forge-tab__steps {
+  display: flex;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #a08070;
+}
+.forge-tab__step--on {
+  color: #7a1c3b;
+}
+.forge-tab__lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #a08070;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.forge-tab__stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.forge-tab__qty {
+  min-width: 1.4em;
+  text-align: center;
+  font-weight: 700;
+  color: #491021;
+}
+.forge-tab__pick input {
+  width: 22px;
+  height: 22px;
+  accent-color: #7a1c3b;
+}
+.forge-tab__bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  border-radius: 14px;
+  background: #fffaf4;
+  box-shadow: 0 -4px 12px rgba(61, 16, 32, 0.08);
+}
+.forge-tab__counter {
+  margin-right: auto;
+  font-family: "Lilita One", cursive;
+  font-size: 1.1rem;
+  color: #7a1c3b;
+}
+.forge-tab__counter--full {
+  color: #2f7d4f;
+}
+.forge-tab__success {
+  margin: 0;
+  color: #2f7d4f;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.forge-tab__error {
+  margin: 0;
+  color: #b3261e;
+  font-weight: 700;
+  font-size: 0.85rem;
+}

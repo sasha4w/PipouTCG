@@ -191,6 +191,60 @@ describe('TransactionService', () => {
     });
   });
 
+  describe('verrou de collection', () => {
+    const dto = (quantity: number) => ({
+      productType: ProductType.CARD,
+      productId: 10,
+      quantity,
+      unitPrice: 100,
+    });
+
+    it('refuse de vendre une copie verrouillée', async () => {
+      stubFindOne({
+        inventory: {
+          id: 5,
+          quantity: 5,
+          lockedQuantity: 3,
+          card: { name: 'D' },
+        },
+      });
+      await expect(service.createListing(dto(3), 1)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockManager.save).not.toHaveBeenCalled();
+    });
+
+    it('vend les copies libres', async () => {
+      const inventory = {
+        id: 5,
+        quantity: 5,
+        lockedQuantity: 3,
+        card: { name: 'D' },
+      };
+      stubFindOne({ inventory, created: listing({ id: 42 }) });
+      await service.createListing(dto(2), 1);
+      expect(inventory.quantity).toBe(3);
+      expect(inventory.lockedQuantity).toBe(3);
+    });
+
+    it("refuse d'augmenter un listing au-delà du libre", async () => {
+      const inventory = { id: 5, quantity: 3, lockedQuantity: 2 };
+      stubFindOne({ listing: listing(), inventory });
+      await expect(
+        service.updateListing(1, { quantity: 4 }, 1),
+      ).rejects.toThrow(BadRequestException);
+      expect(inventory.quantity).toBe(3);
+      expect(mockManager.save).not.toHaveBeenCalled();
+    });
+
+    it("autorise d'augmenter dans la limite du libre", async () => {
+      const inventory = { id: 5, quantity: 3, lockedQuantity: 2 };
+      stubFindOne({ listing: listing(), inventory });
+      await service.updateListing(1, { quantity: 3 }, 1);
+      expect(inventory.quantity).toBe(2);
+    });
+  });
+
   // ============================================================
   // BUY LISTING
   // ============================================================

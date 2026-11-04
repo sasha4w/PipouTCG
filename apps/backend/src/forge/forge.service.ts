@@ -3,6 +3,8 @@ import { DataSource, EntityManager, In } from 'typeorm';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DUST_VALUE } from '@pipou/shared';
 import type {
+  DestroyBatchRequest,
+  DestroyBatchResponse,
   DestroyRequest,
   DestroyResponse,
   ForgeRequest,
@@ -14,13 +16,18 @@ import { UserCard } from '../users/user-card.entity';
 import { Card } from '../cards/card.entity';
 import { ForgeCardInfo, ForgeInputCheck, validateForge } from './forge-rules';
 
-/** Plus grande quantité utilisée dans un seul deck, par UserCard du joueur. */
+/**
+ * Copies protégées par UserCard : max(verrou, plus grande quantité utilisée
+ * dans un seul deck). Un max, pas une somme : le verrou et un deck peuvent
+ * protéger les mêmes copies.
+ */
 const PROTECTED_SQL = `
-  SELECT dc.user_card_id AS user_card_id, MAX(dc.quantity) AS protected_qty
-  FROM deck_card dc
-  JOIN deck d ON d.id = dc.deck_id
-  WHERE d.user_id = ?
-  GROUP BY dc.user_card_id`;
+  SELECT uc.id AS user_card_id,
+    GREATEST(uc.locked_quantity, COALESCE(MAX(dc.quantity), 0)) AS protected_qty
+  FROM user_card uc
+  LEFT JOIN deck_card dc ON dc.user_card_id = uc.id
+  WHERE uc.user_id = ?
+  GROUP BY uc.id, uc.locked_quantity`;
 
 interface ProtectedRow {
   user_card_id: number;
@@ -59,6 +66,7 @@ export class ForgeService {
         cardId: uc.card.id,
         owned: uc.quantity,
         usable: Math.max(0, uc.quantity - (protectedMap.get(uc.id) ?? 0)),
+        lockedQuantity: uc.lockedQuantity ?? 0,
       }));
   }
 
@@ -97,7 +105,9 @@ export class ForgeService {
       if (error) throw new BadRequestException(error);
 
       for (const input of req.inputs) {
-        owned.get(input.cardId)!.quantity -= input.quantity;
+        const uc = owned.get(input.cardId)!;
+        uc.quantity -= input.quantity;
+        uc.lockedQuantity = Math.min(uc.lockedQuantity ?? 0, uc.quantity);
       }
       await manager.save([...owned.values()] as unknown as UserCard[]);
 
@@ -133,25 +143,52 @@ export class ForgeService {
   }
 
   async destroy(userId: number, req: DestroyRequest): Promise<DestroyResponse> {
+    const { dustGained, dust } = await this.destroyBatch(userId, {
+      items: [req],
+    });
+    return { dustGained, dust };
+  }
+
+  async destroyBatch(
+    userId: number,
+    req: DestroyBatchRequest,
+  ): Promise<DestroyBatchResponse> {
+    const cardIds = req.items.map((i) => i.cardId);
+    if (new Set(cardIds).size !== cardIds.length) {
+      throw new BadRequestException('Carte en double dans la destruction');
+    }
+
     const result = await this.dataSource.transaction(async (manager) => {
-      const owned = await this.lockUserCards(manager, userId, [req.cardId]);
+      const owned = await this.lockUserCards(manager, userId, cardIds);
       const protectedMap = await this.protectedQuantities(manager, userId);
-      const cards = await this.loadCards(manager, [req.cardId]);
+      const cards = await this.loadCards(manager, cardIds);
 
-      const card = cards.get(req.cardId);
-      const uc = owned.get(req.cardId);
-      if (!card || !uc) throw new BadRequestException('Carte introuvable');
+      let dustGained = 0;
+      let destroyed = 0;
+      for (const item of req.items) {
+        const card = cards.get(item.cardId);
+        const uc = owned.get(item.cardId);
+        if (!card || !uc) throw new BadRequestException('Carte introuvable');
 
-      const usable = Math.max(0, uc.quantity - (protectedMap.get(uc.id) ?? 0));
-      if (req.quantity > usable) {
-        throw new BadRequestException(
-          "Tu ne possèdes pas assez d'exemplaires disponibles",
+        const usable = Math.max(
+          0,
+          uc.quantity - (protectedMap.get(uc.id) ?? 0),
         );
+        if (item.quantity > usable) {
+          throw new BadRequestException(
+            "Tu ne possèdes pas assez d'exemplaires disponibles",
+          );
+        }
+        dustGained += DUST_VALUE[card.rarity] * item.quantity;
+        destroyed += item.quantity;
       }
 
-      const dustGained = DUST_VALUE[card.rarity] * req.quantity;
-      uc.quantity -= req.quantity;
-      await manager.save(uc as unknown as UserCard);
+      for (const item of req.items) {
+        const uc = owned.get(item.cardId)!;
+        uc.quantity -= item.quantity;
+        uc.lockedQuantity = Math.min(uc.lockedQuantity ?? 0, uc.quantity);
+      }
+      await manager.save([...owned.values()] as unknown as UserCard[]);
 
       await manager.increment(User, { id: userId }, 'dust', dustGained);
       await manager.increment(User, { id: userId }, 'dustEarned', dustGained);
@@ -159,16 +196,16 @@ export class ForgeService {
         User,
         { id: userId },
         'cardsDestroyed',
-        req.quantity,
+        destroyed,
       );
       const user = await manager.findOne(User, { where: { id: userId } });
 
-      return { dustGained, dust: Number(user?.dust ?? 0) };
+      return { dustGained, dust: Number(user?.dust ?? 0), destroyed };
     });
 
     this.eventEmitter.emit('destroy.done', {
       userId,
-      amount: req.quantity,
+      amount: result.destroyed,
     });
     return result;
   }

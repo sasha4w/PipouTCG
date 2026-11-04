@@ -48,12 +48,7 @@ export default function Profile() {
     queryFn: () => questService.getMyQuests(),
   });
 
-  const { data: collection, isLoading: l4 } = useQuery({
-    queryKey: QUERY_KEYS.collection,
-    queryFn: () => userService.getMyCollection(),
-  });
-
-  const loading = l1 || l2 || l3 || l4;
+  const loading = l1 || l2 || l3;
 
   const isPrivate = profile?.isPrivate ?? false;
 
@@ -113,7 +108,6 @@ export default function Profile() {
       {tab === "collection" && (
         <CollectionPanel
           inventory={inventory}
-          collection={collection ?? null}
           onOpenBooster={setOpeningTarget}
         />
       )}
@@ -122,7 +116,9 @@ export default function Profile() {
 
       <QuestsPanel
         initialTab={
-          searchParams.get("tab") === "achievements" ? "ACHIEVEMENTS" : undefined
+          searchParams.get("tab") === "achievements"
+            ? "ACHIEVEMENTS"
+            : undefined
         }
       />
 

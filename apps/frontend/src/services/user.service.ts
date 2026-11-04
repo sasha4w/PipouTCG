@@ -1,5 +1,9 @@
 import { api } from "../api/api";
-import type { AchievementFamily, PaginatedResponse } from "@pipou/shared";
+import type {
+  AchievementFamily,
+  CardLockResponse,
+  PaginatedResponse,
+} from "@pipou/shared";
 import type { CardType, Rarity, SupportType } from "./card.service";
 
 /** Carte du portfolio public d'un joueur (GET /users/:id/portfolio). */
@@ -115,6 +119,7 @@ export interface UserCollection {
       image: { id: number; url: string } | null;
       owned: boolean;
       quantity: number;
+      lockedQuantity: number;
     }[];
   }[];
 }
@@ -176,6 +181,11 @@ export const userService = {
   },
   async getMyCollection(): Promise<UserCollection> {
     const res = await api.get("/users/me/collection");
+    return res.data;
+  },
+  /** Verrouille `locked` copies de la carte (0 pour déverrouiller). */
+  async setCardLock(cardId: number, locked: number): Promise<CardLockResponse> {
+    const res = await api.patch(`/users/me/cards/${cardId}/lock`, { locked });
     return res.data;
   },
   // Privacy

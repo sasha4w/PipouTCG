@@ -1,0 +1,104 @@
+.collection-tab__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.collection-tab__lock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #7a1c3b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.collection-tab__lock-select {
+  padding: 2px 6px;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  border-radius: 8px;
+  background: #fdfbf6;
+  color: #491021;
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+.collection-tab__lock-text {
+  color: #a08070;
+}
+
+.collection-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+/* ── Résultat count ── */
+.collection-tab__result-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+  text-align: left;
+}
+/* ── Pagination ── */
+.collection-tab__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.collection-tab__pagination-info {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a08070;
+}
+/* ── Empty state ── */
+.collection-tab__empty {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.82rem;
+  color: #a08070;
+  font-weight: 600;
+}
+/* ── Toggle cartes manquantes ── */
+.collection-tab__toggle-missing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #a08070;
+  cursor: pointer;
+  user-select: none;
+}
+.collection-tab__toggle-missing input {
+  cursor: pointer;
+  accent-color: #7a1c3b;
+}
+/* ── Header de set ── */
+.collection-tab__set-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1.5px solid rgba(61, 16, 32, 0.1);
+  margin-top: 0.25rem;
+}
+.collection-tab__set-name {
+  font-family: "Lilita One", cursive;
+  font-size: 0.82rem;
+  color: #7a1c3b;
+}
+.collection-tab__set-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #a08070;
+  background: rgba(122, 28, 59, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.collection-tab__set-count--complete {
+  background: rgba(60, 160, 60, 0.12);
+  color: #2d6b2d;
+}

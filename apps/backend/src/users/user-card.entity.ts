@@ -25,4 +25,8 @@ export class UserCard {
 
   @Column({ default: 1 })
   quantity!: number;
+
+  /** Copies protégées de la destruction, de la forge et de la vente. */
+  @Column({ name: 'locked_quantity', default: 0 })
+  lockedQuantity!: number;
 }

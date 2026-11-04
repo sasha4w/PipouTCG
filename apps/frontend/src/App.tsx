@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
 import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
+import Collection from "./pages/Collection";
 import Settings from "./pages/Settings";
 import { SoundProvider } from "./contexts/SoundContext";
 import { AnimationProvider } from "./contexts/AnimationContext";
@@ -103,6 +104,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/marketplace" element={<Marketplace />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/collection" element={<Collection />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/arena" element={<FightHub />} />

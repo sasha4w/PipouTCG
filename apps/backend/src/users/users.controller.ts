@@ -3,6 +3,7 @@ import {
   Get,
   Patch,
   Param,
+  Body,
   Query,
   UseGuards,
   ParseIntPipe,
@@ -10,6 +11,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { CardLockDto } from './dto/card-lock.dto';
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { AdminGuard } from '../auth/admin.guard';
 import { PaginationDto } from '../common/dto/pagination.dto';
@@ -104,6 +106,16 @@ export class UsersController {
   getMyCollection(@Request() req: AuthenticatedRequest) {
     return this.usersService.getCollection(req.user.userId);
   }
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/cards/:cardId/lock')
+  setCardLock(
+    @Param('cardId', ParseIntPipe) cardId: number,
+    @Body() dto: CardLockDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.usersService.setCardLock(req.user.userId, cardId, dto.locked);
+  }
+
   /* ===================== OWNER ONLY ===================== */
 
   @UseGuards(JwtAuthGuard)

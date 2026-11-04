@@ -24,6 +24,16 @@ La forge et la destruction vivent dans l'accordéon « Cartes » de l'inventaire
 5. **Onglet Collection** : la liste de cartes actuelle de l'inventaire (filtres, cartes manquantes, pagination par set), avec l'icône œil en plus. Rien d'autre.
 6. **Accès** : la ligne « Cartes » de l'inventaire du profil mène à `/collection` au lieu de dérouler l'accordéon.
 7. Les boutons « Forger » et « Détruire » actuels de la collection (et la modale de forge) disparaissent : tout passe par les onglets.
+8. **Verrou de collection** (ajout du 2026-11-04) : sur chaque carte possédée, le joueur fixe un nombre de copies **verrouillées** (0 à `quantity`, 0 par défaut). Ces copies ne peuvent être ni forgées, ni détruites, ni mises en vente, sans avoir à les mettre dans un deck. Copies protégées d'une carte = `max(verrouillées, max en deck)` (pas la somme : une copie verrouillée peut aussi servir dans un deck). « Garder N » de la destruction rapide s'applique en plus, `usable` tenant déjà compte du verrou.
+9. **Reforger** (ajout du 2026-11-04) : après une forge réussie, l'onglet reste sur l'étape 2 avec la même cible sélectionnée et un message de réussite. Un bouton **Reforger** reconstitue une sélection d'entrée : d'abord les mêmes cartes et quantités si elles sont encore utilisables, puis d'autres copies utilisables du même set et de la même rareté. Si le total atteint le coût, Forger est directement actif ; sinon retour à l'étape 1 avec la sélection partielle (restreinte à ce set et cette rareté) pour compléter à la main.
+
+### Détails du verrou et de Reforger
+
+- Verrou stocké sur `UserCard` (colonne `locked_quantity`, `int NOT NULL DEFAULT 0`), modifié par `PATCH /users/me/cards/:cardId/lock`, corps `{ locked: number }` (0 ≤ locked ≤ quantity).
+- Réglé depuis l'onglet Collection : icône cadenas SVG et sélecteur sur la ligne, mention « n verrouillées ». Forge et Destruction montrent le cadenas en lecture seule ; une carte entièrement protégée par le verrou est grisée avec « verrouillée ».
+- Si `quantity` descend sous `locked_quantity`, le verrou est ramené à `quantity`.
+- Place de marché : mise en vente et augmentation d'un listing refusées au-delà de `quantity − locked_quantity`. L'ancien problème des copies en deck reste hors périmètre.
+- Reforger complète les entrées par surplus décroissant, sans jamais prendre la cible ni une copie protégée.
 
 ## Choix de Claude (à valider en relisant)
 

@@ -1,0 +1,45 @@
+.collection-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px;
+  font-family: "Comfortaa", system-ui, sans-serif;
+}
+.collection-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.collection-page__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: "Lilita One", cursive;
+  font-size: 1.4rem;
+  color: #7a1c3b;
+}
+.collection-page__tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+.collection-page__tab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid rgba(61, 16, 32, 0.15);
+  border-radius: 999px;
+  background: transparent;
+  color: #7a1c3b;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.collection-page__tab--active {
+  background: #7a1c3b;
+  border-color: #7a1c3b;
+  color: #fff;
+}

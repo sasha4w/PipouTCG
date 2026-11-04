@@ -1,21 +1,13 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import type {
-  UserInventory,
-  UserCollection,
-} from "../../services/user.service";
+import type { UserInventory } from "../../services/user.service";
 import {
   IconCards,
   IconBooster,
   IconBundle,
-  IconForge,
+  IconArrowRight,
 } from "../../components/Icons";
-import Button from "../../components/Button";
-import { userService } from "../../services/user.service";
-import { QUERY_KEYS } from "../../utils/querykeys";
-import ForgeDialog, { DustBalance } from "../forge/ForgeDialog";
-import OwnCardList from "./OwnCardList";
 import OwnBoosterList from "../boosters/OwnerBoosterList";
 import OwnBundleList from "../bundles/OwnerBundleList";
 import type { OpeningTarget } from "../opening/OpeningModal";
@@ -43,25 +35,18 @@ function Chevron({ open }: { open: boolean }) {
 
 interface CollectionPanelProps {
   inventory: UserInventory;
-  collection: UserCollection | null;
   onOpenBooster?: (target: OpeningTarget) => void;
 }
 
-type ActiveSection = "cards" | "boosters" | "bundles" | null;
+type ActiveSection = "boosters" | "bundles" | null;
 
 export default function CollectionPanel({
   inventory,
-  collection,
   onOpenBooster,
 }: CollectionPanelProps) {
   const { t } = useTranslation();
   const [active, setActive] = useState<ActiveSection>(null);
-  const [forgeOpen, setForgeOpen] = useState(false);
-  const { data: me } = useQuery({
-    queryKey: QUERY_KEYS.profile,
-    queryFn: () => userService.getMe(),
-    staleTime: 5 * 60 * 1000,
-  });
+  const navigate = useNavigate();
 
   const toggle = (section: ActiveSection) =>
     setActive((prev) => (prev === section ? null : section));
@@ -96,7 +81,9 @@ export default function CollectionPanel({
           <div key={s.key}>
             <div
               className={`collection-panel__item${active === s.key ? " collection-panel__item--active" : ""}`}
-              onClick={() => toggle(s.key)}
+              onClick={() =>
+                s.key === "cards" ? navigate("/collection") : toggle(s.key)
+              }
             >
               <div className="collection-panel__item-left">
                 <span className="collection-panel__item-icon">{s.icon}</span>
@@ -104,33 +91,16 @@ export default function CollectionPanel({
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span className="collection-panel__badge">{s.total}</span>
-                <Chevron open={active === s.key} />
+                {s.key === "cards" ? (
+                  <IconArrowRight size={12} color="#a08070" />
+                ) : (
+                  <Chevron open={active === s.key} />
+                )}
               </div>
             </div>
 
             {active === s.key && (
               <div className="collection-panel__content">
-                {s.key === "cards" &&
-                  (!collection ? (
-                    <p className="collection-panel__empty">
-                      {t("collection.loading")}
-                    </p>
-                  ) : collection.sets.length === 0 ? (
-                    <p className="collection-panel__empty">
-                      {t("collection.no_cards")}
-                    </p>
-                  ) : (
-                    <>
-                      <div className="collection-panel__forge-bar">
-                        <DustBalance dust={me?.dust ?? 0} />
-                        <Button size="sm" onClick={() => setForgeOpen(true)}>
-                          <IconForge size={14} color="currentColor" />
-                          {t("forge.open")}
-                        </Button>
-                      </div>
-                      <OwnCardList collection={collection} />
-                    </>
-                  ))}
                 {s.key === "boosters" &&
                   (inventory.boosters.data.length === 0 ? (
                     <p className="collection-panel__empty">
@@ -158,13 +128,6 @@ export default function CollectionPanel({
           </div>
         ))}
       </div>
-
-      {forgeOpen && collection && (
-        <ForgeDialog
-          collection={collection}
-          onClose={() => setForgeOpen(false)}
-        />
-      )}
     </div>
   );
 }

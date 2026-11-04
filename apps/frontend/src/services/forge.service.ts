@@ -1,5 +1,7 @@
 import { api } from "../api/api";
 import type {
+  DestroyBatchRequest,
+  DestroyBatchResponse,
   DestroyRequest,
   DestroyResponse,
   ForgeRequest,
@@ -7,7 +9,15 @@ import type {
   UsableCard,
 } from "@pipou/shared";
 
-export type { DestroyRequest, DestroyResponse, ForgeRequest, ForgeResponse, UsableCard };
+export type {
+  DestroyBatchRequest,
+  DestroyBatchResponse,
+  DestroyRequest,
+  DestroyResponse,
+  ForgeRequest,
+  ForgeResponse,
+  UsableCard,
+};
 
 export const forgeService = {
   /** Copies utilisables (hors decks) par carte possédée. */
@@ -18,6 +28,11 @@ export const forgeService = {
 
   async forge(req: ForgeRequest): Promise<ForgeResponse> {
     const res = await api.post("/forge", req);
+    return res.data;
+  },
+
+  async destroyBatch(req: DestroyBatchRequest): Promise<DestroyBatchResponse> {
+    const res = await api.post("/forge/destroy/batch", req);
     return res.data;
   },
 
