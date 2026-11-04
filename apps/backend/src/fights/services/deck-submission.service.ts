@@ -37,6 +37,8 @@ export class DeckSubmissionService {
         return { error: err.message };
       return { error: 'Deck invalide ou inaccessible' };
     }
-    return this.engine.setupDeck(game, seat, cards);
+    const result = this.engine.setupDeck(game, seat, cards);
+    if (!result.error) await this.decksService.markUsed(deckId, userId);
+    return result;
   }
 }

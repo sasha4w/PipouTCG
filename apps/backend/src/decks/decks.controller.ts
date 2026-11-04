@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Param,
   Body,
@@ -13,6 +14,7 @@ import {
 import { JwtAuthGuard } from '../auth/jwt.authguard';
 import { DecksService } from './decks.service';
 import { CreateDeckDto } from './dto/create-deck.dto';
+import { SetDeckFavoriteDto } from './dto/set-deck-favorite.dto';
 import type { AuthenticatedRequest } from '../auth/auth-user';
 
 @UseGuards(JwtAuthGuard)
@@ -45,6 +47,15 @@ export class DecksController {
     @Request() req: AuthenticatedRequest,
   ) {
     return this.decksService.update(id, req.user.userId, dto);
+  }
+
+  @Patch(':id/favorite')
+  setFavorite(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: SetDeckFavoriteDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.decksService.setFavorite(id, req.user.userId, dto.favorite);
   }
 
   @Delete(':id')

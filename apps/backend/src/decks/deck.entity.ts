@@ -33,6 +33,17 @@ export class Deck {
   @OneToMany(() => DeckCard, (dc) => dc.deck, { cascade: true, eager: true })
   deckCards!: DeckCard[];
 
+  @Column({ name: 'is_favorite', default: false })
+  isFavorite!: boolean;
+
+  @Column({
+    name: 'last_used_at',
+    type: 'timestamp',
+    nullable: true,
+    default: null,
+  })
+  lastUsedAt!: Date | null;
+
   @CreateDateColumn({
     type: 'timestamp',
     precision: 0,

@@ -35,6 +35,21 @@ export class DecksService {
     return deck;
   }
 
+  async setFavorite(
+    id: number,
+    userId: number,
+    favorite: boolean,
+  ): Promise<Deck> {
+    await this.findOne(id, userId); // ownership check
+    await this.deckRepo.update({ id }, { isFavorite: favorite });
+    return this.findOne(id, userId);
+  }
+
+  /** Retient le deck comme dernier utilisé : il sera proposé par défaut. */
+  async markUsed(id: number, userId: number): Promise<void> {
+    await this.deckRepo.update({ id, userId }, { lastUsedAt: new Date() });
+  }
+
   /**
    * Charge un deck pour un match, après avoir vérifié qu'il respecte les
    * règles et que le joueur possède toujours ses cartes.
