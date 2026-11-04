@@ -25,7 +25,11 @@ export class DecksService {
   ) {}
 
   async findAllByUser(userId: number): Promise<Deck[]> {
-    return this.deckRepo.find({ where: { userId } });
+    // La carte est nécessaire au front pour juger si le deck est jouable.
+    return this.deckRepo.find({
+      where: { userId },
+      relations: ['deckCards', 'deckCards.userCard', 'deckCards.userCard.card'],
+    });
   }
 
   async findOne(id: number, userId: number): Promise<Deck> {

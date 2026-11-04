@@ -7,7 +7,7 @@ import { Deck } from './deck.entity';
 import { DeckCard } from './deck-card.entity';
 import { UserCard } from '../users/user-card.entity';
 
-const deckRepo = { findOne: jest.fn(), update: jest.fn() };
+const deckRepo = { find: jest.fn(), findOne: jest.fn(), update: jest.fn() };
 
 async function service() {
   const moduleRef = await Test.createTestingModule({
@@ -62,5 +62,15 @@ describe('DecksService — favoris et dernier deck', () => {
       { id: 4, userId: 7 },
       { lastUsedAt: expect.any(Date) as Date },
     );
+  });
+
+  it('findAllByUser charge la carte de chaque exemplaire (jouabilité côté front)', async () => {
+    const s = await service();
+    deckRepo.find.mockResolvedValue([]);
+    await s.findAllByUser(7);
+    expect(deckRepo.find).toHaveBeenCalledWith({
+      where: { userId: 7 },
+      relations: ['deckCards', 'deckCards.userCard', 'deckCards.userCard.card'],
+    });
   });
 });
