@@ -1155,6 +1155,17 @@ body.in-fight .fp-root {
   zoom: var(--zc);
 }
 
+/* L'ancre (pastilles d'équipement) épouse la carte réduite : sans cela la carte
+   remplit l'ancre de 116 px et le zoom est annulé (plateau trop haut). */
+.fp-fight-area .zr-card-anchor {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.fp-fight-area .zr-card-anchor .zr-card {
+  width: 100px;
+}
+
 /* Le bouton « i » garde une taille tactile malgré la miniature, mais déborde
    du coin pour ne pas couvrir la carte */
 .fp-fight-area .zr-card .icard-info {
