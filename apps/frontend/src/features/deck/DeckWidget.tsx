@@ -50,7 +50,11 @@ export default function DeckWidget({
   // Pas de choix (ou deck devenu injouable) : on prend le deck par défaut,
   // une seule fois par id pour ne pas boucler si le parent ne suit pas.
   useEffect(() => {
-    if (selected || fallbackId === null || !onSelectDeck) return;
+    if (selected) {
+      sentId.current = null;
+      return;
+    }
+    if (fallbackId === null || !onSelectDeck) return;
     if (sentId.current === fallbackId) return;
     sentId.current = fallbackId;
     onSelectDeck(fallbackId);
@@ -64,7 +68,7 @@ export default function DeckWidget({
     return (
       <div className="dw-empty">
         <p className="dw-muted">{t("deckPicker.none")}</p>
-        <Button size="sm" onClick={manage}>
+        <Button size="sm" className="dw-btn" onClick={manage}>
           {t("deckPicker.complete")}
         </Button>
       </div>
@@ -99,6 +103,7 @@ export default function DeckWidget({
           <Button
             variant="ghost-bordeaux"
             size="sm"
+            className="dw-btn"
             onClick={() => setOpen((o) => !o)}
           >
             {open ? t("deckPicker.close") : t("deckPicker.change")}

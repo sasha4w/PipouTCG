@@ -34,3 +34,4 @@
   width: 100%; min-height: 44px; border: none; background: transparent;
   color: #7a1c3b; font-size: 0.75rem; cursor: pointer;
 }
+.btn.dw-btn { min-height: 44px; }

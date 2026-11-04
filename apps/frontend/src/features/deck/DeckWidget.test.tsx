@@ -6,6 +6,7 @@ import { CardType } from "@pipou/shared";
 import i18n from "../../i18n";
 import type { Deck } from "../../services/deck.service";
 import { deckService } from "../../services/deck.service";
+import { QUERY_KEYS } from "../../utils/querykeys";
 import DeckWidget from "./DeckWidget";
 
 vi.mock("../../services/deck.service", () => ({
@@ -90,5 +91,27 @@ describe("DeckWidget", () => {
     renderWidget([deck({}, 20)]);
     expect(await screen.findByText("Aucun deck jouable")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Compléter un deck" })).toBeTruthy();
+  });
+
+  it("renvoie le deck par défaut quand le choix devient injouable", async () => {
+    const a = deck({ name: "A", lastUsedAt: "2026-11-03T10:00:00Z" });
+    const b = deck({ name: "B" });
+    vi.mocked(deckService.getMyDecks).mockResolvedValue([a, b]);
+    const onSelectDeck = vi.fn();
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const ui = (sel?: number) => (
+      <QueryClientProvider client={client}>
+        <MemoryRouter>
+          <DeckWidget selectedDeckId={sel} onSelectDeck={onSelectDeck} />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+    const { rerender } = render(ui());
+    await waitFor(() => expect(onSelectDeck).toHaveBeenCalledWith(a.id));
+    rerender(ui(b.id));
+    await screen.findByText("B");
+    onSelectDeck.mockClear();
+    client.setQueryData(QUERY_KEYS.decks, [a, { ...b, deckCards: [] }]);
+    await waitFor(() => expect(onSelectDeck).toHaveBeenCalledWith(a.id));
   });
 });
