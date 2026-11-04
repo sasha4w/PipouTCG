@@ -6,6 +6,7 @@ export * from "./state";
 export * from "./seat";
 export * from "./action";
 export * from "./rules";
+export * from "./deck-check";
 export * from "./support-rules";
 export * from "./events";
 export * from "./achievements";

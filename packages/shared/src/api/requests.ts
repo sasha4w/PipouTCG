@@ -89,6 +89,10 @@ export interface CreateDeckRequest {
   cards: DeckCardEntry[];
 }
 
+export interface SetDeckFavoriteRequest {
+  favorite: boolean;
+}
+
 // ─── Achats (annonce, booster, bundle, bannière) ──────────────────────────────
 
 export interface BuyRequest {
