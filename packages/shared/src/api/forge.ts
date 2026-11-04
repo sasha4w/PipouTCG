@@ -23,6 +23,16 @@ export interface DestroyResponse {
   dust: number;
 }
 
+export interface DestroyBatchRequest {
+  items: DestroyRequest[];
+}
+
+export interface DestroyBatchResponse {
+  dustGained: number;
+  dust: number;
+  destroyed: number;
+}
+
 export interface UsableCard {
   cardId: number;
   owned: number;

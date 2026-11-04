@@ -201,4 +201,89 @@ describe('ForgeService', () => {
       expect(mockManager.save).not.toHaveBeenCalled();
     });
   });
+
+  describe('destroyBatch', () => {
+    it('détruit plusieurs cartes en une transaction et émet un seul événement', async () => {
+      const a = userCard(100, 10, 6);
+      const b = userCard(101, 11, 2);
+      stub({
+        userCards: [a, b],
+        cards: [card(10, Rarity.COMMON), card(11, Rarity.RARE)],
+        dust: 24,
+      });
+
+      const res = await service.destroyBatch(1, {
+        items: [
+          { cardId: 10, quantity: 4 },
+          { cardId: 11, quantity: 2 },
+        ],
+      });
+
+      expect(res).toEqual({ dustGained: 24, dust: 24, destroyed: 6 });
+      expect(a.quantity).toBe(2);
+      expect(b.quantity).toBe(0);
+      expect(mockDataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(mockManager.increment).toHaveBeenCalledWith(
+        User,
+        { id: 1 },
+        'dust',
+        24,
+      );
+      expect(mockManager.increment).toHaveBeenCalledWith(
+        User,
+        { id: 1 },
+        'dustEarned',
+        24,
+      );
+      expect(mockManager.increment).toHaveBeenCalledWith(
+        User,
+        { id: 1 },
+        'cardsDestroyed',
+        6,
+      );
+      expect(mockEventEmitter.emit).toHaveBeenCalledTimes(1);
+      expect(mockEventEmitter.emit).toHaveBeenCalledWith('destroy.done', {
+        userId: 1,
+        amount: 6,
+      });
+    });
+
+    it("rejette tout le lot si une ligne dépasse l'utilisable", async () => {
+      stub({
+        userCards: [userCard(100, 10, 6), userCard(101, 11, 2)],
+        cards: [card(10, Rarity.COMMON), card(11, Rarity.RARE)],
+        protectedRows: [{ user_card_id: 101, protected_qty: '1' }],
+      });
+
+      await expect(
+        service.destroyBatch(1, {
+          items: [
+            { cardId: 10, quantity: 4 },
+            { cardId: 11, quantity: 2 },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mockManager.save).not.toHaveBeenCalled();
+      expect(mockManager.increment).not.toHaveBeenCalled();
+      expect(mockEventEmitter.emit).not.toHaveBeenCalled();
+    });
+
+    it('rejette deux lignes pour la même carte', async () => {
+      stub({
+        userCards: [userCard(100, 10, 6)],
+        cards: [card(10, Rarity.COMMON)],
+      });
+
+      await expect(
+        service.destroyBatch(1, {
+          items: [
+            { cardId: 10, quantity: 1 },
+            { cardId: 10, quantity: 1 },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mockManager.save).not.toHaveBeenCalled();
+      expect(mockEventEmitter.emit).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -4,6 +4,7 @@ import type { AuthenticatedRequest } from '../auth/auth-user';
 import { ForgeService } from './forge.service';
 import { ForgeDto } from './dto/forge.dto';
 import { DestroyDto } from './dto/destroy.dto';
+import { DestroyBatchDto } from './dto/destroy-batch.dto';
 
 @Controller('forge')
 @UseGuards(JwtAuthGuard)
@@ -23,5 +24,10 @@ export class ForgeController {
   @Post('destroy')
   destroy(@Req() req: AuthenticatedRequest, @Body() dto: DestroyDto) {
     return this.forgeService.destroy(req.user.userId, dto);
+  }
+
+  @Post('destroy/batch')
+  destroyBatch(@Req() req: AuthenticatedRequest, @Body() dto: DestroyBatchDto) {
+    return this.forgeService.destroyBatch(req.user.userId, dto);
   }
 }
