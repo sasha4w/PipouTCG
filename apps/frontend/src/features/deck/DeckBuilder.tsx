@@ -99,6 +99,7 @@ export default function DeckBuilder() {
   const [deckName, setDeckName] = useState("");
   const [cards, setCards] = useState<DeckCardEntry[]>([]);
   const [filters, setFilters] = useState(NO_FILTERS);
+  const [deckFilters, setDeckFilters] = useState(NO_FILTERS);
   const [sheet, setSheet] = useState<SheetTarget | null>(null);
   const [tab, setTab] = useState<"deck" | "collection">("collection");
 
@@ -171,6 +172,13 @@ export default function DeckBuilder() {
         a.info.cost - b.info.cost || a.info.name.localeCompare(b.info.name),
     );
 
+  // Mon deck : mêmes filtres et tri que la collection, ordre coût puis nom par défaut
+  const deckShown = sortCards(
+    deckCards.filter((d) => matchesFilters(fullCard(d.info), deckFilters)),
+    (d) => fullCard(d.info),
+    deckFilters,
+  );
+
   const totalCards = cards.reduce((s, c) => s + c.quantity, 0);
   const isValid =
     totalCards >= DECK_RULES.MIN_CARDS && totalCards <= DECK_RULES.MAX_CARDS;
@@ -220,7 +228,7 @@ export default function DeckBuilder() {
     const order =
       from === "grid"
         ? visible.map((c) => c.userCardId)
-        : deckCards.map((d) => d.userCardId);
+        : deckShown.map((d) => d.userCardId);
     // La carte a pu quitter sa liste (retirée du deck) : plus de ‹ ›
     const index = order.indexOf(userCardId);
     const goTo = (i: number) =>
@@ -302,7 +310,6 @@ export default function DeckBuilder() {
                     <Button
                       variant="ghost-bordeaux"
                       size="icon"
-                      className="deck-star"
                       aria-label={t(
                         d.isFavorite
                           ? "deckPicker.unfavorite"
@@ -395,21 +402,31 @@ export default function DeckBuilder() {
           deckCards.length === 0 ? (
             <p className="deck-strip__empty">{t("deck.stripEmpty")}</p>
           ) : (
-            <ul className="cg__list">
-              {deckCards.map(({ userCardId, quantity, info }) => (
-                <li key={userCardId}>
-                  <DeckCardRow
-                    card={fullCard(info)}
-                    inDeck={quantity}
-                    copies={maxCopies(info)}
-                    canAdd={maxQtyOf(info) > quantity}
-                    onAdd={() => setQuantity(userCardId, quantity + 1)}
-                    onRemove={() => setQuantity(userCardId, quantity - 1)}
-                    onOpen={() => openSheet({ userCardId, from: "deck" })}
-                  />
-                </li>
-              ))}
-            </ul>
+            <>
+              <CardFilterBar
+                filters={deckFilters}
+                cards={deckCards.map((d) => fullCard(d.info))}
+                onChange={setDeckFilters}
+              />
+              {deckShown.length === 0 && (
+                <div className="cg__state">{t("glossary.empty")}</div>
+              )}
+              <ul className="cg__list">
+                {deckShown.map(({ userCardId, quantity, info }) => (
+                  <li key={userCardId}>
+                    <DeckCardRow
+                      card={fullCard(info)}
+                      inDeck={quantity}
+                      copies={maxCopies(info)}
+                      canAdd={maxQtyOf(info) > quantity}
+                      onAdd={() => setQuantity(userCardId, quantity + 1)}
+                      onRemove={() => setQuantity(userCardId, quantity - 1)}
+                      onOpen={() => openSheet({ userCardId, from: "deck" })}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
           )
         ) : (
           <>

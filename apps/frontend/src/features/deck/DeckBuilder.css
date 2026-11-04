@@ -122,12 +122,6 @@
   margin-top: 4px;
 }
 
-/* Cible tactile 44px : .btn--icon fait 30px. */
-.btn.deck-star {
-  width: 44px;
-  height: 44px;
-}
-
 .deck-star--on { color: #d4a017; fill: currentColor; }
 
 .deck-badge {
