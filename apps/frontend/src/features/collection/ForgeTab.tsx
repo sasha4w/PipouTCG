@@ -48,8 +48,8 @@ export default function ForgeTab({ onInspect }: Props) {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [selection, setSelection] = useState<ForgeSelection>({});
-  const [targetId, setTargetId] = useState<number | null>(null);
-  const [forged, setForged] = useState<OwnedCard | null>(null);
+  const [pickedId, setTargetId] = useState<number | null>(null);
+  const [forged, setForged] = useState<{ name: string } | null>(null);
   const [filters, setFilters] = useState(NO_FILTERS);
   const [limit, setLimit] = useState(PAGE);
 
@@ -81,6 +81,11 @@ export default function ForgeTab({ onInspect }: Props) {
     [cards, lock],
   );
 
+  /** La cible n'est valable que pour le set et la rareté courants. */
+  const targetId = targets.some((x) => x.card.id === pickedId)
+    ? pickedId
+    : null;
+
   const mutation = useMutation({
     mutationFn: (v: { selection: ForgeSelection; targetId: number }) =>
       forgeService.forge({
@@ -91,11 +96,16 @@ export default function ForgeTab({ onInspect }: Props) {
       }),
     onSuccess: async (_res, v) => {
       await invalidate();
-      setForged(cards.find((c) => c.card.id === v.targetId) ?? null);
+      setForged({
+        name:
+          cards.find((c) => c.card.id === v.targetId)?.card.name ??
+          `#${v.targetId}`,
+      });
     },
   });
 
   const change = (item: OwnedCard, delta: number) => {
+    if (delta < 0 && total + delta === 0) setLimit(PAGE);
     setSelection((prev) => {
       const id = item.card.id;
       const next = Math.min(item.usable, Math.max(0, (prev[id] ?? 0) + delta));
@@ -107,6 +117,7 @@ export default function ForgeTab({ onInspect }: Props) {
   };
 
   const reset = () => {
+    setLimit(PAGE);
     setSelection({});
     setTargetId(null);
     setForged(null);
@@ -301,7 +312,7 @@ export default function ForgeTab({ onInspect }: Props) {
 
           {forged && (
             <p className="forge-tab__success" role="status">
-              {t("collection.forge_success", { name: forged.card.name })}
+              {t("collection.forge_success", { name: forged.name })}
             </p>
           )}
           {mutation.isError && (

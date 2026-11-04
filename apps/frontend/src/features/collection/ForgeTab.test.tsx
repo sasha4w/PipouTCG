@@ -49,6 +49,7 @@ const pipou = card(2, "Pipou", Rarity.COMMON);
 const bouclier = card(3, "Bouclier", Rarity.COMMON); // en deck
 const ombre = card(4, "Ombre", Rarity.COMMON); // verrouillée
 const autreSet = card(5, "Autreset", Rarity.COMMON, 2);
+const autreLame = card(7, "Autrelame", Rarity.UNCOMMON, 2);
 const rare = card(6, "Rarissime", Rarity.RARE);
 const lame = card(10, "Lame", Rarity.UNCOMMON);
 const griffe = card(11, "Griffe", Rarity.UNCOMMON);
@@ -70,6 +71,7 @@ const all = [
   lame,
   griffe,
   drakon,
+  autreLame,
 ];
 
 let stock: Record<number, number>;
@@ -278,5 +280,27 @@ describe("ForgeTab", () => {
     expect(await screen.findByText("2 / 10")).toBeInTheDocument();
     expect(addBtn("Autreset")).not.toBeInTheDocument();
     expect(addBtn("Rarissime")).not.toBeInTheDocument();
+  });
+
+  it("la cible ne survit pas à un changement de set : Forger reste désactivé", async () => {
+    stock[1] = 12;
+    stock[5] = 12;
+    renderTab();
+    await add("Gelée", 10);
+    fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+    fireEvent.click(
+      await screen.findByRole("radio", { name: "Choisir Griffe" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Retour" }));
+    const minus = screen.getByRole("button", {
+      name: "Retirer une copie de Gelée",
+    });
+    for (let i = 0; i < 10; i++) fireEvent.click(minus);
+    await add("Autreset", 10);
+    fireEvent.click(screen.getByRole("button", { name: "Suivant" }));
+    expect(
+      await screen.findByRole("radio", { name: "Choisir Autrelame" }),
+    ).not.toBeChecked();
+    expect(screen.getByRole("button", { name: "Forger" })).toBeDisabled();
   });
 });

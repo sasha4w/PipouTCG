@@ -105,7 +105,7 @@
     "tab_forge": "대장간",
     "tab_destroy": "파괴",
     "forge_counter": "{{n}} / {{cost}}",
-    "forge_usable": "사용 가능 {{count}}",
+    "forge_usable_other": "사용 가능 {{count}}",
     "forge_add": "{{name}} 한 장 추가",
     "forge_remove": "{{name}} 한 장 제거",
     "forge_step1": "1. 카드",
