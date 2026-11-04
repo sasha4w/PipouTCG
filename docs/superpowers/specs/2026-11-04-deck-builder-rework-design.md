@@ -10,6 +10,8 @@ Date : 2026-11-04
 
 Principe visuel : s'inspirer de la galerie (`features/glossary/CardGlossary.tsx`) — ligne `cg__row` avec vignette `CardFace size="xs"`, nom, type · set, `CardEffectsText`.
 
+Maquettes validées (compagnon visuel) : éditeur en onglets (option C), collection en liste + recherche + filtres (option A), sélection en combat « deck par défaut + Changer » (option C).
+
 ## 1. Données (backend + shared)
 - Migration TypeORM :
   - `deck.is_favorite` BOOLEAN NOT NULL DEFAULT false.
@@ -21,33 +23,39 @@ Principe visuel : s'inspirer de la galerie (`features/glossary/CardGlossary.tsx`
 - Rappel : ne pas toucher Aiven ; vérifier la migration sur la BDD docker locale.
 
 ## 2. Sélection en combat (`DeckWidget`)
-- Masque les decks dont le total < `DECK_RULES.MAX_CARDS`.
+- Ne considère que les decks complets (total = `DECK_RULES.MAX_CARDS`).
+- Deck par défaut affiché en grand : carte de couverture (monstre de plus haut coût du deck, puis ATK), `★` + nom, « 40 cartes », mention « dernier utilisé » le cas échéant, bouton « Changer ».
+- Deck par défaut : `lastDeckId` s'il est complet, sinon premier favori complet, sinon premier deck complet.
+- « Changer » ouvre une liste : favoris puis autres, chacun trié par nom ; étoile SVG pour basculer le favori (mise à jour optimiste, invalidation `QUERY_KEYS.decks`) ; tap sur un deck = le choisir et refermer.
+- Pied de liste : « N decks incomplets masqués › » vers `/decks` si N > 0.
 - Aucun deck complet : message + bouton « Compléter un deck » vers `/decks`.
-- Ordre : favoris puis autres, chacun trié par nom.
-- Étoile SVG (ajoutée à `Icons.tsx` si absente) pour basculer le favori, mise à jour optimiste puis invalidation `QUERY_KEYS.decks`.
-- Présélection à l'arrivée sur l'écran de combat (PvP et aventure) : `lastDeckId` s'il existe et est complet, sinon premier favori complet, sinon rien.
+- Même composant en PvP et en aventure (`OpponentSheet`).
 - Étoile aussi dans la liste des decks de `DeckBuilder`.
 
-## 3. Éditeur — deck en cours
-- Remplace `deck-strip` par une section repliable « Mon deck · N / 40 ».
-- Liste verticale de `DeckCardRow` (style galerie) avec `− qté +` à droite.
-- Tri par coût puis nom. Hauteur max ~45vh, scroll vertical.
+## 3. Éditeur : onglets Deck / Collection
+- Sous le nom du deck, deux onglets plein écran : « Mon deck N » et « Collection ». Remplacent `deck-strip` et `deck-grid`.
+- Onglet ouvert par défaut : Collection si le deck est vide, sinon Mon deck. Choix mémorisé pendant la session d'édition.
+- Barre du bas (progression, N / 40, Sauvegarder) inchangée.
+
+### Onglet Mon deck
+- Liste verticale de `DeckCardRow` (vignette, nom, type, effets) avec `− qté +` à droite.
+- Tri par coût puis nom.
 - Tap sur la ligne : `DeckCardSheet` existant.
 
-## 4. Éditeur — collection
-- Champ de recherche par nom au-dessus de `CardFilterBar`.
-- Remplace `deck-grid` par une liste de `DeckCardRow` : `qté deck / max` et bouton `+` direct ; `✓` désactivé quand le max (règles de deck ou exemplaires possédés) est atteint.
+### Onglet Collection
+- Champ de recherche par nom, puis `CardFilterBar` (types, coût).
+- Liste de `DeckCardRow` : `qté deck / max` et bouton `+` direct ; `✓` désactivé quand le max (règles de deck ou exemplaires possédés) est atteint.
 - Tap sur la ligne : `DeckCardSheet`.
 
 ## Composant `DeckCardRow`
 - Props : carte, quantité dans le deck, max, `onAdd?`, `onRemove?`, `onOpen`.
-- Réutilise les classes et `CardEffectsText` de la galerie ; boutons +/− hors du bouton principal (pas de bouton imbriqué).
-- Utilisé par les sections 3 et 4.
+- Réutilise les classes et `CardEffectsText` de la galerie ; boutons +/− hors du bouton principal (pas de bouton imbriqué), cibles ≥ 44 px.
+- Utilisé par les deux onglets.
 
 ## Tests
 - Back : service favori (propriété, bascule), mise à jour de `last_deck_id`, `SET NULL` à la suppression du deck.
-- Front : `DeckWidget` (filtre incomplets, tri favoris, présélection), `DeckCardRow` (+/−, désactivation au max), recherche par nom.
-- Capture Playwright 430px de l'éditeur et du sélecteur avant livraison.
+- Front : `DeckWidget` (filtre incomplets, choix du deck par défaut, tri favoris, « Changer »), `DeckCardRow` (+/−, désactivation au max), recherche par nom, onglet par défaut.
+- Capture Playwright 430px de l'éditeur (deux onglets) et du sélecteur avant livraison.
 
 ## Hors périmètre
-- Tri/filtres supplémentaires, import/export de decks, statistiques de deck.
+- Choix manuel de la carte de couverture, tri/filtres supplémentaires, import/export, statistiques de deck.
