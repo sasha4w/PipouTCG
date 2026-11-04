@@ -104,6 +104,25 @@
 
 ---
 
+### Task 1b: Verrou de collection (backend + shared)
+
+**Files:**
+- Modify: entité `UserCard` (colonne `lockedQuantity`), `apps/backend/src/forge/forge.service.ts` (`PROTECTED_SQL`), `transactions/transactions.service.ts` (création et modification de listing), `users/users.controller.ts` + `users.service.ts`, `packages/shared/src/api/` (`CardLockRequest { locked: number }`, `lockedQuantity` dans la collection et dans la réponse de `GET /forge/usable`).
+- Create: migration `CardLock<numéro suivant>`, `users/dto/card-lock.dto.ts`.
+
+- [ ] **Step 1: Write the failing tests** :
+  - `forge.service.spec.ts` : 5 possédées, verrou 2, aucun deck → usable 3 ; verrou 2 et 3 en deck → usable 2 (max, pas somme) ; destruction de 4 → `BadRequestException`.
+  - `users.service.spec.ts` : `setCardLock` refuse `locked > quantity` et une carte non possédée, accepte 0.
+  - `transactions.service.spec.ts` : 5 possédées dont 3 verrouillées, vente de 3 → 400, de 2 → OK ; augmentation d'un listing au-delà du libre → 400.
+- [ ] **Step 2: Run** ; attendu : FAIL.
+- [ ] **Step 3: Implement** colonne + migration (`down` la supprime) ; `PROTECTED_SQL` renvoie `GREATEST(uc.locked_quantity, COALESCE(MAX(dc.quantity), 0))` par `user_card` (LEFT JOIN des decks) ; route `PATCH /users/me/cards/:cardId/lock` (`JwtAuthGuard`, ligne verrouillée `pessimistic_write`) ; contrôle de la place de marché ; `locked_quantity = LEAST(locked_quantity, quantity)` partout où `quantity` diminue (forge, destruction, vente). `pnpm build:shared`.
+- [ ] **Step 4: Run** `pnpm --filter @pipou/backend test`, `typecheck` ; attendu : PASS.
+- [ ] **Step 5: Commit** `feat(collection): verrou de copies pour la collection`.
+
+Task 3 ajoute en plus le cadenas et son sélecteur sur les lignes de `CollectionTab` (mutation `PATCH`, invalidation collection + `forgeUsable`, test : régler 2 copies verrouillées appelle la route et affiche « 2 verrouillées »).
+
+---
+
 ### Task 3: Page `/collection` et onglet Collection
 
 **Files:**
@@ -139,9 +158,12 @@
   - une carte à usable 0 est affichée grisée avec « dans un deck » et son + est désactivé ;
   - Suivant est désactivé tant que le total n'atteint pas le coût, actif à 10 / 10 ;
   - étape 2 : la liste contient une carte non possédée (« non possédée ») et pas la carte d'aventure ; Forger appelle `forgeService.forge` avec `{ inputs, targetCardId }` ; retour à l'étape 1 conserve « 10 / 10 » ;
-  - une erreur de l'API s'affiche via `apiErrorMessage`.
+  - une erreur de l'API s'affiche via `apiErrorMessage` ;
+  - une carte dont toutes les copies sont verrouillées est grisée avec « verrouillée » ;
+  - après une forge réussie : on reste sur l'étape 2, même cible cochée, message de réussite ; Reforger avec assez de copies restantes rend Forger actif à « 10 / 10 » ; sinon retour à l'étape 1 avec la sélection partielle sur le même set et la même rareté ;
+  - `refillForgeSelection(previous, owned, cost, targetCardId)` (test unitaire dans les tests de `ownedCards.ts`) : reprend d'abord les mêmes cartes bornées par `usable`, complète par surplus décroissant, n'utilise jamais la cible, renvoie `{ selection, complete }`.
 - [ ] **Step 2: Run** ; attendu : FAIL.
-- [ ] **Step 3: Implement** `ForgeTab` (barre de filtres sur l'étape 1, bandeau fixe en bas, icône œil sur chaque ligne des deux étapes, mutation avec `isPending` contre le double clic, invalidation, retour à l'étape 1 vide après succès avec un message de réussite).
+- [ ] **Step 3: Implement** `refillForgeSelection` dans `ownedCards.ts`, puis `ForgeTab` (barre de filtres sur l'étape 1, bandeau fixe en bas, icône œil sur chaque ligne des deux étapes, mutation avec `isPending` contre le double clic, invalidation ; après succès : rester sur l'étape 2 avec la cible, message de réussite et bouton Reforger calculé sur `forgeUsable` rafraîchi).
 - [ ] **Step 4: Run** tests, `typecheck`, `lint` ; attendu : PASS.
 - [ ] **Step 5: Commit** `feat(collection): forge en deux étapes`.
 
