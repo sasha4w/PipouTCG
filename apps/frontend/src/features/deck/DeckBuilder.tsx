@@ -20,12 +20,15 @@ import {
   useCardCatalog,
 } from "../glossary/cardCatalog";
 import DeckCardSheet from "./DeckCardSheet";
+import { sortDecks } from "./deckPicker";
+import { useToggleFavorite } from "./useToggleFavorite";
 import Button from "../../components/Button";
 import Loading from "../../components/Loading";
 import {
   IconArrowLeft,
   IconCards,
   IconPencil,
+  IconStar,
   IconTrash,
 } from "../../components/Icons";
 import "../../components/manager.css";
@@ -77,6 +80,7 @@ export default function DeckBuilder() {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("list");
   const queryClient = useQueryClient();
+  const toggleFavorite = useToggleFavorite();
   const decksQuery = useQuery({
     queryKey: QUERY_KEYS.decks,
     queryFn: () => deckService.getMyDecks(),
@@ -272,7 +276,7 @@ export default function DeckBuilder() {
           </div>
         ) : (
           <div className="manager-list">
-            {decks.map((d) => {
+            {sortDecks(decks).map((d) => {
               const total = d.deckCards.reduce((s, c) => s + c.quantity, 0);
               const isValidDeck =
                 total >= DECK_RULES.MIN_CARDS && total <= DECK_RULES.MAX_CARDS;
@@ -292,6 +296,24 @@ export default function DeckBuilder() {
                     </div>
                   </div>
                   <div className="manager-item__actions">
+                    <Button
+                      variant="ghost-bordeaux"
+                      size="icon"
+                      className="deck-star"
+                      aria-label={t(
+                        d.isFavorite
+                          ? "deckPicker.unfavorite"
+                          : "deckPicker.favorite",
+                        { name: d.name },
+                      )}
+                      aria-pressed={d.isFavorite}
+                      onClick={() => toggleFavorite(d)}
+                    >
+                      <IconStar
+                        size={16}
+                        className={d.isFavorite ? "deck-star--on" : undefined}
+                      />
+                    </Button>
                     <Button
                       variant="ghost-bordeaux"
                       size="icon"
