@@ -69,6 +69,28 @@ export class StarterDecks1791000000026 implements MigrationInterface {
   name = 'StarterDecks1791000000026';
 
   public async up(q: QueryRunner): Promise<void> {
+    // Le DDL MySQL valide implicitement : on résout tous les noms AVANT d'écrire
+    // quoi que ce soit, pour qu'un échec (nom absent ou ambigu) reste rejouable.
+    const plan: {
+      deck: (typeof STARTER_SEED)[number];
+      resolved: { id: number; card: SeedCard }[];
+    }[] = [];
+    for (const deck of STARTER_SEED) {
+      const resolved: { id: number; card: SeedCard }[] = [];
+      for (const card of deck.cards) {
+        const rows = (await q.query(
+          'SELECT `id` FROM `card` WHERE TRIM(`name`) = ?',
+          [card.name],
+        )) as { id: number }[];
+        if (rows.length !== 1)
+          throw new Error(
+            `StarterDecks : carte "${card.name}" ${rows.length === 0 ? 'introuvable' : `ambiguë (${rows.length} résultats)`}`,
+          );
+        resolved.push({ id: rows[0].id, card });
+      }
+      plan.push({ deck, resolved });
+    }
+
     await q.query(
       'CREATE TABLE `starter_deck` (`id` int NOT NULL AUTO_INCREMENT, `archetype` varchar(20) NOT NULL, UNIQUE INDEX `UQ_starter_deck_archetype` (`archetype`), PRIMARY KEY (`id`)) ENGINE=InnoDB',
     );
@@ -85,20 +107,7 @@ export class StarterDecks1791000000026 implements MigrationInterface {
       'ALTER TABLE `user` ADD `starter_claimed_at` timestamp NULL DEFAULT NULL',
     );
 
-    for (const deck of STARTER_SEED) {
-      // Résout tous les noms avant d'écrire : échec franc sur nom absent ou ambigu.
-      const resolved: { id: number; card: SeedCard }[] = [];
-      for (const card of deck.cards) {
-        const rows = (await q.query(
-          'SELECT `id` FROM `card` WHERE TRIM(`name`) = ?',
-          [card.name],
-        )) as { id: number }[];
-        if (rows.length !== 1)
-          throw new Error(
-            `StarterDecks : carte "${card.name}" ${rows.length === 0 ? 'introuvable' : `ambiguë (${rows.length} résultats)`}`,
-          );
-        resolved.push({ id: rows[0].id, card });
-      }
+    for (const { deck, resolved } of plan) {
       await q.query('INSERT INTO `starter_deck` (`archetype`) VALUES (?)', [
         deck.archetype,
       ]);

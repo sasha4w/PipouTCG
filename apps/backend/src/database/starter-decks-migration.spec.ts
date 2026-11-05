@@ -48,4 +48,44 @@ describe('StarterDecks1791000000026', () => {
     );
     expect(inserts).toHaveLength(12 + 12 + 15);
   });
+
+  it("n'émet aucun DDL ni insert quand un nom est introuvable (rejouable)", async () => {
+    const { runner: r, query } = runner(() => []);
+    await expect(new StarterDecks1791000000026().up(r)).rejects.toThrow();
+    const writes = query.mock.calls.filter(([s]) =>
+      /^(CREATE|ALTER|DROP|INSERT)/.test(s),
+    );
+    expect(writes).toHaveLength(0);
+  });
+
+  it('insère le bon archétype et 4 phares par deck', async () => {
+    const { runner: r, query } = runner(() => [{ id: 1 }]);
+    await new StarterDecks1791000000026().up(r);
+    const deckInserts = query.mock.calls.filter(([s]) =>
+      /INSERT INTO `starter_deck` /.test(s),
+    );
+    expect(deckInserts.map(([, p]) => p![0])).toEqual([
+      'pipou',
+      'pixelman',
+      'dragon',
+    ]);
+    const cardInserts = query.mock.calls.filter(([s]) =>
+      /INSERT INTO `starter_deck_card`/.test(s),
+    );
+    const featured = cardInserts.filter(([, p]) => p![3] === 1);
+    expect(featured).toHaveLength(12);
+    expect(
+      STARTER_SEED.map((d) => d.cards.filter((c) => c.featured).length),
+    ).toEqual([4, 4, 4]);
+  });
+
+  it('down : colonne user, puis starter_deck_card, puis starter_deck', async () => {
+    const { runner: r, query } = runner(() => []);
+    await new StarterDecks1791000000026().down(r);
+    expect(query.mock.calls.map(([s]) => s)).toEqual([
+      'ALTER TABLE `user` DROP COLUMN `starter_claimed_at`',
+      'DROP TABLE `starter_deck_card`',
+      'DROP TABLE `starter_deck`',
+    ]);
+  });
 });
