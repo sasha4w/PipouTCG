@@ -541,7 +541,8 @@
       "patchnotes": "Patchnotes",
       "sandbox": "Sandbox",
       "adventure": "Aventure",
-      "aiReview": "Revue IA"
+      "aiReview": "Revue IA",
+      "starterDecks": "Starter Decks"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
@@ -1555,5 +1556,20 @@
     "fightF2": "Classement ELO en direct",
     "fightF3": "Historique des matchs",
     "fightCta": "Rejoindre l'arène"
+  },
+  "starter_admin": {
+    "title": "Compositions des starter decks",
+    "loading": "Chargement...",
+    "error": "Impossible de charger les decks.",
+    "valid": "Valide",
+    "invalid": "Invalide",
+    "total": "Total : {{count}} / {{min}}-{{max}}",
+    "featured": "Cartes phares : {{count}} / {{target}}",
+    "add": "Ajouter {{name}}",
+    "remove": "Retirer {{name}}",
+    "feature": "Carte phare : {{name}}",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "error_generic": "Erreur lors de l'enregistrement."
   }
 }

@@ -541,7 +541,8 @@
       "patchnotes": "Patch notes",
       "sandbox": "Sandbox",
       "adventure": "Adventure",
-      "aiReview": "AI review"
+      "aiReview": "AI review",
+      "starterDecks": "Starter Decks"
     },
     "sandbox_back": "Back to admin",
     "patchnote": {
@@ -1554,5 +1555,20 @@
     "fightF2": "Live ELO leaderboard",
     "fightF3": "Match history",
     "fightCta": "Enter the arena"
+  },
+  "starter_admin": {
+    "title": "Starter deck compositions",
+    "loading": "Loading...",
+    "error": "Could not load decks.",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "total": "Total: {{count}} / {{min}}-{{max}}",
+    "featured": "Featured cards: {{count}} / {{target}}",
+    "add": "Add {{name}}",
+    "remove": "Remove {{name}}",
+    "feature": "Featured card: {{name}}",
+    "save": "Save",
+    "saved": "Saved",
+    "error_generic": "Error while saving."
   }
 }

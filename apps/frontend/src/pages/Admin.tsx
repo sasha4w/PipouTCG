@@ -15,6 +15,7 @@ import QuestManager from "../features/quests/QuestManager";
 import BannerManager from "../features/shop/BannerManager";
 import ScenarioList from "../features/sandbox/ScenarioList";
 import AiReviewManager from "../features/ai-review/AiReviewManager";
+import StarterDeckManager from "../features/starter/StarterDeckManager";
 import PatchnoteManager from "../features/inbox/PatchnoteManager";
 import {
   IconUndo,
@@ -27,6 +28,7 @@ import {
   IconMap,
   IconQuest,
   IconRobot,
+  IconStar,
   IconTag,
 } from "../components/Icons";
 import "./Admin.css";
@@ -41,7 +43,8 @@ type AdminTab =
   | "banners"
   | "patchnotes"
   | "sandbox"
-  | "aiReview";
+  | "aiReview"
+  | "starterDecks";
 
 const TABS: { key: AdminTab; icon: ReactNode }[] = [
   { key: "cardsets", icon: <IconCollection size={22} /> },
@@ -54,6 +57,7 @@ const TABS: { key: AdminTab; icon: ReactNode }[] = [
   { key: "patchnotes", icon: <IconBell size={22} /> },
   { key: "sandbox", icon: <IconFlask size={22} /> },
   { key: "aiReview", icon: <IconRobot size={22} /> },
+  { key: "starterDecks", icon: <IconStar size={22} /> },
 ];
 
 export default function Admin() {
@@ -108,6 +112,7 @@ export default function Admin() {
       {tab === "patchnotes" && <PatchnoteManager />}
       {tab === "sandbox" && <ScenarioList />}
       {tab === "aiReview" && <AiReviewManager />}
+      {tab === "starterDecks" && <StarterDeckManager />}
     </div>
   );
 }

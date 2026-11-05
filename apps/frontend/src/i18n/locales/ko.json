@@ -536,7 +536,8 @@
       "patchnotes": "패치노트",
       "sandbox": "샌드박스",
       "adventure": "모험",
-      "aiReview": "AI 검토"
+      "aiReview": "AI 검토",
+      "starterDecks": "스타터 덱"
     },
     "sandbox_back": "관리자로 돌아가기",
     "patchnote": {
@@ -1476,5 +1477,20 @@
     "fightF2": "실시간 ELO 랭킹",
     "fightF3": "매치 기록",
     "fightCta": "아레나 입장"
+  },
+  "starter_admin": {
+    "title": "스타터 덱 구성",
+    "loading": "불러오는 중...",
+    "error": "덱을 불러올 수 없습니다.",
+    "valid": "유효",
+    "invalid": "유효하지 않음",
+    "total": "합계: {{count}} / {{min}}-{{max}}",
+    "featured": "대표 카드: {{count}} / {{target}}",
+    "add": "{{name}} 추가",
+    "remove": "{{name}} 제거",
+    "feature": "대표 카드: {{name}}",
+    "save": "저장",
+    "saved": "저장됨",
+    "error_generic": "저장 중 오류가 발생했습니다."
   }
 }
