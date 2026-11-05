@@ -124,6 +124,11 @@ class SoundService {
     return this._masterVolume * this._sfxVolume;
   }
 
+  /** Volume SFX effectif (0 si coupé), pour les sons synthétiques. */
+  sfxVolume01(): number {
+    return this._sfxEffectiveVolume();
+  }
+
   private _getSfx(name: SfxName): Howl {
     if (!this.sfxCache[name]) {
       this.sfxCache[name] = new Howl({
