@@ -590,8 +590,11 @@ export class UsersService {
       ? manager.getRepository(UserBooster)
       : this.userBoosterRepository;
 
+    // Dans une transaction : verrou d'écriture pour sérialiser les ouvertures
+    // concurrentes (sinon REPEATABLE READ laisse deux requêtes lire le même stock).
     const ub = await repo.findOne({
       where: { user: { id: userId }, booster: { id: boosterId } },
+      ...(manager ? { lock: { mode: 'pessimistic_write' as const } } : {}),
     });
 
     if (!ub || ub.quantity < quantity) {
