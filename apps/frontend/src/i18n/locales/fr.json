@@ -1575,6 +1575,17 @@
     "error_generic": "Erreur lors de l'enregistrement."
   },
   "opening": {
-    "tearHint": "Fais glisser la bande pour déchirer le booster"
+    "tearHint": "Fais glisser la bande pour déchirer le booster",
+    "new": "Nouvelle",
+    "skip": "Passer",
+    "revealCard": "Révéler la carte suivante",
+    "rarity": {
+      "common": "Commune",
+      "uncommon": "Peu commune",
+      "rare": "Rare",
+      "epic": "Épique",
+      "legendary": "Légendaire",
+      "secret": "Secrète"
+    }
   }
 }

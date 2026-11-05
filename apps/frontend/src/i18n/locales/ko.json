@@ -1496,6 +1496,17 @@
     "error_generic": "저장 중 오류가 발생했습니다."
   },
   "opening": {
-    "tearHint": "띠를 끌어 부스터를 뜯으세요"
+    "tearHint": "띠를 끌어 부스터를 뜯으세요",
+    "new": "신규",
+    "skip": "건너뛰기",
+    "revealCard": "다음 카드 보기",
+    "rarity": {
+      "common": "일반",
+      "uncommon": "고급",
+      "rare": "희귀",
+      "epic": "영웅",
+      "legendary": "전설",
+      "secret": "비밀"
+    }
   }
 }

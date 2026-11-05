@@ -1574,6 +1574,17 @@
     "error_generic": "Error while saving."
   },
   "opening": {
-    "tearHint": "Drag the strip to tear the booster open"
+    "tearHint": "Drag the strip to tear the booster open",
+    "new": "New",
+    "skip": "Skip",
+    "revealCard": "Reveal next card",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "secret": "Secret"
+    }
   }
 }

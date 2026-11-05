@@ -10,7 +10,7 @@ import {
 import Button from "../../components/Button";
 import { IconArrowRight, IconClose } from "../../components/Icons";
 import CardDisplay from "../cards/CardDisplay";
-import type { Card } from "../../services/card.service";
+import { RARITY_GLOW, toCard } from "./openingPlan";
 import { soundService } from "../../services/sound.service";
 import "./OpeningModal.css";
 
@@ -40,15 +40,6 @@ const RARITY_FLASH: Record<string, string> = {
   secret: "rgba(200, 80,160,0.88)",
 };
 
-const RARITY_GLOW: Record<string, string> = {
-  common: "#b0b8b0",
-  uncommon: "#70b870",
-  rare: "#6898d8",
-  epic: "#9860c8",
-  legendary: "#d8a030",
-  secret: "#c850a0",
-};
-
 function getMaxRarity(cards: OpenedCard[]): string {
   for (const r of RARITY_ORDER_DESC) {
     if (cards.some((c) => c.rarity.toLowerCase() === r)) return r;
@@ -61,22 +52,6 @@ function getRarityCascade(cards: OpenedCard[]): string[] {
   return RARITY_ORDER_ASC.filter((r) => present.has(r)).map(
     (r) => RARITY_FLASH[r],
   );
-}
-
-function toCard(c: OpenedCard): Card {
-  return {
-    id: c.id,
-    name: c.name,
-    rarity: c.rarity as Card["rarity"],
-    type: c.type as Card["type"],
-    supportType: (c.supportType as Card["supportType"]) ?? null,
-    atk: c.atk,
-    hp: c.hp,
-    cost: c.cost,
-    description: c.description ?? undefined,
-    image: c.image,
-    cardSet: { id: 0, name: "" },
-  };
 }
 
 const FLASH_STEP_MS = 380;

@@ -1,4 +1,30 @@
 import type { OpenedCard } from "../../services/opening.service";
+import type { Card } from "../../services/card.service";
+
+export const RARITY_GLOW: Record<string, string> = {
+  common: "#b0b8b0",
+  uncommon: "#70b870",
+  rare: "#6898d8",
+  epic: "#9860c8",
+  legendary: "#d8a030",
+  secret: "#c850a0",
+};
+
+export function toCard(c: OpenedCard): Card {
+  return {
+    id: c.id,
+    name: c.name,
+    rarity: c.rarity as Card["rarity"],
+    type: c.type as Card["type"],
+    supportType: (c.supportType as Card["supportType"]) ?? null,
+    atk: c.atk,
+    hp: c.hp,
+    cost: c.cost,
+    description: c.description ?? undefined,
+    image: c.image,
+    cardSet: { id: 0, name: "" },
+  };
+}
 
 const RARITY_ORDER = ["common", "uncommon", "rare", "epic", "legendary", "secret"];
 

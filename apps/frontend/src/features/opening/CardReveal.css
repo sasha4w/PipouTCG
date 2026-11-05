@@ -1,0 +1,227 @@
+.opening-fx {
+  --fx-color: #b0b8b0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 420px;
+}
+
+.opening-fx--uncommon {
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--fx-color) 14%, transparent),
+    transparent 70%
+  );
+}
+
+.opening-fx__skip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+}
+
+.opening-fx__blackout {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 4;
+}
+
+.opening-fx__stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.opening-fx__layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.opening-fx__tilt {
+  position: relative;
+  perspective: 800px;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.12s ease-out;
+}
+
+.opening-fx__card {
+  position: relative;
+  cursor: pointer;
+  border-radius: 12px;
+  animation: opening-fx-pop 0.3s ease-out both;
+}
+
+.opening-fx--rare .opening-fx__card,
+.opening-fx--epic .opening-fx__card,
+.opening-fx--legendary .opening-fx__card,
+.opening-fx--secret .opening-fx__card {
+  animation: opening-fx-slam 0.45s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.opening-fx__card:focus-visible {
+  outline: 2px solid var(--fx-color);
+  outline-offset: 4px;
+}
+
+.opening-fx__halo {
+  position: absolute;
+  width: 280px;
+  height: 380px;
+  border-radius: 24px;
+  box-shadow: 0 0 60px 20px color-mix(in srgb, var(--fx-color) 55%, transparent);
+}
+
+.opening-fx__flash {
+  position: fixed;
+  inset: 0;
+  background: var(--fx-color);
+  opacity: 0;
+  animation: opening-fx-flash 0.5s ease-out;
+}
+
+.opening-fx--legendary .opening-fx__flash,
+.opening-fx--secret .opening-fx__flash {
+  background: #fff;
+}
+
+.opening-fx__ring {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border: 3px solid var(--fx-color);
+  border-radius: 50%;
+  opacity: 0;
+  animation: opening-fx-ring 0.8s ease-out;
+}
+
+.opening-fx__ring--late {
+  animation-delay: 0.15s;
+}
+
+.opening-fx__rays {
+  position: absolute;
+  width: 640px;
+  height: 640px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--fx-color) 40%, transparent) 0 6deg,
+    transparent 6deg 24deg
+  );
+  mask-image: radial-gradient(circle, #000 15%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle, #000 15%, transparent 70%);
+  animation: opening-fx-spin 14s linear infinite;
+}
+
+.opening-fx__mote {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fx-color);
+  opacity: 0;
+  animation: opening-fx-mote 1.4s ease-out var(--delay) both;
+}
+
+.opening-fx--secret .opening-fx__mote {
+  background: hsl(var(--hue) 90% 65%);
+}
+
+.opening-fx__sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  background-size: 250% 100%;
+  mix-blend-mode: overlay;
+  animation: opening-fx-sheen 2.4s ease-in-out infinite;
+}
+
+.opening-fx--secret .opening-fx__sheen {
+  background: linear-gradient(115deg, #f0f, #0ff, #ff0, #f0f);
+  background-size: 250% 100%;
+  opacity: 0.4;
+}
+
+.opening-fx__banner {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fx-color);
+  text-shadow: 0 0 18px var(--fx-color);
+  animation: opening-fx-banner 0.5s 0.15s ease-out both;
+}
+
+.opening-fx__new {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #d8a030;
+  color: #1a1206;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.opening-fx--shake .opening-fx__stage {
+  animation: opening-fx-shake 0.5s 0.1s linear;
+}
+
+@keyframes opening-fx-pop {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes opening-fx-slam {
+  0% { opacity: 0; transform: scale(2.6); }
+  60% { opacity: 1; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes opening-fx-flash {
+  0% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+@keyframes opening-fx-ring {
+  0% { opacity: 0.9; transform: scale(0.4); }
+  100% { opacity: 0; transform: scale(4.5); }
+}
+@keyframes opening-fx-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes opening-fx-mote {
+  0% { opacity: 1; transform: rotate(var(--a)) translateX(0); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)); }
+}
+@keyframes opening-fx-sheen {
+  0% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
+}
+@keyframes opening-fx-banner {
+  from { opacity: 0; transform: scale(1.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes opening-fx-shake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-7px, 4px); }
+  35% { transform: translate(6px, -5px); }
+  55% { transform: translate(-4px, -3px); }
+  75% { transform: translate(3px, 4px); }
+}
