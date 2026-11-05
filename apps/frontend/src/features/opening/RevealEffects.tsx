@@ -9,6 +9,12 @@ interface RevealEffectsProps {
   reduced: boolean;
 }
 
+/** Flash plein écran : à rendre hors de la scène qui tremble. */
+export function RevealFlash({ rarity, reduced }: { rarity: string; reduced: boolean }) {
+  if (reduced || rarityRank(rarity) < rarityRank("rare")) return null;
+  return <div className="opening-fx__flash" aria-hidden="true" />;
+}
+
 /** Couche d'effets décorative : halo, flash, anneaux, rayons, éclats. */
 export function RevealEffects({ rarity, ritual, reduced }: RevealEffectsProps) {
   const rank = rarityRank(rarity);
@@ -20,7 +26,6 @@ export function RevealEffects({ rarity, ritual, reduced }: RevealEffectsProps) {
   return (
     <div className="opening-fx__layer" aria-hidden="true">
       {rank >= 1 && <div className="opening-fx__halo" />}
-      {rare && !reduced && <div className="opening-fx__flash" />}
       {rare && <div className="opening-fx__ring" />}
       {epic && <div className="opening-fx__ring opening-fx__ring--late" />}
       {legendary && !reduced && <div className="opening-fx__rays" />}

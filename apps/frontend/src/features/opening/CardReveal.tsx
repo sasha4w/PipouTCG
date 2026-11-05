@@ -7,7 +7,7 @@ import { IconArrowRight } from "../../components/Icons";
 import CardDisplay from "../cards/CardDisplay";
 import { openingAudio, playRaritySound } from "./openingAudio";
 import { RARITY_GLOW, rarityRank, toCard, type RevealStep } from "./openingPlan";
-import { RevealEffects } from "./RevealEffects";
+import { RevealEffects, RevealFlash } from "./RevealEffects";
 import "./CardReveal.css";
 
 interface CardRevealProps {
@@ -25,9 +25,18 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
   const [revealedIdx, setRevealedIdx] = useState(-1);
   const tiltRef = useRef<HTMLDivElement>(null);
   const onDoneRef = useRef(onDone);
+  const stepsRef = useRef(steps);
+  const doneRef = useRef(false);
   useEffect(() => {
     onDoneRef.current = onDone;
+    stepsRef.current = steps;
   });
+
+  const finish = () => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    onDoneRef.current();
+  };
 
   const step = steps[idx];
   const hasBlackout = step.ritual === "full" && step.blackoutMs > 0;
@@ -37,35 +46,40 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
   const isLast = idx >= steps.length - 1;
 
   useEffect(() => {
+    const cur = stepsRef.current[idx];
+    const blackout = cur.ritual === "full" && cur.blackoutMs > 0;
     const timers: ReturnType<typeof setTimeout>[] = [];
     const advance = () => {
-      if (idx >= steps.length - 1) onDoneRef.current();
-      else setIdx(idx + 1);
+      if (idx >= stepsRef.current.length - 1) {
+        if (doneRef.current) return;
+        doneRef.current = true;
+        onDoneRef.current();
+      } else setIdx(idx + 1);
     };
     const reveal = () => {
-      playRaritySound(step.card.rarity);
-      if (step.ritual !== "none") openingAudio.bass();
-      if (step.autoAdvanceMs != null) {
-        timers.push(setTimeout(advance, step.autoAdvanceMs));
+      playRaritySound(cur.card.rarity);
+      if (cur.ritual !== "none") openingAudio.bass();
+      if (cur.autoAdvanceMs != null) {
+        timers.push(setTimeout(advance, cur.autoAdvanceMs));
       }
     };
-    if (hasBlackout) {
+    if (blackout) {
       openingAudio.rumble();
       timers.push(
         setTimeout(() => {
           setRevealedIdx(idx);
           reveal();
-        }, step.blackoutMs),
+        }, cur.blackoutMs),
       );
     } else {
       reveal();
     }
     return () => timers.forEach(clearTimeout);
-  }, [idx, step, steps.length, hasBlackout]);
+  }, [idx]);
 
   const handleAdvance = () => {
-    if (!revealed) return;
-    if (isLast) onDone();
+    if (!revealed || !step.holdForClick) return;
+    if (isLast) finish();
     else setIdx(idx + 1);
   };
 
@@ -122,6 +136,8 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
       {!revealed ? (
         <div className="opening-fx__blackout" data-testid="reveal-blackout" />
       ) : (
+        <>
+        <RevealFlash key={`flash-${idx}`} rarity={rarity} reduced={reduced} />
         <div key={idx} className="opening-fx__stage">
           <RevealEffects rarity={rarity} ritual={step.ritual} reduced={reduced} />
           <div
@@ -159,6 +175,7 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
             </div>
           )}
         </div>
+        </>
       )}
     </div>
   );

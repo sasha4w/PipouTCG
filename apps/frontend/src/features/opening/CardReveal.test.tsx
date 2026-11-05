@@ -88,16 +88,66 @@ describe("CardReveal", () => {
     expect(rumble).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("reveal-blackout")).toBeInTheDocument();
     expect(playRaritySound).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("reveal-card")).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId("reveal-root"));
+    act(() => {
+      vi.advanceTimersByTime(399);
+    });
+    expect(screen.queryByTestId("reveal-card")).not.toBeInTheDocument();
     expect(screen.queryByText(s[1].card.name)).not.toBeInTheDocument();
     act(() => {
-      vi.advanceTimersByTime(400);
+      vi.advanceTimersByTime(1);
     });
     expect(screen.queryByTestId("reveal-blackout")).not.toBeInTheDocument();
     expect(playRaritySound).toHaveBeenCalledWith("epic");
     expect(bass).toHaveBeenCalledTimes(1);
     fireEvent.click(target());
     expect(screen.getByText(s[1].card.name)).toBeInTheDocument();
+  });
+
+  it("onDone fires once: click then timer on last auto-advance step", () => {
+    const { onDone } = setup([
+      step("common", { holdForClick: false, autoAdvanceMs: 110 }),
+    ]);
+    fireEvent.click(target());
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it("double click on last held step calls onDone once", () => {
+    const { onDone } = setup([step("common")]);
+    fireEvent.click(target());
+    fireEvent.click(target());
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  it("click on auto-advance step is ignored", () => {
+    const s = [
+      step("common", { holdForClick: false, autoAdvanceMs: 110 }),
+      step("common"),
+    ];
+    setup(s);
+    fireEvent.click(target());
+    expect(screen.getByText(s[0].card.name)).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(110);
+    });
+    expect(screen.getByText(s[1].card.name)).toBeInTheDocument();
+  });
+
+  it("rerender with equal new steps array does not replay sound", () => {
+    const s = [step("rare")];
+    const onDone = vi.fn();
+    const onSkip = vi.fn();
+    const ui = (steps: RevealStep[]) => (
+      <CardReveal steps={steps} onDone={onDone} onSkip={onSkip} />
+    );
+    const { rerender } = render(ui(s));
+    expect(playRaritySound).toHaveBeenCalledTimes(1);
+    rerender(ui(s.map((x) => ({ ...x }))));
+    expect(playRaritySound).toHaveBeenCalledTimes(1);
   });
 
   it("auto-advances after autoAdvanceMs", () => {
