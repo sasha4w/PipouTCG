@@ -91,30 +91,38 @@ export class StarterDecks1791000000026 implements MigrationInterface {
       plan.push({ deck, resolved });
     }
 
+    // Tout est rejouable : le DDL MySQL valide implicitement, un échec en cours
+    // de route laisse tables et colonne en place.
     await q.query(
-      'CREATE TABLE `starter_deck` (`id` int NOT NULL AUTO_INCREMENT, `archetype` varchar(20) NOT NULL, UNIQUE INDEX `UQ_starter_deck_archetype` (`archetype`), PRIMARY KEY (`id`)) ENGINE=InnoDB',
+      'CREATE TABLE IF NOT EXISTS `starter_deck` (`id` int NOT NULL AUTO_INCREMENT, `archetype` varchar(20) NOT NULL, UNIQUE INDEX `UQ_starter_deck_archetype` (`archetype`), PRIMARY KEY (`id`)) ENGINE=InnoDB',
     );
     await q.query(
-      'CREATE TABLE `starter_deck_card` (`id` int NOT NULL AUTO_INCREMENT, `starter_deck_id` int NOT NULL, `card_id` int NOT NULL, `quantity` int NOT NULL DEFAULT 1, `is_featured` tinyint NOT NULL DEFAULT 0, UNIQUE INDEX `UQ_starter_deck_card` (`starter_deck_id`, `card_id`), PRIMARY KEY (`id`)) ENGINE=InnoDB',
+      'CREATE TABLE IF NOT EXISTS `starter_deck_card` (`id` int NOT NULL AUTO_INCREMENT, `starter_deck_id` int NOT NULL, `card_id` int NOT NULL, `quantity` int NOT NULL DEFAULT 1, `is_featured` tinyint NOT NULL DEFAULT 0, UNIQUE INDEX `UQ_starter_deck_card` (`starter_deck_id`, `card_id`), PRIMARY KEY (`id`), CONSTRAINT `FK_starter_deck_card_deck` FOREIGN KEY (`starter_deck_id`) REFERENCES `starter_deck`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION, CONSTRAINT `FK_starter_deck_card_card` FOREIGN KEY (`card_id`) REFERENCES `card`(`id`) ON DELETE RESTRICT ON UPDATE NO ACTION) ENGINE=InnoDB',
     );
-    await q.query(
-      'ALTER TABLE `starter_deck_card` ADD CONSTRAINT `FK_starter_deck_card_deck` FOREIGN KEY (`starter_deck_id`) REFERENCES `starter_deck`(`id`) ON DELETE CASCADE ON UPDATE NO ACTION',
-    );
-    await q.query(
-      'ALTER TABLE `starter_deck_card` ADD CONSTRAINT `FK_starter_deck_card_card` FOREIGN KEY (`card_id`) REFERENCES `card`(`id`) ON DELETE RESTRICT ON UPDATE NO ACTION',
-    );
-    await q.query(
-      'ALTER TABLE `user` ADD `starter_claimed_at` timestamp NULL DEFAULT NULL',
-    );
+    if (!(await this.hasClaimedColumn(q)))
+      await q.query(
+        'ALTER TABLE `user` ADD `starter_claimed_at` timestamp NULL DEFAULT NULL',
+      );
 
     for (const { deck, resolved } of plan) {
-      await q.query('INSERT INTO `starter_deck` (`archetype`) VALUES (?)', [
-        deck.archetype,
-      ]);
-      const [{ id: deckId }] = (await q.query(
+      let rows = (await q.query(
         'SELECT `id` FROM `starter_deck` WHERE `archetype` = ?',
         [deck.archetype],
       )) as { id: number }[];
+      if (rows.length === 0) {
+        await q.query('INSERT INTO `starter_deck` (`archetype`) VALUES (?)', [
+          deck.archetype,
+        ]);
+        rows = (await q.query(
+          'SELECT `id` FROM `starter_deck` WHERE `archetype` = ?',
+          [deck.archetype],
+        )) as { id: number }[];
+      }
+      const deckId = rows[0].id;
+      await q.query(
+        'DELETE FROM `starter_deck_card` WHERE `starter_deck_id` = ?',
+        [deckId],
+      );
       for (const { id, card } of resolved)
         await q.query(
           'INSERT INTO `starter_deck_card` (`starter_deck_id`, `card_id`, `quantity`, `is_featured`) VALUES (?, ?, ?, ?)',
@@ -124,8 +132,16 @@ export class StarterDecks1791000000026 implements MigrationInterface {
   }
 
   public async down(q: QueryRunner): Promise<void> {
-    await q.query('ALTER TABLE `user` DROP COLUMN `starter_claimed_at`');
-    await q.query('DROP TABLE `starter_deck_card`');
-    await q.query('DROP TABLE `starter_deck`');
+    if (await this.hasClaimedColumn(q))
+      await q.query('ALTER TABLE `user` DROP COLUMN `starter_claimed_at`');
+    await q.query('DROP TABLE IF EXISTS `starter_deck_card`');
+    await q.query('DROP TABLE IF EXISTS `starter_deck`');
+  }
+
+  private async hasClaimedColumn(q: QueryRunner): Promise<boolean> {
+    const rows = (await q.query(
+      "SELECT COUNT(*) AS n FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = DATABASE() AND `TABLE_NAME` = 'user' AND `COLUMN_NAME` = 'starter_claimed_at'",
+    )) as { n: string | number }[];
+    return Number(rows[0]?.n) > 0;
   }
 }
