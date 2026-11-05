@@ -8,3 +8,4 @@ export * from "./quests";
 export * from "./adventure";
 export * from "./forge";
 export * from "./ai-review";
+export * from "./starter-decks";
