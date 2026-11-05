@@ -1582,6 +1582,7 @@
         "results": "Résultats !",
     "close": "Fermer",
     "closeModal": "Fermer la fenêtre",
+    "quantity": "Quantité à ouvrir",
     "seeResults": "Voir les résultats",
     "bundleContents": "Contenu du bundle",
     "error": "Erreur lors de l'ouverture.",

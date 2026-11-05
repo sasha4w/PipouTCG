@@ -66,6 +66,12 @@ export default function OpeningModal({
   );
   const showQuantity = !isBundle && phase === "tear" && available >= 5;
 
+  const refreshServerState = () => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+  };
+
   const handleTorn = async () => {
     if (startedRef.current) return;
     startedRef.current = true;
@@ -79,10 +85,10 @@ export default function OpeningModal({
             quantity === 1 ? undefined : quantity,
           );
       setResult(res);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.quests });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.profile });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventory });
+      refreshServerState();
     } catch (err) {
+      // Timeout/réseau : le serveur a pu committer, on évite un stock périmé au retry
+      refreshServerState();
       setError(apiErrorMessage(err) ?? t("opening.error"));
       startedRef.current = false;
       setAttempt((a) => a + 1);
@@ -135,7 +141,11 @@ export default function OpeningModal({
               onWaitDone={handleWaitDone}
             />
             {showQuantity && (
-              <div className="opening-qty" role="group">
+              <div
+                className="opening-qty"
+                role="group"
+                aria-label={t("opening.quantity")}
+              >
                 {quantities.map((q) => (
                   <Button
                     key={q}

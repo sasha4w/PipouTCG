@@ -26,7 +26,7 @@ function playTone(
   if (volume <= 0) return;
   const c = getContext();
   if (!c) return;
-  void c.resume?.();
+  c.resume?.()?.catch(() => {});
   const t = c.currentTime;
   const osc = c.createOscillator();
   const gain = c.createGain();
@@ -47,7 +47,7 @@ export const openingAudio = {
     if (volume <= 0) return;
     const c = getContext();
     if (!c) return;
-    void c.resume?.();
+    c.resume?.()?.catch(() => {});
     const s = Math.min(1, Math.max(0, speed));
     const duration = 0.05;
     const t = c.currentTime;

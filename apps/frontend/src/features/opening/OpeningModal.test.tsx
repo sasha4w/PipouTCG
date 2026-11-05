@@ -120,7 +120,12 @@ describe("OpeningModal", () => {
     expect(screen.getByTestId("pack-tear")).toBeInTheDocument();
     expect(screen.queryByTestId("reveal-root")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "×5" })).toBeInTheDocument();
-    expect(invalidate).not.toHaveBeenCalled();
+    // Le serveur a pu committer avant l'échec : on rafraîchit pour ne pas garder un stock périmé
+    const keys = invalidate.mock.calls.map((c) => c[0]?.queryKey);
+    expect(invalidate).toHaveBeenCalledTimes(3);
+    expect(keys).toContainEqual(QUERY_KEYS.quests);
+    expect(keys).toContainEqual(QUERY_KEYS.profile);
+    expect(keys).toContainEqual(QUERY_KEYS.inventory);
     fireEvent.click(screen.getByText("tear"));
     await waitFor(() => expect(openBooster).toHaveBeenCalledTimes(2));
     expect(screen.queryByText("Pas assez de boosters")).not.toBeInTheDocument();

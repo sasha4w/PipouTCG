@@ -1581,6 +1581,7 @@
         "results": "Results!",
     "close": "Close",
     "closeModal": "Close window",
+    "quantity": "Quantity to open",
     "seeResults": "See results",
     "bundleContents": "Bundle contents",
     "error": "Error while opening.",
