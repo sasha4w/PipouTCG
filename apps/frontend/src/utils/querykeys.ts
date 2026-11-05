@@ -9,6 +9,7 @@ export const QUERY_KEYS = {
   quests: ["user", "quests"] as const,
   achievements: ["user", "achievements"] as const,
   dailyRewardStatus: ["daily-reward", "status"] as const,
+  starterStatus: ["starter-decks", "status"] as const,
   notifications: {
     all: ["notifications"] as const,
     list: (tab: string) => ["notifications", tab] as const,
