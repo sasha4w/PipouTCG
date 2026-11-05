@@ -83,8 +83,15 @@ describe('BoostersController', () => {
       mockBoostersService.openBooster.mockResolvedValue(fake);
 
       const result = await controller.openBooster(1, req);
-      expect(mockBoostersService.openBooster).toHaveBeenCalledWith(1, 1);
+      expect(mockBoostersService.openBooster).toHaveBeenCalledWith(1, 1, 1);
       expect(result).toEqual(fake);
+    });
+
+    it('transmet la quantité du corps', async () => {
+      const req = { user: { userId: 1, isAdmin: false } };
+      mockBoostersService.openBooster.mockResolvedValue({});
+      await controller.openBooster(1, req, { quantity: 10 });
+      expect(mockBoostersService.openBooster).toHaveBeenCalledWith(1, 1, 10);
     });
   });
 

@@ -584,6 +584,7 @@ export class UsersService {
     userId: number,
     boosterId: number,
     manager?: EntityManager,
+    quantity = 1,
   ) {
     const repo = manager
       ? manager.getRepository(UserBooster)
@@ -593,11 +594,11 @@ export class UsersService {
       where: { user: { id: userId }, booster: { id: boosterId } },
     });
 
-    if (!ub || ub.quantity <= 0) {
+    if (!ub || ub.quantity < quantity) {
       throw new BadRequestException("L'utilisateur ne possède pas ce booster.");
     }
 
-    ub.quantity--;
+    ub.quantity -= quantity;
 
     if (ub.quantity <= 0) {
       await repo.remove(ub);
@@ -606,8 +607,12 @@ export class UsersService {
     return repo.save(ub);
   }
 
-  async updatePostOpeningStats(userId: number, xpAmount: number) {
-    await this.userRepository.increment({ id: userId }, 'boostersOpened', 1);
+  async updatePostOpeningStats(userId: number, xpAmount: number, count = 1) {
+    await this.userRepository.increment(
+      { id: userId },
+      'boostersOpened',
+      count,
+    );
     await this.userRepository.increment({ id: userId }, 'experience', xpAmount);
   }
 

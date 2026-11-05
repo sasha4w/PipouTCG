@@ -11,6 +11,7 @@ import {
   Req,
   Query,
 } from '@nestjs/common';
+import type { OpenBoosterRequest } from '@pipou/shared';
 import { BoostersService } from './boosters.service';
 import { CreateBoosterDto } from './dto/create-booster.dto';
 import { UpdateBoosterDto } from './dto/update-booster.dto';
@@ -51,8 +52,13 @@ export class BoostersController {
   openBooster(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: AuthenticatedRequest,
+    @Body() body?: OpenBoosterRequest,
   ) {
-    return this.boostersService.openBooster(id, req.user.userId);
+    return this.boostersService.openBooster(
+      id,
+      req.user.userId,
+      body?.quantity ?? 1,
+    );
   }
 
   // ADMIN //
