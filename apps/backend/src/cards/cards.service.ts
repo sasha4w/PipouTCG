@@ -1,8 +1,13 @@
 import { CardSet } from '../card-sets/card-set.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Card } from './card.entity';
+import { StarterDeckCard } from '../starter-decks/starter-deck-card.entity';
 import { CardType, Rarity, SupportType } from '@pipou/shared';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
@@ -14,6 +19,8 @@ export class CardsService {
   constructor(
     @InjectRepository(Card)
     private cardRepository: Repository<Card>,
+    @InjectRepository(StarterDeckCard)
+    private starterCardRepository: Repository<StarterDeckCard>,
     private imagesService: ImagesService,
   ) {}
 
@@ -93,6 +100,13 @@ export class CardsService {
 
   async remove(id: number) {
     const card = await this.findOne(id);
+    // Pré-contrôle : le FK RESTRICT échouerait de toute façon, mais avec une 500.
+    const used = await this.starterCardRepository.count({
+      where: { cardId: id },
+    });
+    if (used > 0) {
+      throw new ConflictException('Carte utilisée dans un starter deck');
+    }
     await this.cardRepository.remove(card);
     return { message: `Card with ID ${id} has been deleted` };
   }

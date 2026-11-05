@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CardsService } from './cards.service';
 import { Card } from './card.entity';
+import { StarterDeckCard } from '../starter-decks/starter-deck-card.entity';
 import { CardSet } from '../card-sets/card-set.entity';
 import { Image } from '../images/image.entity';
 import { ImagesService } from '../images/images.service'; // ← remplace UploadService
@@ -21,6 +22,8 @@ const mockCardRepo = {
   save: jest.fn(),
   remove: jest.fn(),
 };
+
+const mockStarterCardRepo = { count: jest.fn() };
 
 const mockImagesService = {
   uploadAndSave: jest.fn(),
@@ -61,6 +64,10 @@ describe('CardsService', () => {
       providers: [
         CardsService,
         { provide: getRepositoryToken(Card), useValue: mockCardRepo },
+        {
+          provide: getRepositoryToken(StarterDeckCard),
+          useValue: mockStarterCardRepo,
+        },
         { provide: ImagesService, useValue: mockImagesService }, // ← remplacé
       ],
     }).compile();
@@ -292,10 +299,19 @@ describe('CardsService', () => {
     it('should remove card and return message', async () => {
       mockCardRepo.findOne.mockResolvedValue(fakeCard);
       mockCardRepo.remove.mockResolvedValue(undefined);
+      mockStarterCardRepo.count.mockResolvedValue(0);
 
       const result = await service.remove(1);
       expect(mockCardRepo.remove).toHaveBeenCalledWith(fakeCard);
       expect(result).toEqual({ message: 'Card with ID 1 has been deleted' });
+    });
+
+    it('should throw ConflictException if card is in a starter deck', async () => {
+      mockCardRepo.findOne.mockResolvedValue(fakeCard);
+      mockStarterCardRepo.count.mockResolvedValue(1);
+
+      await expect(service.remove(1)).rejects.toBeInstanceOf(ConflictException);
+      expect(mockCardRepo.remove).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if card not found', async () => {

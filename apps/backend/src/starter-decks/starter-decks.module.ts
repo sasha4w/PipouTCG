@@ -4,6 +4,7 @@ import { StarterDeck } from './starter-deck.entity';
 import { StarterDeckCard } from './starter-deck-card.entity';
 import { StarterDecksService } from './starter-decks.service';
 import { StarterDecksController } from './starter-decks.controller';
+import { StarterDecksAdminController } from './starter-decks-admin.controller';
 import { UsersModule } from '../users/users.module';
 import { User } from '../users/user.entity';
 
@@ -13,7 +14,7 @@ import { User } from '../users/user.entity';
     UsersModule,
   ],
   providers: [StarterDecksService],
-  controllers: [StarterDecksController],
+  controllers: [StarterDecksController, StarterDecksAdminController],
   exports: [StarterDecksService],
 })
 export class StarterDecksModule {}

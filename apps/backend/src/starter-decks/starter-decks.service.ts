@@ -4,7 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, IsNull, Repository } from 'typeorm';
+import { DataSource, In, IsNull, Repository } from 'typeorm';
 import {
   Archetype,
   DECK_RULES,
@@ -15,9 +15,12 @@ import type {
   ClaimStarterResult,
   StarterDeckCardView,
   StarterDeckView,
+  StarterDeckBody,
   StarterStatus,
 } from '@pipou/shared';
 import { StarterDeck } from './starter-deck.entity';
+import { StarterDeckCard } from './starter-deck-card.entity';
+import { Card } from '../cards/card.entity';
 import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { Deck } from '../decks/deck.entity';
@@ -139,6 +142,54 @@ export class StarterDecksService {
 
       const user = await manager.findOne(User, { where: { id: userId } });
       return { archetype, deckId: deck.id, gold: user?.gold ?? 0 };
+    });
+  }
+
+  /** Les 3 decks pour l'admin, invalides ou absents compris. */
+  async adminList(): Promise<StarterDeckView[]> {
+    const decks = await this.starterRepo.find({ relations: ['cards'] });
+    return Object.values(Archetype).map((archetype) => {
+      const deck = decks.find((d) => d.archetype === archetype);
+      return deck ? toView(deck) : { archetype, isValid: false, cards: [] };
+    });
+  }
+
+  /** Remplace la composition ; tout est validé avant de supprimer quoi que ce soit. */
+  async saveDeck(
+    archetype: Archetype,
+    body: StarterDeckBody,
+  ): Promise<StarterDeckView> {
+    const cards = body.cards.map((c) => ({
+      cardId: c.cardId,
+      quantity: c.quantity,
+      isFeatured: c.isFeatured,
+    }));
+    if (!isDeckValid(cards)) {
+      throw new BadRequestException(
+        'Composition invalide : 30 à 40 cartes, 3 copies max, 4 phares',
+      );
+    }
+    return this.dataSource.transaction(async (manager) => {
+      const found = await manager.count(Card, {
+        where: { id: In(cards.map((c) => c.cardId)) },
+      });
+      if (found !== cards.length) {
+        throw new BadRequestException('Carte inexistante dans la composition');
+      }
+      const deck =
+        (await manager.findOne(StarterDeck, { where: { archetype } })) ??
+        (await manager.save(
+          StarterDeck,
+          manager.create(StarterDeck, { archetype }),
+        ));
+      await manager.delete(StarterDeckCard, { starterDeckId: deck.id });
+      await manager.save(
+        StarterDeckCard,
+        cards.map((c) =>
+          manager.create(StarterDeckCard, { ...c, starterDeckId: deck.id }),
+        ),
+      );
+      return { archetype, isValid: true, cards };
     });
   }
 }

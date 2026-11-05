@@ -76,6 +76,8 @@ describe('StarterDecksService', () => {
     findOne: jest.fn(),
     save: jest.fn(),
     create: jest.fn(),
+    count: jest.fn(),
+    delete: jest.fn(),
   };
   const dataSource = { transaction: jest.fn() };
 
@@ -219,6 +221,54 @@ describe('StarterDecksService', () => {
       expect(rows).toHaveLength(10);
       expect(rows.map((r) => r.userCardId)).toContain(9999);
       expect(rows.every((r) => r.quantity === 3)).toBe(true);
+    });
+  });
+  describe('adminList', () => {
+    it('renvoie 3 vues, dont les invalides et les manquants', async () => {
+      const s = await service();
+      const decks = allDecks().slice(0, 2);
+      decks[1].cards[0].quantity = 4;
+      starterRepo.find.mockResolvedValue(decks);
+      const views = await s.adminList();
+      expect(views.map((v) => v.archetype)).toEqual(Object.values(Archetype));
+      expect(views.map((v) => v.isValid)).toEqual([true, false, false]);
+    });
+  });
+
+  describe('saveDeck', () => {
+    it('refuse 29 cartes sans toucher aux lignes', async () => {
+      const s = await service();
+      const cards = validCards();
+      cards[9].quantity = 2;
+      await expect(
+        s.saveDeck(Archetype.PIPOU, { cards }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(manager.delete).not.toHaveBeenCalled();
+      expect(manager.save).not.toHaveBeenCalled();
+    });
+
+    it('refuse une carte inexistante sans toucher aux lignes', async () => {
+      const s = await service();
+      manager.count.mockResolvedValue(9);
+      manager.findOne.mockResolvedValue({ id: 5, archetype: Archetype.PIPOU });
+      await expect(
+        s.saveDeck(Archetype.PIPOU, { cards: validCards() }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(manager.delete).not.toHaveBeenCalled();
+      expect(manager.save).not.toHaveBeenCalled();
+    });
+
+    it('accepte une liste valide et remplace les lignes', async () => {
+      const s = await service();
+      manager.count.mockResolvedValue(10);
+      manager.findOne.mockResolvedValue({ id: 5, archetype: Archetype.PIPOU });
+      manager.delete.mockResolvedValue({ affected: 10 });
+      manager.save.mockImplementation((_e: unknown, v: unknown) => v);
+      const view = await s.saveDeck(Archetype.PIPOU, { cards: validCards() });
+      expect(manager.delete).toHaveBeenCalledTimes(1);
+      expect(view.isValid).toBe(true);
+      expect(view.archetype).toBe(Archetype.PIPOU);
+      expect(view.cards).toHaveLength(10);
     });
   });
 });
