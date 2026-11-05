@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import Button from "../../components/Button";
+import { IconBooster, IconGift } from "../../components/Icons";
 import type { OpeningTarget } from "./OpeningModal";
 import type { UserInventory } from "../../services/user.service";
 import "./OpeningQuickAccess.css";
@@ -17,6 +19,7 @@ interface OpeningQuickAccessProps {
 }
 
 const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
+  const { t } = useTranslation();
   const boosters = inventory?.boosters?.data ?? [];
   const bundles = inventory?.bundles?.data ?? [];
 
@@ -47,15 +50,19 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
 
   return (
     <div className="opening-selector">
-      <h2 className="home-section__title">🎲 Ouvrir</h2>
+      <h2 className="home-section__title"><IconBooster size={20} /> {t("opening.title")}</h2>
 
       <div className="opening-selector__featured">
         <div className="opening-selector__featured-icon">
-          {selected.type === "booster" ? "📦" : "🎁"}
+          {selected.type === "booster" ? (
+            <IconBooster size={64} />
+          ) : (
+            <IconGift size={64} />
+          )}
         </div>
         <div className="opening-selector__featured-name">{selected.name}</div>
         <div className="opening-selector__featured-qty">
-          ×{selected.qty} disponible{selected.qty > 1 ? "s" : ""}
+          ×{selected.qty} {t("opening.availableLabel", { count: selected.qty })}
         </div>
         <Button
           variant="primary-inverse"
@@ -66,10 +73,11 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
               type: selected.type,
               id: selected.id,
               name: selected.name,
+              available: selected.qty,
             })
           }
         >
-          Ouvrir
+          {t("opening.open")}
         </Button>
       </div>
 
@@ -81,7 +89,11 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
             onClick={() => setSelectedIndex(i)}
           >
             <span className="opening-selector__thumb-icon">
-              {item.type === "booster" ? "📦" : "🎁"}
+              {item.type === "booster" ? (
+                <IconBooster size={28} />
+              ) : (
+                <IconGift size={28} />
+              )}
             </span>
             <span className="opening-selector__thumb-name">{item.name}</span>
             <span className="opening-selector__thumb-qty">×{item.qty}</span>
