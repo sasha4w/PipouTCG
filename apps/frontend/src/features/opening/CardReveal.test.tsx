@@ -62,7 +62,9 @@ describe("CardReveal", () => {
     vi.useFakeTimers();
     vi.clearAllMocks();
   });
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it("click advances when holdForClick, then onDone after last", () => {
     const s = [step("common"), step("rare")];
