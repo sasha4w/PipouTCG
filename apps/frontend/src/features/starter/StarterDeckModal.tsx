@@ -231,7 +231,12 @@ export default function StarterDeckModal({ status, onClose, addToast }: Props) {
                   {name} · {t("starter.cards_count", { count: total })}
                 </h2>
               </div>
-              <StarterDeckCardList entries={entries} onInspect={setInspected} />
+              <div className="sdm-list-scroll">
+                <StarterDeckCardList
+                  entries={entries}
+                  onInspect={setInspected}
+                />
+              </div>
               <Button
                 variant="primary-inverse"
                 size="lg"
