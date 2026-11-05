@@ -19,6 +19,7 @@ import { BundlesModule } from './bundles/bundles.module';
 import { BannersModule } from './banners/banners.module';
 import { ShopModule } from './shop/shop.module';
 import { DailyRewardModule } from './daily-reward/daily-reward.module';
+import { StarterDecksModule } from './starter-decks/starter-decks.module';
 import { AdventureModule } from './adventure/adventure.module';
 import { CustomNamingStrategy } from './database/naming.strategy';
 import { validateEnv } from './config/env.validation';
@@ -83,6 +84,7 @@ import { shouldSynchronize } from './database/synchronize';
     BannersModule,
     ShopModule,
     DailyRewardModule,
+    StarterDecksModule,
     DecksModule,
     ForgeModule,
     FightsModule,

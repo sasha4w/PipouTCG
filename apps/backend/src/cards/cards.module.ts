@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CardsController } from './cards.controller';
 import { CardsService } from './cards.service';
 import { Card } from './card.entity';
+import { StarterDeckCard } from '../starter-decks/starter-deck-card.entity';
 import { ImagesModule } from '../images/images.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([Card]), ImagesModule],
+  imports: [TypeOrmModule.forFeature([Card, StarterDeckCard]), ImagesModule],
   controllers: [CardsController],
   providers: [CardsService],
   exports: [CardsService],

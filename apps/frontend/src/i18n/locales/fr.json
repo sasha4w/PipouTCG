@@ -541,7 +541,8 @@
       "patchnotes": "Patchnotes",
       "sandbox": "Sandbox",
       "adventure": "Aventure",
-      "aiReview": "Revue IA"
+      "aiReview": "Revue IA",
+      "starterDecks": "Starter Decks"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
@@ -1138,7 +1139,8 @@
         "energy": "Énergie",
         "combat": "Combat",
         "primes": "Primes & Comeback",
-        "turn": "Structure du tour"
+        "turn": "Structure du tour",
+        "starters": "Decks de départ"
       },
       "winLabel": "Condition de victoire",
       "winValue": "Récupérer ses {{count}} Cartes Primes en premier",
@@ -1158,6 +1160,7 @@
       "persistent": "Permanent, agit sur tes monstres uniquement.",
       "charge": "Gagne un compteur à chaque début de ton tour ; son effet se déclenche une fois plein.",
       "equipment": "Attaché à un de tes monstres ; certains effets ne s'activent que sur un monstre précis.",
+      "equipmentSlots": "{{offensiveLabel}} : {{offensive}} · {{defensiveLabel}} : {{defensive}} · {{accessoryLabel}} : {{accessory}} par monstre.",
       "energy1": "<b>Générer :</b> recycle des cartes de ta main pendant la Main Phase. <b>1 carte = 1 Énergie.</b>",
       "energy2": "Sans assez d'énergie, tu paies le reste en défaussant des cartes au moment d'invoquer.",
       "energy3": "<b>Réinitialisation :</b> l'énergie retombe à 0 en fin de tour.",
@@ -1413,6 +1416,43 @@
       "no_cards": "Aucune carte dans ce set."
     }
   },
+  "starter": {
+    "title": "Choisis ton Starter Deck",
+    "close": "Fermer",
+    "back": "Retour",
+    "claim_button": "Réclamer Starter Deck",
+    "closed_hint": "Tu pourras choisir ton Starter Deck plus tard avec le bouton « Réclamer Starter Deck » en haut de l'accueil.",
+    "gold_offered": "{{gold}} gold offerts",
+    "see_cards_one": "Voir la carte",
+    "see_cards_other": "Voir les {{count}} cartes",
+    "cards_count_one": "{{count}} carte",
+    "cards_count_other": "{{count}} cartes",
+    "choose": "Choisir {{name}}",
+    "confirm_title": "Confirmer ton choix",
+    "confirm_text": "Tu vas recevoir le deck {{name}} et {{gold}} gold. Ce choix est définitif : tu n'auras pas de second Starter Deck.",
+    "confirm": "Confirmer",
+    "error": "Impossible de valider ton choix. Réessaie dans un instant.",
+    "done_title": "{{name}} est à toi !",
+    "how_to_play": "Comment le jouer",
+    "done_button": "C'est parti !",
+    "deck": {
+      "pipou": {
+        "name": "Pipou",
+        "gameplay": "Une armée qui gagne en restant groupée. Chevalier Touille offre une invocation gratuite tant qu'un Pipou est en jeu, et Tactique Gang Gang donne +300 ATK à tous tes monstres. Général Chatouille renforce l'ATK de ses alliés quand il attaque. Mastodonte Grossebouille et Capitaine Gribouille protègent la ligne avec Provocation, et Ouille au rapport ramène jusqu'à 3 Pipou tombés.",
+        "how_to_play": "Remplis vite le terrain avec des Pipou peu chers, comme Éclaireur Nouille et Sentinelle Gargouille.\nGarde un Pipou en jeu pour que Chevalier Touille te donne des invocations gratuites.\nPose Tactique Gang Gang quand tu as plusieurs monstres : le bonus touche toute la ligne.\nCache tes monstres fragiles derrière la Provocation de Capitaine Gribouille et de Mastodonte Grossebouille.\nGarde Général Chatouille et Alerte générale pour un gros tour d'attaque."
+      },
+      "pixelman": {
+        "name": "Pixelman",
+        "gameplay": "Tout tourne autour des Noyaux. Noyau Alpha encaisse avec Provocation et réduction des dégâts, Noyau Beta inflige 300 dégâts à tous les ennemis à chaque début de tour, et Noyau Omega renforce tes Pixelman de +300 ATK et +300 PV. Équipe-les de modules comme Canon à Particules ou Module de Réparation, et sors Force Plasma pour éliminer une menace : il suffit d'un Noyau en jeu.",
+        "how_to_play": "Pose d'abord Noyau Alpha : sa Provocation protège le reste de ton équipe.\nÉquipe tes Noyaux : Canon à Particules pour frapper fort, Module de Réparation pour tenir, Firewall de Surcharge s'il y a Noyau Alpha ou Noyau Beta en jeu.\nGarde Force Plasma pour le monstre adverse qui te gêne : 1500 dégâts, avec un Noyau en jeu.\nVerrou de Position et Protocole de Gel neutralisent un monstre adverse.\nSi ton Drone Éclaireur tombe, il va chercher un Noyau dans ton deck."
+      },
+      "dragon": {
+        "name": "Drakon",
+        "gameplay": "Tes Drakons grandissent : Bébé, Jeune, Adulte, puis Ancestral, chaque stade plus fort que le précédent. Les Œufs (Genèse, Dualité) éclosent en Bébé au bout de 2 tours, et Incubation Rapide accélère l'éclosion ou permet d'évoluer tout de suite. Le deck mêle Ackos (eau), qui soigne et récupère des cartes, et Feros (feu), qui frappe fort. Souffle Primordial et Mont Drakon relancent la partie.",
+        "how_to_play": "Commence par un Œuf : l'Œuf de la Genèse donne le Bébé de ton choix après 2 tours.\nFais évoluer tes Drakons d'un stade à la fois, avec le même élément : Bébé, Jeune, Adulte, puis Ancestral.\nIncubation Rapide avance l'éclosion de 2 tours ou autorise une évolution ce tour-ci.\nMont Drakon te rend un monstre Drakon à chaque début de tour : pose-le tôt.\nSouffle Primordial donne +300 ATK à tes Drakons, +600 si tu as un Adulte : idéal pour finir."
+      }
+    }
+  },
   "glossary": {
     "title": "Glossaire",
     "count_one": "{{count}} carte",
@@ -1518,5 +1558,20 @@
     "fightF2": "Classement ELO en direct",
     "fightF3": "Historique des matchs",
     "fightCta": "Rejoindre l'arène"
+  },
+  "starter_admin": {
+    "title": "Compositions des starter decks",
+    "loading": "Chargement...",
+    "error": "Impossible de charger les decks.",
+    "valid": "Valide",
+    "invalid": "Invalide",
+    "total": "Total : {{count}} / {{min}}-{{max}}",
+    "featured": "Cartes phares : {{count}} / {{target}}",
+    "add": "Ajouter {{name}}",
+    "remove": "Retirer {{name}}",
+    "feature": "Carte phare : {{name}}",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "error_generic": "Erreur lors de l'enregistrement."
   }
 }

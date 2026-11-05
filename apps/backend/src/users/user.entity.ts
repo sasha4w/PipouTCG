@@ -30,6 +30,15 @@ export class User {
   @Column({ type: 'timestamp', nullable: true, default: null })
   resetTokenExpiry!: Date | null;
 
+  /** Posé à la réclamation du starter deck ; null = pas encore réclamé. */
+  @Column({
+    name: 'starter_claimed_at',
+    type: 'timestamp',
+    nullable: true,
+    default: null,
+  })
+  starterClaimedAt!: Date | null;
+
   // =========================
   // 🔒 PRIVACY
   // =========================

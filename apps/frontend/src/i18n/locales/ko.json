@@ -536,7 +536,8 @@
       "patchnotes": "패치노트",
       "sandbox": "샌드박스",
       "adventure": "모험",
-      "aiReview": "AI 검토"
+      "aiReview": "AI 검토",
+      "starterDecks": "스타터 덱"
     },
     "sandbox_back": "관리자로 돌아가기",
     "patchnote": {
@@ -1065,7 +1066,8 @@
         "energy": "에너지",
         "combat": "전투",
         "primes": "프라임 & 역전",
-        "turn": "턴 구조"
+        "turn": "턴 구조",
+        "starters": "스타터 덱"
       },
       "winLabel": "승리 조건",
       "winValue": "자신의 프라임 카드 {{count}}장을 먼저 모두 획득",
@@ -1085,6 +1087,7 @@
       "persistent": "지속되며, 내 몬스터에게만 작용합니다.",
       "charge": "내 턴이 시작될 때마다 카운터를 얻고, 가득 차면 효과가 발동합니다.",
       "equipment": "내 몬스터 하나에 장착됩니다. 일부 효과는 특정 몬스터에서만 발동합니다.",
+      "equipmentSlots": "{{offensiveLabel}}: {{offensive}} · {{defensiveLabel}}: {{defensive}} · {{accessoryLabel}}: {{accessory}} (몬스터당)",
       "energy1": "<b>생성:</b> 메인 페이즈에 손패의 카드를 재활용합니다. <b>카드 1장 = 에너지 1.</b>",
       "energy2": "에너지가 부족하면 소환할 때 나머지를 카드를 버려 지불합니다.",
       "energy3": "<b>초기화:</b> 턴 종료 시 에너지가 0이 됩니다.",
@@ -1340,6 +1343,41 @@
       "no_cards": "이 세트에 카드가 없습니다."
     }
   },
+  "starter": {
+    "title": "스타터 덱을 고르세요",
+    "close": "닫기",
+    "back": "뒤로",
+    "claim_button": "스타터 덱 받기",
+    "closed_hint": "홈 화면 상단의 '스타터 덱 받기' 버튼으로 나중에 스타터 덱을 고를 수 있습니다.",
+    "gold_offered": "{{gold}} 골드 증정",
+    "see_cards_other": "카드 {{count}}장 보기",
+    "cards_count_other": "{{count}}장",
+    "choose": "{{name}} 선택",
+    "confirm_title": "선택 확인",
+    "confirm_text": "{{name}} 덱과 {{gold}} 골드를 받게 됩니다. 이 선택은 되돌릴 수 없으며 스타터 덱은 한 번만 받을 수 있습니다.",
+    "confirm": "확인",
+    "error": "선택을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    "done_title": "{{name}} 덱을 받았습니다!",
+    "how_to_play": "플레이 방법",
+    "done_button": "시작하기!",
+    "deck": {
+      "pipou": {
+        "name": "Pipou",
+        "gameplay": "뭉칠수록 강해지는 군대입니다. Chevalier Touille는 필드에 Pipou가 있는 동안 무료 소환 기회를 주고, Tactique Gang Gang는 내 모든 몬스터에게 ATK +300을 줍니다. Général Chatouille는 공격할 때 아군의 ATK를 높입니다. Mastodonte Grossebouille와 Capitaine Gribouille는 도발로 대열을 지키고, Ouille au rapport는 쓰러진 Pipou를 최대 3장까지 되살립니다.",
+        "how_to_play": "Éclaireur Nouille, Sentinelle Gargouille처럼 저렴한 Pipou로 필드를 빠르게 채우세요.\n필드에 Pipou를 한 장 두면 Chevalier Touille가 무료 소환을 줍니다.\n몬스터가 여러 장일 때 Tactique Gang Gang를 내세요. 보너스가 모든 몬스터에게 적용됩니다.\n약한 몬스터는 Capitaine Gribouille와 Mastodonte Grossebouille의 도발 뒤에 숨기세요.\nGénéral Chatouille와 Alerte générale는 한 번의 대공세를 위해 아껴 두세요."
+      },
+      "pixelman": {
+        "name": "Pixelman",
+        "gameplay": "모든 것은 Noyau(코어)를 중심으로 돌아갑니다. Noyau Alpha는 도발과 피해 감소로 공격을 버티고, Noyau Beta는 매 턴 시작 시 모든 적에게 300 피해를 주며, Noyau Omega는 내 Pixelman에게 ATK +300, HP +300을 줍니다. Canon à Particules, Module de Réparation 같은 모듈을 장착하고, 코어가 한 장만 있어도 쓸 수 있는 Force Plasma로 위협을 제거하세요.",
+        "how_to_play": "먼저 Noyau Alpha를 내세요. 도발이 나머지 팀을 지켜 줍니다.\n코어를 장비로 강화하세요. Canon à Particules는 공격, Module de Réparation은 지속력, Firewall de Surcharge는 Noyau Alpha나 Noyau Beta가 있을 때 좋습니다.\nForce Plasma는 가장 거슬리는 적 몬스터에게 쓰세요. 코어가 있으면 1500 피해를 줍니다.\nVerrou de Position과 Protocole de Gel는 적 몬스터를 무력화합니다.\nDrone Éclaireur가 쓰러지면 덱에서 Noyau를 찾아옵니다."
+      },
+      "dragon": {
+        "name": "Drakon",
+        "gameplay": "Drakon은 성장합니다. 아기, 청년, 성체, 그리고 고대종 순으로 단계마다 더 강해집니다. 알(Genèse, Dualité)은 2턴 뒤에 아기로 부화하고, Incubation Rapide는 부화를 앞당기거나 즉시 진화할 수 있게 해 줍니다. 덱에는 치유와 카드 회수를 맡는 Ackos(물)와 강력한 공격의 Feros(불)가 섞여 있습니다. Souffle Primordial과 Mont Drakon이 흐름을 이어 줍니다.",
+        "how_to_play": "알로 시작하세요. Œuf de la Genèse는 2턴 뒤 원하는 아기를 줍니다.\n같은 속성 안에서 한 단계씩 진화시키세요. 아기, 청년, 성체, 고대종 순입니다.\nIncubation Rapide는 부화를 2턴 앞당기거나 이번 턴에 진화할 수 있게 합니다.\nMont Drakon은 매 턴 시작 시 Drakon 몬스터를 돌려줍니다. 일찍 내세요.\nSouffle Primordial은 Drakon의 ATK를 +300, 성체가 있으면 +600 올려 줍니다. 마무리에 좋습니다."
+      }
+    }
+  },
   "glossary": {
     "title": "카드 도감",
     "count": "{{count}}장",
@@ -1441,5 +1479,20 @@
     "fightF2": "실시간 ELO 랭킹",
     "fightF3": "매치 기록",
     "fightCta": "아레나 입장"
+  },
+  "starter_admin": {
+    "title": "스타터 덱 구성",
+    "loading": "불러오는 중...",
+    "error": "덱을 불러올 수 없습니다.",
+    "valid": "유효",
+    "invalid": "유효하지 않음",
+    "total": "합계: {{count}} / {{min}}-{{max}}",
+    "featured": "대표 카드: {{count}} / {{target}}",
+    "add": "{{name}} 추가",
+    "remove": "{{name}} 제거",
+    "feature": "대표 카드: {{name}}",
+    "save": "저장",
+    "saved": "저장됨",
+    "error_generic": "저장 중 오류가 발생했습니다."
   }
 }

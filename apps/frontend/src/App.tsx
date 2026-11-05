@@ -40,10 +40,19 @@ import AdventurePath from "./features/adventure/AdventurePath";
 import AdventureFightRoute from "./features/adventure/AdventureFight";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "./services/user.service";
+import { useStarterDeckModal } from "./hooks/useStarterDeckModal";
+import StarterDeckModal from "./features/starter/StarterDeckModal";
+import { StarterDeckContext } from "./contexts/StarterDeckContext";
 function AppLayout() {
   const mainRef = useRef<HTMLElement>(null);
   useScrollRestoration(mainRef);
-  const { isOpen, open, close } = useDailyRewardModal(true);
+  const { data: me } = useQuery({
+    queryKey: QUERY_KEYS.profile,
+    queryFn: () => userService.getMe(),
+    staleTime: 10 * 60 * 1000,
+  });
+  const starter = useStarterDeckModal(me?.id);
+  const { isOpen, open, close } = useDailyRewardModal(true, starter.isBlocking);
   const { toasts, addToast, removeToast } = useToast();
   const queryClient = useQueryClient();
 
@@ -60,17 +69,33 @@ function AppLayout() {
 
   return (
     <DailyRewardContext.Provider value={{ openModal: open }}>
-      <div className="app-layout">
-        <Header />
-        <main className="app-main" ref={mainRef}>
-          <Outlet />
-        </main>
-        <Footer />
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
-        <AnimatePresence>
-          {isOpen && <DailyRewardModal onClose={close} addToast={addToast} />}
-        </AnimatePresence>
-      </div>
+      <StarterDeckContext.Provider
+        value={{
+          available: starter.status?.available === true,
+          openModal: starter.open,
+        }}
+      >
+        <div className="app-layout">
+          <Header />
+          <main className="app-main" ref={mainRef}>
+            <Outlet />
+          </main>
+          <Footer />
+          <ToastContainer toasts={toasts} onRemove={removeToast} />
+          <AnimatePresence>
+            {starter.isOpen && starter.status && (
+              <StarterDeckModal
+                status={starter.status}
+                onClose={starter.close}
+                addToast={addToast}
+              />
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {isOpen && <DailyRewardModal onClose={close} addToast={addToast} />}
+          </AnimatePresence>
+        </div>
+      </StarterDeckContext.Provider>
     </DailyRewardContext.Provider>
   );
 }

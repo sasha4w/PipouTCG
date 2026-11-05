@@ -114,6 +114,7 @@ export class UsersService {
         'moneyEarned',
         'setsCompleted',
         'dust',
+        'starterClaimedAt',
       ],
     });
     if (!user) throw new NotFoundException('User not found');

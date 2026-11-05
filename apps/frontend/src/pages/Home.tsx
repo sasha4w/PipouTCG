@@ -9,6 +9,7 @@ import OpeningModal, {
 } from "../features/opening/OpeningModal";
 import OpeningQuickAccess from "../features/opening/OpeningQuickAccess";
 import { IconArrowRight, IconCards } from "../components/Icons";
+import StarterDeckButton from "../features/starter/StarterDeckButton";
 import { soundService } from "../services/sound.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import "./Home.css";
@@ -44,6 +45,7 @@ const Home = () => {
 
   return (
     <div className="home-page">
+      <StarterDeckButton />
       <DailyStreakWidget />
       <div className="home-divider" />
 

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import {
   DECK_RULES,
+  EQUIP_SLOT_CAPACITY,
+  EquipmentSlot,
   HAND_LIMIT,
   STARTING_HAND,
   STARTING_PRIMES,
@@ -8,7 +10,12 @@ import {
 import type { TFunction } from "i18next";
 import { Trans, useTranslation } from "react-i18next";
 import Button from "../../components/Button";
-import { IconArrowLeft, IconArrowRight } from "../../components/Icons";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconCards,
+} from "../../components/Icons";
+import { STARTER_ORDER, starterTextKey } from "../starter/starterTexts";
 import { KEYWORD_IDS } from "./effectText";
 import KeywordIcon from "./KeywordIcon";
 import "./FightRules.css";
@@ -67,7 +74,7 @@ function Rule({
   );
 }
 
-type Step = { icon: string; label: string; content: React.ReactNode };
+type Step = { icon: React.ReactNode; label: string; content: React.ReactNode };
 
 function buildSteps(t: TFunction): Step[] {
   return [
@@ -148,9 +155,25 @@ function buildSteps(t: TFunction): Step[] {
                 </div>
                 <div className="fr-rule-text">
                   <span className="fr-tag fr-tag--support">
+                    {t("glossary.kind.CHARGE")}
+                  </span>
+                  {t("fight.rules.charge")}
+                </div>
+                <div className="fr-rule-text">
+                  <span className="fr-tag fr-tag--support">
                     {t("glossary.kind.EQUIPMENT")}
                   </span>
                   {t("fight.rules.equipment")}
+                  <div className="fr-rule-text" data-testid="equip-slots">
+                    {t("fight.rules.equipmentSlots", {
+                      offensiveLabel: t("glossary.equipmentSlot.OFFENSIVE"),
+                      defensiveLabel: t("glossary.equipmentSlot.DEFENSIVE"),
+                      accessoryLabel: t("glossary.equipmentSlot.ACCESSORY"),
+                      offensive: EQUIP_SLOT_CAPACITY[EquipmentSlot.OFFENSIVE],
+                      defensive: EQUIP_SLOT_CAPACITY[EquipmentSlot.DEFENSIVE],
+                      accessory: EQUIP_SLOT_CAPACITY[EquipmentSlot.ACCESSORY],
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -244,6 +267,35 @@ function buildSteps(t: TFunction): Step[] {
             </div>
           ))}
           <p className="fr-rule-text">⏱ {t("fight.rules.timer")}</p>
+        </div>
+      ),
+    },
+    {
+      icon: <IconCards size={20} />,
+      label: t("fight.rules.step.starters"),
+      content: (
+        <div className="fr-rule-list">
+          {STARTER_ORDER.map((a) => (
+            <div key={a} className="fr-rule">
+              <div className="fr-dot" />
+              <div className="fr-rule-text">
+                <strong>{t(`${starterTextKey(a)}.name`)}</strong>
+                <div className="fr-sub">
+                  <div className="fr-rule-text">
+                    {t(`${starterTextKey(a)}.gameplay`)}
+                  </div>
+                  <div
+                    className="fr-rule-text"
+                    style={{ whiteSpace: "pre-line" }}
+                  >
+                    <strong>{t("starter.how_to_play")}</strong>
+                    <br />
+                    {t(`${starterTextKey(a)}.how_to_play`)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ),
     },

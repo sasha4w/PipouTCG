@@ -7,9 +7,10 @@ import { QUERY_KEYS } from "../utils/querykeys";
  * Hook à placer dans un composant haut niveau (ex: Layout ou App).
  * Ouvre automatiquement la modale si l'utilisateur n'a pas encore
  * réclamé sa récompense aujourd'hui, avec un délai pour laisser
- * la page se charger d'abord.
+ * la page se charger d'abord. `blocked` la retient (ex : modal du starter
+ * deck en cours) ; elle s'ouvre dès que le blocage est levé.
  */
-export function useDailyRewardModal(isAuthenticated: boolean) {
+export function useDailyRewardModal(isAuthenticated: boolean, blocked = false) {
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: status } = useQuery({
@@ -20,13 +21,13 @@ export function useDailyRewardModal(isAuthenticated: boolean) {
   });
 
   useEffect(() => {
-    if (!status) return;
+    if (!status || blocked) return;
     // Auto-ouvre tant que la récompense du jour n'est pas réclamée
     if (!status.alreadyClaimed) {
       const timer = setTimeout(() => setIsOpen(true), 1200); // délai 1.2s après le login
       return () => clearTimeout(timer);
     }
-  }, [status]);
+  }, [status, blocked]);
 
   return {
     isOpen,

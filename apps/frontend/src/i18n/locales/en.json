@@ -541,7 +541,8 @@
       "patchnotes": "Patch notes",
       "sandbox": "Sandbox",
       "adventure": "Adventure",
-      "aiReview": "AI review"
+      "aiReview": "AI review",
+      "starterDecks": "Starter Decks"
     },
     "sandbox_back": "Back to admin",
     "patchnote": {
@@ -1136,7 +1137,8 @@
         "energy": "Energy",
         "combat": "Combat",
         "primes": "Primes & Comeback",
-        "turn": "Turn structure"
+        "turn": "Turn structure",
+        "starters": "Starter decks"
       },
       "winLabel": "Victory condition",
       "winValue": "Be the first to take your {{count}} Prime Cards",
@@ -1156,6 +1158,7 @@
       "persistent": "Permanent, affects your monsters only.",
       "charge": "Gains a counter at the start of each of your turns; its effect triggers once full.",
       "equipment": "Attached to one of your monsters; some effects only work on a specific monster.",
+      "equipmentSlots": "{{offensiveLabel}}: {{offensive}} · {{defensiveLabel}}: {{defensive}} · {{accessoryLabel}}: {{accessory}} per monster.",
       "energy1": "<b>Generate:</b> recycle cards from your hand during the Main Phase. <b>1 card = 1 Energy.</b>",
       "energy2": "Without enough energy, you pay the rest by discarding cards when summoning.",
       "energy3": "<b>Reset:</b> energy drops back to 0 at the end of the turn.",
@@ -1412,6 +1415,43 @@
       "no_cards": "No card in this set."
     }
   },
+  "starter": {
+    "title": "Choose your Starter Deck",
+    "close": "Close",
+    "back": "Back",
+    "claim_button": "Claim Starter Deck",
+    "closed_hint": "You can choose your Starter Deck later with the \"Claim Starter Deck\" button at the top of the home page.",
+    "gold_offered": "{{gold}} gold included",
+    "see_cards_one": "See the card",
+    "see_cards_other": "See all {{count}} cards",
+    "cards_count_one": "{{count}} card",
+    "cards_count_other": "{{count}} cards",
+    "choose": "Choose {{name}}",
+    "confirm_title": "Confirm your choice",
+    "confirm_text": "You will receive the {{name}} deck and {{gold}} gold. This choice is final: there is no second Starter Deck.",
+    "confirm": "Confirm",
+    "error": "Could not confirm your choice. Please try again in a moment.",
+    "done_title": "{{name}} is yours!",
+    "how_to_play": "How to play it",
+    "done_button": "Let's go!",
+    "deck": {
+      "pipou": {
+        "name": "Pipou",
+        "gameplay": "An army that wins by sticking together. Chevalier Touille gives a free summon while a Pipou is in play, and Tactique Gang Gang gives all your monsters +300 ATK. Général Chatouille boosts his allies' ATK when he attacks. Mastodonte Grossebouille and Capitaine Gribouille guard the line with Taunt, and Ouille au rapport brings back up to 3 fallen Pipou.",
+        "how_to_play": "Fill the board fast with cheap Pipou such as Éclaireur Nouille and Sentinelle Gargouille.\nKeep a Pipou in play so Chevalier Touille gives you free summons.\nPlay Tactique Gang Gang when you have several monsters: the bonus covers the whole line.\nHide fragile monsters behind the Taunt of Capitaine Gribouille and Mastodonte Grossebouille.\nSave Général Chatouille and Alerte générale for one big attack turn."
+      },
+      "pixelman": {
+        "name": "Pixelman",
+        "gameplay": "Everything revolves around the Noyaux (Cores). Noyau Alpha soaks up hits with Taunt and damage reduction, Noyau Beta deals 300 damage to every enemy at the start of each turn, and Noyau Omega gives your Pixelman +300 ATK and +300 HP. Equip them with modules like Canon à Particules or Module de Réparation, and use Force Plasma to remove a threat: one Noyau in play is enough.",
+        "how_to_play": "Play Noyau Alpha first: its Taunt protects the rest of your team.\nEquip your Noyaux: Canon à Particules to hit hard, Module de Réparation to last, Firewall de Surcharge when Noyau Alpha or Noyau Beta is in play.\nKeep Force Plasma for the enemy monster that bothers you most: 1500 damage, with a Noyau in play.\nVerrou de Position and Protocole de Gel shut down an enemy monster.\nIf your Drone Éclaireur falls, it fetches a Noyau from your deck."
+      },
+      "dragon": {
+        "name": "Drakon",
+        "gameplay": "Your Drakons grow up: Baby, Young, Adult, then Ancestral, each stage stronger than the last. Eggs (Genèse, Dualité) hatch into a Baby after 2 turns, and Incubation Rapide speeds up hatching or lets you evolve right away. The deck mixes Ackos (water), which heals and recovers cards, with Feros (fire), which hits hard. Souffle Primordial and Mont Drakon keep the pressure on.",
+        "how_to_play": "Start with an Egg: Œuf de la Genèse gives the Baby of your choice after 2 turns.\nEvolve your Drakons one stage at a time, within the same element: Baby, Young, Adult, then Ancestral.\nIncubation Rapide speeds up hatching by 2 turns or allows an evolution this turn.\nMont Drakon returns a Drakon monster at the start of each turn: play it early.\nSouffle Primordial gives your Drakons +300 ATK, +600 with an Adult: perfect to finish."
+      }
+    }
+  },
   "glossary": {
     "title": "Glossary",
     "count_one": "{{count}} card",
@@ -1517,5 +1557,20 @@
     "fightF2": "Live ELO leaderboard",
     "fightF3": "Match history",
     "fightCta": "Enter the arena"
+  },
+  "starter_admin": {
+    "title": "Starter deck compositions",
+    "loading": "Loading...",
+    "error": "Could not load decks.",
+    "valid": "Valid",
+    "invalid": "Invalid",
+    "total": "Total: {{count}} / {{min}}-{{max}}",
+    "featured": "Featured cards: {{count}} / {{target}}",
+    "add": "Add {{name}}",
+    "remove": "Remove {{name}}",
+    "feature": "Featured card: {{name}}",
+    "save": "Save",
+    "saved": "Saved",
+    "error_generic": "Error while saving."
   }
 }
