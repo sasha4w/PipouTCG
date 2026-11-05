@@ -88,7 +88,9 @@ describe("CardReveal", () => {
     expect(playRaritySound).not.toHaveBeenCalled();
     fireEvent.click(screen.getByTestId("reveal-root"));
     expect(screen.queryByText(s[1].card.name)).not.toBeInTheDocument();
-    act(() => void vi.advanceTimersByTime(400));
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
     expect(screen.queryByTestId("reveal-blackout")).not.toBeInTheDocument();
     expect(playRaritySound).toHaveBeenCalledWith("epic");
     expect(bass).toHaveBeenCalledTimes(1);
@@ -102,7 +104,9 @@ describe("CardReveal", () => {
       step("common"),
     ];
     setup(s);
-    act(() => void vi.advanceTimersByTime(110));
+    act(() => {
+      vi.advanceTimersByTime(110);
+    });
     expect(screen.getByText(s[1].card.name)).toBeInTheDocument();
   });
 
@@ -114,7 +118,9 @@ describe("CardReveal", () => {
     const { unmount, onDone } = setup(s);
     playRaritySound.mockClear();
     unmount();
-    act(() => void vi.advanceTimersByTime(5000));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
     expect(playRaritySound).not.toHaveBeenCalled();
     expect(onDone).not.toHaveBeenCalled();
   });
@@ -124,7 +130,9 @@ describe("CardReveal", () => {
       step("legendary", { ritual: "full", blackoutMs: 600 }),
     ]);
     unmount();
-    act(() => void vi.advanceTimersByTime(5000));
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
     expect(playRaritySound).not.toHaveBeenCalled();
     expect(bass).not.toHaveBeenCalled();
   });
