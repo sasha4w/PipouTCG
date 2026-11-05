@@ -1,3 +1,4 @@
+import type { OpenBoosterQuantity, OpenBoosterRequest } from "@pipou/shared";
 import { api } from "../api/api";
 
 export interface OpenedCard {
@@ -45,8 +46,12 @@ function normalizeCards(rawCards: RawOpenedCard[]): OpenedCard[] {
 }
 
 export const openingService = {
-  async openBooster(boosterId: number): Promise<OpeningResult> {
-    const res = await api.post(`/boosters/${boosterId}/open`);
+  async openBooster(
+    boosterId: number,
+    quantity?: OpenBoosterQuantity,
+  ): Promise<OpeningResult> {
+    const body: OpenBoosterRequest = { quantity };
+    const res = await api.post(`/boosters/${boosterId}/open`, body);
     return { cards: normalizeCards(res.data.cards ?? []) };
   },
 
