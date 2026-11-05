@@ -1494,5 +1494,8 @@
     "save": "저장",
     "saved": "저장됨",
     "error_generic": "저장 중 오류가 발생했습니다."
+  },
+  "opening": {
+    "tearHint": "띠를 끌어 부스터를 뜯으세요"
   }
 }

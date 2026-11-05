@@ -1573,5 +1573,8 @@
     "save": "Enregistrer",
     "saved": "Enregistré",
     "error_generic": "Erreur lors de l'enregistrement."
+  },
+  "opening": {
+    "tearHint": "Fais glisser la bande pour déchirer le booster"
   }
 }
