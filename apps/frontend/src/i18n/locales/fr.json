@@ -1139,7 +1139,8 @@
         "energy": "Énergie",
         "combat": "Combat",
         "primes": "Primes & Comeback",
-        "turn": "Structure du tour"
+        "turn": "Structure du tour",
+        "starters": "Decks de départ"
       },
       "winLabel": "Condition de victoire",
       "winValue": "Récupérer ses {{count}} Cartes Primes en premier",
@@ -1159,6 +1160,7 @@
       "persistent": "Permanent, agit sur tes monstres uniquement.",
       "charge": "Gagne un compteur à chaque début de ton tour ; son effet se déclenche une fois plein.",
       "equipment": "Attaché à un de tes monstres ; certains effets ne s'activent que sur un monstre précis.",
+      "equipmentSlots": "{{offensiveLabel}} : {{offensive}} · {{defensiveLabel}} : {{defensive}} · {{accessoryLabel}} : {{accessory}} par monstre.",
       "energy1": "<b>Générer :</b> recycle des cartes de ta main pendant la Main Phase. <b>1 carte = 1 Énergie.</b>",
       "energy2": "Sans assez d'énergie, tu paies le reste en défaussant des cartes au moment d'invoquer.",
       "energy3": "<b>Réinitialisation :</b> l'énergie retombe à 0 en fin de tour.",

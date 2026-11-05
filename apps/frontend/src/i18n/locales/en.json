@@ -1137,7 +1137,8 @@
         "energy": "Energy",
         "combat": "Combat",
         "primes": "Primes & Comeback",
-        "turn": "Turn structure"
+        "turn": "Turn structure",
+        "starters": "Starter decks"
       },
       "winLabel": "Victory condition",
       "winValue": "Be the first to take your {{count}} Prime Cards",
@@ -1157,6 +1158,7 @@
       "persistent": "Permanent, affects your monsters only.",
       "charge": "Gains a counter at the start of each of your turns; its effect triggers once full.",
       "equipment": "Attached to one of your monsters; some effects only work on a specific monster.",
+      "equipmentSlots": "{{offensiveLabel}}: {{offensive}} · {{defensiveLabel}}: {{defensive}} · {{accessoryLabel}}: {{accessory}} per monster.",
       "energy1": "<b>Generate:</b> recycle cards from your hand during the Main Phase. <b>1 card = 1 Energy.</b>",
       "energy2": "Without enough energy, you pay the rest by discarding cards when summoning.",
       "energy3": "<b>Reset:</b> energy drops back to 0 at the end of the turn.",

@@ -1066,7 +1066,8 @@
         "energy": "에너지",
         "combat": "전투",
         "primes": "프라임 & 역전",
-        "turn": "턴 구조"
+        "turn": "턴 구조",
+        "starters": "스타터 덱"
       },
       "winLabel": "승리 조건",
       "winValue": "자신의 프라임 카드 {{count}}장을 먼저 모두 획득",
@@ -1086,6 +1087,7 @@
       "persistent": "지속되며, 내 몬스터에게만 작용합니다.",
       "charge": "내 턴이 시작될 때마다 카운터를 얻고, 가득 차면 효과가 발동합니다.",
       "equipment": "내 몬스터 하나에 장착됩니다. 일부 효과는 특정 몬스터에서만 발동합니다.",
+      "equipmentSlots": "{{offensiveLabel}}: {{offensive}} · {{defensiveLabel}}: {{defensive}} · {{accessoryLabel}}: {{accessory}} (몬스터당)",
       "energy1": "<b>생성:</b> 메인 페이즈에 손패의 카드를 재활용합니다. <b>카드 1장 = 에너지 1.</b>",
       "energy2": "에너지가 부족하면 소환할 때 나머지를 카드를 버려 지불합니다.",
       "energy3": "<b>초기화:</b> 턴 종료 시 에너지가 0이 됩니다.",
