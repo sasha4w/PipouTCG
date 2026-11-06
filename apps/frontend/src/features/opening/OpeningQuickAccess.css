@@ -106,16 +106,28 @@
   cursor: pointer;
   transition: all 0.25s ease;
   font-family: "Comfortaa", sans-serif;
+  color: #7a1c3b; /* l'icône suit currentColor */
 }
 
 .opening-selector__thumb:hover {
   background: rgba(122, 28, 59, 0.1);
   border-color: rgba(122, 28, 59, 0.25);
+  color: #1a0a10;
 }
 
 .opening-selector__thumb--active {
   background: #7a1c3b;
   border-color: #7a1c3b;
+  color: #fff;
+}
+
+/* Survol, y compris sur la vignette active : fond clair => texte et icône sombres */
+.opening-selector__thumb:hover .opening-selector__thumb-name {
+  color: #1a0a10;
+}
+
+.opening-selector__thumb:hover .opening-selector__thumb-qty {
+  color: rgba(26, 10, 16, 0.65);
 }
 
 .opening-selector__thumb-icon {

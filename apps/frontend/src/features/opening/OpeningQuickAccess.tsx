@@ -90,10 +90,7 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
           >
             <span className="opening-selector__thumb-icon">
               {item.type === "booster" ? (
-                <IconBooster
-                  size={28}
-                  color={i === selectedIndex ? "#fff" : "currentColor"}
-                />
+                <IconBooster size={28} />
               ) : (
                 <IconGift size={28} />
               )}

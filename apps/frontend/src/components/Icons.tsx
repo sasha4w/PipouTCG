@@ -238,9 +238,9 @@ export function IconBooster({
       className={className}
     >
       <path
-        d="M6 3.5H18V20.5H6V3.5ZM6 7H18M6 17H18M12 9.6L12.95 11.55L15.1 11.85L13.55 13.35L13.9 15.5L12 14.5L10.1 15.5L10.45 13.35L8.9 11.85L11.05 11.55L12 9.6Z"
+        d="M7 3H17A1 1 0 0 1 18 4V20A1 1 0 0 1 17 21H7A1 1 0 0 1 6 20V4A1 1 0 0 1 7 3ZM6 7H18M6 17H18M12 9.5C12.4 11.1 12.9 11.6 14.5 12C12.9 12.4 12.4 12.9 12 14.5C11.6 12.9 11.1 12.4 9.5 12C11.1 11.6 11.6 11.1 12 9.5Z"
         stroke={color}
-        strokeWidth="2"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
