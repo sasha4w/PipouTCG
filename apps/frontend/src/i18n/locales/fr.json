@@ -1573,5 +1573,30 @@
     "save": "Enregistrer",
     "saved": "Enregistré",
     "error_generic": "Erreur lors de l'enregistrement."
+  },
+  "opening": {
+    "tearHint": "Fais glisser la bande pour déchirer le booster",
+    "new": "Nouvelle",
+    "skip": "Passer",
+    "revealCard": "Révéler la carte suivante",
+        "results": "Résultats !",
+    "close": "Fermer",
+    "closeModal": "Fermer la fenêtre",
+    "quantity": "Quantité à ouvrir",
+    "seeResults": "Voir les résultats",
+    "bundleContents": "Contenu du bundle",
+    "error": "Erreur lors de l'ouverture.",
+    "open": "Ouvrir",
+    "title": "Ouvrir",
+    "availableLabel_one": "disponible",
+    "availableLabel_other": "disponibles",
+    "rarity": {
+      "common": "Commune",
+      "uncommon": "Peu commune",
+      "rare": "Rare",
+      "epic": "Épique",
+      "legendary": "Légendaire",
+      "secret": "Secrète"
+    }
   }
 }

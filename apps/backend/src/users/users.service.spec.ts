@@ -321,6 +321,50 @@ describe('UsersService', () => {
         BadRequestException,
       );
     });
+
+    describe('inside a transaction (manager)', () => {
+      const txRepo = { findOne: jest.fn(), save: jest.fn(), remove: jest.fn() };
+      const manager = { getRepository: () => txRepo } as never;
+
+      beforeEach(() => {
+        txRepo.findOne.mockReset();
+        txRepo.save.mockReset();
+        txRepo.remove.mockReset();
+      });
+
+      it('takes a pessimistic write lock on the row', async () => {
+        txRepo.findOne.mockResolvedValue({ quantity: 3 });
+        await service.removeBoosterFromUser(1, 5, manager, 1);
+        expect(txRepo.findOne).toHaveBeenCalledWith(
+          expect.objectContaining({ lock: { mode: 'pessimistic_write' } }),
+        );
+      });
+
+      it('throws and writes nothing when quantity > stock', async () => {
+        txRepo.findOne.mockResolvedValue({ quantity: 5 });
+        await expect(
+          service.removeBoosterFromUser(1, 5, manager, 10),
+        ).rejects.toThrow(BadRequestException);
+        expect(txRepo.save).not.toHaveBeenCalled();
+        expect(txRepo.remove).not.toHaveBeenCalled();
+      });
+
+      it('removes the row when exact stock is taken', async () => {
+        const row = { quantity: 10 };
+        txRepo.findOne.mockResolvedValue(row);
+        const result = await service.removeBoosterFromUser(1, 5, manager, 10);
+        expect(txRepo.remove).toHaveBeenCalledWith(row);
+        expect(result).toBeNull();
+      });
+
+      it('leaves 2 when taking 10 of 12', async () => {
+        txRepo.findOne.mockResolvedValue({ quantity: 12 });
+        txRepo.save.mockImplementation((r: unknown) => Promise.resolve(r));
+        const result = await service.removeBoosterFromUser(1, 5, manager, 10);
+        expect(result).toEqual({ quantity: 2 });
+        expect(txRepo.remove).not.toHaveBeenCalled();
+      });
+    });
   });
 
   // ======= REMOVE BUNDLE =======

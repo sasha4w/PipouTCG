@@ -283,6 +283,7 @@ describe('BoostersService', () => {
       expect(mockUsersService.updatePostOpeningStats).toHaveBeenCalledWith(
         1,
         50,
+        1,
       );
     });
 
@@ -301,6 +302,74 @@ describe('BoostersService', () => {
       expect(result.cards.length).toBeLessThanOrEqual(10);
       expect(result.cards.some((c) => c.rarity === Rarity.RARE)).toBe(true);
       expect(result.cards.some((c) => c.rarity === Rarity.EPIC)).toBe(true);
+    });
+  });
+
+  // ======= OPEN BOOSTER - ouverture multiple =======
+  describe('openBooster - quantité', () => {
+    it('ouvre 10 boosters de 10 cartes en un seul lot', async () => {
+      setupOpen(CardNumber.TEN);
+      const result = await service.openBooster(1, 7, 10);
+
+      expect(result.cards).toHaveLength(100);
+      expect(result.historyIds).toHaveLength(10);
+      expect(result.historyId).toBe(result.historyIds[0]);
+      expect(
+        result.cards.filter((c) => c.rarity === Rarity.EPIC).length,
+      ).toBeGreaterThanOrEqual(10);
+      expect(mockUsersService.removeBoosterFromUser).toHaveBeenCalledTimes(1);
+      expect(mockUsersService.removeBoosterFromUser).toHaveBeenCalledWith(
+        7,
+        1,
+        expect.anything(),
+        10,
+      );
+      expect(mockUsersService.updatePostOpeningStats).toHaveBeenCalledWith(
+        7,
+        500,
+        10,
+      );
+      const opened = (
+        mockEventEmitter.emit.mock.calls as [string, unknown][]
+      ).filter(([name]) => name === 'booster.opened');
+      expect(opened).toHaveLength(1);
+      const payload = opened[0][1] as { amount: number; rarities: Rarity[] };
+      expect(payload.amount).toBe(10);
+      expect(payload.rarities).toHaveLength(100);
+    });
+
+    it('marque isNew sur une seule occurrence d une carte non possédée', async () => {
+      setupOpen(CardNumber.ONE);
+      mockCardRepo.find.mockResolvedValue([fakeCards[0], fakeCards[1]]);
+      mockUsersService.findOwnedCardIds.mockResolvedValue(new Set([2]));
+      const random = jest.spyOn(Math, 'random').mockReturnValue(0);
+      const result = await service.openBooster(1, 1, 5);
+      random.mockRestore();
+
+      const dragons = result.cards.filter((c) => c.id === 1);
+      expect(dragons.length).toBeGreaterThan(1);
+      expect(dragons.filter((c) => c.isNew)).toHaveLength(1);
+      expect(result.cards.filter((c) => c.id === 2 && c.isNew)).toHaveLength(0);
+    });
+
+    it('rejette une quantité hors 1, 5, 10', async () => {
+      setupOpen(CardNumber.TEN);
+      await expect(service.openBooster(1, 1, 3)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockUsersService.removeBoosterFromUser).not.toHaveBeenCalled();
+    });
+
+    it('n ajoute aucune carte si le retrait du stock échoue', async () => {
+      setupOpen(CardNumber.TEN);
+      mockUsersService.removeBoosterFromUser.mockRejectedValueOnce(
+        new BadRequestException('stock insuffisant'),
+      );
+      await expect(service.openBooster(1, 1, 5)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockUsersService.addCardToUser).not.toHaveBeenCalled();
+      expect(mockUsersService.updatePostOpeningStats).not.toHaveBeenCalled();
     });
   });
 

@@ -11,7 +11,12 @@ import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
 import { Card } from '../cards/card.entity';
-import { CardNumber, Rarity, requiresAllElements } from '@pipou/shared';
+import {
+  CardNumber,
+  OPEN_BOOSTER_QUANTITIES,
+  Rarity,
+  requiresAllElements,
+} from '@pipou/shared';
 import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
@@ -192,7 +197,12 @@ export class BoostersService {
 
   // ── OUVERTURE ─────────────────────────────────────────────────────────────
 
-  async openBooster(boosterId: number, userId: number) {
+  async openBooster(boosterId: number, userId: number, quantity: number = 1) {
+    if (!(OPEN_BOOSTER_QUANTITIES as readonly number[]).includes(quantity)) {
+      throw new BadRequestException(
+        `Quantité invalide. Valeurs autorisées : ${OPEN_BOOSTER_QUANTITIES.join(', ')}`,
+      );
+    }
     const booster = await this.findOne(boosterId);
 
     const totalCards = resolveCardNumber(booster.cardNumber);
@@ -217,16 +227,10 @@ export class BoostersService {
       {} as Record<Rarity, Card[]>,
     );
 
-    const drawnCards: Card[] = [];
-
-    for (const rarity of guarantees) {
-      drawnCards.push(this.drawCardOfRarity(rarity, cardsByRarity));
-    }
-    for (let i = drawnCards.length; i < totalCards; i++) {
-      drawnCards.push(this.drawCard(cardsByRarity));
-    }
-
-    drawnCards.sort(() => Math.random() - 0.5);
+    const boosterDraws: Card[][] = Array.from({ length: quantity }, () =>
+      this.drawBoosterCards(totalCards, guarantees, cardsByRarity),
+    );
+    const drawnCards = boosterDraws.flat();
 
     const cardGroups = drawnCards.reduce(
       (acc, card) => {
@@ -242,39 +246,59 @@ export class BoostersService {
       Object.keys(cardGroups).map(Number),
     );
 
-    let historyId: number;
+    const historyIds: number[] = [];
 
     await this.openCardRepository.manager.transaction(async (manager) => {
-      await this.usersService.removeBoosterFromUser(userId, boosterId, manager);
-
-      const history = await manager.save(
-        manager.create(BoosterOpenHistory, {
-          user: { id: userId },
-          booster: { id: booster.id },
-          openedAt: new Date(),
-        }),
+      await this.usersService.removeBoosterFromUser(
+        userId,
+        boosterId,
+        manager,
+        quantity,
       );
-      historyId = history.id;
 
-      for (const [cardId, quantity] of Object.entries(cardGroups)) {
+      for (const draw of boosterDraws) {
+        const history = await manager.save(
+          manager.create(BoosterOpenHistory, {
+            user: { id: userId },
+            booster: { id: booster.id },
+            openedAt: new Date(),
+          }),
+        );
+        historyIds.push(history.id);
+
+        const perCard = draw.reduce(
+          (acc, card) => {
+            acc[card.id] = (acc[card.id] || 0) + 1;
+            return acc;
+          },
+          {} as Record<number, number>,
+        );
+        for (const [cardId, count] of Object.entries(perCard)) {
+          await manager.save(
+            manager.create(BoosterOpenCard, {
+              card: { id: Number(cardId) },
+              openHistory: { id: history.id },
+              quantity: count,
+            }),
+          );
+        }
+      }
+
+      for (const [cardId, count] of Object.entries(cardGroups)) {
         await this.usersService.addCardToUser(
           userId,
           Number(cardId),
-          quantity,
+          count,
           manager,
-        );
-
-        await manager.save(
-          manager.create(BoosterOpenCard, {
-            card: { id: Number(cardId) },
-            openHistory: { id: history.id },
-            quantity,
-          }),
         );
       }
     });
 
-    await this.usersService.updatePostOpeningStats(userId, 50);
+    await this.usersService.updatePostOpeningStats(
+      userId,
+      50 * quantity,
+      quantity,
+    );
     const seen = new Set<number>();
     const dropped = drawnCards
       .filter((card) => !seen.has(card.id) && seen.add(card.id))
@@ -289,14 +313,38 @@ export class BoostersService {
       boosterId: booster.id,
       boosterName: booster.name,
       setId: booster.cardSet.id,
-      amount: 1,
+      amount: quantity,
       cards: dropped,
       rarities: drawnCards.map((card) => card.rarity),
     });
+
+    // Première copie d'une carte inconnue du joueur : une seule occurrence isNew
+    const flagged = new Set<number>();
+    const cardsOut = drawnCards.map((card) => {
+      const isNew = !ownedBefore.has(card.id) && !flagged.has(card.id);
+      flagged.add(card.id);
+      return { ...card, isNew };
+    });
     return {
-      historyId: historyId!,
+      historyId: historyIds[0],
+      historyIds,
       booster: booster.name,
-      cards: drawnCards,
+      cards: cardsOut,
     };
+  }
+
+  private drawBoosterCards(
+    totalCards: number,
+    guarantees: Rarity[],
+    cardsByRarity: Record<Rarity, Card[]>,
+  ): Card[] {
+    const drawn: Card[] = [];
+    for (const rarity of guarantees) {
+      drawn.push(this.drawCardOfRarity(rarity, cardsByRarity));
+    }
+    for (let i = drawn.length; i < totalCards; i++) {
+      drawn.push(this.drawCard(cardsByRarity));
+    }
+    return drawn.sort(() => Math.random() - 0.5);
   }
 }

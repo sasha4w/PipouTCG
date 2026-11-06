@@ -1572,5 +1572,30 @@
     "save": "Save",
     "saved": "Saved",
     "error_generic": "Error while saving."
+  },
+  "opening": {
+    "tearHint": "Drag the strip to tear the booster open",
+    "new": "New",
+    "skip": "Skip",
+    "revealCard": "Reveal next card",
+        "results": "Results!",
+    "close": "Close",
+    "closeModal": "Close window",
+    "quantity": "Quantity to open",
+    "seeResults": "See results",
+    "bundleContents": "Bundle contents",
+    "error": "Error while opening.",
+    "open": "Open",
+    "title": "Open",
+    "availableLabel_one": "available",
+    "availableLabel_other": "available",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary",
+      "secret": "Secret"
+    }
   }
 }

@@ -9,14 +9,6 @@
   justify-content: center;
 }
 
-/* ── Flash coloré (framer-motion gère opacity) ── */
-.opening-flash {
-  position: fixed;
-  inset: 0;
-  z-index: 1001;
-  pointer-events: none;
-}
-
 /* ── Modal container ── */
 .opening-modal {
   width: 100%;
@@ -43,32 +35,6 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-}
-
-.opening-pack__icon {
-  font-size: 6rem;
-  user-select: none;
-}
-
-.opening-pack__name {
-  font-family: "Lilita One", cursive;
-  font-size: 1.1rem;
-  color: #eebc77;
-  text-align: center;
-}
-
-.opening-pack__hint {
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.45);
-  font-family: "Comfortaa", sans-serif;
-  text-align: center;
-}
-
-/* ── Skip button ── */
-.opening-skip {
-  position: absolute;
-  top: 0.5rem;
-  right: 0rem;
 }
 
 /* ── Révélation ── */
@@ -150,10 +116,14 @@
 
 .opening-results__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
   isolation: isolate;
+  max-height: 55vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
 }
 
 .opening-results__item {
@@ -161,6 +131,12 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+}
+
+/* Verso inutile ici (aucune carte ne se retourne) ; il laissait un trait vertical */
+.opening-results__item .pipou-card__back {
+  display: none;
 }
 
 .opening-results__item-name {
@@ -190,7 +166,8 @@
 }
 
 .opening-results__item-icon {
-  font-size: 1.2rem;
+  display: inline-flex;
+  color: #eebc77;
   flex-shrink: 0;
 }
 .opening-results__item-label {
@@ -246,7 +223,8 @@
 }
 
 .opening-bundle__booster-icon {
-  font-size: 4rem;
+  display: inline-flex;
+  color: #eebc77;
   line-height: 1;
 }
 
@@ -269,4 +247,17 @@
   color: rgba(255, 255, 255, 0.4);
   align-self: center;
   line-height: 1;
+}
+
+.opening-qty {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.opening-results__new {
+  font-size: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }

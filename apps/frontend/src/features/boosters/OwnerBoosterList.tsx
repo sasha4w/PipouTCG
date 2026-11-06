@@ -47,7 +47,12 @@ export default function OwnBoosterList({
                 <Button
                   size="sm"
                   onClick={() =>
-                    onOpen({ type: "booster", id: b.id, name: b.name })
+                    onOpen({
+                      type: "booster",
+                      id: b.id,
+                      name: b.name,
+                      available: b.quantity,
+                    })
                   }
                 >
                   Ouvrir

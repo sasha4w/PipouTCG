@@ -99,6 +99,15 @@ export interface BuyRequest {
   quantity?: number;
 }
 
+/** Quantités autorisées pour une ouverture groupée de boosters */
+export const OPEN_BOOSTER_QUANTITIES = [1, 5, 10] as const;
+export type OpenBoosterQuantity = (typeof OPEN_BOOSTER_QUANTITIES)[number];
+
+/** POST /boosters/:id/open — corps optionnel, quantité par défaut 1 */
+export interface OpenBoosterRequest {
+  quantity?: OpenBoosterQuantity;
+}
+
 // ─── Marketplace ──────────────────────────────────────────────────────────────
 
 export interface CreateListingRequest {
