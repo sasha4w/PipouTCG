@@ -98,7 +98,7 @@ export function BundleContents({ cards, boosters, onContinue }: BundleContentsPr
                 delay: i * 0.3,
               }}
             >
-              <IconBooster size={56} />
+              <IconBooster size={56} color="#fff" />
             </motion.div>
             <span className="opening-bundle__item-name">{b.name}</span>
             {b.quantity > 1 && (

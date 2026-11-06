@@ -55,7 +55,7 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
       <div className="opening-selector__featured">
         <div className="opening-selector__featured-icon">
           {selected.type === "booster" ? (
-            <IconBooster size={64} />
+            <IconBooster size={64} color="#fff" />
           ) : (
             <IconGift size={64} />
           )}
@@ -90,7 +90,10 @@ const OpeningQuickAccess = ({ inventory, onOpen }: OpeningQuickAccessProps) => {
           >
             <span className="opening-selector__thumb-icon">
               {item.type === "booster" ? (
-                <IconBooster size={28} />
+                <IconBooster
+                  size={28}
+                  color={i === selectedIndex ? "#fff" : "currentColor"}
+                />
               ) : (
                 <IconGift size={28} />
               )}
