@@ -3,7 +3,7 @@ import type { CSSProperties, KeyboardEvent, PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useAnimationPrefs } from "../../contexts/useAnimationPrefs";
 import Button from "../../components/Button";
-import { IconArrowRight } from "../../components/Icons";
+import { IconArrowRight, IconClose } from "../../components/Icons";
 import CardDisplay from "../cards/CardDisplay";
 import { openingAudio, playRaritySound } from "./openingAudio";
 import { RARITY_GLOW, rarityRank, toCard, type RevealStep } from "./openingPlan";
@@ -14,11 +14,13 @@ interface CardRevealProps {
   steps: RevealStep[];
   onDone: () => void;
   onSkip: () => void;
+  /** Croix de fermeture, affichée avec la carte (jamais pendant le noir). */
+  onClose?: () => void;
 }
 
 const TILT_DEG = 12;
 
-export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
+export function CardReveal({ steps, onDone, onSkip, onClose }: CardRevealProps) {
   const { t } = useTranslation();
   const { reduced } = useAnimationPrefs();
   const [idx, setIdx] = useState(0);
@@ -121,18 +123,6 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
       data-testid="reveal-root"
       style={{ "--fx-color": RARITY_GLOW[rarity] ?? RARITY_GLOW.common } as CSSProperties}
     >
-      {idx > 0 && (
-        <Button
-          variant="ghost-gold"
-          size="sm"
-          className="opening-fx__skip"
-          data-testid="reveal-skip"
-          onClick={onSkip}
-        >
-          {t("opening.skip")} <IconArrowRight size={16} />
-        </Button>
-      )}
-
       {!revealed ? (
         <div className="opening-fx__blackout" data-testid="reveal-blackout" />
       ) : (
@@ -140,6 +130,30 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
         <RevealFlash key={`flash-${idx}`} rarity={rarity} reduced={reduced} />
         <div key={idx} className="opening-fx__stage">
           <RevealEffects rarity={rarity} ritual={step.ritual} reduced={reduced} />
+          <div className="opening-fx__controls">
+            {onClose && (
+              <Button
+                variant="ghost-gold"
+                size="icon"
+                aria-label={t("opening.closeModal")}
+                data-testid="reveal-close"
+                onClick={onClose}
+              >
+                <IconClose size={16} />
+              </Button>
+            )}
+            {idx > 0 && (
+              <Button
+                variant="ghost-gold"
+                size="sm"
+                className="opening-fx__skip"
+                data-testid="reveal-skip"
+                onClick={onSkip}
+              >
+                {t("opening.skip")} <IconArrowRight size={16} />
+              </Button>
+            )}
+          </div>
           <div
             className="opening-fx__tilt"
             ref={tiltRef}

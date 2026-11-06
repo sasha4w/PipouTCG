@@ -20,15 +20,24 @@
   );
 }
 
-.opening-fx__skip {
-  position: absolute;
-  top: 0;
-  right: 0;
+/* Croix et Passer : sur la largeur de la carte, au-dessus d'elle */
+.opening-fx__controls {
+  position: relative;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(200px, 72vw);
+  min-height: 36px;
 }
 
+.opening-fx__skip {
+  margin-left: auto;
+}
+
+/* Noir plein écran (le conteneur de la modale ne porte aucun transform) */
 .opening-fx__blackout {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: var(--fx-black);
   z-index: 4;
@@ -188,6 +197,7 @@
 
 .opening-fx__new {
   position: absolute;
+  z-index: 5;
   top: -8px;
   left: -8px;
   padding: 0.15rem 0.5rem;

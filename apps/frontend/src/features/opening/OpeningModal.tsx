@@ -107,7 +107,8 @@ export default function OpeningModal({
     onClose();
   };
 
-  const showClose = phase !== "wait";
+  // En révélation, la croix est portée par CardReveal, collée à la carte
+  const showClose = phase !== "wait" && phase !== "reveal";
 
   return (
     <div
@@ -123,7 +124,7 @@ export default function OpeningModal({
             variant="ghost-gold"
             size="icon"
             aria-label={t("opening.closeModal")}
-            className={`opening-modal__close${phase === "reveal" ? " opening-modal__close--left" : ""}`}
+            className="opening-modal__close"
             onClick={handleClose}
           >
             <IconClose size={16} />
@@ -169,6 +170,7 @@ export default function OpeningModal({
             steps={steps}
             onDone={() => setPhase("results")}
             onSkip={() => setPhase("results")}
+            onClose={handleClose}
           />
         )}
 

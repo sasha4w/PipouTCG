@@ -45,14 +45,15 @@ const step = (rarity: string, o: Partial<RevealStep> = {}): RevealStep => ({
 function setup(steps: RevealStep[], reduced = false) {
   const onDone = vi.fn();
   const onSkip = vi.fn();
+  const onClose = vi.fn();
   const utils = render(
     <AnimationContext.Provider
       value={{ preference: "auto", setPreference: () => {}, reduced }}
     >
-      <CardReveal steps={steps} onDone={onDone} onSkip={onSkip} />
+      <CardReveal steps={steps} onDone={onDone} onSkip={onSkip} onClose={onClose} />
     </AnimationContext.Provider>,
   );
-  return { ...utils, onDone, onSkip };
+  return { ...utils, onDone, onSkip, onClose };
 }
 
 const target = () => screen.getByTestId("reveal-card");
@@ -80,6 +81,24 @@ describe("CardReveal", () => {
   it("plays rarity sound at reveal", () => {
     setup([step("rare")]);
     expect(playRaritySound).toHaveBeenCalledWith("rare");
+  });
+
+  it("close and skip sit with the card, not during the blackout", () => {
+    const s = [step("common"), step("epic", { ritual: "full", blackoutMs: 400 })];
+    const { onClose, onSkip } = setup(s);
+    expect(screen.queryByTestId("reveal-skip")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("reveal-close"));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    fireEvent.click(target());
+    // noir : ni croix ni Passer, la carte n'est pas encore là
+    expect(screen.getByTestId("reveal-blackout")).toBeInTheDocument();
+    expect(screen.queryByTestId("reveal-close")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("reveal-skip")).not.toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+    fireEvent.click(screen.getByTestId("reveal-skip"));
+    expect(onSkip).toHaveBeenCalledTimes(1);
   });
 
   it("ignores clicks during blackout, then reveals with bass", () => {

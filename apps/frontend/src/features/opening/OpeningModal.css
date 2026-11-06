@@ -255,11 +255,6 @@
   justify-content: center;
 }
 
-.btn.opening-modal__close--left {
-  right: auto;
-  left: 0.5rem;
-}
-
 .opening-results__new {
   font-size: 0.55rem;
   display: inline-flex;
