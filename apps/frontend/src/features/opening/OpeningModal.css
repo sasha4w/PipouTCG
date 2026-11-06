@@ -116,7 +116,7 @@
 
 .opening-results__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   width: 100%;
   isolation: isolate;
@@ -131,6 +131,12 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+}
+
+/* Verso inutile ici (aucune carte ne se retourne) ; il laissait un trait vertical */
+.opening-results__item .pipou-card__back {
+  display: none;
 }
 
 .opening-results__item-name {

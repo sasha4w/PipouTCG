@@ -25,7 +25,6 @@ export function RevealEffects({ rarity, ritual, reduced }: RevealEffectsProps) {
 
   return (
     <div className="opening-fx__layer" aria-hidden="true">
-      {rank >= 1 && <div className="opening-fx__halo" />}
       {rare && <div className="opening-fx__ring" />}
       {epic && <div className="opening-fx__ring opening-fx__ring--late" />}
       {legendary && !reduced && <div className="opening-fx__rays" />}

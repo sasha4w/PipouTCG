@@ -14,9 +14,9 @@
 
 .opening-fx--uncommon {
   background: radial-gradient(
-    circle at 50% 50%,
+    closest-side,
     color-mix(in srgb, var(--fx-color) 14%, transparent),
-    transparent 70%
+    transparent
   );
 }
 
@@ -60,6 +60,7 @@
 .opening-fx__card {
   position: relative;
   cursor: pointer;
+  width: min(200px, 72vw);
   border-radius: 12px;
   animation: opening-fx-pop 0.3s ease-out both;
 }
@@ -76,12 +77,25 @@
   outline-offset: 4px;
 }
 
+/* Halo collé à la carte : il épouse sa taille, dans son wrapper */
 .opening-fx__halo {
   position: absolute;
-  width: 280px;
-  height: 380px;
-  border-radius: 24px;
-  box-shadow: 0 0 60px 20px color-mix(in srgb, var(--fx-color) 55%, transparent);
+  inset: 0;
+  border-radius: 6%;
+  pointer-events: none;
+  box-shadow: 0 0 36px 8px color-mix(in srgb, var(--fx-color) 60%, transparent);
+}
+
+.opening-fx--epic .opening-fx__halo,
+.opening-fx--legendary .opening-fx__halo,
+.opening-fx--secret .opening-fx__halo {
+  box-shadow: 0 0 52px 14px color-mix(in srgb, var(--fx-color) 70%, transparent);
+}
+
+/* Les cartes ne se retournent jamais ici : le verso n'a rien à faire là
+   (et sa tranche laissait un trait vertical). */
+.opening-fx .pipou-card__back {
+  display: none;
 }
 
 .opening-fx__flash {

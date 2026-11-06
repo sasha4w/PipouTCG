@@ -119,7 +119,7 @@
 .pack-tear__hint {
   margin: 0;
   font-size: 0.9rem;
-  opacity: 0.8;
+  color: #f1e4c3;
 }
 
 .pack-tear--reduced .pack-tear__strip,

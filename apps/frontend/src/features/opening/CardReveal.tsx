@@ -155,6 +155,9 @@ export function CardReveal({ steps, onDone, onSkip }: CardRevealProps) {
               onClick={handleAdvance}
               onKeyDown={handleKey}
             >
+              {rarityRank(rarity) >= 1 && (
+                <div className="opening-fx__halo" aria-hidden="true" />
+              )}
               <CardDisplay
                 card={toCard(step.card)}
                 size="md"
