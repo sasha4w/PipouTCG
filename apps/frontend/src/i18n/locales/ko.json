@@ -923,6 +923,8 @@
       "releve": "교대 가능"
     },
     "pick": {
+      "collapse": "접어서 보드 보기",
+      "expand": "선택 다시 열기",
       "skip": "효과 적용 안 함",
       "source": {
         "graveyard": "묘지",

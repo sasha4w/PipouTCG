@@ -989,6 +989,8 @@
       "releve": "Relève disponible"
     },
     "pick": {
+      "collapse": "Réduire pour voir le plateau",
+      "expand": "Rouvrir le choix",
       "skip": "Ne pas appliquer l'effet",
       "source": {
         "graveyard": "Cimetière",

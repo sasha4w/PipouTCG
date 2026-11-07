@@ -987,6 +987,8 @@
       "releve": "Relief available"
     },
     "pick": {
+      "collapse": "Collapse to view the board",
+      "expand": "Reopen the choice",
       "skip": "Don't apply the effect",
       "source": {
         "graveyard": "Graveyard",

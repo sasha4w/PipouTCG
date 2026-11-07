@@ -19,6 +19,8 @@ interface Props {
   hand: HandCard[];
   phase: Phase;
   isMyTurn: boolean;
+  /** Choix de cartes en cours : un tap ouvre l'info de la carte, rien d'autre. */
+  inspectOnly?: boolean;
   selectedCard: number | null;
   payIndices: number[];
   freeSummonInstanceIds: string[];
@@ -33,6 +35,7 @@ export default function FightHand({
   hand,
   phase,
   isMyTurn,
+  inspectOnly = false,
   selectedCard,
   payIndices,
   freeSummonInstanceIds,
@@ -100,7 +103,13 @@ export default function FightHand({
                 "--fan-y": `${slot.offsetY}px`,
               } as CSSProperties
             }
-            onClick={isInteractive ? () => onCardClick(idx, card) : undefined}
+            onClick={
+              inspectOnly
+                ? () => setInspectedId(card.instanceId)
+                : isInteractive
+                  ? () => onCardClick(idx, card)
+                  : undefined
+            }
             selected={isSelected}
             onInfo={() => setInspectedId(card.instanceId)}
           >
