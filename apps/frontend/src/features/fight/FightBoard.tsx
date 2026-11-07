@@ -89,7 +89,7 @@ interface Props {
 }
 
 export default function FightBoard({
-  gs,
+  gs: gsProp,
   selectedCard,
   selectedZone,
   payIndices,
@@ -112,6 +112,9 @@ export default function FightBoard({
   onSurrender,
 }: Props) {
   const { t, i18n } = useTranslation();
+  // Choix de cartes en attente : le plateau se consulte (i) mais ne joue plus
+  const choicePending = gsProp.pendingChoice != null;
+  const gs = choicePending ? { ...gsProp, isMyTurn: false } : gsProp;
   const phase = gs.phase;
 
   const { reduced } = useAnimationPrefs();
@@ -859,7 +862,7 @@ export default function FightBoard({
         opponent={gs.opponent}
         phase={phase}
         turnNumber={gs.turnNumber}
-        isMyTurn={gs.isMyTurn}
+        isMyTurn={gsProp.isMyTurn}
         timeLeft={timeLeft}
         handSize={gs.me.hand.length}
         onPickPhase={handlePickPhase}
@@ -868,7 +871,7 @@ export default function FightBoard({
         onSurrender={onSurrender}
       />
       <EnergyCounter value={gs.me.recycleEnergy} />
-      <TurnBanner isMyTurn={gs.isMyTurn} turnNumber={gs.turnNumber} />
+      <TurnBanner isMyTurn={gsProp.isMyTurn} turnNumber={gs.turnNumber} />
       <SelectionHint text={hintText} resetKey={selectedCard} />
 
       <div className="fb-side-row fb-side-row--opp">
@@ -997,6 +1000,7 @@ export default function FightBoard({
         hand={mappedHand}
         phase={phase}
         isMyTurn={gs.isMyTurn}
+        inspectOnly={choicePending}
         selectedCard={selectedCard}
         payIndices={payIndices}
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}

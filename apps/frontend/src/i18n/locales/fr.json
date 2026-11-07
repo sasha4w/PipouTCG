@@ -989,6 +989,8 @@
       "releve": "Relève disponible"
     },
     "pick": {
+      "collapse": "Réduire pour voir le plateau",
+      "expand": "Rouvrir le choix",
       "skip": "Ne pas appliquer l'effet",
       "source": {
         "graveyard": "Cimetière",
@@ -1444,7 +1446,7 @@
       "pixelman": {
         "name": "Pixelman",
         "gameplay": "Tout tourne autour des Noyaux. Noyau Alpha encaisse avec Provocation et réduction des dégâts, Noyau Beta inflige 300 dégâts à tous les ennemis à chaque début de tour, et Noyau Omega renforce tes Pixelman de +300 ATK et +300 PV. Équipe-les de modules comme Canon à Particules ou Module de Réparation, et sors Force Plasma pour éliminer une menace : il suffit d'un Noyau en jeu.",
-        "how_to_play": "Pose d'abord Noyau Alpha : sa Provocation protège le reste de ton équipe.\nÉquipe tes Noyaux : Canon à Particules pour frapper fort, Module de Réparation pour tenir, Firewall de Surcharge s'il y a Noyau Alpha ou Noyau Beta en jeu.\nGarde Force Plasma pour le monstre adverse qui te gêne : 1500 dégâts, avec un Noyau en jeu.\nVerrou de Position et Protocole de Gel neutralisent un monstre adverse.\nSi ton Drone Éclaireur tombe, il va chercher un Noyau dans ton deck."
+        "how_to_play": "Pose d'abord Noyau Alpha : sa Provocation protège le reste de ton équipe.\nÉquipe tes Noyaux : Canon à Particules pour frapper fort, Module de Réparation pour tenir, Firewall de Surcharge s'il y a Noyau Alpha ou Noyau Beta en jeu.\nGarde Force Plasma pour le monstre adverse qui te gêne : 1500 dégâts, avec un Noyau en jeu.\nVerrou de Position et Protocole de Gel neutralisent un monstre adverse.\nSi ton Drone Éclaireur tombe, il va chercher un support Pixelman dans ton deck."
       },
       "dragon": {
         "name": "Drakon",

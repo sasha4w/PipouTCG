@@ -55,6 +55,22 @@ describe("CardPickModal", () => {
     expect(screen.getByRole("dialog", { name: "Gobelin" })).toBeInTheDocument();
   });
 
+  it("réduit le modal sans perdre la sélection, puis le rouvre", () => {
+    const onConfirm = vi.fn();
+    render(<CardPickModal choice={choice} onConfirm={onConfirm} />);
+    fireEvent.click(screen.getByRole("button", { name: /Ogre/ }));
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Réduire pour voir le plateau" }),
+    );
+    expect(screen.getByText("1/1")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Ogre/ })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Rouvrir le choix" }));
+    fireEvent.click(screen.getByRole("button", { name: /Récupérer \(1\/1\)/ }));
+    expect(onConfirm).toHaveBeenCalledWith(["c1"]);
+  });
+
   it("invocation depuis le deck : bouton « Invoquer »", async () => {
     await i18n.changeLanguage("fr");
     render(

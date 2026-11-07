@@ -923,6 +923,8 @@
       "releve": "교대 가능"
     },
     "pick": {
+      "collapse": "접어서 보드 보기",
+      "expand": "선택 다시 열기",
       "skip": "효과 적용 안 함",
       "source": {
         "graveyard": "묘지",
@@ -1369,7 +1371,7 @@
       "pixelman": {
         "name": "Pixelman",
         "gameplay": "모든 것은 Noyau(코어)를 중심으로 돌아갑니다. Noyau Alpha는 도발과 피해 감소로 공격을 버티고, Noyau Beta는 매 턴 시작 시 모든 적에게 300 피해를 주며, Noyau Omega는 내 Pixelman에게 ATK +300, HP +300을 줍니다. Canon à Particules, Module de Réparation 같은 모듈을 장착하고, 코어가 한 장만 있어도 쓸 수 있는 Force Plasma로 위협을 제거하세요.",
-        "how_to_play": "먼저 Noyau Alpha를 내세요. 도발이 나머지 팀을 지켜 줍니다.\n코어를 장비로 강화하세요. Canon à Particules는 공격, Module de Réparation은 지속력, Firewall de Surcharge는 Noyau Alpha나 Noyau Beta가 있을 때 좋습니다.\nForce Plasma는 가장 거슬리는 적 몬스터에게 쓰세요. 코어가 있으면 1500 피해를 줍니다.\nVerrou de Position과 Protocole de Gel는 적 몬스터를 무력화합니다.\nDrone Éclaireur가 쓰러지면 덱에서 Noyau를 찾아옵니다."
+        "how_to_play": "먼저 Noyau Alpha를 내세요. 도발이 나머지 팀을 지켜 줍니다.\n코어를 장비로 강화하세요. Canon à Particules는 공격, Module de Réparation은 지속력, Firewall de Surcharge는 Noyau Alpha나 Noyau Beta가 있을 때 좋습니다.\nForce Plasma는 가장 거슬리는 적 몬스터에게 쓰세요. 코어가 있으면 1500 피해를 줍니다.\nVerrou de Position과 Protocole de Gel는 적 몬스터를 무력화합니다.\nDrone Éclaireur가 쓰러지면 덱에서 Pixelman 서포트를 찾아옵니다."
       },
       "dragon": {
         "name": "Drakon",

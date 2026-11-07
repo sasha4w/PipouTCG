@@ -232,25 +232,46 @@ describe('vraies cartes — combos', () => {
     ).toBe("Cette carte n'aurait aucun effet pour l'instant");
   });
 
-  it('Pixel Ghost .tmp : sa destruction propose de chercher un Noyau', () => {
-    const game = scenario({
-      phase: 'battle',
-      p1: { monsters: [monsterCard('Ogre', { atk: 2000, hp: 2000 })] },
-      p2: {
-        monsters: [realCard('Pixel Ghost .tmp')],
-        deck: [monsterCard('Bouche-trou'), realCard('Noyau Beta')],
-      },
+  describe('Pixelman : recherche à la destruction', () => {
+    const searchCandidates = (cardName: string) => {
+      const game = scenario({
+        phase: 'battle',
+        p1: { monsters: [monsterCard('Ogre', { atk: 2000, hp: 2000 })] },
+        p2: {
+          monsters: [realCard(cardName)],
+          deck: [
+            monsterCard('Bouche-trou'),
+            realCard('Noyau Beta'),
+            realCard('Pixel Ghost .tmp'),
+            realCard('Module de Réparation .exe'),
+            realCard('Ouille au rapport'),
+          ],
+        },
+      });
+      attackWith(engine, game, 'p1', 'Ogre', cardName);
+      expect(game.pendingChoices[0]).toMatchObject({
+        forUserId: game.player2.userId,
+        resolution: 'pick_to_hand',
+      });
+      return game.pendingChoices[0].candidates.map((c) => c.baseCard.name);
+    };
+
+    it('Pixel Ghost .tmp : ne propose que des monstres Pixelman (Noyaux inclus)', () => {
+      expect(searchCandidates('Pixel Ghost .tmp')).toEqual([
+        'Noyau Beta',
+        'Pixel Ghost .tmp',
+      ]);
     });
 
-    attackWith(engine, game, 'p1', 'Ogre', 'Pixel Ghost .tmp');
-
-    expect(game.pendingChoices[0]).toMatchObject({
-      forUserId: game.player2.userId,
-      resolution: 'pick_to_hand',
+    it('Drone Éclaireur .log : ne propose que des supports Pixelman', () => {
+      expect(searchCandidates('Drone Éclaireur .log')).toEqual([
+        'Module de Réparation .exe',
+      ]);
     });
-    expect(
-      game.pendingChoices[0].candidates.map((c) => c.baseCard.name),
-    ).toEqual(['Noyau Beta']);
+
+    it('Sentinelle .cfg : ne propose que des Noyaux', () => {
+      expect(searchCandidates('Sentinelle .cfg')).toEqual(['Noyau Beta']);
+    });
   });
 
   describe('rééquilibrage Drakon / Pixelman / Zeta', () => {

@@ -20,6 +20,7 @@ import {
   DRAKON_NEW_CARDS,
   DRAKON_PATCHES,
 } from '../../database/drakon-set-patches';
+import { PIXELMAN_RECHERCHE_PATCHES } from '../../database/pixelman-recherche-patches';
 import { SLOTS } from '../../database/migrations/1791000000022-SupportRework';
 import { normalizeCardName } from '../effects/card-name';
 
@@ -167,11 +168,29 @@ export function allRealCards(): Card[] {
         } as Card)
       : c;
   });
-  return withNovember(
-    withSupportRework(
-      withTeros([...withAncetres(cards), ...extensionCards(cards)]),
+  return withPixelmanRecherche(
+    withNovember(
+      withSupportRework(
+        withTeros([...withAncetres(cards), ...extensionCards(cards)]),
+      ),
     ),
   );
+}
+
+/** Pixel Ghost / Drone Éclaireur : cibles de recherche distinctes. */
+function withPixelmanRecherche(cards: Card[]): Card[] {
+  return cards.map((c) => {
+    const patch = PIXELMAN_RECHERCHE_PATCHES.find(
+      (p) => p.before.name === c.name,
+    );
+    return patch
+      ? ({
+          ...c,
+          description: patch.after.description,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
 }
 
 /** Patch 2026-11 : textes clarifiés, puis cartes Charge. */

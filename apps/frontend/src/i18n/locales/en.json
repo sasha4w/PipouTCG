@@ -987,6 +987,8 @@
       "releve": "Relief available"
     },
     "pick": {
+      "collapse": "Collapse to view the board",
+      "expand": "Reopen the choice",
       "skip": "Don't apply the effect",
       "source": {
         "graveyard": "Graveyard",
@@ -1443,7 +1445,7 @@
       "pixelman": {
         "name": "Pixelman",
         "gameplay": "Everything revolves around the Noyaux (Cores). Noyau Alpha soaks up hits with Taunt and damage reduction, Noyau Beta deals 300 damage to every enemy at the start of each turn, and Noyau Omega gives your Pixelman +300 ATK and +300 HP. Equip them with modules like Canon à Particules or Module de Réparation, and use Force Plasma to remove a threat: one Noyau in play is enough.",
-        "how_to_play": "Play Noyau Alpha first: its Taunt protects the rest of your team.\nEquip your Noyaux: Canon à Particules to hit hard, Module de Réparation to last, Firewall de Surcharge when Noyau Alpha or Noyau Beta is in play.\nKeep Force Plasma for the enemy monster that bothers you most: 1500 damage, with a Noyau in play.\nVerrou de Position and Protocole de Gel shut down an enemy monster.\nIf your Drone Éclaireur falls, it fetches a Noyau from your deck."
+        "how_to_play": "Play Noyau Alpha first: its Taunt protects the rest of your team.\nEquip your Noyaux: Canon à Particules to hit hard, Module de Réparation to last, Firewall de Surcharge when Noyau Alpha or Noyau Beta is in play.\nKeep Force Plasma for the enemy monster that bothers you most: 1500 damage, with a Noyau in play.\nVerrou de Position and Protocole de Gel shut down an enemy monster.\nIf your Drone Éclaireur falls, it fetches a Pixelman support from your deck."
       },
       "dragon": {
         "name": "Drakon",

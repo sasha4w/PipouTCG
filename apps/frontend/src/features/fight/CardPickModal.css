@@ -1,5 +1,5 @@
 .cpm-overlay {
-  position: fixed;
+  position: absolute; /* dans #root : cadre mobile de l'app */
   inset: 0;
   background: rgba(20, 8, 14, 0.72);
   backdrop-filter: blur(4px);
@@ -24,6 +24,10 @@
 }
 
 .cpm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 14px 16px;
   border-bottom: 1px solid #f0ddd0;
   background: #fdf6f9;
@@ -79,6 +83,19 @@
   color: #fff;
   border: 1.5px solid #fff;
   z-index: 3;
+}
+
+.cpm-source,
+.cpm-btn-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.cpm-title-text svg {
+  vertical-align: -3px;
+  margin-right: 6px;
 }
 
 .cpm-source {
@@ -163,4 +180,73 @@
 }
 .cpm-grid::-webkit-scrollbar-thumb:hover {
   background: rgb(122 28 59 / 0.75);
+}
+
+/* ── Réduction : la barre reste, le plateau se consulte derrière ─────────── */
+.cpm-collapse {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.cpm-collapse:hover {
+  background: rgb(122 28 59 / 0.08);
+}
+
+.cpm-modal--collapsed .cpm-collapse {
+  transform: rotate(180deg);
+}
+
+.cpm-grid[hidden],
+.cpm-actions[hidden] {
+  display: none;
+}
+
+.cpm-overlay--collapsed {
+  background: none;
+  backdrop-filter: none;
+  align-items: flex-end;
+  pointer-events: none;
+  /* À la place de la barre d'actions, inactive pendant un choix */
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.cpm-modal--collapsed {
+  pointer-events: auto;
+  max-width: 360px;
+}
+
+.cpm-modal--collapsed .cpm-header {
+  border-bottom: none;
+}
+
+.cpm-modal--collapsed .cpm-header {
+  padding: 8px 12px 8px 16px;
+}
+
+.cpm-modal--collapsed .cpm-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cpm-modal--collapsed .cpm-title-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cpm-title-count {
+  flex: none;
 }

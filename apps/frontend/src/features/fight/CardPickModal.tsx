@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -9,6 +10,16 @@ import type {
   PendingChoiceResolution,
 } from "./fight.types";
 import Button from "../../components/Button";
+import {
+  IconCards,
+  IconCheck,
+  IconChevronDown,
+  IconHand,
+  IconSkull,
+  IconSparkles,
+  IconTarget,
+  IconTrash,
+} from "../../components/Icons";
 import InspectableCard from "./InspectableCard";
 import CardDrawer from "./CardDrawer";
 import "./CardPickModal.css";
@@ -24,24 +35,24 @@ interface Props {
 
 // ── Helpers par résolution ────────────────────────────────────────────────────
 
-const RESOLUTION_ICON: Record<PendingChoiceResolution, string> = {
-  pick_to_hand: "🔮",
-  discard: "🗑️",
-  summon_to_zone: "", // pas d'emoji pour les nouveaux écrans
-  copy_effects: "",
-  transfer_atk_source: "",
-  transfer_atk_target: "",
-  force_evolve: "",
+const RESOLUTION_ICON: Record<PendingChoiceResolution, ReactNode> = {
+  pick_to_hand: <IconSparkles size={16} />,
+  discard: <IconTrash size={16} />,
+  summon_to_zone: null,
+  copy_effects: null,
+  transfer_atk_source: null,
+  transfer_atk_target: null,
+  force_evolve: null,
 };
 
-const RESOLUTION_CONFIRM_ICON: Record<PendingChoiceResolution, string> = {
-  pick_to_hand: "✅",
-  discard: "🗑️",
-  summon_to_zone: "",
-  copy_effects: "",
-  transfer_atk_source: "",
-  transfer_atk_target: "",
-  force_evolve: "",
+const RESOLUTION_CONFIRM_ICON: Record<PendingChoiceResolution, ReactNode> = {
+  pick_to_hand: <IconCheck size={16} />,
+  discard: <IconTrash size={16} />,
+  summon_to_zone: null,
+  copy_effects: null,
+  transfer_atk_source: null,
+  transfer_atk_target: null,
+  force_evolve: null,
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
@@ -75,11 +86,11 @@ const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   force_evolve: "#7a1c3b",
 };
 
-const SOURCE_ICON: Record<ClientChoiceCandidate["source"], string> = {
-  graveyard: "🪦",
-  deck: "📚",
-  hand: "🖐",
-  board: "🎴",
+const SOURCE_ICON: Record<ClientChoiceCandidate["source"], ReactNode> = {
+  graveyard: <IconSkull size={11} />,
+  deck: <IconCards size={11} />,
+  hand: <IconHand size={11} />,
+  board: <IconTarget size={11} />,
 };
 
 /** Consigne traduite si le serveur fournit sa clé, sinon son texte. */
@@ -105,6 +116,8 @@ export default function CardPickModal({
     null,
   );
   const [pickedId, setPickedId] = useState<string | null>(null);
+  // Réduit : on consulte main, terrain et cimetière derrière le modal
+  const [collapsed, setCollapsed] = useState(false);
 
   const resolution = choice.resolution ?? "pick_to_hand";
   const isBoardPick = choice.candidates.every((c) => c.source === "board");
@@ -124,38 +137,68 @@ export default function CardPickModal({
   const icon = RESOLUTION_ICON[resolution];
   const confirmText =
     confirmLabel ??
-    (resolution === "summon_to_zone"
-      ? t("fight.summonPick")
-      : [
-          RESOLUTION_CONFIRM_ICON[resolution],
-          t(`fight.pick.confirm.${resolution}`),
-        ]
-          .filter(Boolean)
-          .join(" "));
+    (resolution === "summon_to_zone" ? (
+      t("fight.summonPick")
+    ) : (
+      <>
+        {RESOLUTION_CONFIRM_ICON[resolution]}
+        {t(`fight.pick.confirm.${resolution}`)}
+      </>
+    ));
   const picks = Math.min(choice.count, choice.candidates.length);
   const headerBg = RESOLUTION_HEADER_BG[resolution];
   const headerColor = RESOLUTION_HEADER_COLOR[resolution];
   const btnBg = RESOLUTION_BTN_BG[resolution];
 
-  // Hors du plateau : un ancêtre empilé y placerait la main et le HUD par-dessus
+  // Dans le cadre de l'app (#root), comme BottomSheet : le modal ne déborde pas du format mobile
   return createPortal(
-    <div className="cpm-overlay">
-      <div className="cpm-modal">
+    <div
+      className={["cpm-overlay", collapsed ? "cpm-overlay--collapsed" : ""]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <div
+        className={["cpm-modal", collapsed ? "cpm-modal--collapsed" : ""]
+          .filter(Boolean)
+          .join(" ")}
+      >
         {/* ── Header ── */}
         <div className="cpm-header" style={{ background: headerBg }}>
           <span className="cpm-title" style={{ color: headerColor }}>
-            {icon} {promptText(choice, t)}
+            <span className="cpm-title-text">
+              {icon}
+              {promptText(choice, t)}
+            </span>
+            {collapsed && (
+              <span className="cpm-title-count">
+                {selected.length}/{picks}
+              </span>
+            )}
           </span>
+          <button
+            type="button"
+            className="cpm-collapse"
+            style={{ color: headerColor }}
+            aria-expanded={!collapsed}
+            aria-label={t(
+              collapsed ? "fight.pick.expand" : "fight.pick.collapse",
+            )}
+            onClick={() => setCollapsed((c) => !c)}
+          >
+            <IconChevronDown size={20} />
+          </button>
         </div>
 
-        <p className="cpm-hint">
-          {isBoardPick
-            ? t("fight.pick.hintTarget")
-            : t("fight.pick.hint", { count: picks })}
-        </p>
+        {!collapsed && (
+          <p className="cpm-hint">
+            {isBoardPick
+              ? t("fight.pick.hintTarget")
+              : t("fight.pick.hint", { count: picks })}
+          </p>
+        )}
 
         {/* ── Grille de cartes ── */}
-        <div className="cpm-grid">
+        <div className="cpm-grid" hidden={collapsed}>
           {choice.candidates.map((c: ClientChoiceCandidate) => {
             const isSelected = selected.includes(c.instanceId);
             return (
@@ -179,11 +222,12 @@ export default function CardPickModal({
                     className="cpm-check"
                     style={{ background: headerColor }}
                   >
-                    {icon}
+                    <IconCheck size={12} />
                   </span>
                 )}
                 <div className="cpm-source">
-                  {SOURCE_ICON[c.source]} {t(`fight.pick.source.${c.source}`)}
+                  {SOURCE_ICON[c.source]}
+                  {t(`fight.pick.source.${c.source}`)}
                 </div>
               </InspectableCard>
             );
@@ -191,7 +235,7 @@ export default function CardPickModal({
         </div>
 
         {/* ── Actions ── */}
-        <div className="cpm-actions">
+        <div className="cpm-actions" hidden={collapsed}>
           {onCancel && (
             <Button variant="danger" onClick={onCancel}>
               {t("fight.pick.cancel")}
@@ -221,6 +265,6 @@ export default function CardPickModal({
         )}
       </div>
     </div>,
-    document.body,
+    document.getElementById("root") ?? document.body,
   );
 }
