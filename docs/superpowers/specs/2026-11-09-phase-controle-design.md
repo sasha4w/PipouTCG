@@ -9,6 +9,7 @@ La phase de contrôle (`game.phase === 'end'`, après le combat) ne sert aujourd
 Autorisé en phase de contrôle :
 - **Jouer une carte support** (`playSupport`), sans restriction supplémentaire.
 - **Invoquer par Relève** : action `summon` avec `releveInstanceIds` non vide et valide. Une invocation sans Relève est refusée (« Invocation normale interdite en phase de contrôle »).
+- **Invoquer une carte à condition spéciale `SUMMON_IF_ALL_ELEMENTS`** (Drakon des Origines : un Adulte ou Ancestral de chaque élément au cimetière), avec son coût habituel.
 - **Faire évoluer un Drakon** (`evolve`), avec son paiement habituel (énergie de recyclage restante puis cartes défaussées de la main).
 - **Défausser** (existant), toujours obligatoire si la main dépasse `HAND_LIMIT` avant `end_phase`.
 
@@ -25,7 +26,7 @@ Les effets déclenchés par ces actions (ON_SUMMON, ON_ALLY_SUMMON, effets de su
 
 - `support.service.ts` `playSupport` : accepter `main` et `end`.
 - `evolution.service.ts` `evolve` : accepter `main` et `end`.
-- `summon.service.ts` `doSummon` : accepter `end` uniquement si `releveInstanceIds?.length` ; garder la validation Relève existante.
+- `summon.service.ts` `doSummon` : accepter `end` uniquement si `releveInstanceIds?.length` ou si `requiresAllElements(card.baseCard.effects)` ; garder les validations existantes (Relève, cimetière à 4 éléments, coût).
 - `recycleFromHand`, `transformFromHand`, `changeMode`, attaques : inchangés (`main` / `battle` seulement).
 - Message d'erreur des refus : remplacer « Phase principale uniquement » par un message adapté là où la phase de contrôle est aussi acceptée.
 - Le timeout de phase (`game-engine.ts`, défausse auto puis passage) reste tel quel.
@@ -38,6 +39,7 @@ Suggestion au builder : un petit helper partagé (ex. `isBoardPhase(phase)`) plu
   - support → le jouer (mêmes flux de ciblage qu'en phase principale) ;
   - monstre avec Relève et assez d'alliés Pipou → invocation par Relève (même flux qu'en phase principale, sans l'option de paiement normal) ;
   - Drakon pouvant évoluer sur un allié → évolution ;
+  - Drakon des Origines avec cimetière complet → invocation (fenêtre de coût habituelle) ;
   - **toujours** « Défausser ».
 - Le clic sur une carte ne la défausse plus directement : la défausse devient un choix explicite.
 - Les contrôles de mode Garde/Attaque, Recycler et Transformer restent masqués en phase `end`.
@@ -64,4 +66,4 @@ Suggestion au builder : un petit helper partagé (ex. `isBoardPhase(phase)`) plu
 - Transformer reste interdit en phase de contrôle.
 - Aucun déclencheur de phase n'est rejoué ; les supports « ce tour » restent jouables.
 - L'IA évalue ces coups comme en phase principale.
-- `SUMMON_IF_ALL_ELEMENTS` (invocation conditionnelle) suit la règle de l'invocation normale : interdite en phase de contrôle.
+- Le recyclage proposé dans la fenêtre de paiement reste disponible pour l'invocation `SUMMON_IF_ALL_ELEMENTS` (décidé : elle compte comme invocation spéciale).
