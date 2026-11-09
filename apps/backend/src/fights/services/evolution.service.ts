@@ -3,6 +3,7 @@ import {
   EffectTrigger,
   canEvolveNow,
   canEvolveOnto,
+  isBoardPhase,
   isImplanted,
   evolutionCost,
 } from '@pipou/shared';
@@ -31,7 +32,8 @@ export class EvolutionService {
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
-    if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
+    if (!isBoardPhase(game.phase))
+      return { error: 'Phase principale ou de contrôle uniquement' };
 
     const player = getPlayerState(game, userId);
     const card = player.hand[handIndex];

@@ -14,7 +14,9 @@ import {
   canSummonFromHand,
   canImplantOn,
   canSummonOnEnemySide,
+  isBoardPhase,
   isImplanted,
+  isSpecialSummon,
   graveyardHasAllElements,
   releveCount,
   requiresAllElements,
@@ -134,7 +136,8 @@ export class SummonService {
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
-    if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
+    if (!isBoardPhase(game.phase))
+      return { error: 'Phase principale uniquement' };
 
     const player = getPlayerState(game, userId);
     const opponent = getOpponentState(game, userId);
@@ -155,6 +158,13 @@ export class SummonService {
       return {
         error: `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
       };
+
+    // Phase de contrôle : seules les invocations spéciales (Relève, Origines)
+    if (
+      game.phase === 'end' &&
+      !isSpecialSummon(card.baseCard, releveInstanceIds)
+    )
+      return { error: 'Invocation normale interdite en phase de contrôle' };
 
     if (
       requiresAllElements(card.baseCard.effects) &&

@@ -17,6 +17,7 @@ import {
   EffectTrigger,
   ephemeralDestroysChosenTarget,
   ephemeralTargetSide,
+  isBoardPhase,
   isImplanted,
   isPlantedBy,
   isTargetableByEphemeral,
@@ -50,7 +51,8 @@ export class SupportService {
   ): { error?: string } {
     if (!isCurrentPlayer(game, userId))
       return { error: "Ce n'est pas ton tour" };
-    if (game.phase !== 'main') return { error: 'Phase principale uniquement' };
+    if (!isBoardPhase(game.phase))
+      return { error: 'Phase principale ou de contrôle uniquement' };
 
     const player = getPlayerState(game, userId);
     if (handIndex < 0 || handIndex >= player.hand.length)
