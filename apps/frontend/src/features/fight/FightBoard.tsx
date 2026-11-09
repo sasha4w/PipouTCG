@@ -155,6 +155,8 @@ export default function FightBoard({
     setShaking(true);
   }, [fx, reduced]);
 
+  // Tour dont le rappel de la phase de contrôle a déjà été montré (une seule fois)
+  const [endHintDoneTurn, setEndHintDoneTurn] = useState<number | null>(null);
   const [showSummonModal, setShowSummonModal] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
   const [graveyardSide, setGraveyardSide] = useState<"me" | "opponent" | null>(
@@ -860,10 +862,21 @@ export default function FightBoard({
           : hintSlot.hintKey
             ? t(hintSlot.hintKey)
             : (playBlockedReason ?? "")
-      : // Phase de contrôle sans sélection : rappel de ce qui reste possible
-        gs.isMyTurn && phase === "end"
+      : // Phase de contrôle sans sélection : rappel, montré une seule fois par tour
+        gs.isMyTurn && phase === "end" && endHintDoneTurn !== gs.turnNumber
         ? t("fight.phase.endHint")
         : "";
+  const endHintVisible = hintText !== "" && phase === "end";
+  useEffect(() => {
+    if (!endHintVisible) return;
+    // Le rappel dure 3 s (SelectionHint) : ensuite, ou dès qu'on touche une carte, il est consommé
+    const id = setTimeout(() => setEndHintDoneTurn(gs.turnNumber), 3100);
+    return () => clearTimeout(id);
+  }, [endHintVisible, gs.turnNumber]);
+  useEffect(() => {
+    if (phase === "end" && gs.isMyTurn && selectedCard !== null)
+      setEndHintDoneTurn(gs.turnNumber);
+  }, [phase, gs.isMyTurn, gs.turnNumber, selectedCard]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
