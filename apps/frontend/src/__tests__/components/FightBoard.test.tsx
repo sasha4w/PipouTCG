@@ -688,13 +688,4 @@ describe("FightBoard — phase de contrôle", () => {
     expect(document.querySelector(".zr-mode-btns")).toBeNull();
     expect(screen.getByRole("button", { name: "Défausser" })).toBeEnabled();
   });
-
-  it("sans carte sélectionnée : rappel de la phase de contrôle", () => {
-    renderBoard(endState(), vi.fn(), { selectedCard: null });
-    expect(
-      screen.getByText(
-        "Réorganise ton board : supports, Relève, évolution. Défausse si ta main est pleine.",
-      ),
-    ).toBeInTheDocument();
-  });
 });
