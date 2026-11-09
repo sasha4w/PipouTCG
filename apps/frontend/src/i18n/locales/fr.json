@@ -912,6 +912,7 @@
       "main": "Principale",
       "battle": "Combat",
       "end": "Phase de contrôle",
+      "endHint": "Réorganise ton board : supports, Relève, évolution. Défausse si ta main est pleine.",
       "finished": "Terminé"
     },
     "confirm": {

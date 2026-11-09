@@ -39,13 +39,16 @@ import { releveOptions } from "./releve";
 import { unmetChargeRequirements } from "./chargeRequirements";
 import type { PendingChoice, ClientChoiceCandidate } from "./fight.types";
 import {
-  HAND_LIMIT,
   canEvolveNow,
   canEvolveOnto,
   canImplantOn,
   canSummonFromHand,
   canSummonOnEnemySide,
   evolutionCost,
+  graveyardHasAllElements,
+  isBoardPhase,
+  isSpecialSummon,
+  requiresAllElements,
   ephemeralTargetSide,
   isImplanted,
   isPlantedBy,
@@ -279,6 +282,8 @@ export default function FightBoard({
   );
   const isMyBattle = gs.isMyTurn && phase === "battle";
   const isMyMain = gs.isMyTurn && phase === "main";
+  // Phase principale ou de contrôle : supports, évolution, Relève, Origines
+  const isMyBoard = gs.isMyTurn && isBoardPhase(phase);
   const attackerSelected = isMyBattle && selectedZone !== null;
   const disinfectableIds = new Set<string>();
   const lockedZetas = new Map<string, string>();
@@ -317,7 +322,7 @@ export default function FightBoard({
     : undefined;
   // Cibles d'un équipement : mes monstres (hors Zeta implanté) ou mon Zeta implanté
   const equippableIds = new Set(
-    isEquipment && isMyMain && equipCard
+    isEquipment && isMyBoard && equipCard
       ? gs.me.monsterZones
           .filter(
             (m): m is MonsterOnBoard =>
@@ -340,7 +345,7 @@ export default function FightBoard({
       : null;
   // Cartes de la main dont la Relève est jouable maintenant (signalées dans la main)
   const releveReadyIds = new Set(
-    isMyMain
+    isMyBoard
       ? gs.me.hand
           .filter((c) => releveOptions(c.baseCard, gs.me.monsterZones, myId))
           .map((c) => c.instanceId)
@@ -349,7 +354,7 @@ export default function FightBoard({
   const evolvesOnly =
     !!selectedInstance && !canSummonFromHand(selectedInstance.baseCard);
   const evolvableTargets: MonsterOnBoard[] =
-    gs.isMyTurn && phase === "main" && selectedInstance
+    isMyBoard && selectedInstance
       ? gs.me.monsterZones.filter(
           (m): m is MonsterOnBoard =>
             !!m &&
@@ -357,6 +362,14 @@ export default function FightBoard({
             canEvolveNow(m),
         )
       : [];
+  // Drakon des Origines sélectionné, invocable car le cimetière réunit tous les éléments
+  const originsReady =
+    !!selectedInstance &&
+    requiresAllElements(selectedInstance.baseCard.effects) &&
+    graveyardHasAllElements(gs.me.graveyard.map((c) => c.baseCard));
+  // Phase de contrôle : seules l'évolution et les Origines se paient en cartes
+  const canPayWithHand =
+    phase === "main" || evolvableTargets.length > 0 || originsReady;
   const evolvableIds = new Set(evolvableTargets.map((m) => m.instanceId));
   const supportIntent =
     isZoneSupport && selectedCard !== null
@@ -364,7 +377,7 @@ export default function FightBoard({
       : null;
   // Monstres qui ne peuvent pas recevoir l'équipement sélectionné : grisés
   const blockedEquipIds = new Set<string>();
-  if (isEquipment && isMyMain && equipCard) {
+  if (isEquipment && isMyBoard && equipCard) {
     for (const m of [...gs.me.monsterZones, ...gs.opponent.monsterZones]) {
       if (
         m &&
@@ -466,24 +479,25 @@ export default function FightBoard({
   const handleCardClick = (idx: number) => {
     if (!gs.isMyTurn) return;
 
-    if (phase === "main") {
-      if (selectedCard === idx) {
-        onSetSelectedCard(null);
-        onSetPayIndices([]);
-        return;
-      }
-      if (selectedCard === null) {
-        onSetSelectedCard(idx);
-        return;
-      }
-      onSetPayIndices((prev) =>
-        prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
-      );
-    } else if (phase === "end") {
-      // Phase de contrôle : on touche la carte, puis « Défausser » confirme
-      if (gs.me.hand.length > HAND_LIMIT)
-        onSetSelectedCard(selectedCard === idx ? null : idx);
+    if (!isBoardPhase(phase)) return;
+    if (selectedCard === idx) {
+      onSetSelectedCard(null);
+      onSetPayIndices([]);
+      return;
     }
+    if (selectedCard === null) {
+      onSetSelectedCard(idx);
+      return;
+    }
+    // Phase de contrôle : une carte sans coût à payer cède la sélection
+    if (!canPayWithHand) {
+      onSetSelectedCard(idx);
+      onSetPayIndices([]);
+      return;
+    }
+    onSetPayIndices((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx],
+    );
   };
 
   /** Équipe `occupant` : joue direct, ou demande quel équipement remplacer. */
@@ -511,7 +525,7 @@ export default function FightBoard({
 
   // Clic sur zone monstre ALLIÉE
   const handleZoneClick = (idx: number) => {
-    if (phase === "main") {
+    if (isBoardPhase(phase)) {
       if (selectedCard !== null) {
         if (isZoneSupport || isZeta) return; // ces cartes ne vont pas en zone alliée monstre
         const occupant = gs.me.monsterZones[idx];
@@ -544,6 +558,12 @@ export default function FightBoard({
 
         if (card?.type === "monster") {
           if (occupant) return; // on n'invoque que sur une zone libre
+          // Phase de contrôle : invocation spéciale seulement (Origines)
+          if (
+            phase === "end" &&
+            !(selectedInstance && isSpecialSummon(selectedInstance.baseCard))
+          )
+            return;
           requestPayment(summonCost(card), {
             kind: "summon",
             handIndex: selectedCard,
@@ -561,6 +581,7 @@ export default function FightBoard({
           onSetSelectedZone(idx);
         }
       } else if (
+        phase === "main" &&
         gs.me.monsterZones[idx] &&
         !implantedIds.has(gs.me.monsterZones[idx].instanceId)
       ) {
@@ -581,7 +602,7 @@ export default function FightBoard({
 
   // Clic sur zone monstre ADVERSE
   const handleOpponentZoneClick = (idx: number) => {
-    if (!gs.isMyTurn || phase !== "main") return;
+    if (!isMyBoard) return;
 
     // Équipement sur mon Zeta implanté chez l'adversaire
     const occupant = gs.opponent.monsterZones[idx];
@@ -593,6 +614,7 @@ export default function FightBoard({
 
     // Zeta : placement sur zone adverse vide (un seul implanté à la fois)
     if (
+      phase === "main" &&
       isZeta &&
       canImplant &&
       selectedCard !== null &&
@@ -608,7 +630,7 @@ export default function FightBoard({
   };
 
   const handleSupportZoneClick = (idx: number) => {
-    if (!gs.isMyTurn || phase !== "main" || selectedCard === null) return;
+    if (!isMyBoard || selectedCard === null) return;
     if (!isZoneSupport) return;
     const intent = zoneIntent(
       gs.me.supportZones,
@@ -753,7 +775,7 @@ export default function FightBoard({
       : null;
   /** Cartes support de la main qu'aucune cible ni case ne peut accueillir. */
   const unplayableReasons = new Map<string, string>();
-  if (isMyMain) {
+  if (isMyBoard) {
     const equipTargets = [
       ...gs.me.monsterZones.filter(
         (m): m is MonsterOnBoard => !!m && !implantedIds.has(m.instanceId),
@@ -838,7 +860,10 @@ export default function FightBoard({
           : hintSlot.hintKey
             ? t(hintSlot.hintKey)
             : (playBlockedReason ?? "")
-      : "";
+      : // Phase de contrôle sans sélection : rappel de ce qui reste possible
+        gs.isMyTurn && phase === "end"
+        ? t("fight.phase.endHint")
+        : "";
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -903,10 +928,10 @@ export default function FightBoard({
             highlightOpponentEmpty={isMyMain && isZeta && canImplant}
             dimInstanceIds={blockedEquipIds}
             highlightInstanceIds={
-              isEquipment && isMyMain ? plantedByMeIds : undefined
+              isEquipment && isMyBoard ? plantedByMeIds : undefined
             }
             onZoneClick={
-              isMyMain && (isZeta || isEquipment)
+              (isMyMain && isZeta) || (isMyBoard && isEquipment)
                 ? handleOpponentZoneClick
                 : undefined
             }
@@ -955,7 +980,7 @@ export default function FightBoard({
             damagedZones={damagedMyZones}
             highlightEmpty={
               gs.isMyTurn &&
-              phase === "main" &&
+              (phase === "main" || (phase === "end" && originsReady)) &&
               selectedHandCard?.type === "monster" &&
               !isZeta &&
               !evolvesOnly
@@ -975,20 +1000,20 @@ export default function FightBoard({
             warnInstances={myUnmetCharges}
             recycleEnergy={gs.me.recycleEnergy}
             onZoneClick={
-              gs.isMyTurn && phase === "main" && isZoneSupport
+              isMyBoard && isZoneSupport
                 ? handleSupportZoneClick
                 : undefined
             }
             highlightEmpty={
               gs.isMyTurn &&
-              phase === "main" &&
+              isBoardPhase(phase) &&
               isZoneSupport &&
               supportIntent?.kind !== "blocked"
             }
             highlightAllEmpty={supportIntent?.kind === "confirm_terrain"}
             dim={
               gs.isMyTurn &&
-              phase === "main" &&
+              isBoardPhase(phase) &&
               selectedHandCard?.type === "support" &&
               !isZoneSupport
             }
@@ -1006,6 +1031,7 @@ export default function FightBoard({
         freeSummonInstanceIds={gs.me.freeSummonInstanceIds}
         releveInstanceIds={releveReadyIds}
         unplayableReasons={unplayableReasons}
+        canPayWithHand={canPayWithHand}
         onCardClick={handleCardClick}
       />
 
@@ -1015,7 +1041,6 @@ export default function FightBoard({
         selectedCard={selectedHandCard}
         attackerSelected={attackerSelected}
         transformUsed={gs.me.transformUsedThisTurn}
-        overHandLimit={gs.me.hand.length > HAND_LIMIT}
         playBlockedReason={playBlockedReason}
         onRecycle={handleBarRecycle}
         onMain={handleBarMain}

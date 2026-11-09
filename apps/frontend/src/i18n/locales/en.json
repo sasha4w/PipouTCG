@@ -910,6 +910,7 @@
       "main": "Main",
       "battle": "Battle",
       "end": "Control phase",
+      "endHint": "Rearrange your board: supports, Relève, evolution. Discard if your hand is full.",
       "finished": "Finished"
     },
     "confirm": {

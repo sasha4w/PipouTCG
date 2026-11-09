@@ -601,3 +601,100 @@ describe("FightBoard — confirmations et recyclage rapide", () => {
     expect(props.onEndPhase).not.toHaveBeenCalled();
   });
 });
+
+// ─── Phase de contrôle : supports, évolution, Relève, Origines ───────────────
+
+describe("FightBoard — phase de contrôle", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  const endState = (recycleEnergy = 1, youngCost = 3): GameState => {
+    const gs = state(recycleEnergy, youngCost);
+    gs.phase = "end";
+    return gs;
+  };
+  const handCards = () =>
+    document.querySelectorAll<HTMLElement>(".fhand .fhand-card");
+
+  it("support persistant puis zone de support libre : joué après confirmation", () => {
+    const gs = endState();
+    gs.me.hand = [
+      {
+        instanceId: "terrain",
+        ownerId: 1,
+        baseCard: {
+          ...monster().card.baseCard,
+          id: 70,
+          name: "Volcan",
+          type: "support",
+          supportType: "PERSISTENT",
+          atk: 0,
+          hp: 0,
+          effects: null,
+        },
+      },
+    ];
+    const { props } = renderBoard(gs);
+    const supportZones = screen
+      .getByText("Mes Supports")
+      .closest(".zr-wrap")!
+      .querySelectorAll(".zr-zone");
+    fireEvent.click(supportZones[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+    expect(props.onPlaySupport).toHaveBeenCalledWith(0, 0, undefined);
+  });
+
+  it("Drakon évolutif : une carte touchée s'ajoute au paiement", () => {
+    const { props } = renderBoard(endState());
+    fireEvent.click(handCards()[1]);
+    expect(props.onSetPayIndices).toHaveBeenCalled();
+    expect(props.onSetSelectedCard).not.toHaveBeenCalled();
+  });
+
+  it("évolution payée par une carte recyclée : envoyée avec ce paiement", () => {
+    const { zones, onEvolve } = renderBoard(endState(), vi.fn(), {
+      payIndices: [1],
+    });
+    fireEvent.click(zones[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+    expect(onEvolve).toHaveBeenCalledWith("bebe", [1]);
+  });
+
+  it("monstre normal sur zone libre : aucune invocation", () => {
+    const { zones, props } = renderBoard(endState(5), vi.fn(), {
+      selectedCard: 1,
+    });
+    expect(zones[2]).not.toHaveClass("zr-zone--pulse-target");
+    fireEvent.click(zones[2]);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(props.onSummon).not.toHaveBeenCalled();
+  });
+
+  it("carte non jouable puis une autre : la sélection change", () => {
+    const { props } = renderBoard(endState(), vi.fn(), { selectedCard: 1 });
+    fireEvent.click(handCards()[0]);
+    expect(props.onSetSelectedCard).toHaveBeenCalledWith(0);
+    expect(props.onSetPayIndices).not.toHaveBeenCalledWith(
+      expect.any(Function),
+    );
+  });
+
+  it("ni Transformer ni changement de mode ; Défausser présent", () => {
+    renderBoard(endState());
+    expect(
+      screen.queryByRole("button", { name: /Transformer/ }),
+    ).not.toBeInTheDocument();
+    expect(document.querySelector(".zr-mode-btns")).toBeNull();
+    expect(screen.getByRole("button", { name: "Défausser" })).toBeEnabled();
+  });
+
+  it("sans carte sélectionnée : rappel de la phase de contrôle", () => {
+    renderBoard(endState(), vi.fn(), { selectedCard: null });
+    expect(
+      screen.getByText(
+        "Réorganise ton board : supports, Relève, évolution. Défausse si ta main est pleine.",
+      ),
+    ).toBeInTheDocument();
+  });
+});

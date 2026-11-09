@@ -11,8 +11,6 @@ interface Props {
   attackerSelected: boolean;
   /** Transformation déjà utilisée ce tour. */
   transformUsed: boolean;
-  /** Main au-dessus de la limite : Recycler devient Défausser en phase de contrôle. */
-  overHandLimit: boolean;
   /** Raison pour laquelle l'Éphémère sélectionné ne peut pas être joué. */
   playBlockedReason?: string;
   onRecycle: () => void;
@@ -26,14 +24,14 @@ export default function FightActionBar({
   selectedCard,
   attackerSelected,
   transformUsed,
-  overHandLimit,
   playBlockedReason,
   onRecycle,
   onMain,
 }: Props) {
   const { t } = useTranslation();
 
-  const discarding = phase === "end" && overHandLimit;
+  // Phase de contrôle : Recycler devient Défausser, toujours proposé
+  const discarding = phase === "end";
   const canRecycle =
     isMyTurn && selectedCard !== null && (phase === "main" || discarding);
   const slot = mainSlot({

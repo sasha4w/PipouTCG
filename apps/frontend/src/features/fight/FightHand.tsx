@@ -28,6 +28,8 @@ interface Props {
   releveInstanceIds?: ReadonlySet<string>;
   /** instanceId -> raison pour laquelle la carte ne peut pas être jouée. */
   unplayableReasons?: ReadonlyMap<string, string>;
+  /** La carte sélectionnée se paie en cartes (par défaut : phase principale). */
+  canPayWithHand?: boolean;
   onCardClick: (idx: number, card: HandCard) => void;
 }
 
@@ -41,6 +43,7 @@ export default function FightHand({
   freeSummonInstanceIds,
   releveInstanceIds,
   unplayableReasons,
+  canPayWithHand,
   onCardClick,
 }: Props) {
   const { t } = useTranslation();
@@ -73,7 +76,9 @@ export default function FightHand({
         const isSelected = selectedCard === idx;
         const isPaying = payIndices.includes(idx);
         const isPayable =
-          !isSelected && selectedCard !== null && phase === "main";
+          !isSelected &&
+          selectedCard !== null &&
+          (canPayWithHand ?? phase === "main");
         const isFree = freeSummonInstanceIds.includes(card.instanceId);
         const slot = slots[idx];
 
