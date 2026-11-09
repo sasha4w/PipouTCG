@@ -1,4 +1,4 @@
-import { SupportType, canTransform } from "@pipou/shared";
+import { SupportType, canTransform, isBoardPhase } from "@pipou/shared";
 import type { Phase } from "./fight.types";
 import type { HandCard } from "./handCard";
 
@@ -38,10 +38,12 @@ export function mainSlot({
       ? { labelKey: "fight.bar.directAttack", enabled: true }
       : IDLE;
   }
-  if (phase !== "main" || card === null) return IDLE;
+  if (!phase || !isBoardPhase(phase) || card === null) return IDLE;
 
   if (card.type === "monster") {
     const evolveHint = canEvolve ? "fight.evolveHint" : undefined;
+    // Phase de contrôle : ni transformation ni invocation normale
+    if (phase === "end") return { ...IDLE, hintKey: evolveHint };
     return canTransform({ stage: card.stage ?? null, lineage: card.lineage })
       ? {
           labelKey: "fight.transform",

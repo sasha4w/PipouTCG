@@ -40,7 +40,6 @@ function renderBar(over: Partial<ComponentProps<typeof FightActionBar>> = {}) {
     selectedCard: monster(),
     attackerSelected: false,
     transformUsed: false,
-    overHandLimit: false,
     onRecycle: vi.fn(),
     onMain: vi.fn(),
     ...over,
@@ -66,7 +65,6 @@ describe("FightActionBar", () => {
           selectedCard={selectedCard}
           attackerSelected={false}
           transformUsed={false}
-          overHandLimit={false}
           onRecycle={vi.fn()}
           onMain={vi.fn()}
         />,
@@ -114,16 +112,24 @@ describe("FightActionBar", () => {
     expect(screen.getByRole("button", { name: /Recycler/ })).toBeDisabled();
   });
 
-  it("phase de contrôle avec main pleine : Défausser actif", () => {
+  it("phase de contrôle : Défausser actif même main non pleine, pas de Transformer", () => {
     const props = renderBar({
       phase: "end",
-      overHandLimit: true,
       selectedCard: monster(),
     });
+    expect(
+      screen.queryByRole("button", { name: /Transformer/ }),
+    ).not.toBeInTheDocument();
     const btn = screen.getByRole("button", { name: "Défausser" });
     expect(btn).toBeEnabled();
     fireEvent.click(btn);
     expect(props.onRecycle).toHaveBeenCalledTimes(1);
+  });
+
+  it("phase de contrôle : un Éphémère se joue", () => {
+    renderBar({ phase: "end", selectedCard: support("EPHEMERAL") });
+    expect(screen.getByRole("button", { name: "Jouer" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Défausser" })).toBeEnabled();
   });
 
   it("phase de combat avec attaquant : Attaque directe actif", () => {
@@ -141,7 +147,6 @@ describe("FightActionBar", () => {
         selectedCard={support("EPHEMERAL")}
         attackerSelected={false}
         transformUsed={false}
-        overHandLimit={false}
         onRecycle={vi.fn()}
         onMain={vi.fn()}
       />,
@@ -160,7 +165,7 @@ describe("FightActionBar", () => {
     for (const over of [
       {},
       { selectedCard: support("PERSISTENT") },
-      { phase: "end" as const, overHandLimit: true },
+      { phase: "end" as const },
       { phase: "battle" as const, attackerSelected: true },
     ]) {
       const { unmount } = render(
@@ -170,7 +175,6 @@ describe("FightActionBar", () => {
           selectedCard={monster()}
           attackerSelected={false}
           transformUsed={false}
-          overHandLimit={false}
           onRecycle={vi.fn()}
           onMain={vi.fn()}
           {...over}

@@ -13,6 +13,8 @@ import {
   isImplanted,
   ephemeralTargetSide,
   isTargetableByEphemeral,
+  isSpecialSummon,
+  isBoardPhase,
 } from "./rules";
 import type { CardEffect } from "./effect";
 
@@ -310,5 +312,35 @@ describe("immunités par source", () => {
       immunities: [...teros.immunities, Immunity.SUPPORT_DESTRUCTION],
     };
     expect(isTargetableByEphemeral(ancestral, "enemy", kill)).toBe(false);
+  });
+});
+
+describe("isSpecialSummon", () => {
+  it("false sans Relève ni condition d'éléments", () => {
+    expect(isSpecialSummon({ effects: [] })).toBe(false);
+    expect(isSpecialSummon({ effects: [] }, [])).toBe(false);
+  });
+  it("true avec Relève", () => {
+    expect(isSpecialSummon({ effects: [] }, ["a"])).toBe(true);
+  });
+  it("true avec SUMMON_IF_ALL_ELEMENTS", () => {
+    const effects = [
+      {
+        trigger: "PASSIVE",
+        actions: [{ type: "SUMMON_IF_ALL_ELEMENTS" }],
+      },
+    ] as unknown as CardEffect[];
+    expect(isSpecialSummon({ effects })).toBe(true);
+  });
+});
+
+describe("isBoardPhase", () => {
+  it("main et end sont des phases de plateau", () => {
+    expect(isBoardPhase("main")).toBe(true);
+    expect(isBoardPhase("end")).toBe(true);
+  });
+  it("battle et mulligan non", () => {
+    expect(isBoardPhase("battle")).toBe(false);
+    expect(isBoardPhase("mulligan")).toBe(false);
   });
 });

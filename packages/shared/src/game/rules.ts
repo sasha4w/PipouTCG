@@ -6,6 +6,7 @@ import {
 } from "../enums/effect";
 import type { DrakonElement, DrakonStage } from "../enums/card";
 import type { CardEffect } from "./effect";
+import type { GamePhase } from "./state";
 import { blocksEnemyAction, hasImmunity, type SourceKind } from "./immunity";
 
 /** Règles de construction d'un deck (création et lancement de match). */
@@ -272,4 +273,20 @@ export function requiresAllElements(
       e.trigger === EffectTrigger.PASSIVE &&
       e.actions.some((a) => a.type === ActionType.SUMMON_IF_ALL_ELEMENTS),
   );
+}
+
+/**
+ * Invocation spéciale : par Relève ou carte à condition d'éléments
+ * (Drakon des Origines). Seule l'invocation normale est interdite en phase de contrôle.
+ */
+export function isSpecialSummon(
+  card: { effects: CardEffect[] | null | undefined },
+  releveInstanceIds?: string[],
+): boolean {
+  return (releveInstanceIds?.length ?? 0) > 0 || requiresAllElements(card.effects);
+}
+
+/** Phases où le joueur agit sur son plateau (principale et contrôle). */
+export function isBoardPhase(phase: GamePhase): boolean {
+  return phase === "main" || phase === "end";
 }

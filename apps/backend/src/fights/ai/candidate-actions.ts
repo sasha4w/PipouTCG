@@ -17,6 +17,7 @@ import {
   evolutionCost,
   isImplanted,
   isPlantedBy,
+  isSpecialSummon,
   graveyardHasAllElements,
   releveCount,
   requiresAllElements,
@@ -104,12 +105,16 @@ export function listCandidates(game: GameState, seat: Seat): GameAction[] {
     case 'battle':
       return [...attackCandidates(me, opp), { type: 'end_phase' }];
     case 'end':
-      if (me.hand.length > HAND_LIMIT)
-        return distinctHandIndices(me.hand).map((handIndex) => ({
-          type: 'discard',
-          handIndex,
-        }));
-      return [{ type: 'end_phase' }];
+      // Coups de board autorisés, puis défausse obligatoire avant de finir
+      return [
+        ...controlCandidates(me, opp),
+        ...(me.hand.length > HAND_LIMIT
+          ? distinctHandIndices(me.hand).map((handIndex): GameAction => ({
+              type: 'discard',
+              handIndex,
+            }))
+          : [{ type: 'end_phase' } as GameAction]),
+      ];
     default:
       return [];
   }
@@ -149,6 +154,26 @@ function pickCandidates(game: GameState, choice: PendingChoice): GameAction[] {
     for (let q = p + 1; q < k; q++) idx[q] = idx[q - 1] + 1;
   }
   return combos.map((instanceIds) => ({ type: 'pick_cards', instanceIds }));
+}
+
+/**
+ * Phase de contrôle : supports, évolution et invocations spéciales
+ * (Relève, Origines) seulement. Ni invocation normale, ni recycle, ni
+ * transformation, ni changement de mode.
+ */
+export function controlCandidates(
+  me: PlayerGameState,
+  opp: PlayerGameState,
+): GameAction[] {
+  return mainCandidates(me, opp).filter((a) => {
+    if (a.type === 'play_support' || a.type === 'evolve') return true;
+    if (a.type === 'summon')
+      return isSpecialSummon(
+        me.hand[a.handIndex].baseCard,
+        a.releveInstanceIds,
+      );
+    return false;
+  });
 }
 
 function mainCandidates(
