@@ -5,6 +5,7 @@ import type { Card } from '../../cards/card.entity';
 import { allRealCards } from '../testing/real-cards';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames, playPlanned } from './tournament';
+import type { Note } from './learned-eval';
 import type { ThinkingProfile } from './planner';
 import type {
   Brain,
@@ -34,6 +35,10 @@ export interface Job {
   thinking?: Partial<ThinkingProfile>;
   /** Cartes retirées du tirage des decks (hors miroir). */
   excluded?: string[];
+  /** Note du nouveau cerveau (miroir) ou des 15 decks (hors miroir). */
+  note?: Note;
+  /** Miroir : note de l'ancien cerveau, qui planifie alors comme le nouveau. Absente : ancien = glouton. */
+  oldNote?: Note;
 }
 
 let cards: Card[] | undefined;
@@ -78,15 +83,25 @@ export function planJobs(
 }
 
 /** Les deux entrées d'un miroir : même deck, nouveau cerveau contre ancien. */
-function mirrorEntries(
+export function mirrorEntries(
   deckSeed: number,
   deck: number,
   thinking?: Partial<ThinkingProfile>,
+  note?: Note,
+  oldNote?: Note,
 ): TournamentEntry[] {
   const e = entriesFor(deckSeed)[deck];
   return [
-    { ...e, name: `${e.name} nouveau`, brain: 'plan', thinking },
-    { ...e, name: `${e.name} ancien`, brain: 'greedy' },
+    { ...e, name: `${e.name} nouveau`, brain: 'plan', thinking, note },
+    oldNote === undefined
+      ? { ...e, name: `${e.name} ancien`, brain: 'greedy' }
+      : {
+          ...e,
+          name: `${e.name} ancien`,
+          brain: 'plan',
+          thinking,
+          note: oldNote,
+        },
   ];
 }
 
@@ -113,13 +128,20 @@ export function planMirrorJobs(
 export function runJob(job: Job): TournamentResult {
   if (job.mirror !== undefined)
     return playPlanned(
-      mirrorEntries(job.deckSeed, job.mirror, job.thinking),
+      mirrorEntries(
+        job.deckSeed,
+        job.mirror,
+        job.thinking,
+        job.note,
+        job.oldNote,
+      ),
       job.games,
     );
   const entries = entriesFor(job.deckSeed, job.excluded).map((e) => ({
     ...e,
     brain: job.brain,
     thinking: job.thinking,
+    note: job.note,
   }));
   return playPlanned(entries, job.games);
 }

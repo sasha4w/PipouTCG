@@ -1,7 +1,6 @@
 import { readDecisions } from './decision-log';
 import { describeAction } from './ai-review';
-import { evaluateLegacy } from './evaluate';
-import type { ScorePart } from './evaluate';
+import { evaluatorOf, parseNote } from './learned-eval';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 
@@ -10,15 +9,22 @@ import { fixedRng } from '../testing/fixed-rng';
  * enregistré (vrai moteur) et affiche l'écart de chaque morceau du score avec
  * le coup choisi.
  *
- *   pnpm --filter @pipou/backend ai:explain <journal.jsonl> <id>
+ *   pnpm --filter @pipou/backend ai:explain <journal.jsonl> <id> [--note <legacy|learned|fichier.json>]
  *
  * Le rejeu voit l'état complet, pas la vue déterminisée de l'IA : les scores
  * peuvent différer un peu de ceux du journal quand des cartes cachées comptent.
  */
-type Parts = Partial<Record<ScorePart, number>>;
+type Parts = Record<string, number>;
 
 function main(argv: string[]): void {
-  const [log, id] = argv;
+  const noteAt = argv.indexOf('--note');
+  const noteArg = noteAt >= 0 ? argv[noteAt + 1] : undefined;
+  const rest =
+    noteAt >= 0
+      ? argv.filter((_, i) => i !== noteAt && i !== noteAt + 1)
+      : argv;
+  const [log, id] = rest;
+  const note = evaluatorOf(parseNote(noteArg, 'legacy'));
   if (!log || !id) throw new Error('usage : ai:explain <journal.jsonl> <id>');
   const d = readDecisions(log).find((x) => x.id === id);
   if (!d) throw new Error(`décision introuvable : ${id}`);
@@ -31,7 +37,7 @@ function main(argv: string[]): void {
     const res = engine.dispatch(state, d.seat, c.action);
     if (res.error) continue;
     const parts: Parts = {};
-    const score = evaluateLegacy(state, d.seat, d.archetype, false, parts);
+    const score = note(state, d.seat, d.archetype, false, parts);
     rows.push({
       text: describeAction(c.action, d.state),
       score,
@@ -40,7 +46,7 @@ function main(argv: string[]): void {
     });
   }
   const before: Parts = {};
-  const base = evaluateLegacy(
+  const base = note(
     structuredClone(d.state),
     d.seat,
     d.archetype,
@@ -52,7 +58,7 @@ function main(argv: string[]): void {
   );
   const ref = rows.find((r) => r.chosen) ?? rows[0];
   for (const r of rows.sort((a, b) => b.score - a.score)) {
-    const deltas = (Object.keys({ ...r.parts, ...ref.parts }) as ScorePart[])
+    const deltas = (Object.keys({ ...r.parts, ...ref.parts }) as string[])
       .map((k) => [k, (r.parts[k] ?? 0) - (ref.parts[k] ?? 0)] as const)
       .filter(([, v]) => Math.abs(v) >= 1)
       .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${Math.round(v)}`);

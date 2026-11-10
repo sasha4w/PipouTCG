@@ -11,6 +11,8 @@ import {
   playPlanned,
   runTournament,
 } from './tournament';
+import { FEATURE_NAMES } from './features';
+import type { LearnedWeights } from './learned-eval';
 import type { Brain, TournamentEntry } from './tournament';
 
 jest.setTimeout(120_000);
@@ -127,6 +129,7 @@ describe('brainOf', () => {
     expect(brainOf(entry(1, 'plan'))).toEqual({
       thinking: planner.STRONGEST,
       mistakeRate: 0,
+      note: 'legacy',
     });
   });
 
@@ -137,13 +140,18 @@ describe('brainOf', () => {
   });
 
   it('glouton par défaut, sans erreur', () => {
-    expect(brainOf(entry(1))).toEqual({ thinking: 'greedy', mistakeRate: 0 });
+    expect(brainOf(entry(1))).toEqual({
+      thinking: 'greedy',
+      mistakeRate: 0,
+      note: 'legacy',
+    });
   });
 
   it('niveau : cerveau du niveau, sans plafond de temps', () => {
     expect(brainOf(entry(1, 'level'))).toEqual({
       thinking: 'greedy',
       mistakeRate: 0.25,
+      note: 'legacy',
     });
     const top = brainOf(entry(5, 'level'));
     expect(top.mistakeRate).toBe(0);
@@ -153,5 +161,42 @@ describe('brainOf', () => {
       ripostes: planner.STRONGEST.ripostes,
       budget: planner.STRONGEST.budget,
     });
+  });
+});
+
+describe('brainOf : note', () => {
+  const base = {
+    name: 'x',
+    archetype: 'pipou' as const,
+    level: 5 as const,
+    deck: [],
+  };
+  const custom: LearnedWeights = {
+    generation: 9,
+    trainedAt: 'test',
+    positions: 0,
+    holdoutAccuracy: 0,
+    features: [...FEATURE_NAMES],
+    weights: {
+      pipou: FEATURE_NAMES.map(() => 0),
+      pixelman: FEATURE_NAMES.map(() => 0),
+      dragon: FEATURE_NAMES.map(() => 0),
+    },
+  };
+
+  it('note manuelle par défaut', () => {
+    expect(brainOf({ ...base, brain: 'plan' }).note).toBe('legacy');
+    expect(brainOf(base).note).toBe('legacy');
+  });
+
+  it('la note et le taux d’erreur de l’entrée priment', () => {
+    const brain = brainOf({
+      ...base,
+      brain: 'plan',
+      note: custom,
+      mistakeRate: 0.1,
+    });
+    expect(brain.note).toBe(custom);
+    expect(brain.mistakeRate).toBe(0.1);
   });
 });

@@ -1,13 +1,17 @@
 import type { GameEngine } from '../engine/game-engine';
 import { AiPlayer } from './ai-player';
 import type { AiLevel } from './ai-player';
+import { evaluatorOf } from './learned-eval';
+import type { Note } from './learned-eval';
 import { STRONGEST } from './planner';
 import type { ThinkingProfile } from './planner';
 
-/** Cerveau d'un niveau d'aventure : façon de réfléchir et taux d'erreur. */
+/** Cerveau d'un niveau d'aventure : façon de réfléchir, taux d'erreur, note. */
 export interface LevelBrain {
   thinking: ThinkingProfile | 'greedy';
   mistakeRate: number;
+  /** Note des états ; absente : la manuelle. */
+  note?: Note;
 }
 
 /** Plafond de temps d'une décision en aventure. */
@@ -52,6 +56,12 @@ export function createLevelAi(
   level: AiLevel,
   random: () => number = Math.random,
 ): AiPlayer {
-  const { thinking, mistakeRate } = LEVEL_BRAINS[level];
-  return new AiPlayer(engine, random, thinking, mistakeRate);
+  const { thinking, mistakeRate, note } = LEVEL_BRAINS[level];
+  return new AiPlayer(
+    engine,
+    random,
+    thinking,
+    mistakeRate,
+    evaluatorOf(note ?? 'legacy'),
+  );
 }

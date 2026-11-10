@@ -96,4 +96,9 @@ describe('createLevelAi', () => {
       ),
     );
   });
+
+  it('tant que la note apprise n’est pas adoptée, tous les niveaux gardent la manuelle', () => {
+    for (const level of [1, 2, 3, 4, 5] as const)
+      expect(LEVEL_BRAINS[level].note ?? 'legacy').toBe('legacy');
+  });
 });

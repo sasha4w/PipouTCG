@@ -7,6 +7,8 @@ import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
 import type { DecisionSink } from './decision-log';
+import { evaluatorOf } from './learned-eval';
+import type { Note } from './learned-eval';
 import { STRONGEST } from './planner';
 import type { ThinkingProfile } from './planner';
 import type { AiLevel } from './ai-player';
@@ -23,15 +25,20 @@ export const MAX_ACTIONS = 2000;
  * dépend de la machine et rendrait le tournoi non reproductible.
  */
 export function brainOf(e: TournamentEntry): LevelBrain {
+  const own = (brain: LevelBrain): LevelBrain => ({
+    thinking: brain.thinking,
+    mistakeRate: e.mistakeRate ?? brain.mistakeRate,
+    note: e.note ?? brain.note ?? 'legacy',
+  });
   if (e.brain === 'plan')
-    return { thinking: { ...STRONGEST, ...e.thinking }, mistakeRate: 0 };
+    return own({ thinking: { ...STRONGEST, ...e.thinking }, mistakeRate: 0 });
   if (e.brain === 'level') {
-    const { thinking, mistakeRate } = LEVEL_BRAINS[e.level];
-    if (thinking === 'greedy') return { thinking, mistakeRate };
-    const { timeLimitMs: _untimed, ...budgetOnly } = thinking;
-    return { thinking: budgetOnly, mistakeRate };
+    const level = LEVEL_BRAINS[e.level];
+    if (level.thinking === 'greedy') return own(level);
+    const { timeLimitMs: _untimed, ...budgetOnly } = level.thinking;
+    return own({ ...level, thinking: budgetOnly });
   }
-  return { thinking: 'greedy', mistakeRate: 0 };
+  return own({ thinking: 'greedy', mistakeRate: 0 });
 }
 
 /** Glouton sans erreur, le plus fort (`plan`), ou le cerveau d'aventure du niveau. */
@@ -47,6 +54,10 @@ export interface TournamentEntry {
   brain?: Brain;
   /** Réglage du planificateur, par-dessus STRONGEST. */
   thinking?: Partial<ThinkingProfile>;
+  /** Note des états ; absente : la manuelle (ou celle du niveau avec `brain: 'level'`). */
+  note?: Note;
+  /** Taux d'erreur volontaire, à la place de celui du cerveau (exploration). */
+  mistakeRate?: number;
 }
 
 export interface TournamentResult {
@@ -123,8 +134,14 @@ export function playGame(
   try {
     const engine = createEngine(fixedRng());
     const aiFor = (e: TournamentEntry) => {
-      const { thinking, mistakeRate } = brainOf(e);
-      return new AiPlayer(engine, random, thinking, mistakeRate);
+      const { thinking, mistakeRate, note } = brainOf(e);
+      return new AiPlayer(
+        engine,
+        random,
+        thinking,
+        mistakeRate,
+        evaluatorOf(note ?? 'legacy'),
+      );
     };
     const ais: Record<Seat, AiPlayer> = { p1: aiFor(p1), p2: aiFor(p2) };
     if (sink) {
