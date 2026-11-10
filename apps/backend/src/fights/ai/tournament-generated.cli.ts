@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { cpus } from 'node:os';
 import { join } from 'node:path';
+import { parseNote } from './learned-eval';
 import { formatDetail, formatMirror, formatSummary } from './report';
 import { SCALES, planJobs, planMirrorJobs, runJobs } from './tournament-jobs';
 import type { ThinkingProfile } from './planner';
@@ -25,6 +26,8 @@ function num(name: string, fallback: number): number {
  * `--brain max|niveau|greedy` (max par défaut : le plus fort, sans erreur ;
  * niveau : le cerveau d'aventure de chaque niveau), `--mirror` (nouveau contre ancien),
  * `--thinking <json>` (essai de réglage du planificateur),
+ * `--note <legacy|learned|fichier.json>` (note des decks, ou du nouveau cerveau en miroir),
+ * `--old-note <…>` (miroir : l'ancien planifie avec cette note),
  * `--sans "Carte A,Carte B"` (cartes retirées du tirage des decks).
  */
 async function main(): Promise<void> {
@@ -50,8 +53,18 @@ async function main(): Promise<void> {
   const brain = brains[brainName];
   if (!brain)
     throw new Error(`Cerveau inconnu « ${brainName} » (max, niveau, greedy)`);
+  const note = parseNote(raw('note'), 'legacy');
+  const rawOld = raw('old-note');
+  const oldNote =
+    rawOld === undefined ? undefined : parseNote(rawOld, 'legacy');
+  const noteTag =
+    note === 'legacy'
+      ? ''
+      : note === 'learned'
+        ? '-apprise'
+        : `-gen${note.generation}`;
   const suffix = { plan: '', level: '-niveau', greedy: '-glouton' }[brain];
-  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${mirror ? '' : suffix}${raw('sans') ? '-sans-cartes' : ''}`;
+  const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${mirror ? '' : suffix}${raw('sans') ? '-sans-cartes' : ''}${noteTag}`;
 
   const excluded = (raw('sans') ?? '')
     .split(',')
@@ -66,7 +79,13 @@ async function main(): Promise<void> {
     mirror
       ? planMirrorJobs(deckSeeds, games, seed)
       : planJobs(deckSeeds, games, seed, brain)
-  ).map((j) => ({ ...j, thinking, ...(excluded.length > 0 && { excluded }) }));
+  ).map((j) => ({
+    ...j,
+    thinking,
+    note,
+    ...(oldNote !== undefined && { oldNote }),
+    ...(excluded.length > 0 && { excluded }),
+  }));
   const total = jobs.reduce((n, j) => n + j.games.length, 0);
   console.log(
     `${label} : graines de decks ${deckSeeds[0]} à ${deckSeeds.at(-1)}, ${games} parties par paire, graine ${seed}, ${total} parties, ${workers} processus`,

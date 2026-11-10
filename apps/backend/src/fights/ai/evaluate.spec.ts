@@ -2,7 +2,7 @@ import { DrakonStage } from '@pipou/shared';
 import { chargeCard, equipmentCard, monsterCard } from '../testing/cards';
 import { scenario } from '../testing/scenario';
 import { ARCHETYPE_PROFILES } from './archetype-profiles';
-import { evaluate, handPotential } from './evaluate';
+import { evaluateLegacy, handPotential } from './evaluate';
 
 const baby = monsterCard('Bébé A', {
   stage: DrakonStage.BABY,
@@ -29,9 +29,9 @@ describe('evaluate', () => {
     });
     const parts: Record<string, number> = {};
 
-    const score = evaluate(game, 'p1', 'dragon', true, parts);
+    const score = evaluateLegacy(game, 'p1', 'dragon', true, parts);
 
-    expect(score).toBe(evaluate(game, 'p1', 'dragon', true));
+    expect(score).toBe(evaluateLegacy(game, 'p1', 'dragon', true));
     const sum = Object.values(parts).reduce((a, b) => a + b, 0);
     expect(sum).toBeCloseTo(score);
     expect(Object.keys(parts)).toEqual(
@@ -54,7 +54,7 @@ describe('evaluate', () => {
     });
     const parts: Record<string, number> = {};
 
-    evaluate(game, 'p2', 'pipou', false, parts);
+    evaluateLegacy(game, 'p2', 'pipou', false, parts);
 
     expect(parts.threat).toBeLessThan(0);
   });
@@ -109,8 +109,8 @@ describe('evaluate', () => {
       },
     });
 
-    expect(evaluate(barricaded, 'p2', 'pipou')).toBeGreaterThan(
-      evaluate(attacked, 'p2', 'pipou'),
+    expect(evaluateLegacy(barricaded, 'p2', 'pipou')).toBeGreaterThan(
+      evaluateLegacy(attacked, 'p2', 'pipou'),
     );
   });
 
@@ -130,7 +130,7 @@ describe('evaluate', () => {
     });
     const parts: Record<string, number> = {};
 
-    evaluate(game, 'p2', 'pipou', false, parts);
+    evaluateLegacy(game, 'p2', 'pipou', false, parts);
 
     expect(parts.threat).toBeLessThan(0);
   });
@@ -149,8 +149,8 @@ describe('evaluate', () => {
       p1: { hand: [young('B')], monsters: [baby] },
     });
     expect(
-      evaluate(withMatch, 'p1', 'dragon', true) -
-        evaluate(withOther, 'p1', 'dragon', true),
+      evaluateLegacy(withMatch, 'p1', 'dragon', true) -
+        evaluateLegacy(withOther, 'p1', 'dragon', true),
     ).toBeCloseTo(ARCHETYPE_PROFILES.dragon.prepEvolve);
   });
 
@@ -184,7 +184,8 @@ describe('evaluate sans préparation', () => {
       p1: { hand: [young('B')], monsters: [baby] },
     });
     expect(
-      evaluate(withMatch, 'p1', 'dragon') - evaluate(withOther, 'p1', 'dragon'),
+      evaluateLegacy(withMatch, 'p1', 'dragon') -
+        evaluateLegacy(withOther, 'p1', 'dragon'),
     ).toBeCloseTo(0);
   });
 
@@ -198,8 +199,8 @@ describe('evaluate sans préparation', () => {
       game.player1.supportZones[0]!.chargeCounters = counters;
       return game;
     };
-    expect(evaluate(build(3), 'p1', 'dragon', true)).toBeGreaterThan(
-      evaluate(build(0), 'p1', 'dragon', true),
+    expect(evaluateLegacy(build(3), 'p1', 'dragon', true)).toBeGreaterThan(
+      evaluateLegacy(build(0), 'p1', 'dragon', true),
     );
   });
 });

@@ -26,6 +26,15 @@ import { createMonsterOnBoard } from '../helpers/monster.factory';
 import { ARCHETYPE_PROFILES } from './archetype-profiles';
 import type { ArchetypeProfile } from './archetype-profiles';
 
+/** Une note d'état : la manuelle (`evaluateLegacy`) ou une note apprise. */
+export type Evaluator = (
+  game: GameState,
+  seat: Seat,
+  archetype: AdventureArchetype,
+  prepare?: boolean,
+  parts?: Record<string, number>,
+) => number;
+
 /** Valeur d'une Prime : la condition de victoire domine tout le reste. */
 const PRIME = 2500;
 /** Présence d'un monstre sur le terrain, en plus de ses statistiques. */
@@ -67,7 +76,7 @@ const VIRUS_TURN_VALUE = 150;
 /** Surcoût d'un monstre « à protéger » (noyau équipé, Drakon en croissance). */
 const PROTECT_PENALTY = PRIME * 0.3;
 
-const STAGE_RANK: Record<string, number> = {
+export const STAGE_RANK: Record<string, number> = {
   [DrakonStage.EGG]: 1,
   [DrakonStage.BABY]: 2,
   [DrakonStage.YOUNG]: 3,
@@ -82,7 +91,7 @@ export function cardUsefulness(card: Card): number {
   return 400;
 }
 
-function monsterValue(m: MonsterOnBoard): number {
+export function monsterValue(m: MonsterOnBoard): number {
   return (
     MONSTER_PRESENCE +
     effectiveAtk(m) +
@@ -91,13 +100,14 @@ function monsterValue(m: MonsterOnBoard): number {
   );
 }
 
-const isEgg = (m: MonsterOnBoard) => m.card.baseCard.stage === DrakonStage.EGG;
+export const isEgg = (m: MonsterOnBoard) =>
+  m.card.baseCard.stage === DrakonStage.EGG;
 
 /** Noyau Pixelman (Alpha, Beta, Zeta…). */
 const isCore = (m: MonsterOnBoard) => /^noyau /i.test(m.card.baseCard.name);
 
 /** Unité Drakon pas encore adulte (œuf, bébé, jeune). */
-function isGrowing(m: MonsterOnBoard): boolean {
+export function isGrowing(m: MonsterOnBoard): boolean {
   const stage = m.card.baseCard.stage;
   return (
     !!stage && stage !== DrakonStage.ADULT && stage !== DrakonStage.ANCESTRAL
@@ -105,7 +115,10 @@ function isGrowing(m: MonsterOnBoard): boolean {
 }
 
 /** Dégâts de combat réellement subis par `target`. */
-function damageTo(target: MonsterOnBoard, attacker: MonsterOnBoard): number {
+export function damageTo(
+  target: MonsterOnBoard,
+  attacker: MonsterOnBoard,
+): number {
   if (hasImmunity(target, Immunity.COMBAT_DAMAGE)) return 0;
   const atk = effectiveAtk(attacker);
   return target.damageReduction && !attacker.hasPiercing
@@ -113,10 +126,10 @@ function damageTo(target: MonsterOnBoard, attacker: MonsterOnBoard): number {
     : atk;
 }
 
-const blocked = (m: MonsterOnBoard) =>
+export const blocked = (m: MonsterOnBoard) =>
   m.blockAttackTurns !== undefined && m.blockAttackTurns > 0;
 
-function hasAttacksLeft(m: MonsterOnBoard): number {
+export function hasAttacksLeft(m: MonsterOnBoard): number {
   if (isEgg(m) || m.mode !== 'attack' || blocked(m)) return 0;
   if (m.summonedThisTurn && m.cannotAttackOnSummonTurn) return 0;
   return Math.max(
@@ -131,7 +144,7 @@ function hasAttacksLeft(m: MonsterOnBoard): number {
  */
 const BOOST_TARGET_FACTOR = 2;
 
-interface Raid {
+export interface Raid {
   primes: number;
   destroyed: MonsterOnBoard[];
   /** Primes rendues au défenseur : attaquants sacrifiés dans un échange. */
@@ -146,7 +159,7 @@ interface Raid {
  * d'équipe). Puis les attaques restantes se regroupent sur une même cible
  * pour la détruire ensemble. Terrain vide : attaques directes.
  */
-function raid(
+export function raid(
   attackers: { m: MonsterOnBoard; attacks: number }[],
   defenderZones: readonly (MonsterOnBoard | null)[],
   directAllowed: boolean,
@@ -239,7 +252,7 @@ function raid(
  * carte avant). Sur l'état déterminisé, la main adverse est un tirage
  * plausible : l'IA ne voit pas la vraie.
  */
-function reinforcements(p: PlayerGameState): MonsterOnBoard[] {
+export function reinforcements(p: PlayerGameState): MonsterOnBoard[] {
   let free = p.monsterZones.filter((z) => z === null).length;
   let cards = p.hand.length + 1;
   let energy = p.recycleEnergy;
@@ -314,7 +327,7 @@ export function teamBoost(
 const BOOST_PER_PROTECT = 200;
 
 /** Poids d'un monstre à protéger selon la philosophie de l'archétype. */
-function protectWeight(
+export function protectWeight(
   m: MonsterOnBoard,
   zones: readonly (MonsterOnBoard | null)[],
   profile: ArchetypeProfile,
@@ -330,15 +343,14 @@ function protectWeight(
   }
 }
 
-/**
- * Ce que la main prépare : une évolution qui a une base, un équipement qui a
- * un porteur, un éphémère ciblé qui a une cible.
- */
-export function handPotential(
-  me: PlayerGameState,
-  opp: PlayerGameState,
-  profile: ArchetypeProfile,
-): number {
+/** Cartes en main qui ont un usage prêt : évolution, équipement, éphémère ciblé. */
+export interface HandPrep {
+  evolve: number;
+  equip: number;
+  target: number;
+}
+
+export function handPrep(me: PlayerGameState, opp: PlayerGameState): HandPrep {
   const allies = me.monsterZones.filter(
     (m): m is MonsterOnBoard => m !== null && !isImplanted(m, me.userId),
   );
@@ -348,27 +360,43 @@ export function handPotential(
   const enemies = opp.monsterZones.some(
     (m) => m !== null && !isPlantedBy(m, me.userId),
   );
-  let total = 0;
+  const out: HandPrep = { evolve: 0, equip: 0, target: 0 };
   for (const { baseCard: card } of me.hand) {
     if (
       card.stage === DrakonStage.YOUNG ||
       card.stage === DrakonStage.ADULT ||
       card.stage === DrakonStage.ANCESTRAL
     ) {
-      if (allies.some((m) => canEvolveOnto(card, m)))
-        total += profile.prepEvolve;
+      if (allies.some((m) => canEvolveOnto(card, m))) out.evolve += 1;
     } else if (card.supportType === SupportType.EQUIPMENT) {
-      if (allies.length > 0 || planted) total += profile.prepEquip;
+      if (allies.length > 0 || planted) out.equip += 1;
     } else if (card.supportType === SupportType.EPHEMERAL) {
       const side = ephemeralTargetSide(card.effects);
       if (
         (side === 'ally' && allies.length > 0) ||
         (side === 'enemy' && enemies)
       )
-        total += profile.prepTarget;
+        out.target += 1;
     }
   }
-  return total;
+  return out;
+}
+
+/**
+ * Ce que la main prépare : une évolution qui a une base, un équipement qui a
+ * un porteur, un éphémère ciblé qui a une cible.
+ */
+export function handPotential(
+  me: PlayerGameState,
+  opp: PlayerGameState,
+  profile: ArchetypeProfile,
+): number {
+  const n = handPrep(me, opp);
+  return (
+    n.evolve * profile.prepEvolve +
+    n.equip * profile.prepEquip +
+    n.target * profile.prepTarget
+  );
 }
 
 /** Morceaux du score, pour expliquer une décision (diagnostic). */
@@ -390,7 +418,7 @@ export type ScorePart =
  * Score de l'état pour `seat` : Primes (fort poids), terrain, main, risque au
  * tour adverse, plus un bonus propre à l'archétype. ±Infinity en fin de partie.
  */
-export function evaluate(
+export function evaluateLegacy(
   game: GameState,
   seat: Seat,
   archetype: AdventureArchetype,

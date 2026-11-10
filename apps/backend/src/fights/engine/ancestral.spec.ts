@@ -1,5 +1,5 @@
 import { listCandidates } from '../ai/candidate-actions';
-import { evaluate } from '../ai/evaluate';
+import { evaluateLegacy } from '../ai/evaluate';
 import { createEngine } from '../testing/engine';
 import { monsterCard } from '../testing/cards';
 import type { MonsterSpec } from '../testing/scenario';
@@ -103,9 +103,9 @@ describe('Drakon Ancestral', () => {
         ],
       },
     });
-    expect(evaluate(an, 'p1', 'dragon') - evaluate(ad, 'p1', 'dragon')).toBe(
-      300,
-    );
+    expect(
+      evaluateLegacy(an, 'p1', 'dragon') - evaluateLegacy(ad, 'p1', 'dragon'),
+    ).toBe(300);
     expect(seatState(an, 'p1').monsterZones[0]).not.toBeNull();
   });
 });

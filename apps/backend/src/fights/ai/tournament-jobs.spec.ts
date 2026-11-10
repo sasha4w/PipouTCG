@@ -6,6 +6,7 @@ import { mergeResults, planGames } from './tournament';
 import {
   SCALES,
   planJobs,
+  mirrorEntries,
   planMirrorJobs,
   runJob,
   runJobs,
@@ -78,5 +79,22 @@ describe('réglage de réflexion', () => {
       depth: STRONGEST.depth,
     });
     spy.mockRestore();
+  });
+});
+
+describe('mirrorEntries', () => {
+  it('sans ancienne note : nouveau planificateur contre glouton', () => {
+    const [recent, old] = mirrorEntries(1, 0);
+    expect(recent.brain).toBe('plan');
+    expect(old.brain).toBe('greedy');
+  });
+
+  it('avec deux notes : même planificateur, notes différentes', () => {
+    const [recent, old] = mirrorEntries(1, 0, undefined, 'learned', 'legacy');
+    expect(recent.brain).toBe('plan');
+    expect(old.brain).toBe('plan');
+    expect(recent.note).toBe('learned');
+    expect(old.note).toBe('legacy');
+    expect(recent.deck).toBe(old.deck);
   });
 });

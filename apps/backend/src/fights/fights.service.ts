@@ -39,6 +39,8 @@ import { aiMustAct } from './ai/ai-player';
 import type { AiPlayer } from './ai/ai-player';
 import { AI_DECISION_RECORDER } from '../ai-review/decision-recorder';
 import type { DecisionRecorder } from '../ai-review/decision-recorder';
+import { GAME_RECORDER } from '../game-records/game-recorder.port';
+import type { GameRecorderPort } from '../game-records/game-recorder.port';
 import { appendMatchEvent, fileSink } from './ai/decision-log';
 import type { MatchEvent } from './ai/decision-log';
 import { describeAction } from './ai/ai-review';
@@ -93,6 +95,9 @@ export class FightsService {
     @Optional()
     @Inject(AI_DECISION_RECORDER)
     private decisionRecorder?: DecisionRecorder,
+    @Optional()
+    @Inject(GAME_RECORDER)
+    private gameRecorder?: GameRecorderPort,
   ) {}
 
   // ── Matchmaking ──────────────────────────────────────────────────────────
@@ -110,13 +115,13 @@ export class FightsService {
     );
     if (!result) return null;
 
-    this.adopt(
-      this.matchmaking.buildInitialGameState(
-        result.matchId,
-        result.p1,
-        result.p2,
-      ),
+    const game = this.matchmaking.buildInitialGameState(
+      result.matchId,
+      result.p1,
+      result.p2,
     );
+    this.adopt(game);
+    this.gameRecorder?.begin(game, { mode: 'pvp' });
     return result;
   }
 
@@ -215,6 +220,13 @@ export class FightsService {
         : (this.decisionRecorder?.sinkFor(userId, isAdmin) ?? null);
       if (sink) ai.setDecisionSink(sink, `pve${Date.now()}`);
       this.adopt(game);
+      this.gameRecorder?.begin(game, {
+        mode: 'pve',
+        aiSeat: 'p2',
+        level: start.profile.level,
+        archetype: start.profile.archetype,
+        opponentId: start.opponentId,
+      });
       this.pve.set(matchId, {
         info: {
           adventureMatchId: start.adventureMatchId,
@@ -289,7 +301,10 @@ export class FightsService {
               text: describeAction(action, game),
             }
           : null;
+      const ticket = this.gameRecorder?.before(game, seat, action) ?? null;
       const result = this.engine.dispatch(game, seat, action);
+      if (ticket && !result.error)
+        this.gameRecorder?.after(game, ticket, 'human');
       if (logPath && before)
         this.logMatchEvent(logPath, {
           kind: 'human',
@@ -481,7 +496,7 @@ export class FightsService {
           return;
         }
       }
-      this.engine.timeout(game);
+      this.timeoutRecorded(game);
       await this.afterChange(game, server);
     });
   }
@@ -540,8 +555,12 @@ export class FightsService {
     action: GameAction,
   ): boolean {
     try {
+      const ticket = this.gameRecorder?.before(game, seat, action) ?? null;
       const { error } = this.engine.dispatch(game, seat, action);
-      if (!error) return true;
+      if (!error) {
+        if (ticket) this.gameRecorder?.after(game, ticket, 'ai');
+        return true;
+      }
       this.logger.warn(
         `Match ${game.matchId} : coup IA ${JSON.stringify(action)} refusé — ${error}`,
       );
@@ -552,6 +571,14 @@ export class FightsService {
       );
     }
     return false;
+  }
+
+  /** `engine.timeout`, enregistré comme entrée sans action du joueur actif. */
+  private timeoutRecorded(game: GameState): void {
+    const seat = seatOf(game, game.currentTurnUserId) ?? 'p1';
+    const ticket = this.gameRecorder?.before(game, seat, null) ?? null;
+    this.engine.timeout(game);
+    if (ticket) this.gameRecorder?.after(game, ticket, 'timeout');
   }
 
   /**
@@ -582,7 +609,7 @@ export class FightsService {
 
     if (game.phase !== 'mulligan' && game.currentTurnUserId === aiUserId) {
       try {
-        this.engine.timeout(game);
+        this.timeoutRecorded(game);
         return;
       } catch (err) {
         this.logger.error(
@@ -600,6 +627,7 @@ export class FightsService {
 
   private async finish(game: GameState, server: FightServer): Promise<void> {
     this.turnTimeout.clear(game.matchId);
+    this.gameRecorder?.finish(game);
     const session = this.pve.get(game.matchId);
     this.cleanupGame(game);
     if (session) {
