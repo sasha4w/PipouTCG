@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
 import { createGameState } from '../helpers/game-factory';
-import type { CardInstance } from '../interfaces/game-state.interface';
+import type { CardInstance, GameState } from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
@@ -126,6 +126,8 @@ export function playGame(
   maxActions: number,
   /** Journal des décisions (diagnostic) ; n'influe pas sur la partie. */
   sink?: DecisionSink,
+  /** Appelé après chaque coup, avec le siège qui vient de jouer ; ne doit pas modifier l'état. */
+  observe?: (game: GameState, seat: Seat) => void,
 ): { winner: 0 | 1 | null; telemetry: Telemetry } {
   const random = seeded(seed);
   // PickService mélange avec Math.random : on le fige pendant la partie
@@ -175,6 +177,7 @@ export function playGame(
       recorder.beforeAction(game, actor.seat, valid, action);
       engine.dispatch(game, actor.seat, action);
       recorder.afterAction(game);
+      observe?.(game, actor.seat);
       actions++;
     }
     const finished = game.phase === 'finished';
