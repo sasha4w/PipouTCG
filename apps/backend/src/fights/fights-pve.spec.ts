@@ -1,3 +1,4 @@
+import { brotliDecompressSync } from 'node:zlib';
 import { BadRequestException } from '@nestjs/common';
 import type {
   AdventureResultPayload,
@@ -19,6 +20,11 @@ import { createEngine } from './testing/engine';
 import { fakeServer, type Emitted } from './testing/fake-server';
 import { fillerCard, monsterCard } from './testing/cards';
 import { instanceOf } from './testing/scenario';
+import { GameRecorder } from '../game-records/game-recorder';
+import type {
+  GameRecorderPort,
+  NewGameRecord,
+} from '../game-records/game-recorder.port';
 import {
   AI_ACTION_DELAY_MS,
   AI_MAX_ACTIONS_PER_TURN,
@@ -59,7 +65,10 @@ function humanDeck() {
   );
 }
 
-function setup(aiCard: () => Card = () => fillerCard('Sbire')) {
+function setup(
+  aiCard: () => Card = () => fillerCard('Sbire'),
+  recorder?: GameRecorderPort,
+) {
   const { server, emitted } = fakeServer();
   const decks = {
     loadDeckForMatch: jest.fn().mockResolvedValue(humanDeck()),
@@ -103,6 +112,8 @@ function setup(aiCard: () => Card = () => fillerCard('Sbire')) {
     gameEnd as unknown as GameEndService,
     timer,
     hooks,
+    undefined,
+    recorder,
   );
   const begin = () =>
     service.startAdventure(
@@ -535,5 +546,45 @@ describe('FightsService — parties PvE', () => {
       phase: 'mulligan',
       adventureOpponentId: OPPONENT,
     });
+  });
+
+  it('partie PvE enregistrée : coups humains et coups de l’IA', async () => {
+    let saved!: (r: NewGameRecord) => void;
+    const record = new Promise<NewGameRecord>((r) => (saved = r));
+    const recorder = new GameRecorder(
+      {
+        save: (r) => {
+          saved(r);
+          return Promise.resolve();
+        },
+        totalTraceBytes: () => Promise.resolve(0),
+      },
+      {
+        enabled: true,
+        maxTotalBytes: 1e9,
+        maxEntries: 3000,
+        maxOpenTraces: 30,
+      },
+    );
+    const ctx = setup(undefined, recorder);
+    await toAiTurn(ctx);
+    await advanceUntil(() => humanState(ctx.emitted).isMyTurn, 60_000);
+    await ctx.service.surrender(MATCH, HUMAN, ctx.server);
+    const r = await record;
+
+    expect(r).toMatchObject({ mode: 'pve', player1Id: HUMAN, player2Id: null });
+    expect(r.summary.seats.p2).toMatchObject({
+      kind: 'ai',
+      level: 3,
+      opponentId: OPPONENT,
+    });
+    const by = brotliDecompressSync(r.trace!)
+      .toString('utf8')
+      .trim()
+      .split('\n')
+      .map((l) => (JSON.parse(l) as { by?: string }).by)
+      .filter(Boolean);
+    expect(by).toContain('human');
+    expect(by).toContain('ai');
   });
 });

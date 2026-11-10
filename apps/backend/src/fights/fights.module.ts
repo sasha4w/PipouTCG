@@ -9,6 +9,7 @@ import { Card } from '../cards/card.entity';
 import { DecksModule } from '../decks/decks.module';
 import { AdventureModule } from '../adventure/adventure.module';
 import { AiReviewModule } from '../ai-review/ai-review.module';
+import { GameRecordsModule } from '../game-records/game-records.module';
 
 // Gateway / Controller
 import { FightsGateway } from './fights.gateway';
@@ -42,6 +43,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     DecksModule,
     AdventureModule,
     AiReviewModule,
+    GameRecordsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
