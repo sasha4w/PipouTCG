@@ -92,7 +92,7 @@ Un test vérifie que la longueur des poids correspond à `FEATURE_NAMES`, pour q
 
 ### `evaluate.ts` — la note
 
-- `evaluate` devient la somme des poids par les caractéristiques. Les fins de partie restent à ±Infinity, la partie nulle à sa valeur actuelle.
+- La note apprise est la somme des poids par les caractéristiques (`learned-eval.ts`). Il n'y a plus de fonction `evaluate` nue : un appel choisit toujours sa note. Les fins de partie restent à ±Infinity, la partie nulle reste une valeur à éviter sans valoir une défaite.
 - La note manuelle actuelle est conservée telle quelle sous le nom `evaluateLegacy`. Elle sert d'adversaire de référence dans les miroirs et de note pour les niveaux 1 et 2 de l'aventure.
 - Le paramètre `parts` (détail du score pour `ai:explain` et la revue admin) reste disponible : avec la note apprise, il donne la contribution de chaque caractéristique.
 - La note utilisée (apprise ou manuelle) est un choix du cerveau (`AiPlayer`, `ThinkingProfile` ou `LevelBrain`), pas une variable globale, pour que deux cerveaux différents puissent s'affronter dans le même processus.
@@ -101,8 +101,8 @@ Un test vérifie que la longueur des poids correspond à `FEATURE_NAMES`, pour q
 
 Auto-jeu en local sur les decks générés, réparti sur plusieurs processus comme le tournoi (`tournament-jobs.ts`).
 
-- Les positions candidates sont les fins de tour de chaque joueur, vues par ce joueur sur une copie déterminisée.
-- Au plus 8 positions par partie, tirées au hasard parmi ces fins de tour, pour que les longues parties ne dominent pas.
+- Les positions candidates sont les états juste après un coup de chaque joueur, vus par ce joueur sur une copie déterminisée : fins de tour et milieux de tour, parce que le planificateur note les deux.
+- Au plus 4 positions de chaque sorte par joueur et par partie (16 au plus), tirées au hasard, pour que les longues parties ne dominent pas.
 - Environ 10 % des coups sont tirés au hasard parmi les coups plausibles (`plausibleMistake`). Sans exploration, l'IA ne visite jamais les positions qu'elle évite aujourd'hui et ne peut pas apprendre qu'elles sont bonnes.
 - Une ligne JSONL par position : archétype, archétype adverse, caractéristiques, victoire (1), défaite (0) ou nulle (0,5), identifiant de partie.
 - Sortie dans `apps/backend/.e2e/`, non versionnée.
