@@ -140,11 +140,28 @@ export function applyMove(
     if (action.type === 'recycle') bump(summary, seat, actorCardId, 'recycled');
   }
   const after = cardIndex(game);
+  // Monstre invoqué puis détruit dans le même coup : son id de plateau n'est dans
+  // aucun index (le cimetière garde l'id de la carte). Seule l'invocation de
+  // l'action est résolue, via sa zone ; un jeton ou une copie détruit aussitôt ne l'est pas.
+  const sameMove = new Map<string, number>();
   for (const e of game.pendingEvents) {
     if (e.kind !== 'monster_summoned' && e.kind !== 'monster_destroyed')
       continue;
     const owner = seatOf(game, e.ownerId);
-    const cardId = after.get(e.instanceId) ?? move.before.get(e.instanceId);
+    if (
+      e.kind === 'monster_summoned' &&
+      action?.type === 'summon' &&
+      owner === seat &&
+      actorCardId !== null &&
+      e.zoneIndex === action.zoneIndex &&
+      !after.has(e.instanceId) &&
+      !move.before.has(e.instanceId)
+    )
+      sameMove.set(e.instanceId, actorCardId);
+    const cardId =
+      after.get(e.instanceId) ??
+      move.before.get(e.instanceId) ??
+      sameMove.get(e.instanceId);
     if (!owner || cardId === undefined) continue;
     if (e.kind === 'monster_summoned') {
       // Une évolution émet aussi monster_summoned : elle compte `evolved`, pas une invocation.

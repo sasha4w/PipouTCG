@@ -1,11 +1,14 @@
 import {
+  ActionType,
   Archetype,
+  EffectTarget,
+  EffectTrigger,
   DrakonStage,
   type GameAction,
   type Seat,
 } from '@pipou/shared';
 import { createEngine } from '../fights/testing/engine';
-import { monsterCard } from '../fights/testing/cards';
+import { act, effect, monsterCard } from '../fights/testing/cards';
 import { monsterNamed, scenario } from '../fights/testing/scenario';
 import type { GameState } from '../fights/interfaces/game-state.interface';
 import {
@@ -85,6 +88,7 @@ describe('résumé de partie', () => {
 
     expect(summary.cards.p1[recrue.id]).toEqual({ recycled: 1 });
   });
+
   it('évolution : comptée évoluée, pas invoquée', () => {
     const bebe = monsterCard('Bébé', { stage: DrakonStage.BABY, lineage: 'A' });
     const jeune = monsterCard('Jeune', {
@@ -106,6 +110,33 @@ describe('résumé de partie', () => {
     });
 
     expect(summary.cards.p1[jeune.id]).toEqual({ evolved: 1 });
+  });
+
+  it('monstre invoqué et détruit dans le même coup : les deux comptés', () => {
+    const kamikaze = monsterCard('Kamikaze', {
+      effects: [
+        effect(EffectTrigger.ON_SUMMON, [
+          act(ActionType.DESTROY_MONSTER, EffectTarget.SELF),
+        ]),
+      ],
+    });
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { hand: [kamikaze] },
+    });
+
+    const summary = play(game, 'p1', {
+      type: 'summon',
+      handIndex: 0,
+      zoneIndex: 0,
+      paymentHandIndices: [],
+    });
+
+    expect(summary.cards.p1[kamikaze.id]).toEqual({
+      summoned: 1,
+      destroyed: 1,
+    });
   });
 
   it('deck : toutes les cartes du joueur, regroupées par carte', () => {
