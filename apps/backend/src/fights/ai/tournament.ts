@@ -2,7 +2,10 @@ import { randomUUID } from 'node:crypto';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
 import { createGameState } from '../helpers/game-factory';
-import type { CardInstance, GameState } from '../interfaces/game-state.interface';
+import type {
+  CardInstance,
+  GameState,
+} from '../interfaces/game-state.interface';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';

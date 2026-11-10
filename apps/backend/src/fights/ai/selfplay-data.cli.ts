@@ -80,9 +80,17 @@ function forkShard(shard: number, shards: number): Promise<void> {
   const ts = extname(__filename) === '.ts';
   const child = fork(
     __filename,
-    [...process.argv.slice(2), '--shard', String(shard), '--shards', String(shards)],
+    [
+      ...process.argv.slice(2),
+      '--shard',
+      String(shard),
+      '--shards',
+      String(shards),
+    ],
     {
-      execArgv: ts ? ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register'] : [],
+      execArgv: ts
+        ? ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']
+        : [],
       env: { ...process.env, TS_NODE_TRANSPILE_ONLY: 'true' },
     },
   );

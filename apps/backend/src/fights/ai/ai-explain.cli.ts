@@ -58,7 +58,7 @@ function main(argv: string[]): void {
   );
   const ref = rows.find((r) => r.chosen) ?? rows[0];
   for (const r of rows.sort((a, b) => b.score - a.score)) {
-    const deltas = (Object.keys({ ...r.parts, ...ref.parts }) as string[])
+    const deltas = Object.keys({ ...r.parts, ...ref.parts })
       .map((k) => [k, (r.parts[k] ?? 0) - (ref.parts[k] ?? 0)] as const)
       .filter(([, v]) => Math.abs(v) >= 1)
       .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${Math.round(v)}`);
