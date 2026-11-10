@@ -44,6 +44,7 @@
     "ai:selfplay-log": "ts-node -r tsconfig-paths/register src/fights/ai/ai-selfplay-log.cli.ts",
     "ai:explain": "ts-node -r tsconfig-paths/register src/fights/ai/ai-explain.cli.ts",
     "ai:selfplay-data": "ts-node -r tsconfig-paths/register src/fights/ai/selfplay-data.cli.ts",
+    "ai:train": "ts-node -r tsconfig-paths/register src/fights/ai/train.cli.ts",
     "e2e:copy-aiven": "node scripts/e2e-copy-aiven.mjs"
   },
   "dependencies": {
