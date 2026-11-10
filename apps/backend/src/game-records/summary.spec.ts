@@ -1,4 +1,9 @@
-import { Archetype, type GameAction, type Seat } from '@pipou/shared';
+import {
+  Archetype,
+  DrakonStage,
+  type GameAction,
+  type Seat,
+} from '@pipou/shared';
 import { createEngine } from '../fights/testing/engine';
 import { monsterCard } from '../fights/testing/cards';
 import { monsterNamed, scenario } from '../fights/testing/scenario';
@@ -79,6 +84,28 @@ describe('résumé de partie', () => {
     const summary = play(game, 'p1', { type: 'recycle', handIndex: 0 });
 
     expect(summary.cards.p1[recrue.id]).toEqual({ recycled: 1 });
+  });
+  it('évolution : comptée évoluée, pas invoquée', () => {
+    const bebe = monsterCard('Bébé', { stage: DrakonStage.BABY, lineage: 'A' });
+    const jeune = monsterCard('Jeune', {
+      stage: DrakonStage.YOUNG,
+      lineage: 'A',
+      cost: 0,
+    });
+    const game = scenario({
+      turn: 'p1',
+      phase: 'main',
+      p1: { hand: [jeune], monsters: [bebe] },
+    });
+
+    const summary = play(game, 'p1', {
+      type: 'evolve',
+      handIndex: 0,
+      targetInstanceId: monsterNamed(game, 'p1', 'Bébé').instanceId,
+      paymentHandIndices: [],
+    });
+
+    expect(summary.cards.p1[jeune.id]).toEqual({ evolved: 1 });
   });
 
   it('deck : toutes les cartes du joueur, regroupées par carte', () => {

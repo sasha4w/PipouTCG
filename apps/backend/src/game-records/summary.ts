@@ -147,7 +147,8 @@ export function applyMove(
     const cardId = after.get(e.instanceId) ?? move.before.get(e.instanceId);
     if (!owner || cardId === undefined) continue;
     if (e.kind === 'monster_summoned') {
-      bump(summary, owner, cardId, 'summoned');
+      // Une évolution émet aussi monster_summoned : elle compte `evolved`, pas une invocation.
+      if (action?.type !== 'evolve') bump(summary, owner, cardId, 'summoned');
       continue;
     }
     bump(summary, owner, cardId, 'destroyed');
