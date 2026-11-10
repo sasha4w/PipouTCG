@@ -158,8 +158,12 @@ export class GameRecorder implements GameRecorderPort {
           },
         }),
       );
-      trace = await rec.trace.finish();
-      this.usedBytes += trace.length;
+      try {
+        trace = await rec.trace.finish();
+      } catch (err) {
+        // Le résumé compte plus que la trace : on l'enregistre quand même
+        this.warn(`trace de la partie ${game.matchId} perdue`, err);
+      }
     }
     const summary = rec.summary!;
     await this.store.save({
@@ -178,6 +182,8 @@ export class GameRecorder implements GameRecorderPort {
       startedAt: rec.startedAt,
       endedAt: this.now(),
     });
+    // Compté seulement une fois la ligne enregistrée
+    this.usedBytes += trace?.length ?? 0;
   }
 
   private ensureHeader(rec: Recording, game: GameState): void {

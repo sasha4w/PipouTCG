@@ -228,6 +228,27 @@ describe('GameRecorder', () => {
     expect(warn).toHaveBeenCalled();
   });
 
+  it('trace illisible à la fermeture : le résumé est quand même enregistré', async () => {
+    const { store, next } = fakeStore();
+    const rec = new GameRecorder(store, OPTIONS);
+    const game = battle();
+    rec.begin(game, { mode: 'pvp' });
+    const entry = (
+      rec as unknown as {
+        games: Map<number, { trace: { finish: () => Promise<Buffer> } }>;
+      }
+    ).games.get(game.matchId)!;
+    entry.trace.finish = () => Promise.reject(new Error('flux cassé'));
+    const saved = next();
+
+    rec.finish(game);
+
+    const row = await saved;
+    expect(row.trace).toBeNull();
+    expect(row.traceBytes).toBe(0);
+    expect(row.summary.mode).toBe('pvp');
+  });
+
   it('erreur interne : la partie continue, son enregistrement est abandonné', () => {
     const { store } = fakeStore();
     const rec = new GameRecorder(store, OPTIONS);
