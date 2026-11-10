@@ -16,7 +16,8 @@ import type {
   DecisionSource,
 } from './decision-log';
 import { determinize } from './determinize';
-import { evaluate } from './evaluate';
+import { evaluateLegacy } from './evaluate';
+import type { Evaluator } from './evaluate';
 import {
   actionKey,
   planTurn,
@@ -90,6 +91,8 @@ export class AiPlayer {
     private readonly thinking: ThinkingProfile | 'greedy' = 'greedy',
     /** Probabilité de jouer un coup valide au hasard au lieu du meilleur. */
     private readonly mistakeRate = 0,
+    /** Note des états : la manuelle par défaut. */
+    private readonly evaluate: Evaluator = evaluateLegacy,
   ) {}
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
@@ -203,7 +206,7 @@ export class AiPlayer {
       }
       // Un choix à faire (cartes à prendre) : noté après le meilleur choix
       const scored = scoreAfterChoice(this.engine, clone, seat, (s) =>
-        evaluate(s, seat, profile.archetype),
+        this.evaluate(s, seat, profile.archetype),
       );
       // Le cerveau qui planifie trouve ces suites lui-même
       if (this.thinking !== 'greedy') {
@@ -253,7 +256,7 @@ export class AiPlayer {
     if (others.length === 0) return result(endPhase!.action);
     const best = others.reduce((a, b) => (b.score > a.score ? b : a));
     if (!endPhase) return result(best.action);
-    const current = evaluate(known, seat, profile.archetype);
+    const current = this.evaluate(known, seat, profile.archetype);
     if (trace) trace.baseline = current;
     return result(
       best.score > current + IMPROVEMENT_EPSILON
@@ -303,6 +306,7 @@ export class AiPlayer {
       this.random,
       { used: 0 },
       this.visited.states,
+      this.evaluate,
     );
     const first = plan && find(plan.keys[0]);
     if (!plan || !first) {
@@ -338,12 +342,15 @@ export class AiPlayer {
       if (pick.type !== 'pick_cards') continue;
       const picked = play(after, pick);
       if (!picked) continue;
-      best = Math.max(best, evaluate(picked, seat, profile.archetype));
+      best = Math.max(best, this.evaluate(picked, seat, profile.archetype));
       for (const next of listCandidates(picked, seat)) {
         if (next.type !== 'summon') continue;
         const summoned = play(picked, next);
         if (summoned)
-          best = Math.max(best, evaluate(summoned, seat, profile.archetype));
+          best = Math.max(
+            best,
+            this.evaluate(summoned, seat, profile.archetype),
+          );
       }
     }
     return best;
@@ -376,7 +383,7 @@ export class AiPlayer {
       crashes.push({ action, error });
       return -Infinity;
     }
-    return evaluate(clone, seat, profile.archetype);
+    return this.evaluate(clone, seat, profile.archetype);
   }
 }
 

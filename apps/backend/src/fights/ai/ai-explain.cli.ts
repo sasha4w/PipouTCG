@@ -1,6 +1,6 @@
 import { readDecisions } from './decision-log';
 import { describeAction } from './ai-review';
-import { evaluate } from './evaluate';
+import { evaluateLegacy } from './evaluate';
 import type { ScorePart } from './evaluate';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
@@ -31,7 +31,7 @@ function main(argv: string[]): void {
     const res = engine.dispatch(state, d.seat, c.action);
     if (res.error) continue;
     const parts: Parts = {};
-    const score = evaluate(state, d.seat, d.archetype, false, parts);
+    const score = evaluateLegacy(state, d.seat, d.archetype, false, parts);
     rows.push({
       text: describeAction(c.action, d.state),
       score,
@@ -40,7 +40,7 @@ function main(argv: string[]): void {
     });
   }
   const before: Parts = {};
-  const base = evaluate(
+  const base = evaluateLegacy(
     structuredClone(d.state),
     d.seat,
     d.archetype,

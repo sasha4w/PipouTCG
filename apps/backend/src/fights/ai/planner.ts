@@ -9,7 +9,8 @@ import type { AiProfile } from './ai-player';
 import { AiPlayer, aiMustAct } from './ai-player';
 import { activeChoice, listCandidates } from './candidate-actions';
 import { determinize } from './determinize';
-import { evaluate } from './evaluate';
+import { evaluateLegacy } from './evaluate';
+import type { Evaluator } from './evaluate';
 
 /** Profondeur de réflexion : faisceau, longueur des suites, ripostes, budget. */
 export interface ThinkingProfile {
@@ -170,6 +171,8 @@ export function planTurn(
   counter: Counter,
   /** États déjà traversés ce tour : la recherche n'y revient pas. */
   visited: ReadonlySet<string> = new Set(),
+  /** Note des états. */
+  evaluate: Evaluator = evaluateLegacy,
 ): Plan | null {
   const me = seatPlayer(game, seat).userId;
   const score = (s: GameState) => evaluate(s, seat, profile.archetype, true);
@@ -270,6 +273,7 @@ export function planTurn(
               thinking,
               random,
               counter,
+              evaluate,
             ),
           }
         : n,
@@ -370,6 +374,7 @@ export function riposte(
   thinking: ThinkingProfile,
   random: () => number,
   counter: Counter,
+  evaluate: Evaluator = evaluateLegacy,
 ): number {
   const base = evaluate(leaf, seat, profile.archetype, true);
   if (leaf.phase === 'finished') return base;
@@ -377,7 +382,7 @@ export function riposte(
   const meId = seatPlayer(leaf, seat).userId;
   const oppId = seatPlayer(leaf, oppSeat).userId;
   const counted = countingEngine(engine, counter);
-  const greedy = new AiPlayer(counted, random);
+  const greedy = new AiPlayer(counted, random, 'greedy', 0, evaluate);
   const mine: AiProfile = { archetype: profile.archetype, level: 3 };
   const theirs: AiProfile = {
     archetype: inferArchetype(seatPlayer(leaf, oppSeat)),

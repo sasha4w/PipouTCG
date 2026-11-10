@@ -14,7 +14,7 @@ import {
 } from '../testing/scenario';
 import { AiPlayer, aiMustAct } from './ai-player';
 import { listCandidates } from './candidate-actions';
-import { evaluate } from './evaluate';
+import { evaluateLegacy } from './evaluate';
 import type { AiProfile } from './ai-player';
 import type { DecisionRecord } from './decision-log';
 
@@ -361,6 +361,26 @@ describe('AiPlayer', () => {
     game.phase = 'finished';
     expect(aiMustAct(game, P2_ID)).toBe(false);
   });
+
+  it('joue avec la note qu’on lui donne', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: { monsters: [monsterCard('Moucheron', { atk: 0, hp: 100 })] },
+      p2: { primes: 1, monsters: [monsterCard('Lame', { atk: 200, hp: 500 })] },
+    });
+    // Note inversée : la victoire devient le pire état
+    const inverted = new AiPlayer(
+      engine,
+      () => 0.99,
+      'greedy',
+      0,
+      (g, s, a, p) => -evaluateLegacy(g, s, a, p),
+    );
+
+    expect(ai.chooseAction(game, 'p2', profile).type).toBe('attack');
+    expect(inverted.chooseAction(game, 'p2', profile).type).not.toBe('attack');
+  });
 });
 
 describe('IA et Zeta implanté', () => {
@@ -485,8 +505,8 @@ describe('IA et Zeta implanté', () => {
       p2: { monsters: [monsterCard('Hôte'), implanted()] },
     });
     // Le Zeta ne rapporte rien à l'hôte (au mieux il lui coûte la Prime promise)
-    expect(evaluate(avecZeta, 'p2', 'pipou')).toBeLessThan(
-      evaluate(seul, 'p2', 'pipou'),
+    expect(evaluateLegacy(avecZeta, 'p2', 'pipou')).toBeLessThan(
+      evaluateLegacy(seul, 'p2', 'pipou'),
     );
   });
 
@@ -501,12 +521,12 @@ describe('IA et Zeta implanté', () => {
     });
     const propre = scenario({ turn: 'p2', p2: { monsters: hosts() } });
 
-    expect(evaluate(propre, 'p2', 'pixelman')).toBeGreaterThan(
-      evaluate(virus, 'p2', 'pixelman'),
+    expect(evaluateLegacy(propre, 'p2', 'pixelman')).toBeGreaterThan(
+      evaluateLegacy(virus, 'p2', 'pixelman'),
     );
     // Et pour le poseur, c'est l'inverse
-    expect(evaluate(virus, 'p1', 'pixelman')).toBeGreaterThan(
-      evaluate(propre, 'p1', 'pixelman'),
+    expect(evaluateLegacy(virus, 'p1', 'pixelman')).toBeGreaterThan(
+      evaluateLegacy(propre, 'p1', 'pixelman'),
     );
   });
 });

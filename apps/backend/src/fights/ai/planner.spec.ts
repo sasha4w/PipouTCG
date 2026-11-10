@@ -22,7 +22,7 @@ import { P1_ID, P2_ID, monsterNamed, scenario } from '../testing/scenario';
 import { AiPlayer } from './ai-player';
 import type { AiProfile } from './ai-player';
 import { listCandidates } from './candidate-actions';
-import { evaluate } from './evaluate';
+import { evaluateLegacy } from './evaluate';
 import {
   STRONGEST,
   actionKey,
@@ -220,6 +220,32 @@ describe('planTurn', () => {
       })!.keys;
     expect(run()).toEqual(run());
   });
+
+  it('planifie avec la note qu’on lui donne', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: { monsters: [monsterCard('Moucheron', { atk: 0, hp: 100 })] },
+      p2: { primes: 1, monsters: [monsterCard('Lame', { atk: 200, hp: 500 })] },
+    });
+    const plan = (note?: Parameters<typeof planTurn>[8]) =>
+      planTurn(
+        engine,
+        game,
+        'p2',
+        pipou,
+        STRONGEST,
+        seeded(1),
+        { used: 0 },
+        new Set(),
+        note,
+      )!;
+
+    expect(plan().actions[0].type).toBe('attack');
+    expect(
+      plan((g, s, a, p) => -evaluateLegacy(g, s, a, p)).actions[0].type,
+    ).not.toBe('attack');
+  });
 });
 
 describe('riposte', () => {
@@ -244,7 +270,7 @@ describe('riposte', () => {
       phase: 'end',
       p2: { primes: 1, monsters: [monsterCard('Brute', { atk: 500 })] },
     });
-    expect(evaluate(leaf, 'p1', 'pipou')).toBeGreaterThan(-Infinity);
+    expect(evaluateLegacy(leaf, 'p1', 'pipou')).toBeGreaterThan(-Infinity);
     expect(
       riposte(engine, leaf, 'p1', pipou, WITH_RIPOSTE, seeded(1), { used: 0 }),
     ).toBe(-Infinity);
@@ -418,7 +444,7 @@ describe('fins de suite', () => {
       count: 1,
       prompt: 'Choisis une carte',
     });
-    const score = (s: GameState) => evaluate(s, 'p2', 'pipou');
+    const score = (s: GameState) => evaluateLegacy(s, 'p2', 'pipou');
     const best = Math.max(
       ...listCandidates(game, 'p2')
         .filter((a) => a.type === 'pick_cards')
@@ -432,8 +458,10 @@ describe('fins de suite', () => {
     expect(scoreAfterChoice(engine, game, 'p2', score)).toBe(best);
     // Sans choix pour lui : le score de l'état, tel quel
     expect(
-      scoreAfterChoice(engine, game, 'p1', (s) => evaluate(s, 'p1', 'pipou')),
-    ).toBe(evaluate(game, 'p1', 'pipou'));
+      scoreAfterChoice(engine, game, 'p1', (s) =>
+        evaluateLegacy(s, 'p1', 'pipou'),
+      ),
+    ).toBe(evaluateLegacy(game, 'p1', 'pipou'));
   });
 });
 
