@@ -83,6 +83,11 @@ describe('features', () => {
     expect(named(features(game(), 'p2', 'pipou')).potentialPrimes).toBe(0);
   });
 
+  it('plateaux vides : tous finis', () => {
+    const f = features(scenario({ turn: 'p1', phase: 'main' }), 'p1', 'pipou');
+    expect(f.every(Number.isFinite)).toBe(true);
+  });
+
   it('ne modifie pas l’état', () => {
     const g = game();
     const before = JSON.stringify(g);

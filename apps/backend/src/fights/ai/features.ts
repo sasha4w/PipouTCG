@@ -94,7 +94,7 @@ const persistents = (p: PlayerGameState) =>
 const charges = (p: PlayerGameState) =>
   sum(
     chargesOf(p),
-    (c) => 1 + (c.chargeCounters ?? 0) / (c.baseCard.chargeMax ?? 1),
+    (c) => 1 + (c.chargeCounters ?? 0) / Math.max(1, c.baseCard.chargeMax ?? 1),
   );
 
 const missingHp = (m: MonsterOnBoard) =>
