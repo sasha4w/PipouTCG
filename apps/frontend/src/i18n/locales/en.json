@@ -1063,6 +1063,7 @@
       "facing": "You're facing <b>{{name}}</b>",
       "confirmDeck": "Confirm your deck to start",
       "deckReady": "{{name}} ready",
+      "eloDelta": "Rating change: {{delta}}",
       "noOpponent": "Nobody around yet?",
       "playAi": "Fight the AI in Adventure",
       "elapsed": "Searching for {{time}}",

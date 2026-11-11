@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import type { RankedResultPayload } from "@pipou/shared";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
@@ -37,6 +38,7 @@ export default function FightPage({
   );
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
   const [confirmingSurrender, setConfirmingSurrender] = useState(false);
+  const [ranked, setRanked] = useState<RankedResultPayload | null>(null);
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
   // (plateau) : on relie les deux par une ref.
   const clearSelectionRef = useRef<() => void>(() => {});
@@ -85,7 +87,8 @@ export default function FightPage({
       const target = pvpResumeTarget(payload);
       if (target) navigate(target, { replace: true });
     },
-    onGameOver: () => {
+    onGameOver: (payload) => {
+      setRanked(payload.ranked ?? null);
       setTimeout(() => refetchHistory(), 2000);
     },
   });
@@ -164,7 +167,11 @@ export default function FightPage({
               onJoinQueue={joinQueue}
               onLeaveQueue={leaveQueue}
               onSubmitDeck={submitDeck}
-              onReplay={reset}
+              ranked={ranked}
+              onReplay={() => {
+                setRanked(null);
+                reset();
+              }}
               onPlayAi={() => {
                 leaveQueue();
                 navigate("/adventure");

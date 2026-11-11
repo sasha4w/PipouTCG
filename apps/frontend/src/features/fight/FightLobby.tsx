@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MatchEndReason } from "@pipou/shared";
+import { MatchEndReason, type RankedResultPayload } from "@pipou/shared";
 import { Trans, useTranslation } from "react-i18next";
 import Button from "../../components/Button";
 import {
@@ -16,6 +16,12 @@ type LobbyStatus = "idle" | "queued" | "selecting" | "finished";
 
 /** Attente au-delà de laquelle on propose de jouer contre l'IA. */
 const AI_HINT_AFTER_S = 30;
+
+/** Variation signée : « +16 », « −16 », « ±0 ». */
+function formatDelta(delta: number): string {
+  if (delta === 0) return "±0";
+  return delta > 0 ? `+${delta}` : `−${-delta}`;
+}
 
 function formatElapsed(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -58,6 +64,8 @@ interface Props {
   userId: number;
   winner?: number;
   endReason?: string;
+  /** Classement après la partie ; absent si le serveur ne l'a pas envoyé. */
+  ranked?: RankedResultPayload | null;
   onJoinQueue: () => void;
   onLeaveQueue: () => void;
   onSubmitDeck: () => void;
@@ -74,6 +82,7 @@ export default function FightLobby({
   userId,
   winner,
   endReason,
+  ranked,
   onJoinQueue,
   onLeaveQueue,
   onSubmitDeck,
@@ -110,6 +119,26 @@ export default function FightLobby({
         {endReason && (
           <p className="lobby-muted">
             {t(`fight.endReason.${endReason}`, { defaultValue: endReason })}
+          </p>
+        )}
+        {ranked && (
+          <p className="lobby-elo">
+            <span className="lobby-elo__label">ELO</span>
+            <span className="lobby-elo__value">{ranked.elo}</span>
+            <span
+              className={`lobby-elo__delta${
+                ranked.delta > 0
+                  ? " lobby-elo__delta--up"
+                  : ranked.delta < 0
+                    ? " lobby-elo__delta--down"
+                    : ""
+              }`}
+              aria-label={t("fight.lobby.eloDelta", {
+                delta: formatDelta(ranked.delta),
+              })}
+            >
+              {formatDelta(ranked.delta)}
+            </span>
           </p>
         )}
         <Button size="lg" onClick={onReplay}>

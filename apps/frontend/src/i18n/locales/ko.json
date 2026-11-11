@@ -993,6 +993,7 @@
       "facing": "상대: <b>{{name}}</b>",
       "confirmDeck": "시작하려면 덱을 확인하세요",
       "deckReady": "{{name}} 준비 완료",
+      "eloDelta": "레이팅 변화: {{delta}}",
       "noOpponent": "아직 상대가 없나요?",
       "playAi": "모험에서 AI와 대결",
       "elapsed": "{{time}} 동안 검색 중",

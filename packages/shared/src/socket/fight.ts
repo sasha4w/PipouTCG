@@ -132,12 +132,22 @@ export interface MatchFoundPayload {
   tutorialLessonId?: TutorialLessonId;
 }
 
+/** Classement d'un joueur après une partie JcJ. */
+export interface RankedResultPayload {
+  /** ELO après la partie. */
+  elo: number;
+  /** Variation due à cette partie (négative après une défaite). */
+  delta: number;
+}
+
 export interface GameOverPayload {
   /** null = match nul. */
   winner: number | null;
   endReason: GameEndReason;
   /** Résultat d'aventure (combat PvE uniquement). */
   adventure?: AdventureResultPayload;
+  /** Classement du destinataire (JcJ uniquement ; absent si l'enregistrement a échoué). */
+  ranked?: RankedResultPayload;
   /** Résultat de leçon (tutoriel uniquement). */
   tutorial?: TutorialResultPayload;
 }

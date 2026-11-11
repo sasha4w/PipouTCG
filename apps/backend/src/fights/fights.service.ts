@@ -16,7 +16,7 @@ import type {
   TutorialStartPayload,
   TutorialStepView,
 } from '@pipou/shared';
-import { isTutorialLessonId } from '@pipou/shared';
+import { isTutorialLessonId, type RankedResultPayload } from '@pipou/shared';
 import type { FightServer } from './fight-socket.types';
 import { GameState } from './interfaces/game-state.interface';
 import { PlayerStats } from './entities/player-stats.entity';
@@ -871,8 +871,9 @@ export class FightsService {
       await this.finishPve(game, session.info, server);
       return;
     }
+    let ranked: Record<number, RankedResultPayload> | undefined;
     try {
-      await this.gameEnd.persistResult(game);
+      ranked = await this.gameEnd.persistResult(game);
     } catch (err) {
       this.logger.error(
         `Enregistrement du match ${game.matchId} en échec`,
@@ -884,8 +885,12 @@ export class FightsService {
       winner: game.winner ?? null,
       endReason: game.endReason!,
     };
-    server.to(game.player1.socketId).emit('fight:game_over', payload);
-    server.to(game.player2.socketId).emit('fight:game_over', payload);
+    for (const player of [game.player1, game.player2]) {
+      server.to(player.socketId).emit('fight:game_over', {
+        ...payload,
+        ranked: ranked?.[player.userId],
+      });
+    }
   }
 
   /** Le journal de diagnostic ne doit jamais gêner la partie. */

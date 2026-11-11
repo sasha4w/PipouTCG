@@ -1065,6 +1065,7 @@
       "facing": "Tu affrontes <b>{{name}}</b>",
       "confirmDeck": "Confirme ton deck pour commencer",
       "deckReady": "{{name}} prêt",
+      "eloDelta": "Variation de classement : {{delta}}",
       "noOpponent": "Personne pour l’instant ?",
       "playAi": "Affronter l’IA en Aventure",
       "elapsed": "Recherche depuis {{time}}",
