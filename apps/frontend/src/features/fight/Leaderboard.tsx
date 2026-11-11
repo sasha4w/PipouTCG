@@ -2,6 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { fightService } from "../../services/fight.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
+import {
+  IconCrown,
+  IconGem,
+  IconStar,
+  IconTrophy,
+} from "../../components/Icons";
 import "./Leaderboard.css";
 interface LeaderboardEntry {
   id: number;
@@ -13,12 +19,15 @@ interface LeaderboardEntry {
 }
 
 const TIER_CONFIG = [
-  { min: 1800, id: "legendary", color: "#f39c12", icon: "👑" },
-  { min: 1600, id: "diamond", color: "#4fc1a6", icon: "💎" },
-  { min: 1400, id: "gold", color: "#f1c40f", icon: "🥇" },
-  { min: 1200, id: "silver", color: "#95a5a6", icon: "🥈" },
-  { min: 0, id: "bronze", color: "#cd7f32", icon: "🥉" },
+  { min: 1800, id: "legendary", color: "#f39c12", Icon: IconCrown },
+  { min: 1600, id: "diamond", color: "#4fc1a6", Icon: IconGem },
+  { min: 1400, id: "gold", color: "#f1c40f", Icon: IconStar },
+  { min: 1200, id: "silver", color: "#95a5a6", Icon: IconStar },
+  { min: 0, id: "bronze", color: "#cd7f32", Icon: IconStar },
 ];
+
+/** Couleur du trophée des trois premières places. */
+const PODIUM_COLORS = ["#f1c40f", "#95a5a6", "#cd7f32"];
 
 function getTier(elo: number) {
   return (
@@ -36,7 +45,9 @@ export default function Leaderboard({ myUserId }: { myUserId?: number }) {
 
   return (
     <div className="wrapper">
-      <h2 className="title">🏆 {t("fight.leaderboard.title")}</h2>
+      <h2 className="title">
+        <IconTrophy size={22} /> {t("fight.leaderboard.title")}
+      </h2>
 
       {isLoading ? (
         <p className="muted">{t("fight.leaderboard.loading")}</p>
@@ -56,21 +67,21 @@ export default function Leaderboard({ myUserId }: { myUserId?: number }) {
 
                 const isMe = entry.userId === myUserId;
 
-                const rankStr =
-                  idx === 0
-                    ? "🥇"
-                    : idx === 1
-                      ? "🥈"
-                      : idx === 2
-                        ? "🥉"
-                        : `#${idx + 1}`;
+                const podiumColor = PODIUM_COLORS[idx];
+                const rank = podiumColor ? (
+                  <span role="img" aria-label={`#${idx + 1}`}>
+                    <IconTrophy size={20} color={podiumColor} />
+                  </span>
+                ) : (
+                  `#${idx + 1}`
+                );
 
                 return (
                   <tr key={entry.id} className={`tr ${isMe ? "me-row" : ""}`}>
                     <td colSpan={7} className="leaderboardCardCell">
                       <div className="leaderboardCard">
                         <div className="rankBlock">
-                          <div className="rankMedal">{rankStr}</div>
+                          <div className="rankMedal">{rank}</div>
                         </div>
 
                         <div className="playerBlock">
@@ -92,7 +103,8 @@ export default function Leaderboard({ myUserId }: { myUserId?: number }) {
                             </div>
 
                             <div className="tierLabel">
-                              {tier.icon} {tierLabel}
+                              <tier.Icon size={12} color={tier.color} />{" "}
+                              {tierLabel}
                             </div>
                           </div>
                         </div>

@@ -1,6 +1,6 @@
 {
   "login": {
-    "title": "Card & Collect",
+    "title": "PipouTCG",
     "subtitle_login": "Content de te revoir !",
     "subtitle_register": "Crée ton compte et commence à collectionner !",
     "subtitle_forgot": "Réinitialise ton mot de passe",
@@ -50,12 +50,8 @@
   "settings": {
     "title": "Réglages",
     "audio": "Audio",
-    "notifications": "Notifications",
     "language": "Langue",
     "logout": "Se déconnecter",
-    "notif_trades": "Trades Status",
-    "notif_boosters": "Booster stock Status",
-    "notif_news": "News",
     "animations": "Animations",
     "animations_label": "Animations de duel",
     "animations_auto": "Auto (système)",

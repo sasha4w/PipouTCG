@@ -1,6 +1,6 @@
 {
   "login": {
-    "title": "Card & Collect",
+    "title": "PipouTCG",
     "subtitle_login": "다시 오셨군요!",
     "subtitle_register": "계정을 만들고 카드를 수집하세요!",
     "subtitle_forgot": "비밀번호 재설정",
@@ -50,12 +50,8 @@
   "settings": {
     "title": "설정",
     "audio": "오디오",
-    "notifications": "알림",
     "language": "언어",
     "logout": "로그아웃",
-    "notif_trades": "거래 상태",
-    "notif_boosters": "부스터 재고 상태",
-    "notif_news": "뉴스",
     "animations": "애니메이션",
     "animations_label": "대결 애니메이션",
     "animations_auto": "자동 (시스템)",

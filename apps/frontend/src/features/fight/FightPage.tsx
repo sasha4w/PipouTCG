@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
@@ -16,6 +15,7 @@ import FightLobby from "./FightLobby";
 import MatchHistory from "./MatchHistory";
 import FightRules from "./FightRules";
 import FightArena from "./FightArena";
+import ConfirmActionSheet from "./ConfirmActionSheet";
 import { useBoardControls } from "./useBoardControls";
 import { useFightConnection } from "./useFightConnection";
 import { pvpResumeTarget } from "../adventure/adventureView";
@@ -29,9 +29,9 @@ export default function FightPage({
   username: string;
 }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("fight");
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
+  const [confirmingSurrender, setConfirmingSurrender] = useState(false);
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
   // (plateau) : on relie les deux par une ref.
   const clearSelectionRef = useRef<() => void>(() => {});
@@ -96,8 +96,8 @@ export default function FightPage({
   };
 
   const surrender = () => {
-    if (!matchId || !window.confirm(t("fight.bar.confirmSurrender"))) return;
-    emit("fight:surrender", { matchId });
+    setConfirmingSurrender(false);
+    if (matchId) emit("fight:surrender", { matchId });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -159,10 +159,18 @@ export default function FightPage({
               gameState={gameState}
               timeLeft={timeLeft}
               controls={controls}
-              onSurrender={surrender}
+              onSurrender={() => setConfirmingSurrender(true)}
             />
           )}
         </div>
+      )}
+
+      {confirmingSurrender && status === "playing" && (
+        <ConfirmActionSheet
+          text={{ key: "fight.bar.confirmSurrender", params: {} }}
+          onConfirm={surrender}
+          onCancel={() => setConfirmingSurrender(false)}
+        />
       )}
     </div>
   );

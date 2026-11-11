@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DECK_RULES } from "@pipou/shared";
-import { IconMap } from "../components/Icons";
+import { IconCards, IconMap, IconSwords } from "../components/Icons";
 import "./FightHub.css";
 
 export default function FightHub() {
@@ -27,7 +27,9 @@ export default function FightHub() {
             onClick={() => navigate("/decks")}
           >
             <div className="fh-card__glow" />
-            <div className="fh-card__icon">🃏</div>
+            <div className="fh-card__icon">
+              <IconCards size={44} />
+            </div>
             <div className="fh-card__body">
               <h2 className="fh-card__title">{t("arena.decksTitle")}</h2>
               <p className="fh-card__desc">{t("arena.decksDesc")}</p>
@@ -50,7 +52,9 @@ export default function FightHub() {
             onClick={() => navigate("/fight")}
           >
             <div className="fh-card__glow" />
-            <div className="fh-card__icon">⚔️</div>
+            <div className="fh-card__icon">
+              <IconSwords size={44} />
+            </div>
             <div className="fh-card__body">
               <h2 className="fh-card__title">{t("arena.fightTitle")}</h2>
               <p className="fh-card__desc">{t("arena.fightDesc")}</p>

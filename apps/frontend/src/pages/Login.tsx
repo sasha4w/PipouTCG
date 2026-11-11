@@ -13,9 +13,9 @@ import "./Login.css";
 type Mode = "login" | "register" | "forgot";
 
 const LANGS = [
-  { code: "fr", flag: "🇫🇷" },
-  { code: "en", flag: "🇬🇧" },
-  { code: "ko", flag: "🇰🇷" },
+  { code: "fr", flag: "FR" },
+  { code: "en", flag: "EN" },
+  { code: "ko", flag: "KO" },
 ];
 
 const Login = () => {

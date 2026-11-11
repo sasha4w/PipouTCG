@@ -1,7 +1,14 @@
 import { MatchEndReason } from "@pipou/shared";
 import { Trans, useTranslation } from "react-i18next";
 import Button from "../../components/Button";
-import { IconArrowRight } from "../../components/Icons";
+import {
+  IconArrowRight,
+  IconCheck,
+  IconHand,
+  IconSkull,
+  IconSwords,
+  IconTrophy,
+} from "../../components/Icons";
 import "./FightLobby.css";
 
 type LobbyStatus = "idle" | "queued" | "selecting" | "finished";
@@ -38,7 +45,13 @@ export default function FightLobby({
     return (
       <div className="lobby-center">
         <div className="lobby-result-icon">
-          {draw ? "🤝" : won ? "🏆" : "💀"}
+          {draw ? (
+            <IconHand size={72} />
+          ) : won ? (
+            <IconTrophy size={72} />
+          ) : (
+            <IconSkull size={72} />
+          )}
         </div>
         <h2
           className={`lobby-hero-title ${draw ? "" : won ? "lobby-hero-title--win" : "lobby-hero-title--loss"}`}
@@ -66,7 +79,9 @@ export default function FightLobby({
   if (status === "selecting") {
     return (
       <div className="lobby-center">
-        <h2 className="lobby-hero-title">⚔️ {t("fight.lobby.found")}</h2>
+        <h2 className="lobby-hero-title">
+          <IconSwords size={28} /> {t("fight.lobby.found")}
+        </h2>
         <p className="lobby-hero-sub">
           <Trans
             i18nKey="fight.lobby.facing"
@@ -93,12 +108,14 @@ export default function FightLobby({
   // idle | queued
   return (
     <div className="lobby-center">
-      <h2 className="lobby-hero-title">⚔️ {t("fight.lobby.ready")}</h2>
+      <h2 className="lobby-hero-title">
+        <IconSwords size={28} /> {t("fight.lobby.ready")}
+      </h2>
       <p className="lobby-hero-sub">{t("fight.lobby.intro")}</p>
 
       {selectedDeck ? (
         <div className="lobby-deck-chosen">
-          ✓ {t("fight.lobby.deckSelected")}{" "}
+          <IconCheck size={14} /> {t("fight.lobby.deckSelected")}{" "}
           <span className="lobby-deck-id">#{selectedDeck}</span>
         </div>
       ) : (
@@ -109,7 +126,7 @@ export default function FightLobby({
 
       {status === "idle" ? (
         <Button size="lg" onClick={onJoinQueue} disabled={!selectedDeck}>
-          🔍 {t("fight.lobby.search")}
+          {t("fight.lobby.search")}
         </Button>
       ) : (
         <>

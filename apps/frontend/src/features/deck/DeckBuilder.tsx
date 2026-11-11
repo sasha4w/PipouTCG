@@ -20,6 +20,7 @@ import {
 } from "../glossary/cardCatalog";
 import DeckCardRow from "./DeckCardRow";
 import DeckCardSheet from "./DeckCardSheet";
+import ConfirmActionSheet from "../fight/ConfirmActionSheet";
 import { sortDecks } from "./deckPicker";
 import { useToggleFavorite } from "./useToggleFavorite";
 import Button from "../../components/Button";
@@ -101,6 +102,7 @@ export default function DeckBuilder() {
   const [filters, setFilters] = useState(NO_FILTERS);
   const [deckFilters, setDeckFilters] = useState(NO_FILTERS);
   const [sheet, setSheet] = useState<SheetTarget | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [tab, setTab] = useState<"deck" | "collection">("collection");
 
   const refreshDecks = () =>
@@ -261,7 +263,7 @@ export default function DeckBuilder() {
   };
 
   const removeDeck = async (id: number) => {
-    if (!confirm(t("deck.confirmDelete"))) return;
+    setDeletingId(null);
     await deckService.deleteDeck(id);
     void refreshDecks();
   };
@@ -336,7 +338,7 @@ export default function DeckBuilder() {
                       variant="danger"
                       size="icon"
                       aria-label={t("deck.delete")}
-                      onClick={() => removeDeck(d.id)}
+                      onClick={() => setDeletingId(d.id)}
                     >
                       <IconTrash size={16} />
                     </Button>
@@ -345,6 +347,14 @@ export default function DeckBuilder() {
               );
             })}
           </div>
+        )}
+
+        {deletingId !== null && (
+          <ConfirmActionSheet
+            text={{ key: "deck.confirmDelete", params: {} }}
+            onConfirm={() => void removeDeck(deletingId)}
+            onCancel={() => setDeletingId(null)}
+          />
         )}
       </div>
     );
