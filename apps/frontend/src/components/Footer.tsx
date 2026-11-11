@@ -139,17 +139,20 @@ const NAV_ITEMS = [
   },
 ];
 
+/** Écrans atteints depuis l'Arène : ils gardent son onglet allumé. */
+const ARENA_PATHS = ["/arena", "/fight", "/decks", "/adventure", "/tutorial"];
+
 export default function Footer() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
 
-  const activeId =
-    NAV_ITEMS.find((item) =>
-      item.path === "/"
-        ? location.pathname === "/"
-        : location.pathname.startsWith(item.path),
-    )?.id ?? "home";
+  const { pathname } = location;
+  const activeId = ARENA_PATHS.some((p) => pathname.startsWith(p))
+    ? "arena"
+    : NAV_ITEMS.find((item) =>
+        item.path === "/" ? pathname === "/" : pathname.startsWith(item.path),
+      )?.id;
 
   return (
     <footer className="cc-footer">

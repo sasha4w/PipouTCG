@@ -100,7 +100,6 @@
     "not_owned": "Not owned",
     "owned_count": "{{owned}} / {{total}} card{{plural}} owned",
     "page_title": "My collection",
-    "back": "Back to profile",
     "tab_collection": "Collection",
     "tab_forge": "Forge",
     "tab_destroy": "Destruction",

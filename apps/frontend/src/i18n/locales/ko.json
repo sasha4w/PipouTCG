@@ -99,7 +99,6 @@
     "not_owned": "미획득",
     "owned_count": "{{owned}} / {{total}} 카드 획득",
     "page_title": "내 컬렉션",
-    "back": "프로필로 돌아가기",
     "tab_collection": "컬렉션",
     "tab_forge": "대장간",
     "tab_destroy": "파괴",

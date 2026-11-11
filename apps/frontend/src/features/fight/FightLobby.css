@@ -18,6 +18,16 @@
   font-size: 32px;
   color: #7a1c3b;
   margin: 0;
+  text-wrap: balance;
+}
+
+@media (max-width: 480px) {
+  .lobby-center {
+    padding: 24px 16px;
+  }
+  .lobby-hero-title {
+    font-size: 26px;
+  }
 }
 
 .lobby-hero-title--win  { color: #27ae60; }
