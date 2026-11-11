@@ -73,14 +73,33 @@ describe("findOpponent", () => {
 describe("resumeTarget", () => {
   it("reprend sur place une partie contre la même IA", () => {
     expect(
-      resumeTarget({ matchId: 1, opponentName: "IA", adventureOpponentId: 4 }, 4),
+      resumeTarget(
+        { matchId: 1, opponentName: "IA", adventureOpponentId: 4 },
+        4,
+      ),
     ).toBeNull();
   });
 
   it("renvoie vers l'écran d'une autre IA", () => {
     expect(
-      resumeTarget({ matchId: 1, opponentName: "IA", adventureOpponentId: 7 }, 4),
+      resumeTarget(
+        { matchId: 1, opponentName: "IA", adventureOpponentId: 7 },
+        4,
+      ),
     ).toBe("/adventure/fight/7");
+  });
+
+  it("renvoie vers l'écran de la leçon pour une partie de tutoriel", () => {
+    expect(
+      resumeTarget(
+        {
+          matchId: -1,
+          opponentName: "Maître Pipou",
+          tutorialLessonId: "guard",
+        },
+        4,
+      ),
+    ).toBe("/tutorial/guard");
   });
 
   it("renvoie vers le duel JcJ pour une partie sans IA", () => {
@@ -91,8 +110,22 @@ describe("resumeTarget", () => {
 describe("pvpResumeTarget", () => {
   it("renvoie vers l'écran d'aventure pour une partie contre une IA", () => {
     expect(
-      pvpResumeTarget({ matchId: -1, opponentName: "IA", adventureOpponentId: 7 }),
+      pvpResumeTarget({
+        matchId: -1,
+        opponentName: "IA",
+        adventureOpponentId: 7,
+      }),
     ).toBe("/adventure/fight/7");
+  });
+
+  it("renvoie vers l'écran de la leçon pour une partie de tutoriel", () => {
+    expect(
+      pvpResumeTarget({
+        matchId: -1,
+        opponentName: "Maître Pipou",
+        tutorialLessonId: "combat",
+      }),
+    ).toBe("/tutorial/combat");
   });
 
   it("reste sur le duel pour une partie JcJ", () => {

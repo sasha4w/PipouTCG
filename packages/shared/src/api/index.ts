@@ -10,3 +10,4 @@ export * from "./forge";
 export * from "./ai-review";
 export * from "./starter-decks";
 export * from "./game-records";
+export * from "./tutorial";

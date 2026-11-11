@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
@@ -30,7 +30,11 @@ export default function FightPage({
   username: string;
 }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>("fight");
+  // `?tab=rules` : retour d'une leçon du tutoriel vers l'onglet Règles
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(
+    searchParams.get("tab") === "rules" ? "rules" : "fight",
+  );
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
   const [confirmingSurrender, setConfirmingSurrender] = useState(false);
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`

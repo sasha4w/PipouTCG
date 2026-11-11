@@ -1,0 +1,33 @@
+/* Tutoriel : mise en avant de la cible désignée par la bulle (classe posée par la prop `coach`). */
+.coach-hl {
+  outline: 3px solid #f5b301;
+  outline-offset: 2px;
+  border-radius: 8px;
+  animation: coach-pulse 1.3s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes coach-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 179, 1, 0.65);
+  }
+  50% {
+    box-shadow: 0 0 14px 6px rgba(245, 179, 1, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-hl {
+    animation: none;
+  }
+}
+
+/* Cartes réduites du plateau : le badge de coût ne recouvre plus le nom */
+.fp-fight-area .zr-card .card-face__header {
+  padding-right: 22%;
+}
+.fp-fight-area .zr-card .card-face__cost {
+  top: 4%;
+  right: 3%;
+}

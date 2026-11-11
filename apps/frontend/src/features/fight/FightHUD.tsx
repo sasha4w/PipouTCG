@@ -1,3 +1,4 @@
+import type { TutorialHint } from "@pipou/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./FightHUD.css";
@@ -30,6 +31,8 @@ interface Props {
   onOpenGraveyard: (side: "me" | "opponent") => void;
   /** Absent : pas de bouton d'abandon. */
   onSurrender?: () => void;
+  /** Tutoriel : la pastille de phase est mise en avant quand il faut passer la phase. */
+  coach?: TutorialHint;
 }
 
 /** `primes` = primes restantes à récupérer ; les coffres se colorent à mesure qu'elles sont prises. */
@@ -43,7 +46,10 @@ function PrimesRow({ primes }: { primes: number }) {
       {Array.from({ length: STARTING_PRIMES }).map((_, i) => {
         const taken = i < STARTING_PRIMES - primes;
         return (
-          <span key={i} className={`hud-prime${taken ? " hud-prime--earned" : ""}`}>
+          <span
+            key={i}
+            className={`hud-prime${taken ? " hud-prime--earned" : ""}`}
+          >
             <IconChest size={13} color={taken ? "#7a1c3b" : "#ccc"} />
           </span>
         );
@@ -63,12 +69,13 @@ export default function FightHUD({
   onOpenLog,
   onOpenGraveyard,
   onSurrender,
+  coach,
 }: Props) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const options = phaseOptions(phase, handSize);
   const canPickPhase = isMyTurn && options.length > 0;
-  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}`;
+  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}${coach?.button === "end_phase" || coach?.button === "end_turn" ? " coach-hl" : ""}`;
   return (
     <div className="hud">
       {/* ── Ligne adversaire ── */}
@@ -137,6 +144,7 @@ export default function FightHUD({
                 onPickPhase(o);
               }}
               onClose={() => setMenuOpen(false)}
+              coach={coach}
             />
           )}
         </span>
@@ -152,7 +160,9 @@ export default function FightHUD({
           <button
             type="button"
             className="hud-icon-btn"
-            aria-label={t("fight.hud.myGraveyard", { count: me.graveyard.length })}
+            aria-label={t("fight.hud.myGraveyard", {
+              count: me.graveyard.length,
+            })}
             disabled={me.graveyard.length === 0}
             onClick={() => onOpenGraveyard("me")}
           >

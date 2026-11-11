@@ -849,7 +849,7 @@
     },
     "hatch": {
       "name": "Hatching",
-      "desc": "After the given number of turns, the egg leaves the field and the card of your choice from your deck is summoned in its place."
+      "desc": "After the given number of turns, the egg leaves the field and the card of your choice from your deck or graveyard is summoned in its place (a lower stage if the target stage is missing)."
     },
     "evolutionJoker": {
       "name": "Evolution joker",
@@ -1142,7 +1142,8 @@
         "combat": "Combat",
         "primes": "Primes & Comeback",
         "turn": "Turn structure",
-        "starters": "Starter decks"
+        "starters": "Starter decks",
+        "special": "Special summons"
       },
       "winLabel": "Victory condition",
       "winValue": "Be the first to take your {{count}} Prime Cards",
@@ -1182,12 +1183,29 @@
       "phaseMainDesc": "Recycle for Energy, summon, play Supports, change your monsters' position.",
       "phaseBattle": "Battle Phase",
       "phaseBattleDesc": "Attack the opposing monsters, or attack directly if the opposing board is empty.",
-      "phaseEnd": "Ending Phase",
-      "phaseEndDesc": "End-of-turn effects, Energy → 0, {{limit}} cards max in hand (discard the excess).",
       "timer": "90 s per phase: when time runs out, the next phase starts automatically.",
       "stepOf": "Step {{n}} / {{total}}",
       "prev": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "phaseControl": "Control Phase",
+      "phaseControlDesc": "End-of-turn effects, then you rearrange your board: Supports, Relief, Origins Drakon and evolution are allowed; normal summons, recycling, Transform and mode changes are not. Energy → 0, {{limit}} cards max in hand (discard the excess).",
+      "guard3": "At most <b>{{turns}} opposing turns</b> in Guard in a row, then the monster returns to Attack with a <b>+{{atk}} ATK counter-offensive</b> per turn held. It cannot go back to Guard the turn it leaves.",
+      "primes4": "<b>A destruction caused by an effect gives no Prime.</b>",
+      "primes5": "A monster in Guard killed by another monster's Reflect: no Prime.",
+      "supportLimits": "Only one Field at a time (the new one replaces the old); no two Persistents with the same name; a Support that needs a card (a specific monster) fades away when it is gone.",
+      "statusGroup": {
+        "restraint": "Restraints (what you suffer)",
+        "combat": "Combat statuses",
+        "immunity": "Immunities",
+        "summon": "Summon and evolution"
+      },
+      "special": {
+        "evolution": "<b>Evolution (Drakon):</b> a higher-stage card goes on top of its previous stage; you only pay the <b>cost difference</b>. A base played this turn can only evolve next turn.",
+        "transform": "<b>Transform:</b> discard a card from your hand to transform it, once per turn.",
+        "releve": "<b>Relief:</b> sacrifice the stated number of Pipou allies instead of paying the cost; the new monster takes the place of one of them.",
+        "zeta": "<b>Implanted Zeta:</b> a parasite monster placed on the opposing board (one at a time). When its countdown hits 0 it is destroyed and its owner takes a Prime; if the host destroys it first (disinfection), nobody does.",
+        "origins": "<b>Origins Drakon:</b> can only be summoned with an Adult or Ancestral of each of the 4 elements in the graveyard."
+      }
     },
     "unplayable": {
       "supportZonesFull": "Support zones full",
@@ -1233,7 +1251,8 @@
       "QUESTS_DONE": "Quests",
       "ADVENTURE_WORLDS": "Adventure worlds",
       "PVE_WON": "PvE wins",
-      "PVE_PLAYED": "PvE fights"
+      "PVE_PLAYED": "PvE fights",
+      "TUTORIAL_LESSONS": "Student"
     },
     "goals": {
       "BOOSTERS_OPENED": "Open {{n}} boosters",
@@ -1252,7 +1271,8 @@
       "QUESTS_DONE": "Complete {{n}} quests",
       "ADVENTURE_WORLDS": "Complete {{n}} adventure worlds",
       "PVE_WON": "Win {{n}} adventure fights",
-      "PVE_PLAYED": "Play {{n}} adventure fights"
+      "PVE_PLAYED": "Play {{n}} adventure fights",
+      "TUTORIAL_LESSONS": "Finish {{n}} tutorial lessons"
     },
     "titles": {
       "BOOSTERS_OPENED": "Master Opener",
@@ -1271,7 +1291,8 @@
       "QUESTS_DONE": "Adventurer",
       "ADVENTURE_WORLDS": "Explorer",
       "PVE_WON": "AI Hunter",
-      "PVE_PLAYED": "Tireless"
+      "PVE_PLAYED": "Tireless",
+      "TUTORIAL_LESSONS": "Scholar"
     }
   },
   "adventure": {
@@ -1600,6 +1621,200 @@
       "epic": "Epic",
       "legendary": "Legendary",
       "secret": "Secret"
+    }
+  },
+  "tutorial": {
+    "ui": {
+      "tab": "Tutorial",
+      "reference": "Reference",
+      "title": "Learn to play",
+      "intro": "Nine short lessons played on the real game engine. At each step only one action is accepted: the bubble tells you which.",
+      "reward": "First time you finish each lesson: {{gold}} gold and {{xp}} XP",
+      "lessonNumber": "Lesson {{n}}",
+      "done": "Completed",
+      "start": "Start",
+      "replay": "Replay",
+      "steps": "{{count}} steps",
+      "stepOf": "Step {{n}} / {{total}}",
+      "next": "Next",
+      "quit": "Leave lesson",
+      "quitConfirm": "Leave the lesson? You will earn nothing unless you finish it.",
+      "opponentPlaying": "The opponent is playing…",
+      "yourMove": "Your move",
+      "loadError": "Could not load the lessons.",
+      "starting": "Preparing the lesson…",
+      "resultTitleDone": "Lesson complete!",
+      "resultTitleQuit": "Lesson interrupted",
+      "resultFirst": "Reward: {{gold}} gold and {{xp}} XP",
+      "resultAlready": "Already completed: no new reward.",
+      "resultQuit": "You did not finish the lesson: nothing earned.",
+      "nextLesson": "Next lesson",
+      "backToLessons": "Back to lessons",
+      "replayLesson": "Replay lesson",
+      "lesson": {
+        "first-turn": {
+          "title": "First turn",
+          "desc": "Draw, recycle for Energy, summon, move through the phases."
+        },
+        "combat": {
+          "title": "Combat and Primes",
+          "desc": "Attack, riposte, double K.O., direct attack, last Prime."
+        },
+        "guard": {
+          "title": "Guard",
+          "desc": "Protect yourself, hold two turns, counter-offensive, Piercing."
+        },
+        "supports": {
+          "title": "Supports",
+          "desc": "Ephemeral, Equipment, Field, Charge."
+        },
+        "control": {
+          "title": "Control phase",
+          "desc": "Play after combat, 7-card limit, discard."
+        },
+        "pipou": {
+          "title": "Pipou",
+          "desc": "Energy surge, free summon, Taunt, Relief."
+        },
+        "drakon": {
+          "title": "Drakon",
+          "desc": "Egg, hatching, evolution, Transform."
+        },
+        "pixelman": {
+          "title": "Pixelman",
+          "desc": "Cores, equipment, Plasma Force, Zeta and disinfection."
+        },
+        "statuses": {
+          "title": "Statuses, restraints and immunities",
+          "desc": "Suffer Freeze, lock and forced attack, then see immunities."
+        }
+      }
+    },
+    "common": {
+      "toBattle": "Your main phase is over: go to the <b>battle phase</b> with the highlighted button.",
+      "toControl": "Combat is over: go to the <b>control phase</b> with the phase menu (the green chip).",
+      "endTurn": "Nothing left to do this turn: open the phase menu (the green chip) and choose <b>End turn</b>. No need to step through each phase. Your hand must not exceed 7 cards.",
+      "opponentEnd": "The opponent ends their turn: it is back to you."
+    },
+    "first-turn": {
+      "goal": "Welcome! The goal: take your <b>6 Primes</b> before the opponent. You win a Prime by destroying a monster or attacking directly.",
+      "hand": "This is your hand. Each turn starts with a draw. Playing a card costs <b>Energy</b>, which you get by recycling cards from your hand.",
+      "recycle": "<b>Recycle</b> the highlighted card with the Recycle button: 1 recycled card = 1 Energy.",
+      "summonEnergy": "Tap <b>Lieutenant Bidouille</b> (cost 1), then the highlighted zone. Your Energy pays its cost.",
+      "summonPay": "No Energy left? Pay by <b>discarding</b> cards. First tap <b>Guerrier Bafouille</b> (the card to summon), then <b>Caporal Gazouille</b> (the card to discard, it pays the cost), then the highlighted zone. Rule: the first card you tap is summoned, the following ones are discarded.",
+      "board": "Both your monsters are in play. On turn 1 nobody attacks: you can end your turn.",
+      "opponentRecycle": "The opponent recycles a card to gain Energy.",
+      "opponentSummon": "Then they summon a monster with Taunt.",
+      "nextTurn": "This is your second turn. You drew a card at the start: it is automatic, every turn.",
+      "done": "Well done! You can draw, recycle, summon and move through phases. Next lesson: combat."
+    },
+    "combat": {
+      "intro": "Time to fight. A monster in <b>Attack</b> mode strikes during the battle phase, once per turn. You have 3 Primes left to take.",
+      "attackRiposte": "Attack <b>Lieutenant Fripouille</b> with <b>Chevalier Touille</b> by selecting them on screen.",
+      "riposte": "Damage equals ATK: Fripouille loses 500 HP. But it <b>strikes back</b>: Chevalier loses 100 HP in turn.",
+      "attackKill": "Finish it with <b>Lieutenant Bidouille</b>. It has 200 HP left: Bidouille's ATK is enough.",
+      "prime": "A monster in Attack mode is destroyed: you take <b>1 Prime</b> (it joins your hand) and the opponent draws a card.",
+      "opponentToBattle": "The opponent moves to their battle phase.",
+      "doubleKo": "Their Archer attacks your Scout. Both monsters are nearly down…",
+      "doubleKoInfo": "<b>Double K.O.</b>: both monsters destroy each other. Each player draws a card and takes 1 Prime.",
+      "emptyBoard": "Their board is empty: you can strike <b>directly</b> (not on turn 1). Go to the battle phase.",
+      "direct": "Direct attack with <b>Chevalier Touille</b>: you take 1 Prime. It is your last one: <b>you win the game</b>!"
+    },
+    "guard": {
+      "intro": "A monster in <b>Guard</b> can neither attack nor strike back, but it protects your Prime: destroyed in Guard, it gives <b>no Prime</b>. Put your three monsters in Guard.",
+      "guardBidouille": "Put <b>Lieutenant Bidouille</b> in Guard mode.",
+      "guardChevalier": "Put <b>Chevalier Touille</b> in Guard mode.",
+      "guardPretre": "Put <b>Prêtre Fouille</b> in Guard mode.",
+      "noPrime": "Their Archer attacks Bidouille, which cannot strike back: it is destroyed.",
+      "noPrimeInfo": "Bidouille is destroyed, but the opponent <b>takes no Prime</b>: that is the point of Guard.",
+      "piercing": "But the Marauder has <b>Piercing</b>: it attacks Chevalier, also in Guard.",
+      "piercingInfo": "A <b>Piercing</b> attacker ignores Guard's protection: Chevalier is destroyed and the opponent takes its Prime.",
+      "opponentToBattle": "The opponent moves to their battle phase.",
+      "turnHeld": "Prêtre Fouille held its first opposing turn. You can stay in Guard for <b>2 opposing turns at most</b>. Let's pass this turn.",
+      "counter": "Two turns held: Prêtre leaves Guard with a <b>counter-offensive</b> of +100 ATK per turn held, for this turn. It cannot go straight back to Guard.",
+      "counterAttack": "Go to battle and strike the Archer with <b>Prêtre Fouille</b>.",
+      "done": "You know Guard: it holds back Primes, but not for more than two turns, and not against Piercing."
+    },
+    "supports": {
+      "intro": "<b>Supports</b> cost no Energy. Four families: Ephemeral, Equipment, Persistent (Field) and Charge.",
+      "ephemeral": "Tap the Ephemeral <b>Frappe Préventive</b>, press <b>Play</b>, then pick the opposing <b>Archer</b> in the window and confirm with <b>Target</b>. An Ephemeral acts once, then goes to the graveyard.",
+      "ephemeralDone": "The Archer loses 300 HP (600 if you had a Fire Drakon).",
+      "equipment": "An <b>Equipment</b> attaches to one of your monsters. Equip <b>Noyau Beta</b> with the Calculation Processor.",
+      "slot": "Each monster has <b>slots</b>: one Offensive, one Defensive, two Accessories. The Cannon is also Offensive: choose to <b>replace</b> the Processor.",
+      "terrain": "A <b>Persistent</b> stays in play and acts continuously. A Field is a Persistent: only one at a time. Play <b>Tactique Gang Gang</b>.",
+      "terrainDone": "Your Pipou monsters gain +300 ATK while the Tactic is there.",
+      "charge": "A <b>Charge</b> gains a counter at the start of each of your turns and acts once full. Play <b>Alerte générale</b>: it requires Général Chatouille on your board.",
+      "chargeDone": "In 3 turns, your monsters will attack once more. If the General leaves the board, the Charge fades away."
+    },
+    "control": {
+      "intro": "After combat comes the <b>control phase</b>: a last chance to rearrange your board before passing the turn. Let's go through combat first.",
+      "battle": "Attack the Sentinel with <b>Chevalier Touille</b>.",
+      "controlPhase": "You are in the control phase. Here you can still play <b>Supports</b>, summon by <b>Relief</b> or evolve a Drakon.",
+      "support": "Heal <b>Chevalier Touille</b>: tap the Support <b>Soin d'urgence</b>, press <b>Play</b>, then pick Chevalier in the window and confirm with <b>Target</b>.",
+      "noSummon": "What you <b>cannot</b> do here: <b>normal summons</b>, recycling, Transform and mode changes are forbidden (the game does not even let you try). Supports, Relief and evolution are still allowed.",
+      "handLimit": "You have more than <b>7 cards</b> in hand: you cannot end your turn like this. You must discard the excess.",
+      "discard": "Tap <b>Gardien Ratouile</b> to select it, then the <b>Discard</b> button at the bottom.",
+      "done": "You now know what you can do in the control phase, and why your hand is capped at 7 cards."
+    },
+    "pipou": {
+      "intro": "<b>Pipou</b> play as a group: cheap monsters, synergies and free summons.",
+      "clairon": "Play the Support <b>Clairon de l'Union</b>: it gives you 2 Energy at once.",
+      "gribouille": "Tap <b>Capitaine Gribouille</b> (cost 2), then the highlighted zone: your Energy pays its cost.",
+      "free": "Chevalier Touille, still in hand, reacts: as soon as a Pipou ally arrives, it can be summoned <b>for free</b>.",
+      "chevalier": "Tap <b>Chevalier Touille</b>, then the highlighted zone: it is free.",
+      "bidouille": "Tap <b>Lieutenant Bidouille</b>, then <b>Prêtre Fouille</b> (to discard as payment), then the highlighted zone.",
+      "taunt": "The Captain has <b>Taunt</b>: enemies must attack it first.",
+      "gangGang": "Play the Field <b>Tactique Gang Gang</b>.",
+      "gangGangDone": "All your Pipou gain +300 ATK.",
+      "releve": "<b>Relief</b> replaces the cost: summon <b>Général Chatouille</b> by sacrificing Bidouille and Chevalier. It takes Bidouille's place.",
+      "releveDone": "The General (ATK 800) becomes 1100 with the Tactic. The two sacrificed monsters are in the graveyard.",
+      "opponentToBattle": "The opponent moves to their battle phase.",
+      "opponentTaunt": "Their Archer wants to strike, but has no choice: Taunt forces it to target the Captain.",
+      "done": "Pipou win through numbers and synergies. Next family: Drakon."
+    },
+    "drakon": {
+      "intro": "<b>Drakon</b> grow up: Egg, Baby, Young, Adult, Ancestral. Only Eggs and Babies are played directly; the others arrive by evolution.",
+      "recycle": "Recycle the highlighted card for 1 Energy.",
+      "egg": "Tap the <b>Œuf de la Genèse</b>, then the highlighted zone (cost 1, paid by your Energy).",
+      "eggInfo": "The Egg hatches after <b>2 turns</b>: you then pick a Baby from your deck or graveyard. But you can speed it up.",
+      "incubation": "Tap <b>Incubation Rapide</b>, press <b>Play</b>, pick your Egg and confirm with <b>Target</b>: it advances hatching by 2 turns.",
+      "hatch": "The Egg hatches: choose <b>Bébé Tempestu</b> in the window.",
+      "stages": "A Young or an Adult is <b>never played from hand</b>: the game refuses to summon Adulte Feros directly. They arrive by <b>evolution</b>, stage by stage.",
+      "evolve": "Evolve <b>Bébé Tempestu</b>: tap <b>Jeune Tempestu</b>, then <b>Archer Crapouille</b> (discarded to pay the cost difference), then <b>Bébé Tempestu</b> on your board.",
+      "evolveDone": "Tempestu can evolve as soon as it arrives; other Drakon wait a turn before they can evolve.",
+      "transform": "A Young or Adult stuck in hand is not lost: select <b>Adulte Feros</b> then the <b>Transform</b> button. It is discarded and you fetch a Baby of its lineage (once per turn).",
+      "transformPick": "Choose <b>Bébé Feros</b>.",
+      "done": "Egg, hatching, evolution, Transform: you know the Drakon cycle."
+    },
+    "pixelman": {
+      "intro": "<b>Pixelman</b> rely on powerful <b>Cores</b>, equipment and targeted Supports.",
+      "equipment": "Tap the <b>Particle Cannon</b>, then <b>Noyau Delta</b> to equip it.",
+      "plasma": "<b>Force Plasma</b> needs a Core on your board. Tap it, press <b>Play</b>, pick the opposing <b>Archer</b> and confirm with <b>Target</b>.",
+      "noPrime": "The Archer is destroyed, but your Prime does not move: a destruction <b>caused by an effect</b> never gives a Prime.",
+      "zetaCountdown": "Look at the <b>Noyau Zeta</b> on the opposing board: it is <b>yours</b>. It is a parasite you implanted on the enemy: it threatens <b>the opponent</b> (−300 ATK to their monsters), not you. Its countdown drops at the start of each of your turns.",
+      "zetaExplodes": "The countdown reached 0: the Zeta explodes, deals 500 damage to the host's monsters and <b>you take a Prime</b>.",
+      "implant": "Implant a new Zeta on the opponent: tap <b>Noyau Zeta</b>, then the cards to discard (<b>Sentinelle .cfg</b> and <b>Prêtre Fouille</b>), then a free zone <b>on the opposing board</b>.",
+      "implantInfo": "Your Zeta weakens the opponent's monsters. But the host can attack it to get rid of it. End your turn to see.",
+      "opponentToBattle": "The opponent moves to their battle phase.",
+      "disinfect": "The host attacks its own Zeta: that is <b>disinfection</b>. No riposte.",
+      "done": "Zeta destroyed by the host before the end: <b>no Prime</b> for you. The countdown must reach 0."
+    },
+    "statuses": {
+      "intro": "This lesson shows what opponents can inflict on you: <b>restraints</b>, then the <b>immunities</b> that block them.",
+      "freeze": "The opponent plays a <b>Freeze</b> on your Chevalier: it cannot attack for 3 of your turns.",
+      "lock": "Then a <b>Verrou de Position</b> on your Guardian: it is stuck in Guard.",
+      "forced": "Finally a <b>Rootkit</b> on your Chevalier: forced attack, it can no longer go into Guard.",
+      "restraints": "Here are your restraints: <b>Freeze</b> (no attack), <b>Guard lock</b> (stuck in Guard until attacked) and <b>Forced attack</b>. Let's try them.",
+      "lockedMode": "<b>Guard lock</b>: Gardien Ratouile cannot go back to Attack mode until it is attacked. The game stops you.",
+      "forcedMode": "<b>Forced attack</b>: Chevalier Touille cannot go into Guard mode. The game stops you too.",
+      "summonTurn": "Some cards have their own limits. Summon <b>Commandant Quenouille</b>: tap it, then <b>Prêtre Fouille</b> and <b>Archer Crapouille</b> (to discard as payment), then the free zone.",
+      "combatStatuses": "Combat statuses: <b>Taunt</b>, <b>Bypass</b> (ignores Taunt), <b>Piercing</b>, <b>Damage reduction</b>, <b>Reflect</b>, <b>Double attack</b>, <b>Temporary ATK</b>. Now immunities.",
+      "immune": "You hold a <b>Protocole de Gel</b>, but <b>Adulte Teros</b> is protected by <b>Anti-Support</b>: freeze, lock and stat drops from a Support have no effect on it, the game does not let you target it.",
+      "notImmune": "Now play your Protocole de Gel on the <b>Archer</b>, which has no immunity: tap the Protocole, press <b>Play</b>, pick the Archer and confirm with <b>Target</b>.",
+      "immunities": "Immunities: <b>Combat immunity</b> (no combat damage), <b>Anti-Support</b> and <b>Anti-monster</b> (penalties from enemy Supports or monsters have no effect), <b>Plating</b> (a Support cannot destroy it), <b>Unfazed</b> (ignores Taunt, Reflect and the Zeta virus), <b>Unkillable</b> (stays at 1 HP in combat). <b>Immune to enemy effects</b> combines Plating, Anti-Support, Anti-monster and Unfazed.",
+      "frozenAttack": "In the battle phase, the frozen <b>Chevalier Touille</b> cannot attack: the game refuses the attack.",
+      "summonedAttack": "<b>Commandant Quenouille</b> was just summoned: it cannot attack the turn it is summoned.",
+      "done": "Restraints, statuses, immunities: you can read a board. Every monster has its effect sheet during a game."
     }
   }
 }
