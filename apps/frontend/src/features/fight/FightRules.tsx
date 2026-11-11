@@ -27,6 +27,7 @@ import {
   IconTrophy,
   IconUndo,
 } from "../../components/Icons";
+import TutorialHome from "../tutorial/TutorialHome";
 import { STARTER_ORDER, starterTextKey } from "../starter/starterTexts";
 import type { KeywordId } from "./effectText";
 import KeywordIcon from "./KeywordIcon";
@@ -397,7 +398,8 @@ function buildSteps(t: TFunction): Step[] {
   ];
 }
 
-export default function FightRules() {
+/** Référence des règles, étape par étape. */
+export function RulesReference() {
   const { t } = useTranslation();
   const [cur, setCur] = useState(0);
   const steps = buildSteps(t);
@@ -458,6 +460,33 @@ export default function FightRules() {
           <IconArrowRight size={16} />
         </Button>
       </div>
+    </div>
+  );
+}
+
+type RulesTab = "tutorial" | "reference";
+
+/** Onglet Règles : leçons jouables (par défaut) et référence. */
+export default function FightRules() {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<RulesTab>("tutorial");
+  return (
+    <div className="fr-tabs-root">
+      <div className="fr-tabs" role="tablist">
+        {(["tutorial", "reference"] as const).map((id) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            className={`fr-tab${tab === id ? " fr-tab--active" : ""}`}
+            onClick={() => setTab(id)}
+          >
+            {t(id === "tutorial" ? "tutorial.ui.tab" : "tutorial.ui.reference")}
+          </button>
+        ))}
+      </div>
+      {tab === "tutorial" ? <TutorialHome /> : <RulesReference />}
     </div>
   );
 }

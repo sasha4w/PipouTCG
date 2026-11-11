@@ -50,6 +50,10 @@ interface Props {
   damagedZones?: Set<number>;
   /** Effets serveur de l'état courant, par index de zone. */
   fx?: ZoneFxMap;
+  /** Tutoriel : cartes en jeu à mettre en avant (consigne de la leçon). */
+  coachInstanceIds?: ReadonlySet<string>;
+  /** Tutoriel : zones vides à mettre en avant. */
+  coachEmptyZones?: ReadonlySet<number>;
 }
 
 export default function ZoneRow({
@@ -63,6 +67,8 @@ export default function ZoneRow({
   highlightInstanceIds,
   dimInstanceIds,
   highlightAllEmpty = false,
+  coachInstanceIds,
+  coachEmptyZones,
   highlightOpponentEmpty = false,
   attackTargetIds,
   lockedInstances,
@@ -139,6 +145,10 @@ export default function ZoneRow({
             (highlightFilled && !!zone) ||
             (!!zone && !!highlightInstanceIds?.has(zone.instanceId))
               ? "zr-zone--pulse-equipment"
+              : "",
+            (!!zone && !!coachInstanceIds?.has(zone.instanceId)) ||
+            (!zone && !!coachEmptyZones?.has(idx))
+              ? "coach-hl"
               : "",
             isZetaTarget ? "zr-zone--pulse-target zr-zone--zeta-target" : "",
             isAttackTarget ? "zr-zone--attack-target" : "",

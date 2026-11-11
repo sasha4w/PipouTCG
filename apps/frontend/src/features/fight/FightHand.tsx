@@ -1,3 +1,4 @@
+import type { TutorialHint } from "@pipou/shared";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,6 +32,8 @@ interface Props {
   /** La carte sélectionnée se paie en cartes (par défaut : phase principale). */
   canPayWithHand?: boolean;
   onCardClick: (idx: number, card: HandCard) => void;
+  /** Tutoriel : cartes de la main à mettre en avant. */
+  coach?: TutorialHint;
 }
 
 export default function FightHand({
@@ -45,6 +48,7 @@ export default function FightHand({
   unplayableReasons,
   canPayWithHand,
   onCardClick,
+  coach,
 }: Props) {
   const { t } = useTranslation();
   const isInteractive = isMyTurn && (phase === "main" || phase === "end");
@@ -94,6 +98,7 @@ export default function FightHand({
               isInteractive ? "fhand-card--interactive" : "",
               isPayable && !isPaying ? "fhand-card--payable" : "",
               isFree ? "fhand-card--free" : "",
+              coach?.cards?.includes(card.instanceId) ? "coach-hl" : "",
               unplayableReasons?.has(card.instanceId)
                 ? "fhand-card--unplayable"
                 : "",

@@ -38,6 +38,7 @@ import FightPage from "./features/fight/FightPage";
 import AdventureWorlds from "./features/adventure/AdventureWorlds";
 import AdventurePath from "./features/adventure/AdventurePath";
 import AdventureFightRoute from "./features/adventure/AdventureFight";
+import TutorialFightRoute from "./features/tutorial/TutorialFight";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "./services/user.service";
 import { useStarterDeckModal } from "./hooks/useStarterDeckModal";
@@ -140,6 +141,10 @@ function App() {
                 <Route
                   path="/adventure/fight/:opponentId"
                   element={<AdventureFightRoute />}
+                />
+                <Route
+                  path="/tutorial/:lessonId"
+                  element={<TutorialFightRoute />}
                 />
               </Route>
               <Route

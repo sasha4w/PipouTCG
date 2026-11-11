@@ -1,3 +1,4 @@
+import type { TutorialHint } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
 import "./FightActionBar.css";
 import type { Phase } from "./fight.types";
@@ -15,6 +16,8 @@ interface Props {
   playBlockedReason?: string;
   onRecycle: () => void;
   onMain: () => void;
+  /** Tutoriel : bouton à mettre en avant. */
+  coach?: TutorialHint;
 }
 
 /** Deux emplacements fixes : Recycler à gauche, action principale à droite. */
@@ -27,6 +30,7 @@ export default function FightActionBar({
   playBlockedReason,
   onRecycle,
   onMain,
+  coach,
 }: Props) {
   const { t } = useTranslation();
 
@@ -48,7 +52,7 @@ export default function FightActionBar({
       <div className="fab-btns">
         <button
           type="button"
-          className="fab-btn fab-btn--recycle"
+          className={`fab-btn fab-btn--recycle${coach?.button === "recycle" ? " coach-hl" : ""}`}
           disabled={!canRecycle}
           title={t("fight.bar.recycleTitle")}
           onClick={onRecycle}

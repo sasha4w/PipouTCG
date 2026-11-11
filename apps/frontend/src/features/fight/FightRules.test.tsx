@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import i18n from "../../i18n";
 import { COUNTER_OFFENSIVE_PER_TURN, GUARD_MAX_TURNS } from "@pipou/shared";
-import FightRules from "./FightRules";
+import FightRules, { RulesReference } from "./FightRules";
 
 const tt = (key: string, opts?: Record<string, unknown>) =>
   i18n.t(key, opts) as string;
@@ -10,13 +10,39 @@ const tt = (key: string, opts?: Record<string, unknown>) =>
 const goTo = (label: string) =>
   fireEvent.click(screen.getByRole("button", { name: new RegExp(label) }));
 
-describe("FightRules", () => {
+vi.mock("../tutorial/TutorialHome", () => ({
+  default: () => <div data-testid="tutorial-home" />,
+}));
+
+describe("FightRules — sous-onglets", () => {
+  beforeAll(async () => {
+    await i18n.changeLanguage("fr");
+  });
+
+  it("ouvre le tutoriel par défaut, puis la référence", () => {
+    render(<FightRules />);
+    expect(screen.getByTestId("tutorial-home")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Tutoriel" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    fireEvent.click(screen.getByRole("tab", { name: "Référence" }));
+    expect(screen.queryByTestId("tutorial-home")).toBeNull();
+    expect(
+      screen.getByRole("button", {
+        name: new RegExp(tt("fight.rules.step.goal")),
+      }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("RulesReference", () => {
   beforeAll(async () => {
     await i18n.changeLanguage("fr");
   });
 
   it("l'étape cartes affiche la Charge et les emplacements d'équipement", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.cards"));
     expect(screen.getByText(tt("glossary.kind.CHARGE"))).toBeInTheDocument();
     expect(screen.getByText(tt("fight.rules.charge"))).toBeInTheDocument();
@@ -33,7 +59,7 @@ describe("FightRules", () => {
   });
 
   it("l'étape decks de départ liste les 3 decks", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.starters"));
     for (const a of ["pipou", "pixelman", "dragon"]) {
       expect(
@@ -52,7 +78,7 @@ describe("FightRules — référence corrigée", () => {
   });
 
   it("la phase 4 est la phase de contrôle, plus « Ending Phase »", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.turn"));
     expect(
       screen.getByText(tt("fight.rules.phaseControl")),
@@ -65,7 +91,7 @@ describe("FightRules — référence corrigée", () => {
   });
 
   it("la Garde affiche les valeurs du moteur (tours max, contre-offensive)", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.combat"));
     const guard = screen.getByTestId("guard-rules");
     expect(guard).toHaveTextContent(String(GUARD_MAX_TURNS));
@@ -73,14 +99,14 @@ describe("FightRules — référence corrigée", () => {
   });
 
   it("les Primes disent qu'une destruction par effet n'en rapporte pas", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.primes"));
     expect(screen.getByText(/par un effet.*aucune Prime/i)).toBeInTheDocument();
     expect(screen.getByText(/Renvoi/)).toBeInTheDocument();
   });
 
   it("l'étape invocations spéciales couvre évolution, Transformer, Relève, Zeta, Origines", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.special"));
     for (const k of ["evolution", "transform", "releve", "zeta", "origins"]) {
       expect(screen.getByTestId(`special-${k}`)).toBeInTheDocument();
@@ -88,13 +114,13 @@ describe("FightRules — référence corrigée", () => {
   });
 
   it("l'étape supports dit : un Terrain, pas de doublon de Persistant", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.cards"));
     expect(screen.getByTestId("support-limits")).toHaveTextContent(/Terrain/);
   });
 
   it("les statuts sont classés en groupes", () => {
-    render(<FightRules />);
+    render(<RulesReference />);
     goTo(tt("fight.rules.step.status"));
     for (const g of ["restraint", "combat", "immunity", "summon"]) {
       expect(screen.getByTestId(`status-group-${g}`)).toBeInTheDocument();
@@ -112,7 +138,7 @@ describe("FightRules — référence corrigée", () => {
   });
 
   it("aucun emoji dans les étapes", () => {
-    const { container } = render(<FightRules />);
+    const { container } = render(<RulesReference />);
     const steps = container.querySelectorAll(".fr-bc-step").length;
     for (let i = 0; i < steps; i++) {
       fireEvent.click(container.querySelectorAll(".fr-bc-step")[i]);

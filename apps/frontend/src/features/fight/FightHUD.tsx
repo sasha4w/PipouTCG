@@ -1,3 +1,4 @@
+import type { TutorialHint } from "@pipou/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./FightHUD.css";
@@ -30,6 +31,8 @@ interface Props {
   onOpenGraveyard: (side: "me" | "opponent") => void;
   /** Absent : pas de bouton d'abandon. */
   onSurrender?: () => void;
+  /** Tutoriel : la pastille de phase est mise en avant quand il faut passer la phase. */
+  coach?: TutorialHint;
 }
 
 /** `primes` = primes restantes à récupérer ; les coffres se colorent à mesure qu'elles sont prises. */
@@ -63,12 +66,13 @@ export default function FightHUD({
   onOpenLog,
   onOpenGraveyard,
   onSurrender,
+  coach,
 }: Props) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
   const options = phaseOptions(phase, handSize);
   const canPickPhase = isMyTurn && options.length > 0;
-  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}`;
+  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}${coach?.button === "end_phase" ? " coach-hl" : ""}`;
   return (
     <div className="hud">
       {/* ── Ligne adversaire ── */}
@@ -137,6 +141,7 @@ export default function FightHUD({
                 onPickPhase(o);
               }}
               onClose={() => setMenuOpen(false)}
+              coach={coach}
             />
           )}
         </span>
