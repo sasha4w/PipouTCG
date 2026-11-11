@@ -1,5 +1,5 @@
 import type { Lesson } from '../lesson.types';
-import { endTurn, opponentPasses, toBattle, toControl } from './common';
+import { endTurn, opponentEndsTurn, toBattle, toControl } from './common';
 
 /** Leçon 5 : support après le combat, limite de 7 cartes, défausse. */
 export const control: Lesson = {
@@ -52,10 +52,9 @@ export const control: Lesson = {
       },
     },
     {
-      kind: 'player',
+      kind: 'info',
       key: 'noSummon',
-      refused: true,
-      expect: {
+      engineRefuses: {
         type: 'summon',
         card: 'Lieutenant Bidouille',
         zone: 1,
@@ -69,7 +68,7 @@ export const control: Lesson = {
       expect: { type: 'discard', card: 'Gardien Ratouile' },
     },
     endTurn(),
-    ...opponentPasses(),
+    opponentEndsTurn(),
     { kind: 'info', key: 'done' },
   ],
 };

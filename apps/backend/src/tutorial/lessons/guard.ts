@@ -1,14 +1,5 @@
-import type { Lesson, LessonStep } from '../lesson.types';
-import {
-  endTurn,
-  opponentPasses,
-  passTurn,
-  toBattle,
-  toControl,
-} from './common';
-
-/** Tour entier du joueur sans rien jouer : trois passages de phase. */
-const idleTurn = (): LessonStep[] => passTurn();
+import type { Lesson } from '../lesson.types';
+import { endTurn, opponentEndsTurn, toBattle } from './common';
 
 /** Leçon 3 : Garde, pas de Prime, 2 tours max, contre-offensive, Perçant. */
 export const guard: Lesson = {
@@ -71,8 +62,6 @@ export const guard: Lesson = {
         mode: 'guard',
       },
     },
-    toBattle(),
-    toControl(),
     endTurn(),
     { kind: 'opponent', key: 'opponentToBattle', do: { type: 'end_phase' } },
     {
@@ -95,10 +84,10 @@ export const guard: Lesson = {
       },
     },
     { kind: 'info', key: 'piercingInfo' },
-    ...opponentPasses().slice(1),
+    opponentEndsTurn(),
     { kind: 'info', key: 'turnHeld' },
-    ...idleTurn(),
-    ...opponentPasses(),
+    endTurn(),
+    opponentEndsTurn(),
     { kind: 'info', key: 'counter' },
     toBattle(),
     {

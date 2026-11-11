@@ -1,5 +1,5 @@
 import type { Lesson } from '../lesson.types';
-import { endTurn, opponentPasses, toBattle, toControl } from './common';
+import { endTurn, opponentEndsTurn } from './common';
 
 /** Leçon 1 : pioche, Énergie, invocation, paiement par défausse, phases. */
 export const firstTurn: Lesson = {
@@ -51,8 +51,6 @@ export const firstTurn: Lesson = {
       },
     },
     { kind: 'info', key: 'board' },
-    toBattle(),
-    toControl(),
     endTurn(),
     {
       kind: 'opponent',
@@ -64,7 +62,7 @@ export const firstTurn: Lesson = {
       key: 'opponentSummon',
       do: { type: 'summon', card: 'Sentinelle Gargouille', zone: 1, pay: [] },
     },
-    ...opponentPasses(),
+    opponentEndsTurn(),
     { kind: 'info', key: 'nextTurn' },
     { kind: 'info', key: 'done' },
   ],

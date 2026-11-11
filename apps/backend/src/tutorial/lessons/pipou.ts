@@ -1,5 +1,5 @@
 import type { Lesson } from '../lesson.types';
-import { endTurn, opponentPasses, toBattle, toControl } from './common';
+import { endTurn, opponentEndsTurn } from './common';
 
 /** Leçon 6 : vagues d'Énergie, invocation gratuite, Terrain, Relève, Provocation. */
 export const pipou: Lesson = {
@@ -76,8 +76,6 @@ export const pipou: Lesson = {
       },
     },
     { kind: 'info', key: 'releveDone' },
-    toBattle(),
-    toControl(),
     endTurn(),
     { kind: 'opponent', key: 'opponentToBattle', do: { type: 'end_phase' } },
     {
@@ -89,7 +87,7 @@ export const pipou: Lesson = {
         target: 'Capitaine Gribouille',
       },
     },
-    ...opponentPasses().slice(1),
+    opponentEndsTurn(),
     { kind: 'info', key: 'done' },
   ],
 };

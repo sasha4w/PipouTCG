@@ -53,7 +53,10 @@ export default function PhaseMenu({
           const current = id === phase;
           const blocked = option?.disabledReason === "discard";
           const hl =
-            coach?.button === "end_phase" && !!option && !current && !blocked;
+            !!option &&
+            !blocked &&
+            ((coach?.button === "end_phase" && id === options[0]?.target) ||
+              (coach?.button === "end_turn" && id === "endTurn"));
           return (
             <button
               key={id}

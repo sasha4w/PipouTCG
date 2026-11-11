@@ -41,6 +41,17 @@ function replay(lesson: Lesson, facts: Facts = {}) {
     const label = `étape ${runner.index} « ${step.key} »`;
     facts[step.key]?.(game);
     if (step.kind === 'info') {
+      // Interdit que le texte explique : le moteur doit le refuser maintenant
+      const forbidden = runner.refusedAction(game, 'p1');
+      if (step.engineRefuses) {
+        if (!forbidden)
+          throw new Error(
+            `${label} : action interdite introuvable (carte absente ?)`,
+          );
+        const refusal = engine.dispatch(game, 'p1', forbidden);
+        if (!refusal.error)
+          throw new Error(`${label} : le moteur devait refuser cette action`);
+      }
       runner.advance();
       continue;
     }
@@ -52,12 +63,20 @@ function replay(lesson: Lesson, facts: Facts = {}) {
       throw new Error(
         `${label} : l'action attendue ne se reconnaît pas elle-même`,
       );
+    const turnBefore = game.currentTurnUserId;
     const result = engine.dispatch(game, seat, action);
-    if (step.kind === 'player' && step.refused) {
-      if (!result.error)
-        throw new Error(`${label} : le moteur devait refuser cette action`);
-    } else if (result.error) {
+    if (result.error)
       throw new Error(`${label} : action refusée — ${result.error}`);
+    // Finir le tour : end_phase jusqu'au passage de main
+    const expected = step.kind === 'player' ? step.expect : step.do;
+    if (expected.type === 'end_turn') {
+      for (let i = 0; i < 4 && game.currentTurnUserId === turnBefore; i++) {
+        const more = engine.dispatch(game, seat, { type: 'end_phase' });
+        if (more.error)
+          throw new Error(`${label} : fin de tour refusée — ${more.error}`);
+      }
+      if (game.currentTurnUserId === turnBefore)
+        throw new Error(`${label} : la main n'a pas changé`);
     }
     runner.advance();
   }
@@ -225,8 +244,7 @@ const FACTS: Record<TutorialLessonId, Facts> = {
       expect(monster(me(g), 'Gardien Ratouile').mode).toBe('guard');
       expect(monster(me(g), 'Chevalier Touille').mode).toBe('attack');
     },
-    immuneInfo: (g) =>
-      expect(names(me(g).hand)).toContain('Protocole de Gel .frz'),
+    immune: (g) => expect(names(me(g).hand)).toContain('Protocole de Gel .frz'),
     immunities: (g) =>
       expect(names(me(g).hand)).not.toContain('Protocole de Gel .frz'),
   },

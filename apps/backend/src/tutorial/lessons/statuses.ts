@@ -1,5 +1,5 @@
 import type { Lesson } from '../lesson.types';
-import { opponentPasses, toBattle } from './common';
+import { opponentEndsTurn, toBattle } from './common';
 
 /** Leçon 9 : entraves subies, statuts de combat, immunités. */
 export const statuses: Lesson = {
@@ -56,23 +56,21 @@ export const statuses: Lesson = {
         target: 'Chevalier Touille',
       },
     },
-    ...opponentPasses(),
+    opponentEndsTurn(),
     { kind: 'info', key: 'restraints' },
     {
-      kind: 'player',
+      kind: 'info',
       key: 'lockedMode',
-      refused: true,
-      expect: {
+      engineRefuses: {
         type: 'change_mode',
         monster: 'Gardien Ratouile',
         mode: 'attack',
       },
     },
     {
-      kind: 'player',
+      kind: 'info',
       key: 'forcedMode',
-      refused: true,
-      expect: {
+      engineRefuses: {
         type: 'change_mode',
         monster: 'Chevalier Touille',
         mode: 'guard',
@@ -90,16 +88,14 @@ export const statuses: Lesson = {
     },
     { kind: 'info', key: 'combatStatuses' },
     {
-      kind: 'player',
+      kind: 'info',
       key: 'immune',
-      refused: true,
-      expect: {
+      engineRefuses: {
         type: 'play_support',
         card: 'Protocole de Gel .frz',
         target: 'Adulte Teros',
       },
     },
-    { kind: 'info', key: 'immuneInfo' },
     {
       kind: 'player',
       key: 'notImmune',
@@ -112,20 +108,18 @@ export const statuses: Lesson = {
     { kind: 'info', key: 'immunities' },
     toBattle(),
     {
-      kind: 'player',
+      kind: 'info',
       key: 'frozenAttack',
-      refused: true,
-      expect: {
+      engineRefuses: {
         type: 'attack',
         attacker: 'Chevalier Touille',
         target: 'Archer Crapouille',
       },
     },
     {
-      kind: 'player',
+      kind: 'info',
       key: 'summonedAttack',
-      refused: true,
-      expect: {
+      engineRefuses: {
         type: 'attack',
         attacker: 'Commandant Quenouille',
         target: 'Archer Crapouille',

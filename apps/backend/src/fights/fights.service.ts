@@ -375,9 +375,13 @@ export class FightsService {
     if (!tut.runner.matches(game, seat, action))
       return { error: TUTORIAL_WRONG_ACTION };
     const result = this.engine.dispatch(game, seat, action);
-    // Un refus du moteur n'avance pas la leçon, sauf quand elle le montre exprès
-    if (result.error && !step.refused) return result;
-    tut.runner.advance();
+    if (result.error) return result;
+    // « Finir le tour » envoie plusieurs end_phase : l'étape dure jusqu'au passage de main
+    if (
+      step.expect.type !== 'end_turn' ||
+      game.currentTurnUserId !== tut.humanId
+    )
+      tut.runner.advance();
     await this.afterChange(game, server);
     return result;
   }
@@ -407,9 +411,18 @@ export class FightsService {
       if (!game || !tut || tut.runner.step?.kind !== 'opponent') return;
       const seat = seatOf(game, game.player2.userId)!;
       const action = tut.runner.scripted(game, seat);
-      const error = action
+      let error = action
         ? this.engine.dispatch(game, seat, action).error
         : 'coup introuvable';
+      // Finir son tour : end_phase jusqu'à rendre la main au joueur
+      const step = tut.runner.step;
+      if (!error && step?.kind === 'opponent' && step.do.type === 'end_turn')
+        for (
+          let i = 0;
+          !error && i < 4 && game.currentTurnUserId !== tut.humanId;
+          i++
+        )
+          error = this.engine.dispatch(game, seat, { type: 'end_phase' }).error;
       if (error) {
         this.logger.error(
           `Leçon ${tut.lessonId} : coup scripté ${JSON.stringify(action)} refusé — ${error}`,

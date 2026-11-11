@@ -50,12 +50,10 @@ export const drakon: Lesson = {
       key: 'hatch',
       expect: { type: 'pick_cards', cards: ['Bébé Tempestu'] },
     },
-    { kind: 'info', key: 'stages' },
     {
-      kind: 'player',
-      key: 'noShortcut',
-      refused: true,
-      expect: {
+      kind: 'info',
+      key: 'stages',
+      engineRefuses: {
         type: 'summon',
         card: 'Adulte Feros',
         zone: 1,

@@ -122,6 +122,13 @@ export class LessonRunner {
     );
   }
 
+  /** Interdit que l'étape d'information courante explique, résolu en action. */
+  refusedAction(game: GameState, seat: Seat): GameAction | null {
+    const step = this.step;
+    if (step?.kind !== 'info' || !step.engineRefuses) return null;
+    return this.resolve(game, seat, step.engineRefuses);
+  }
+
   /** Étape courante telle que l'écran la montre. */
   view(game: GameState, seat: Seat): TutorialStepView | undefined {
     const step = this.step;
@@ -173,6 +180,7 @@ export class LessonRunner {
 
     switch (e.type) {
       case 'end_phase':
+      case 'end_turn':
         return a.type === 'end_phase';
       case 'recycle':
         return (
@@ -262,6 +270,7 @@ export class LessonRunner {
     const hand = (name: string): number => handIndexOf(me, name);
     switch (e.type) {
       case 'end_phase':
+      case 'end_turn':
         return { type: 'end_phase' };
       case 'recycle':
         return { type: 'recycle', handIndex: hand(e.card) };
@@ -359,6 +368,9 @@ export class LessonRunner {
     switch (e.type) {
       case 'end_phase':
         button = 'end_phase';
+        break;
+      case 'end_turn':
+        button = 'end_turn';
         break;
       case 'recycle':
         addHand([e.card]);

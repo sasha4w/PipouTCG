@@ -7,40 +7,23 @@ export const toBattle = (): LessonStep => ({
   expect: { type: 'end_phase' },
 });
 
-/** Phase de combat → phase de contrôle. */
+/** Phase de combat → phase de contrôle (leçon dédiée seulement). */
 export const toControl = (): LessonStep => ({
   kind: 'player',
   key: 'common.toControl',
   expect: { type: 'end_phase' },
 });
 
-/** Phase de contrôle → tour de l'adversaire. */
+/** « Finir le tour » du menu de phase : d'un clic, quelle que soit la phase. */
 export const endTurn = (): LessonStep => ({
   kind: 'player',
   key: 'common.endTurn',
-  expect: { type: 'end_phase' },
+  expect: { type: 'end_turn' },
 });
 
-/** Tour du joueur terminé depuis la phase principale : trois passages de phase. */
-export const passTurn = (): LessonStep[] => [
-  toBattle(),
-  toControl(),
-  endTurn(),
-];
-
-/** L'adversaire ne joue rien : il passe ses trois phases. */
-export const opponentPasses = (): LessonStep[] =>
-  (
-    [
-      'common.opponentMain',
-      'common.opponentBattle',
-      'common.opponentEnd',
-    ] as const
-  ).map((key): LessonStep => ({
-    kind: 'opponent',
-    key,
-    do: { type: 'end_phase' },
-  }));
-
-/** L'adversaire passe sa phase principale et sa phase de combat, puis sa phase de contrôle. */
-export const opponentEndsTurn = opponentPasses;
+/** L'adversaire finit son tour d'un coup : la main revient au joueur. */
+export const opponentEndsTurn = (): LessonStep => ({
+  kind: 'opponent',
+  key: 'common.opponentEnd',
+  do: { type: 'end_turn' },
+});

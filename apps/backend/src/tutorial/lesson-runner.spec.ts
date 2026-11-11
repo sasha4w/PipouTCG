@@ -274,4 +274,31 @@ describe('LessonRunner', () => {
     );
     expect(r.view(game(), 'p1')!.textKey).toBe('tutorial.common.endTurn');
   });
+
+  it('« Finir le tour » accepte end_phase et met en avant le bouton dédié', () => {
+    const g = game();
+    const r = new LessonRunner(
+      lesson([{ kind: 'player', key: 'a', expect: { type: 'end_turn' } }]),
+    );
+    expect(r.matches(g, 'p1', { type: 'end_phase' })).toBe(true);
+    expect(r.matches(g, 'p1', { type: 'discard', handIndex: 0 })).toBe(false);
+    expect(r.view(g, 'p1')!.hint).toEqual({ button: 'end_turn' });
+  });
+
+  it("résout l'interdit expliqué par une étape d'information", () => {
+    const g = game();
+    const r = new LessonRunner(
+      lesson([
+        {
+          kind: 'info',
+          key: 'a',
+          engineRefuses: { type: 'recycle', card: 'Beta' },
+        },
+        { kind: 'info', key: 'b' },
+      ]),
+    );
+    expect(r.refusedAction(g, 'p1')).toEqual({ type: 'recycle', handIndex: 1 });
+    r.advance();
+    expect(r.refusedAction(g, 'p1')).toBeNull();
+  });
 });

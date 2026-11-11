@@ -22,3 +22,12 @@
     animation: none;
   }
 }
+
+/* Cartes réduites du plateau : le badge de coût ne recouvre plus le nom */
+.fp-fight-area .zr-card .card-face__header {
+  padding-right: 22%;
+}
+.fp-fight-area .zr-card .card-face__cost {
+  top: 4%;
+  right: 3%;
+}

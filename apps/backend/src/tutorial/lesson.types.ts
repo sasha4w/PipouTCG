@@ -14,6 +14,8 @@ import type { PlayerSpec } from '../fights/helpers/board-builder';
  */
 export type Expect =
   | { type: 'end_phase' }
+  /** Finir le tour d'un coup : plusieurs `end_phase` jusqu'à ce que la main passe. */
+  | { type: 'end_turn' }
   | { type: 'recycle'; card: string }
   | {
       type: 'summon';
@@ -52,6 +54,12 @@ export type Expect =
 export interface InfoStep {
   kind: 'info';
   key: string;
+  /**
+   * Interdit expliqué par le texte : l'interface empêche de le tenter, donc le
+   * joueur le lit. Le test des leçons vérifie que le moteur refuse bien cette
+   * action à ce moment.
+   */
+  engineRefuses?: Expect;
 }
 
 /** Le joueur doit jouer exactement `expect`. */
@@ -59,11 +67,6 @@ export interface PlayerStep {
   kind: 'player';
   key: string;
   expect: Expect;
-  /**
-   * Le moteur doit REFUSER l'action : la leçon montre un refus (immunité) puis
-   * avance sans rien changer au plateau.
-   */
-  refused?: boolean;
 }
 
 /** L'adversaire scripté joue seul. */

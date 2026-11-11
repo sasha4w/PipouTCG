@@ -21,6 +21,7 @@ export const TUTORIAL_REWARD = { gold: 100, xp: 50 } as const;
 /** Bouton de l'interface à mettre en avant. */
 export type TutorialButton =
   | "end_phase"
+  | "end_turn"
   | "recycle"
   | "attack_mode"
   | "guard_mode"

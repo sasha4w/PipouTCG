@@ -46,7 +46,10 @@ function PrimesRow({ primes }: { primes: number }) {
       {Array.from({ length: STARTING_PRIMES }).map((_, i) => {
         const taken = i < STARTING_PRIMES - primes;
         return (
-          <span key={i} className={`hud-prime${taken ? " hud-prime--earned" : ""}`}>
+          <span
+            key={i}
+            className={`hud-prime${taken ? " hud-prime--earned" : ""}`}
+          >
             <IconChest size={13} color={taken ? "#7a1c3b" : "#ccc"} />
           </span>
         );
@@ -72,7 +75,7 @@ export default function FightHUD({
   const [menuOpen, setMenuOpen] = useState(false);
   const options = phaseOptions(phase, handSize);
   const canPickPhase = isMyTurn && options.length > 0;
-  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}${coach?.button === "end_phase" ? " coach-hl" : ""}`;
+  const chipClass = `hud-phase-chip hud-phase-chip--${isMyTurn ? "mine" : "theirs"}${coach?.button === "end_phase" || coach?.button === "end_turn" ? " coach-hl" : ""}`;
   return (
     <div className="hud">
       {/* ── Ligne adversaire ── */}
@@ -157,7 +160,9 @@ export default function FightHUD({
           <button
             type="button"
             className="hud-icon-btn"
-            aria-label={t("fight.hud.myGraveyard", { count: me.graveyard.length })}
+            aria-label={t("fight.hud.myGraveyard", {
+              count: me.graveyard.length,
+            })}
             disabled={me.graveyard.length === 0}
             onClick={() => onOpenGraveyard("me")}
           >

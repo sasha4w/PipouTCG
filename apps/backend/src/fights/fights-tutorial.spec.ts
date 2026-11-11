@@ -103,10 +103,13 @@ function setup() {
       if (step.kind === 'info') {
         expect({ label, ...(await ack()) }).toEqual({ label });
       } else if (step.kind === 'player') {
-        const res = await act(mirror.expectedAction(game, 'p1')!);
-        if (step.refused)
-          expect({ label, ok: !res.error }).toEqual({ label, ok: false });
-        else expect({ label, ...res }).toEqual({ label });
+        const action = mirror.expectedAction(game, 'p1')!;
+        const res = await act(action);
+        expect({ label, ...res }).toEqual({ label });
+        // Finir le tour : le client envoie end_phase jusqu'au passage de main
+        if (step.expect.type === 'end_turn')
+          for (let i = 0; i < 4 && game.currentTurnUserId === HUMAN; i++)
+            expect({ label, ...(await act(action)) }).toEqual({ label });
       } else {
         await jest.advanceTimersByTimeAsync(TUTORIAL_ACTION_DELAY_MS);
       }
@@ -230,7 +233,13 @@ describe('FightsService — leçons du tutoriel', () => {
     while (mirror.step?.kind !== 'opponent') {
       const step = mirror.step!;
       if (step.kind === 'info') await t.ack();
-      else await t.act(mirror.expectedAction(game, 'p1')!);
+      else {
+        const action = mirror.expectedAction(game, 'p1')!;
+        await t.act(action);
+        if (step.kind === 'player' && step.expect.type === 'end_turn')
+          for (let i = 0; i < 4 && game.currentTurnUserId === HUMAN; i++)
+            await t.act(action);
+      }
       mirror.advance();
     }
     expect(t.lastState().tutorial?.kind).toBe('opponent');

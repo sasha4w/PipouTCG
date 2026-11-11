@@ -1,5 +1,5 @@
 import type { Lesson } from '../lesson.types';
-import { endTurn, opponentPasses, toBattle, toControl } from './common';
+import { endTurn, opponentEndsTurn, toBattle } from './common';
 
 /** Leçon 2 : ATK contre ATK et riposte, double K.O., attaque directe, dernière Prime. */
 export const combat: Lesson = {
@@ -49,7 +49,6 @@ export const combat: Lesson = {
       },
     },
     { kind: 'info', key: 'prime' },
-    toControl(),
     endTurn(),
     {
       kind: 'opponent',
@@ -66,7 +65,7 @@ export const combat: Lesson = {
       },
     },
     { kind: 'info', key: 'doubleKoInfo' },
-    ...opponentPasses().slice(1),
+    opponentEndsTurn(),
     { kind: 'info', key: 'emptyBoard' },
     toBattle(),
     {

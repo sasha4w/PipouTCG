@@ -1,5 +1,5 @@
 import type { Lesson } from '../lesson.types';
-import { opponentPasses, passTurn } from './common';
+import { endTurn, opponentEndsTurn } from './common';
 
 /** Leçon 8 : Noyaux, équipement, Force Plasma (sans Prime), Zeta implanté et désinfection. */
 export const pixelman: Lesson = {
@@ -51,8 +51,8 @@ export const pixelman: Lesson = {
     },
     { kind: 'info', key: 'noPrime' },
     { kind: 'info', key: 'zetaCountdown' },
-    ...passTurn(),
-    ...opponentPasses(),
+    endTurn(),
+    opponentEndsTurn(),
     { kind: 'info', key: 'zetaExplodes' },
     {
       kind: 'player',
@@ -66,7 +66,7 @@ export const pixelman: Lesson = {
       },
     },
     { kind: 'info', key: 'implantInfo' },
-    ...passTurn(),
+    endTurn(),
     { kind: 'opponent', key: 'opponentToBattle', do: { type: 'end_phase' } },
     {
       kind: 'opponent',
@@ -78,7 +78,7 @@ export const pixelman: Lesson = {
         targetSide: 'me',
       },
     },
-    ...opponentPasses().slice(1),
+    opponentEndsTurn(),
     { kind: 'info', key: 'done' },
   ],
 };
