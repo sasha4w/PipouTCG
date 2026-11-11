@@ -59,7 +59,7 @@ const RESOLUTION_CONFIRM_ICON: Record<PendingChoiceResolution, ReactNode> = {
 const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#fdf6f9",
   discard: "#fff5f5",
-  summon_to_zone: "#f3faf5",
+  summon_to_zone: "#fdf6f9",
   copy_effects: "#f4f1fb",
   transfer_atk_source: "#fdf6f9",
   transfer_atk_target: "#fdf6f9",
@@ -69,7 +69,7 @@ const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
   discard: "#c0392b",
-  summon_to_zone: "#1f6b3a",
+  summon_to_zone: "#7a1c3b",
   copy_effects: "#4b2a85",
   transfer_atk_source: "#7a1c3b",
   transfer_atk_target: "#7a1c3b",
@@ -79,7 +79,7 @@ const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   pick_to_hand: "#7a1c3b",
   discard: "#c0392b",
-  summon_to_zone: "#1f6b3a",
+  summon_to_zone: "#7a1c3b",
   copy_effects: "#4b2a85",
   transfer_atk_source: "#7a1c3b",
   transfer_atk_target: "#7a1c3b",
