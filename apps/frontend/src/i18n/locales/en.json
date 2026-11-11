@@ -1626,6 +1626,7 @@
   "tutorial": {
     "ui": {
       "tab": "Tutorial",
+      "entryProgress": "{{done}}/{{total}} lessons · next: {{lesson}}",
       "reference": "Reference",
       "title": "Learn to play",
       "intro": "Nine short lessons played on the real game engine. At each step only one action is accepted: the bubble tells you which.",

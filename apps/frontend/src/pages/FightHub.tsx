@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DECK_RULES } from "@pipou/shared";
 import { IconCards, IconMap, IconSwords } from "../components/Icons";
+import TutorialEntry from "../features/tutorial/TutorialEntry";
 import "./FightHub.css";
 
 export default function FightHub() {
@@ -19,6 +20,8 @@ export default function FightHub() {
           <h1 className="fh-title">{t("arena.title")}</h1>
           <p className="fh-subtitle">{t("arena.subtitle")}</p>
         </div>
+
+        <TutorialEntry />
 
         <div className="fh-cards">
           {/* ── Deck Builder ─────────────────────────────────────────── */}

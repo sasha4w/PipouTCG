@@ -1627,6 +1627,7 @@
   "tutorial": {
     "ui": {
       "tab": "Tutoriel",
+      "entryProgress": "{{done}}/{{total}} leçons · suivante : {{lesson}}",
       "reference": "Référence",
       "title": "Apprendre à jouer",
       "intro": "Neuf leçons courtes, jouées sur le vrai moteur. À chaque étape, une seule action est acceptée : la bulle te dit laquelle.",

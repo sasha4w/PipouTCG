@@ -146,3 +146,51 @@
 .tut-error {
   color: #b00020;
 }
+
+/* ── Raccourci vers la prochaine leçon (accueil, arène) ── */
+.tut-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 1.5px dashed #b3541e;
+  border-radius: 14px;
+  background: #fff6ea;
+  color: #7a1c3b;
+  font-family: "Comfortaa", system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.tut-entry:active {
+  transform: scale(0.98);
+}
+.tut-entry:focus-visible {
+  outline: 3px solid #eebc77;
+  outline-offset: 2px;
+}
+.tut-entry__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(238, 188, 119, 0.35);
+}
+.tut-entry__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tut-entry__title {
+  font-family: "Lilita One", cursive;
+  font-size: 1.05rem;
+}
+.tut-entry__sub {
+  font-size: 0.78rem;
+  color: #6a4a30;
+}

@@ -9,6 +9,7 @@ import { IconArrowLeft, IconScroll } from "../../components/Icons";
 import { userService } from "../../services/user.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import FightArena from "../fight/FightArena";
+import ConfirmActionSheet from "../fight/ConfirmActionSheet";
 import { useBoardControls } from "../fight/useBoardControls";
 import { useFightConnection } from "../fight/useFightConnection";
 import TutorialCoach from "./TutorialCoach";
@@ -107,10 +108,12 @@ function TutorialFight({ userId, lessonId }: Props) {
     start();
   };
 
+  const [confirmingQuit, setConfirmingQuit] = useState(false);
   const quit = () => {
-    if (!matchId || !window.confirm(t("tutorial.ui.quitConfirm"))) return;
-    emit("fight:surrender", { matchId });
+    setConfirmingQuit(false);
+    if (matchId) emit("fight:surrender", { matchId });
   };
+  const askQuit = () => setConfirmingQuit(true);
 
   const next = nextLesson(lessonId);
   const step = gameState?.tutorial;
@@ -137,14 +140,14 @@ function TutorialFight({ userId, lessonId }: Props) {
               onNext={() =>
                 emit("tutorial:ack", { matchId: gameState.matchId })
               }
-              onQuit={quit}
+              onQuit={askQuit}
             />
           )}
           <FightArena
             gameState={gameState}
             timeLeft={null}
             controls={controls}
-            onSurrender={quit}
+            onSurrender={askQuit}
             coach={step?.hint}
           />
         </div>
@@ -159,6 +162,14 @@ function TutorialFight({ userId, lessonId }: Props) {
             {t("tutorial.ui.backToLessons")}
           </Button>
         </div>
+      )}
+
+      {confirmingQuit && status === "playing" && !gameOver && (
+        <ConfirmActionSheet
+          text={{ key: "tutorial.ui.quitConfirm", params: {} }}
+          onConfirm={quit}
+          onCancel={() => setConfirmingQuit(false)}
+        />
       )}
     </div>
   );

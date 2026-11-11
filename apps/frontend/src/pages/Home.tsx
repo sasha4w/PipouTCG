@@ -12,6 +12,7 @@ import OpeningModal, {
 import OpeningQuickAccess from "../features/opening/OpeningQuickAccess";
 import { IconArrowRight, IconCards, IconSwords } from "../components/Icons";
 import StarterDeckButton from "../features/starter/StarterDeckButton";
+import TutorialEntry from "../features/tutorial/TutorialEntry";
 import { soundService } from "../services/sound.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import "./Home.css";
@@ -68,6 +69,7 @@ const Home = () => {
         </span>
         <IconArrowRight size={18} />
       </button>
+      <TutorialEntry />
       <StarterDeckButton />
       <DailyStreakWidget />
       <div className="home-divider" />
