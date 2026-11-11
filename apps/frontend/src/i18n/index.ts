@@ -22,4 +22,11 @@ i18n
     interpolation: { escapeValue: false },
   });
 
+// Lecteurs d’écran et césure suivent la langue affichée.
+const syncHtmlLang = (lng: string) => {
+  document.documentElement.lang = lng.split("-")[0];
+};
+syncHtmlLang(i18n.language ?? "fr");
+i18n.on("languageChanged", syncHtmlLang);
+
 export default i18n;
