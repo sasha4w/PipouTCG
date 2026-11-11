@@ -57,7 +57,7 @@ describe("enum values match the backend database values", () => {
     [
       "EffectConditionType",
       EffectConditionType,
-      ["ARCHETYPE_ON_BOARD", "HP_BELOW", "HAND_SIZE_MIN", "OPPONENT_HAS_NO_MONSTERS", "SPECIFIC_CARD_ON_BOARD", "EQUIPPED_ON", "DRAKON_ON_BOARD"],
+      ["ARCHETYPE_ON_BOARD", "HP_BELOW", "HAND_SIZE_MIN", "OPPONENT_HAS_NO_MONSTERS", "SPECIFIC_CARD_ON_BOARD", "EQUIPPED_ON", "DRAKON_ON_BOARD", "FIRST_COPY_ON_BOARD"],
     ],
     [
       "EffectTarget",

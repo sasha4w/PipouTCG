@@ -467,7 +467,8 @@
           "OPPONENT_HAS_NO_MONSTERS": "l'adversaire n'a aucun monstre",
           "SPECIFIC_CARD_ON_BOARD": "une carte précise est en jeu",
           "EQUIPPED_ON": "équipée sur un monstre précis",
-          "DRAKON_ON_BOARD": "un Drakon est en jeu"
+          "DRAKON_ON_BOARD": "un Drakon est en jeu",
+          "FIRST_COPY_ON_BOARD": "premier exemplaire en jeu"
         },
         "action": {
           "DEAL_DAMAGE": "inflige des dégâts",
@@ -600,6 +601,7 @@
       "EQUIPPED_ON": "Si elle est équipée sur « {{name}} »",
       "EQUIPPED_ON_contains": "Si elle est équipée sur un monstre dont le nom contient « {{name}} »",
       "DRAKON_ON_BOARD": "Si tu contrôles un Drakon ({{detail}})",
+      "FIRST_COPY_ON_BOARD": "Si c'est le premier exemplaire sur ton terrain",
       "EQUIPPED_ON_drakon": "Si elle est équipée sur un monstre ({{detail}})",
       "unknown": "Sous condition ({{type}})"
     },
@@ -987,6 +989,8 @@
       "releve": "Relève disponible"
     },
     "pick": {
+      "prevPage": "Page précédente",
+      "nextPage": "Page suivante",
       "collapse": "Réduire pour voir le plateau",
       "expand": "Rouvrir le choix",
       "skip": "Ne pas appliquer l'effet",

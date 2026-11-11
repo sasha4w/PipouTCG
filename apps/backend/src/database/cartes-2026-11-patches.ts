@@ -13,7 +13,7 @@ const equippedOn = (value: string): EffectCondition => ({
   value,
 });
 
-const BLUETOOTH_EFFECTS: CardEffect[] = [
+export const BLUETOOTH_EFFECTS: CardEffect[] = [
   fx(
     'PASSIVE',
     [a('SET_ATTACKS_PER_TURN', 'SELF', { value: 2 })],

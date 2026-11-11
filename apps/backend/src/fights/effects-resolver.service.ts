@@ -160,6 +160,26 @@ export class EffectsResolverService {
         );
     }
     if (opts.draw) drawCard(game, host.userId);
+    this.destroyClonesOf(game, instanceId, log);
     return monster;
+  }
+
+  /** Les copies (DuplicateX) d'un monstre détruit disparaissent avec lui : ni pioche ni Prime. */
+  private destroyClonesOf(
+    game: GameState,
+    originalId: string,
+    log: string[],
+  ): void {
+    for (const host of [game.player1, game.player2])
+      for (const clone of [...host.monsterZones]) {
+        if (clone?.cloneOf !== originalId) continue;
+        log.push(
+          `🪞 ${clone.card.baseCard.name} (copie) disparaît avec son original`,
+        );
+        this.destroyMonster(game, host, clone.instanceId, log, {
+          draw: false,
+          cause: DestroyCause.EFFECT,
+        });
+      }
   }
 }

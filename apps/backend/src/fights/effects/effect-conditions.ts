@@ -94,6 +94,17 @@ export function conditionMet(
       );
     }
 
+    // Vrai pour le premier exemplaire du terrain (ordre des zones) seulement ;
+    // le suivant prend le relais quand il part. Sert au cumul dégressif.
+    case ConditionType.FIRST_COPY_ON_BOARD: {
+      const source = ctx.sourceMonster;
+      if (!source) return false;
+      const first = board.find((m) =>
+        cardNameMatches(m.card.baseCard.name, source.card.baseCard.name),
+      );
+      return !first || first === source;
+    }
+
     default:
       return false;
   }

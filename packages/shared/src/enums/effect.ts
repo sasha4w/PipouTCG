@@ -23,6 +23,7 @@ export const EffectConditionType = {
   SPECIFIC_CARD_ON_BOARD: "SPECIFIC_CARD_ON_BOARD",
   EQUIPPED_ON: "EQUIPPED_ON",
   DRAKON_ON_BOARD: "DRAKON_ON_BOARD",
+  FIRST_COPY_ON_BOARD: "FIRST_COPY_ON_BOARD",
 } as const;
 export type EffectConditionType =
   (typeof EffectConditionType)[keyof typeof EffectConditionType];

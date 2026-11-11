@@ -378,6 +378,8 @@ function describeCondition(
       });
     case "OPPONENT_HAS_NO_MONSTERS":
       return t("effects.condition.OPPONENT_HAS_NO_MONSTERS");
+    case "FIRST_COPY_ON_BOARD":
+      return t("effects.condition.FIRST_COPY_ON_BOARD");
     case "DRAKON_ON_BOARD":
       return t("effects.condition.DRAKON_ON_BOARD", {
         detail: drakonDetail(t, condition),

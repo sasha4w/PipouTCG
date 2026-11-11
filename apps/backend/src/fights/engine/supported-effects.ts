@@ -32,6 +32,7 @@ export const SUPPORTED_CONDITIONS: ReadonlySet<EffectConditionType> = new Set([
   EffectConditionType.SPECIFIC_CARD_ON_BOARD,
   EffectConditionType.EQUIPPED_ON,
   EffectConditionType.DRAKON_ON_BOARD,
+  EffectConditionType.FIRST_COPY_ON_BOARD,
 ]);
 
 export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([

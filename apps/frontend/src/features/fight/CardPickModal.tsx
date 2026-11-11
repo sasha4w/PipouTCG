@@ -93,6 +93,9 @@ const SOURCE_ICON: Record<ClientChoiceCandidate["source"], ReactNode> = {
   board: <IconTarget size={11} />,
 };
 
+/** Cartes par page : 2 rangées de 3, sans défilement sur mobile. */
+const PAGE_SIZE = 6;
+
 /** Consigne traduite si le serveur fournit sa clé, sinon son texte. */
 function promptText(choice: PendingChoice, t: TFunction): string {
   if (!choice.promptKey) return choice.prompt;
@@ -118,6 +121,7 @@ export default function CardPickModal({
   const [pickedId, setPickedId] = useState<string | null>(null);
   // Réduit : on consulte main, terrain et cimetière derrière le modal
   const [collapsed, setCollapsed] = useState(false);
+  const [page, setPage] = useState(0);
 
   const resolution = choice.resolution ?? "pick_to_hand";
   const isBoardPick = choice.candidates.every((c) => c.source === "board");
@@ -149,6 +153,16 @@ export default function CardPickModal({
   const headerBg = RESOLUTION_HEADER_BG[resolution];
   const headerColor = RESOLUTION_HEADER_COLOR[resolution];
   const btnBg = RESOLUTION_BTN_BG[resolution];
+  const pageCount = Math.max(
+    1,
+    Math.ceil(choice.candidates.length / PAGE_SIZE),
+  );
+  // La liste peut raccourcir d'un choix à l'autre : on reste sur une page existante
+  const currentPage = Math.min(page, pageCount - 1);
+  const visible = choice.candidates.slice(
+    currentPage * PAGE_SIZE,
+    (currentPage + 1) * PAGE_SIZE,
+  );
 
   // Dans le cadre de l'app (#root), comme BottomSheet : le modal ne déborde pas du format mobile
   return createPortal(
@@ -199,7 +213,7 @@ export default function CardPickModal({
 
         {/* ── Grille de cartes ── */}
         <div className="cpm-grid" hidden={collapsed}>
-          {choice.candidates.map((c: ClientChoiceCandidate) => {
+          {visible.map((c: ClientChoiceCandidate) => {
             const isSelected = selected.includes(c.instanceId);
             return (
               <InspectableCard
@@ -233,6 +247,34 @@ export default function CardPickModal({
             );
           })}
         </div>
+
+        {pageCount > 1 && !collapsed && (
+          <div className="cpm-pager">
+            <button
+              type="button"
+              className="cpm-page-btn cpm-page-btn--prev"
+              style={{ color: headerColor }}
+              aria-label={t("fight.pick.prevPage")}
+              disabled={currentPage === 0}
+              onClick={() => setPage(currentPage - 1)}
+            >
+              <IconChevronDown size={20} />
+            </button>
+            <span className="cpm-page-count" aria-live="polite">
+              {currentPage + 1} / {pageCount}
+            </span>
+            <button
+              type="button"
+              className="cpm-page-btn cpm-page-btn--next"
+              style={{ color: headerColor }}
+              aria-label={t("fight.pick.nextPage")}
+              disabled={currentPage === pageCount - 1}
+              onClick={() => setPage(currentPage + 1)}
+            >
+              <IconChevronDown size={20} />
+            </button>
+          </div>
+        )}
 
         {/* ── Actions ── */}
         <div className="cpm-actions" hidden={collapsed}>

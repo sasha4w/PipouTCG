@@ -21,6 +21,7 @@ import {
   DRAKON_PATCHES,
 } from '../../database/drakon-set-patches';
 import { PIXELMAN_RECHERCHE_PATCHES } from '../../database/pixelman-recherche-patches';
+import { PIXELMAN_NERF_PATCHES } from '../../database/pixelman-2026-11-nerf-patches';
 import { SLOTS } from '../../database/migrations/1791000000022-SupportRework';
 import { normalizeCardName } from '../effects/card-name';
 
@@ -154,6 +155,11 @@ export function realCard(name: string): Card {
 
 /** Cartes avec les effets attendus après toutes les migrations de cartes. */
 export function allRealCards(): Card[] {
+  return withPixelmanNerf(allRealCardsBeforePixelmanNerf());
+}
+
+/** Cartes avant le nerf Pixelman 2026-11 (Beta, Module Bluetooth, DuplicateX). */
+export function allRealCardsBeforePixelmanNerf(): Card[] {
   const cards = allRealCardsBeforeGarde().map((c) => {
     const patch = GARDE_PATCHES.find((p) => p.before.name === c.name);
     return patch
@@ -175,6 +181,20 @@ export function allRealCards(): Card[] {
       ),
     ),
   );
+}
+
+/** Brûlure de Noyau Beta dégressive, Module Bluetooth sur Beta à 300, texte de DuplicateX. */
+function withPixelmanNerf(cards: Card[]): Card[] {
+  return cards.map((c) => {
+    const patch = PIXELMAN_NERF_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          description: patch.after.description,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
 }
 
 /** Pixel Ghost / Drone Éclaireur : cibles de recherche distinctes. */

@@ -124,6 +124,40 @@ describe("CardPickModal", () => {
     ).toBeInTheDocument();
   });
 
+  it("pagine au-delà de 6 cartes et garde la sélection d'une page à l'autre", () => {
+    const onConfirm = vi.fn();
+    const many: PendingChoice = {
+      ...choice,
+      count: 2,
+      candidates: Array.from({ length: 8 }, (_, i) => ({
+        ...choice.candidates[0],
+        instanceId: `m${i}`,
+        baseCard: { ...choice.candidates[0].baseCard, name: `Carte ${i}` },
+      })),
+    };
+    render(<CardPickModal choice={many} onConfirm={onConfirm} />);
+
+    expect(screen.getByText("1 / 2")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Carte 6/ })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Page précédente" }),
+    ).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: /Carte 0/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Page suivante" }));
+    expect(screen.getByText("2 / 2")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Carte 0/ })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Carte 7/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Récupérer \(2\/2\)/ }));
+
+    expect(onConfirm).toHaveBeenCalledWith(["m0", "m7"]);
+  });
+
+  it("pas de pagination quand tout tient sur une page", () => {
+    render(<CardPickModal choice={choice} onConfirm={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: "Page suivante" })).toBeNull();
+  });
+
   it("sans clé, affiche la consigne telle que reçue", () => {
     render(<CardPickModal choice={choice} onConfirm={vi.fn()} />);
     expect(screen.getByText(/Récupérer une carte/)).toBeInTheDocument();
