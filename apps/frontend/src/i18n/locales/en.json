@@ -850,7 +850,7 @@
     },
     "hatch": {
       "name": "Hatching",
-      "desc": "After the given number of turns, the egg leaves the field and the card of your choice from your deck is summoned in its place."
+      "desc": "After the given number of turns, the egg leaves the field and the card of your choice from your deck or graveyard is summoned in its place (a lower stage if the target stage is missing)."
     },
     "evolutionJoker": {
       "name": "Evolution joker",
@@ -1140,7 +1140,8 @@
         "combat": "Combat",
         "primes": "Primes & Comeback",
         "turn": "Turn structure",
-        "starters": "Starter decks"
+        "starters": "Starter decks",
+        "special": "Special summons"
       },
       "winLabel": "Victory condition",
       "winValue": "Be the first to take your {{count}} Prime Cards",
@@ -1180,12 +1181,29 @@
       "phaseMainDesc": "Recycle for Energy, summon, play Supports, change your monsters' position.",
       "phaseBattle": "Battle Phase",
       "phaseBattleDesc": "Attack the opposing monsters, or attack directly if the opposing board is empty.",
-      "phaseEnd": "Ending Phase",
-      "phaseEndDesc": "End-of-turn effects, Energy → 0, {{limit}} cards max in hand (discard the excess).",
       "timer": "90 s per phase: when time runs out, the next phase starts automatically.",
       "stepOf": "Step {{n}} / {{total}}",
       "prev": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "phaseControl": "Control Phase",
+      "phaseControlDesc": "End-of-turn effects, then you rearrange your board: Supports, Relève, Origins Drakon and evolution are allowed; normal summons, recycling, Transform and mode changes are not. Energy → 0, {{limit}} cards max in hand (discard the excess).",
+      "guard3": "At most <b>{{turns}} opposing turns</b> in Guard in a row, then the monster returns to Attack with a <b>+{{atk}} ATK counter-offensive</b> per turn held. It cannot go back to Guard the turn it leaves.",
+      "primes4": "<b>A destruction caused by an effect gives no Prime.</b>",
+      "primes5": "A monster in Guard killed by another monster's Reflect: no Prime.",
+      "supportLimits": "Only one Field at a time (the new one replaces the old); no two Persistents with the same name; a Support that needs a card (a specific monster) fades away when it is gone.",
+      "statusGroup": {
+        "restraint": "Restraints (what you suffer)",
+        "combat": "Combat statuses",
+        "immunity": "Immunities",
+        "summon": "Summon and evolution"
+      },
+      "special": {
+        "evolution": "<b>Evolution (Drakon):</b> a higher-stage card goes on top of its previous stage; you only pay the <b>cost difference</b>. A base played this turn can only evolve next turn.",
+        "transform": "<b>Transform:</b> discard a card from your hand to transform it, once per turn.",
+        "releve": "<b>Relève:</b> sacrifice the stated number of Pipou allies instead of paying the cost; the new monster takes the place of one of them.",
+        "zeta": "<b>Implanted Zeta:</b> a parasite monster placed on the opposing board (one at a time). When its countdown hits 0 it is destroyed and its owner takes a Prime; if the host destroys it first (disinfection), nobody does.",
+        "origins": "<b>Origins Drakon:</b> can only be summoned with an Adult or Ancestral of each of the 4 elements in the graveyard."
+      }
     },
     "unplayable": {
       "supportZonesFull": "Support zones full",

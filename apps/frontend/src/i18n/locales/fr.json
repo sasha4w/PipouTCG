@@ -852,7 +852,7 @@
     },
     "hatch": {
       "name": "Éclosion",
-      "desc": "Après le nombre de tours indiqué, l'œuf quitte le terrain et la carte de ton choix tirée de ton deck est invoquée à sa place."
+      "desc": "Après le nombre de tours indiqué, l'œuf quitte le terrain et la carte de ton choix, tirée de ton deck ou de ton cimetière, est invoquée à sa place (à défaut du stade visé, un stade inférieur)."
     },
     "evolutionJoker": {
       "name": "Joker d'évolution",
@@ -1142,7 +1142,8 @@
         "combat": "Combat",
         "primes": "Primes & Comeback",
         "turn": "Structure du tour",
-        "starters": "Decks de départ"
+        "starters": "Decks de départ",
+        "special": "Invocations spéciales"
       },
       "winLabel": "Condition de victoire",
       "winValue": "Récupérer ses {{count}} Cartes Primes en premier",
@@ -1182,12 +1183,29 @@
       "phaseMainDesc": "Recycle pour l'Énergie, invoque, joue des Supports, change la position de tes monstres.",
       "phaseBattle": "Battle Phase",
       "phaseBattleDesc": "Attaque les monstres adverses, ou directement si le terrain adverse est vide.",
-      "phaseEnd": "Ending Phase",
-      "phaseEndDesc": "Effets de fin de tour, Énergie → 0, {{limit}} cartes max en main (défausse l'excédent).",
       "timer": "90 s par phase : à l'expiration, la phase suivante commence automatiquement.",
       "stepOf": "Étape {{n}} / {{total}}",
       "prev": "Précédent",
-      "next": "Suivant"
+      "next": "Suivant",
+      "phaseControl": "Phase de contrôle",
+      "phaseControlDesc": "Effets de fin de tour, puis tu réorganises ton plateau : Supports, Relève, Drakon des Origines et évolution sont autorisés ; invocation normale, recyclage, Transformer et changement de mode sont interdits. Énergie → 0, {{limit}} cartes max en main (défausse l'excédent).",
+      "guard3": "Au plus <b>{{turns}} tours adverses</b> en Garde d'affilée, puis le monstre repasse en Attaque avec une <b>contre-offensive de +{{atk}} ATK</b> par tour tenu. Pas de retour en Garde le tour de la sortie.",
+      "primes4": "<b>Une destruction par un effet ne rapporte aucune Prime.</b>",
+      "primes5": "Un monstre en Garde tué par le Renvoi d'un autre monstre : aucune Prime.",
+      "supportLimits": "Un seul Terrain à la fois (le nouveau remplace l'ancien) ; pas deux Persistants du même nom ; un Support qui exige une carte (un monstre précis) se dissipe si elle n'est plus là.",
+      "statusGroup": {
+        "restraint": "Entraves (ce qu'on subit)",
+        "combat": "Statuts de combat",
+        "immunity": "Immunités",
+        "summon": "Invocation et évolution"
+      },
+      "special": {
+        "evolution": "<b>Évolution (Drakon) :</b> une carte de stade supérieur se pose sur son stade précédent ; tu ne paies que la <b>différence de coût</b>. Une base posée ce tour n'évolue qu'au tour suivant.",
+        "transform": "<b>Transformer :</b> défausse une carte de ta main pour la transformer, une fois par tour.",
+        "releve": "<b>Relève :</b> sacrifie le nombre indiqué d'alliés Pipou au lieu de payer le coût ; le nouveau monstre prend la place de l'un d'eux.",
+        "zeta": "<b>Zeta implanté :</b> un monstre parasite posé sur le terrain adverse (un seul à la fois). À 0 de son compte à rebours, il est détruit et son poseur gagne une Prime ; si l'hôte le détruit avant (désinfection), personne n'en gagne.",
+        "origins": "<b>Drakon des Origines :</b> invocable seulement avec un Adulte ou un Ancestral de chacun des 4 éléments au cimetière."
+      }
     },
     "unplayable": {
       "supportZonesFull": "Zones support pleines",

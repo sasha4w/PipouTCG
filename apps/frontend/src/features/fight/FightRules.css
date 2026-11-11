@@ -290,3 +290,16 @@
   color: #8a6a60;
   line-height: 1.45;
 }
+
+.fr-status-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fr-status-group-title {
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
