@@ -42,7 +42,10 @@
     "profile": "프로필",
     "marketplace": "마켓",
     "arena": "아레나",
-    "settings": "설정"
+    "settings": "설정",
+    "collection": "컬렉션",
+    "play": "플레이",
+    "playSub": "아레나, 모험, 덱"
   },
   "header": {
     "admin": "관리자"
@@ -990,7 +993,10 @@
       "found": "상대를 찾았습니다!",
       "facing": "상대: <b>{{name}}</b>",
       "confirmDeck": "시작하려면 덱을 확인하세요",
-      "deckReady": "덱 #{{id}} 준비 완료",
+      "deckReady": "{{name}} 준비 완료",
+      "noOpponent": "아직 상대가 없나요?",
+      "playAi": "모험에서 AI와 대결",
+      "elapsed": "{{time}} 동안 검색 중",
       "pickDeck": "「덱」 위젯에서 덱을 선택하세요",
       "start": "게임 시작",
       "ready": "전투 준비됐나요?",

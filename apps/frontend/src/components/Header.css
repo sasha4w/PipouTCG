@@ -11,6 +11,10 @@
 .cc-header__title-row {
   display: inline-flex;
   align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
   animation: cc-header-title-in 0.5s ease both;
 }
 

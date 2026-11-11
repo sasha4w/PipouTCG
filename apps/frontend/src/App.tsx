@@ -5,12 +5,13 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { useRef } from "react";
+import { lazy, Suspense, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Loading from "./components/Loading";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Home from "./pages/Home";
@@ -20,8 +21,6 @@ import Collection from "./pages/Collection";
 import Settings from "./pages/Settings";
 import { SoundProvider } from "./contexts/SoundContext";
 import { AnimationProvider } from "./contexts/AnimationContext";
-import Admin from "./pages/Admin";
-import AdminSandbox from "./pages/AdminSandbox";
 import { useScrollRestoration } from "./hooks/useScrollRestoration";
 import { AnimatePresence } from "framer-motion";
 import { useDailyRewardModal } from "./hooks/Usedailyrewardmodal";
@@ -43,6 +42,10 @@ import { userService } from "./services/user.service";
 import { useStarterDeckModal } from "./hooks/useStarterDeckModal";
 import StarterDeckModal from "./features/starter/StarterDeckModal";
 import { StarterDeckContext } from "./contexts/StarterDeckContext";
+// Écrans d'administration : hors du lot chargé par tous les joueurs.
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminSandbox = lazy(() => import("./pages/AdminSandbox"));
+
 function AppLayout() {
   const mainRef = useRef<HTMLElement>(null);
   useScrollRestoration(mainRef);
@@ -131,7 +134,14 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/collection" element={<Collection />} />
                 <Route path="/settings" element={<Settings />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route
+                  path="/admin"
+                  element={
+                    <Suspense fallback={<Loading />}>
+                      <Admin />
+                    </Suspense>
+                  }
+                />
                 <Route path="/arena" element={<FightHub />} />
                 <Route path="/decks" element={<DeckBuilder />} />
                 <Route path="/fight" element={<FightPageWrapper />} />
@@ -146,7 +156,9 @@ function App() {
                 path="/admin/sandbox"
                 element={
                   <ProtectedRoute>
-                    <AdminSandbox />
+                    <Suspense fallback={<Loading />}>
+                      <AdminSandbox />
+                    </Suspense>
                   </ProtectedRoute>
                 }
               />

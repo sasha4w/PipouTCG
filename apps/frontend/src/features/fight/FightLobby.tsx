@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { MatchEndReason } from "@pipou/shared";
 import { Trans, useTranslation } from "react-i18next";
 import Button from "../../components/Button";
@@ -13,9 +14,46 @@ import "./FightLobby.css";
 
 type LobbyStatus = "idle" | "queued" | "selecting" | "finished";
 
+/** Attente au-delà de laquelle on propose de jouer contre l'IA. */
+const AI_HINT_AFTER_S = 30;
+
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = String(seconds % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+/** Temps passé en file ; après un moment, propose l'Aventure. */
+function QueueWait({ onPlayAi }: { onPlayAi: () => void }) {
+  const { t } = useTranslation();
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <>
+      <p className="lobby-muted" role="status">
+        {t("fight.lobby.elapsed", { time: formatElapsed(elapsed) })}
+      </p>
+      {elapsed >= AI_HINT_AFTER_S && (
+        <div className="lobby-ai-hint">
+          <p className="lobby-muted">{t("fight.lobby.noOpponent")}</p>
+          <Button variant="ghost-bordeaux" onClick={onPlayAi}>
+            {t("fight.lobby.playAi")}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
 interface Props {
   status: LobbyStatus;
   selectedDeck: number | null;
+  /** Nom du deck choisi ; absent tant que la liste des decks charge. */
+  deckName?: string;
   opponentName: string;
   userId: number;
   winner?: number;
@@ -24,11 +62,14 @@ interface Props {
   onLeaveQueue: () => void;
   onSubmitDeck: () => void;
   onReplay: () => void;
+  /** Quitte la file pour un combat contre l'IA. */
+  onPlayAi: () => void;
 }
 
 export default function FightLobby({
   status,
   selectedDeck,
+  deckName,
   opponentName,
   userId,
   winner,
@@ -37,8 +78,10 @@ export default function FightLobby({
   onLeaveQueue,
   onSubmitDeck,
   onReplay,
+  onPlayAi,
 }: Props) {
   const { t } = useTranslation();
+  const deckLabel = deckName ?? `#${selectedDeck}`;
   if (status === "finished") {
     const draw = endReason === MatchEndReason.DOUBLE_KO;
     const won = !draw && winner === userId;
@@ -92,7 +135,7 @@ export default function FightLobby({
         <p className="lobby-muted">{t("fight.lobby.confirmDeck")}</p>
         {selectedDeck ? (
           <div className="lobby-deck-chosen">
-            {t("fight.lobby.deckReady", { id: selectedDeck })}
+            {t("fight.lobby.deckReady", { name: deckLabel })}
           </div>
         ) : (
           <p className="lobby-deck-warning">{t("fight.lobby.pickDeck")}</p>
@@ -116,7 +159,7 @@ export default function FightLobby({
       {selectedDeck ? (
         <div className="lobby-deck-chosen">
           <IconCheck size={14} /> {t("fight.lobby.deckSelected")}{" "}
-          <span className="lobby-deck-id">#{selectedDeck}</span>
+          <span className="lobby-deck-id">{deckLabel}</span>
         </div>
       ) : (
         <p className="lobby-muted lobby-muted--mb">
@@ -136,6 +179,7 @@ export default function FightLobby({
             <span className="lobby-dot" />
           </div>
           <p className="lobby-muted">{t("fight.lobby.waiting")}</p>
+          <QueueWait onPlayAi={onPlayAi} />
           <Button variant="danger" onClick={onLeaveQueue}>
             {t("fight.lobby.cancel")}
           </Button>

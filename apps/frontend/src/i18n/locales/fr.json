@@ -42,7 +42,10 @@
     "profile": "Profil",
     "marketplace": "Marché",
     "arena": "Arène",
-    "settings": "Réglages"
+    "settings": "Réglages",
+    "collection": "Collection",
+    "play": "Jouer",
+    "playSub": "Arène, aventure et decks"
   },
   "header": {
     "admin": "Admin"
@@ -1062,7 +1065,10 @@
       "found": "Adversaire trouvé !",
       "facing": "Tu affrontes <b>{{name}}</b>",
       "confirmDeck": "Confirme ton deck pour commencer",
-      "deckReady": "Deck #{{id}} prêt",
+      "deckReady": "{{name}} prêt",
+      "noOpponent": "Personne pour l’instant ?",
+      "playAi": "Affronter l’IA en Aventure",
+      "elapsed": "Recherche depuis {{time}}",
       "pickDeck": "Sélectionne un deck via le widget « Decks »",
       "start": "Lancer la partie",
       "ready": "Prêt au combat ?",

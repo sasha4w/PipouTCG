@@ -24,14 +24,19 @@ function Section({ label, children, defaultOpen = false }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="settings-section">
-      <div className="settings-section__header" onClick={() => setOpen(!open)}>
+      <button
+        type="button"
+        className="settings-section__header"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
         <span className="settings-section__label">{label}</span>
         <span
           className={`settings-section__toggle${open ? " settings-section__toggle--open" : ""}`}
         >
           +
         </span>
-      </div>
+      </button>
       {open && <div className="settings-section__body">{children}</div>}
     </div>
   );

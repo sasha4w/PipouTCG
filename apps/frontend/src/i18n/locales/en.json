@@ -42,7 +42,10 @@
     "profile": "Profile",
     "marketplace": "Market",
     "arena": "Arena",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collection": "Collection",
+    "play": "Play",
+    "playSub": "Arena, adventure and decks"
   },
   "header": {
     "admin": "Admin"
@@ -1060,7 +1063,10 @@
       "found": "Opponent found!",
       "facing": "You're facing <b>{{name}}</b>",
       "confirmDeck": "Confirm your deck to start",
-      "deckReady": "Deck #{{id}} ready",
+      "deckReady": "{{name}} ready",
+      "noOpponent": "Nobody around yet?",
+      "playAi": "Fight the AI in Adventure",
+      "elapsed": "Searching for {{time}}",
       "pickDeck": "Select a deck with the “Decks” widget",
       "start": "Start the game",
       "ready": "Ready to fight?",

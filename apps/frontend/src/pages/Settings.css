@@ -27,6 +27,9 @@
 
 .settings-section__header {
   display: flex;
+  width: 100%;
+  border: 0;
+  font: inherit;
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.1rem;

@@ -7,6 +7,7 @@ import {
   type PaginatedMatches,
   type PlayerStats,
 } from "../../services/fight.service";
+import { deckService } from "../../services/deck.service";
 import Leaderboard from "./Leaderboard";
 import type { Tab } from "./fight.types";
 
@@ -46,6 +47,14 @@ export default function FightPage({
       enabled: tab === "history",
     },
   );
+
+  // Même clé que le sélecteur de decks : lu dans le cache, pas de requête en plus.
+  const { data: decks } = useQuery({
+    queryKey: QUERY_KEYS.decks,
+    queryFn: () => deckService.getMyDecks(),
+    enabled: selectedDeck !== null,
+  });
+  const deckName = decks?.find((d) => d.id === selectedDeck)?.name;
 
   const myStats = useQuery<PlayerStats>({
     queryKey: QUERY_KEYS.fightStats,
@@ -143,6 +152,7 @@ export default function FightPage({
             <FightLobby
               status={status}
               selectedDeck={selectedDeck}
+              deckName={deckName}
               opponentName={opponentName}
               userId={userId}
               winner={gameState?.winner}
@@ -151,6 +161,10 @@ export default function FightPage({
               onLeaveQueue={leaveQueue}
               onSubmitDeck={submitDeck}
               onReplay={reset}
+              onPlayAi={() => {
+                leaveQueue();
+                navigate("/adventure");
+              }}
             />
           )}
 
