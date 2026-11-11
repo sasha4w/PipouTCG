@@ -1251,7 +1251,8 @@
       "QUESTS_DONE": "Quêtes",
       "ADVENTURE_WORLDS": "Mondes d'aventure",
       "PVE_WON": "Victoires PvE",
-      "PVE_PLAYED": "Combats PvE"
+      "PVE_PLAYED": "Combats PvE",
+      "TUTORIAL_LESSONS": "Élève"
     },
     "goals": {
       "BOOSTERS_OPENED": "Ouvre {{n}} boosters",
@@ -1270,7 +1271,8 @@
       "QUESTS_DONE": "Termine {{n}} quêtes",
       "ADVENTURE_WORLDS": "Termine {{n}} mondes d'aventure",
       "PVE_WON": "Gagne {{n}} combats d'aventure",
-      "PVE_PLAYED": "Joue {{n}} combats d'aventure"
+      "PVE_PLAYED": "Joue {{n}} combats d'aventure",
+      "TUTORIAL_LESSONS": "Termine {{n}} leçons du tutoriel"
     },
     "titles": {
       "BOOSTERS_OPENED": "Maître Ouvreur",
@@ -1289,7 +1291,8 @@
       "QUESTS_DONE": "Aventurier",
       "ADVENTURE_WORLDS": "Explorateur",
       "PVE_WON": "Chasseur d'IA",
-      "PVE_PLAYED": "Infatigable"
+      "PVE_PLAYED": "Infatigable",
+      "TUTORIAL_LESSONS": "Érudit"
     }
   },
   "adventure": {
@@ -1617,6 +1620,204 @@
       "epic": "Épique",
       "legendary": "Légendaire",
       "secret": "Secrète"
+    }
+  },
+  "tutorial": {
+    "ui": {
+      "tab": "Tutoriel",
+      "reference": "Référence",
+      "title": "Apprendre à jouer",
+      "intro": "Neuf leçons courtes, jouées sur le vrai moteur. À chaque étape, une seule action est acceptée : la bulle te dit laquelle.",
+      "reward": "Première réussite de chaque leçon : {{gold}} or et {{xp}} XP",
+      "lessonNumber": "Leçon {{n}}",
+      "done": "Terminée",
+      "start": "Commencer",
+      "replay": "Rejouer",
+      "steps": "{{count}} étapes",
+      "stepOf": "Étape {{n}} / {{total}}",
+      "next": "Suivant",
+      "quit": "Quitter la leçon",
+      "quitConfirm": "Quitter la leçon ? Tu ne gagneras rien si tu ne la termines pas.",
+      "opponentPlaying": "L'adversaire joue…",
+      "yourMove": "À toi de jouer",
+      "loadError": "Impossible de charger les leçons.",
+      "starting": "Préparation de la leçon…",
+      "resultTitleDone": "Leçon terminée !",
+      "resultTitleQuit": "Leçon interrompue",
+      "resultFirst": "Récompense : {{gold}} or et {{xp}} XP",
+      "resultAlready": "Déjà réussie : pas de nouvelle récompense.",
+      "resultQuit": "Tu n'as pas terminé la leçon : rien n'est gagné.",
+      "nextLesson": "Leçon suivante",
+      "backToLessons": "Retour aux leçons",
+      "replayLesson": "Rejouer la leçon",
+      "lesson": {
+        "first-turn": {
+          "title": "Premier tour",
+          "desc": "Piocher, recycler pour l'Énergie, invoquer, passer les phases."
+        },
+        "combat": {
+          "title": "Combat et Primes",
+          "desc": "Attaquer, riposte, double K.O., attaque directe, dernière Prime."
+        },
+        "guard": {
+          "title": "La Garde",
+          "desc": "Se protéger, tenir deux tours, contre-offensive, Perçant."
+        },
+        "supports": {
+          "title": "Les Supports",
+          "desc": "Éphémère, Équipement, Terrain, Charge."
+        },
+        "control": {
+          "title": "Phase de contrôle",
+          "desc": "Jouer après le combat, limite de 7 cartes, défausse."
+        },
+        "pipou": {
+          "title": "Pipou",
+          "desc": "Énergie en vague, invocation gratuite, Provocation, Relève."
+        },
+        "drakon": {
+          "title": "Drakon",
+          "desc": "Œuf, éclosion, évolution, Transformer."
+        },
+        "pixelman": {
+          "title": "Pixelman",
+          "desc": "Noyaux, équipements, Force Plasma, Zeta et désinfection."
+        },
+        "statuses": {
+          "title": "Statuts, entraves et immunités",
+          "desc": "Subir Gel, verrou et attaque forcée, puis voir les immunités."
+        }
+      }
+    },
+    "common": {
+      "toBattle": "Ta phase principale est finie : passe à la <b>phase de combat</b> avec le bouton mis en avant.",
+      "toControl": "Le combat est terminé : passe à la <b>phase de contrôle</b>. Tu pourras encore y jouer des Supports.",
+      "endTurn": "Tu n'as plus rien à faire : <b>termine ton tour</b>. Ta main ne doit pas dépasser 7 cartes.",
+      "opponentMain": "C'est au tour de l'adversaire. Il termine sa phase principale.",
+      "opponentBattle": "Il passe sa phase de combat.",
+      "opponentEnd": "Il termine son tour : la main te revient."
+    },
+    "first-turn": {
+      "goal": "Bienvenue ! Le but : récupérer tes <b>6 Primes</b> avant l'adversaire. Une Prime se gagne en détruisant un monstre ou en attaquant directement.",
+      "hand": "Voici ta main. Chaque tour commence par une pioche. Jouer une carte coûte de l'<b>Énergie</b> : tu l'obtiens en recyclant des cartes de ta main.",
+      "recycle": "<b>Recycle</b> la carte désignée avec le bouton Recycler : 1 carte recyclée = 1 Énergie.",
+      "summonEnergy": "Invoque <b>Lieutenant Bidouille</b> (coût 1) sur la zone désignée. Ton Énergie paie son coût.",
+      "summonPay": "Plus d'Énergie ? Tu paies en <b>défaussant</b> des cartes. Invoque <b>Guerrier Bafouille</b> (coût 1) et défausse la carte désignée.",
+      "board": "Tes deux monstres sont en jeu. Au tour 1, personne n'attaque : passons nos phases.",
+      "opponentRecycle": "L'adversaire recycle une carte pour gagner de l'Énergie.",
+      "opponentSummon": "Puis il invoque un monstre à Provocation.",
+      "nextTurn": "C'est ton deuxième tour. Tu as pioché une carte au début : c'est automatique, à chaque tour.",
+      "done": "Bravo ! Tu sais piocher, recycler, invoquer et passer tes phases. Prochaine leçon : le combat."
+    },
+    "combat": {
+      "intro": "Ici, tu vas combattre. Un monstre en mode <b>Attaque</b> frappe pendant la phase de combat, une fois par tour. Tu as 3 Primes à récupérer.",
+      "attackRiposte": "Attaque <b>Lieutenant Fripouille</b> avec <b>Chevalier Touille</b> en les désignant à l'écran.",
+      "riposte": "Les dégâts sont égaux à l'ATK : Fripouille perd 500 PV. Mais il <b>riposte</b> : Chevalier perd 100 PV à son tour.",
+      "attackKill": "Achève-le avec <b>Lieutenant Bidouille</b>. Il lui reste 200 PV : l'ATK de Bidouille suffit.",
+      "prime": "Un monstre en mode Attaque est détruit : tu gagnes <b>1 Prime</b> (elle rejoint ta main) et l'adversaire pioche une carte.",
+      "opponentToBattle": "L'adversaire passe à sa phase de combat.",
+      "doubleKo": "Son Archer attaque ton Éclaireur. Les deux monstres sont presque à terre…",
+      "doubleKoInfo": "<b>Double K.O.</b> : les deux monstres se détruisent. Chaque joueur pioche une carte et prend 1 Prime.",
+      "emptyBoard": "Son terrain est vide : tu peux frapper <b>directement</b> (pas au tour 1). Passe en phase de combat.",
+      "direct": "Attaque directe avec <b>Chevalier Touille</b> : tu gagnes 1 Prime. C'est ta dernière : <b>tu gagnes la partie</b> !"
+    },
+    "guard": {
+      "intro": "Un monstre en <b>Garde</b> ne peut ni attaquer ni riposter, mais il protège ta Prime : détruit en Garde, il ne rapporte <b>aucune Prime</b>. Mets tes trois monstres en Garde.",
+      "guardBidouille": "Passe <b>Lieutenant Bidouille</b> en mode Garde.",
+      "guardChevalier": "Passe <b>Chevalier Touille</b> en mode Garde.",
+      "guardPretre": "Passe <b>Prêtre Fouille</b> en mode Garde.",
+      "noPrime": "Son Archer attaque Bidouille, qui ne peut pas riposter : il est détruit.",
+      "noPrimeInfo": "Bidouille est détruit, mais l'adversaire <b>ne gagne aucune Prime</b> : c'est l'intérêt de la Garde.",
+      "piercing": "Mais le Maraudeur a <b>Perçant</b> : il attaque Chevalier, lui aussi en Garde.",
+      "piercingInfo": "Un attaquant <b>Perçant</b> ignore la protection de la Garde : Chevalier est détruit et l'adversaire gagne sa Prime.",
+      "opponentToBattle": "L'adversaire passe à sa phase de combat.",
+      "turnHeld": "Prêtre Fouille a tenu son premier tour adverse. Tu peux rester en Garde <b>2 tours adverses au plus</b>. Passons ce tour.",
+      "counter": "Deux tours tenus : Prêtre sort de la Garde avec une <b>contre-offensive</b> de +100 ATK par tour tenu, pour ce tour. Il ne peut pas y retourner tout de suite.",
+      "counterAttack": "Passe en combat et frappe l'Archer avec <b>Prêtre Fouille</b>.",
+      "done": "Tu maîtrises la Garde : elle retient les Primes, mais pas deux tours de plus, ni le Perçant."
+    },
+    "supports": {
+      "intro": "Les <b>Supports</b> se jouent sans coût d'Énergie. Quatre familles : Éphémère, Équipement, Persistant (Terrain) et Charge.",
+      "ephemeral": "Joue l'Éphémère <b>Frappe Préventive</b> sur l'<b>Archer</b> adverse : un Éphémère agit une fois puis part au cimetière.",
+      "ephemeralDone": "L'Archer perd 300 PV (600 si tu avais un Drakon de Feu).",
+      "equipment": "Un <b>Équipement</b> s'attache à un de tes monstres. Équipe <b>Noyau Beta</b> du Processeur de Calcul.",
+      "slot": "Chaque monstre a des <b>emplacements</b> : un Offensif, un Défensif, deux Accessoires. Le Canon est aussi Offensif : choisis de <b>remplacer</b> le Processeur.",
+      "terrain": "Un <b>Persistant</b> reste en jeu et agit en permanence. Un Terrain est un Persistant : il n'y en a qu'un à la fois. Pose <b>Tactique Gang Gang</b>.",
+      "terrainDone": "Tes monstres Pipou gagnent +300 ATK tant que la Tactique est là.",
+      "charge": "Une <b>Charge</b> gagne un compteur à chaque début de ton tour et agit une fois pleine. Pose <b>Alerte générale</b> : elle exige le Général Chatouille sur ton terrain.",
+      "chargeDone": "Dans 3 tours, tes monstres attaqueront une fois de plus. Si le Général quitte le terrain, la Charge se dissipe."
+    },
+    "control": {
+      "intro": "Après le combat vient la <b>phase de contrôle</b> : tu peux encore réorganiser ton plateau avant de passer la main.",
+      "battle": "Attaque la Sentinelle avec <b>Chevalier Touille</b>.",
+      "controlPhase": "Chevalier a perdu des PV, mais il est toujours là. Dans cette phase, tu peux jouer des <b>Supports</b>, invoquer par <b>Relève</b> ou faire évoluer un Drakon.",
+      "support": "Soigne <b>Chevalier Touille</b> avec le Support <b>Soin d'urgence</b>.",
+      "noSummon": "Essaie d'invoquer Lieutenant Bidouille : l'<b>invocation normale</b> est interdite en phase de contrôle. Le recyclage, Transformer et le changement de mode aussi.",
+      "handLimit": "Tu ne peux pas finir ton tour avec plus de <b>7 cartes</b> en main. Défausse l'excédent.",
+      "discard": "<b>Défausse</b> la carte désignée.",
+      "done": "Tu peux maintenant finir ton tour : la phase de contrôle n'a plus de secret."
+    },
+    "pipou": {
+      "intro": "Les <b>Pipou</b> jouent en groupe : des monstres peu coûteux, des synergies et des invocations gratuites.",
+      "clairon": "Joue le Support <b>Clairon de l'Union</b> : il te donne 2 Énergies d'un coup.",
+      "gribouille": "Invoque <b>Capitaine Gribouille</b> (coût 2) : l'Énergie paie son coût.",
+      "free": "Chevalier Touille, resté en main, réagit : dès qu'un allié Pipou arrive, il peut être invoqué <b>gratuitement</b>.",
+      "chevalier": "Invoque <b>Chevalier Touille</b> sans payer.",
+      "bidouille": "Invoque <b>Lieutenant Bidouille</b> en défaussant la carte désignée.",
+      "taunt": "Le Capitaine a la <b>Provocation</b> : les ennemis doivent l'attaquer en priorité.",
+      "gangGang": "Pose le Terrain <b>Tactique Gang Gang</b>.",
+      "gangGangDone": "Tous tes Pipou gagnent +300 ATK.",
+      "releve": "La <b>Relève</b> remplace le coût : invoque <b>Général Chatouille</b> en sacrifiant Bidouille et Chevalier. Il prend la place de Bidouille.",
+      "releveDone": "Le Général (ATK 800) devient 1100 avec la Tactique. Les deux sacrifiés sont au cimetière.",
+      "opponentToBattle": "L'adversaire passe à sa phase de combat.",
+      "opponentTaunt": "Son Archer veut frapper, mais il n'a pas le choix : la Provocation le force à viser le Capitaine.",
+      "done": "Les Pipou gagnent par le nombre et les synergies. Prochaine famille : les Drakon."
+    },
+    "drakon": {
+      "intro": "Les <b>Drakon</b> grandissent : Œuf, Bébé, Jeune, Adulte, Ancestral. On ne pose directement que les Œufs et les Bébés ; les autres arrivent par évolution.",
+      "recycle": "Recycle la carte désignée pour avoir 1 Énergie.",
+      "egg": "Invoque l'<b>Œuf de la Genèse</b> (coût 1).",
+      "eggInfo": "L'Œuf éclot après <b>2 tours</b> : tu choisis alors un Bébé dans ton deck ou ton cimetière. Mais on peut accélérer.",
+      "incubation": "Joue <b>Incubation Rapide</b> sur ton Œuf : elle avance son éclosion de 2 tours.",
+      "hatch": "L'Œuf éclot ! Choisis <b>Bébé Tempestu</b>.",
+      "stages": "Un Jeune ou un Adulte ne se pose jamais depuis la main. Essaie quand même d'invoquer Adulte Feros…",
+      "noShortcut": "Refusé : un Jeune ou un Adulte n'arrive que par <b>évolution</b>, stade par stade.",
+      "evolve": "Fais évoluer <b>Bébé Tempestu</b> : joue <b>Jeune Tempestu</b> dessus et défausse la carte désignée. Tu ne paies que la <b>différence de coût</b>.",
+      "evolveDone": "Tempestu peut évoluer dès son arrivée ; les autres Drakon attendent un tour avant de pouvoir évoluer.",
+      "transform": "Un Jeune ou un Adulte coincé en main n'est pas perdu : <b>Transformer</b> défausse Adulte Feros pour récupérer un Bébé de sa lignée (une fois par tour).",
+      "transformPick": "Choisis <b>Bébé Feros</b>.",
+      "done": "Œuf, éclosion, évolution, Transformer : tu connais le cycle des Drakon."
+    },
+    "pixelman": {
+      "intro": "Les <b>Pixelman</b> s'appuient sur des <b>Noyaux</b> puissants, des équipements et des Supports ciblés.",
+      "equipment": "Équipe <b>Noyau Delta</b> du Canon à Particules.",
+      "plasma": "<b>Force Plasma</b> exige un Noyau sur ton terrain. Joue-la sur l'<b>Archer</b> adverse.",
+      "noPrime": "L'Archer est détruit, mais ta Prime ne bouge pas : une destruction <b>par un effet</b> ne rapporte jamais de Prime.",
+      "zetaCountdown": "Le Noyau Zeta de l'autre côté est <b>à toi</b> : un parasite implanté, avec un compte à rebours qui baisse à chacun de tes débuts de tour. Termine ton tour.",
+      "zetaExplodes": "Le compte à rebours est à 0 : le Zeta explose, inflige 500 dégâts aux monstres de l'hôte et <b>tu gagnes une Prime</b>.",
+      "implant": "Implante un nouveau Zeta sur le terrain adverse (coût 2, défausse les cartes désignées). Choisis la zone libre adverse.",
+      "implantInfo": "Un Zeta retire 300 ATK aux monstres de l'hôte. Mais l'hôte peut l'attaquer : termine ton tour pour voir.",
+      "opponentToBattle": "L'adversaire passe à sa phase de combat.",
+      "disinfect": "L'hôte attaque son propre Zeta : c'est la <b>désinfection</b>. Pas de riposte.",
+      "done": "Zeta détruit par l'hôte avant la fin : <b>aucune Prime</b> pour toi. Pour gagner la Prime, le compte à rebours doit arriver à 0."
+    },
+    "statuses": {
+      "intro": "Cette leçon montre ce que tes adversaires peuvent te faire subir : des <b>entraves</b>, puis les <b>immunités</b> qui les bloquent.",
+      "freeze": "L'adversaire joue un <b>Gel</b> sur ton Chevalier : il ne pourra plus attaquer pendant 3 de tes tours.",
+      "lock": "Puis un <b>Verrou de Position</b> sur ton Gardien : il est bloqué en Garde.",
+      "forced": "Enfin un <b>Rootkit</b> sur ton Chevalier : attaque forcée, il ne peut plus passer en Garde.",
+      "restraints": "Voici tes entraves : <b>Gel</b> (pas d'attaque), <b>Garde verrouillée</b> (bloqué en Garde jusqu'à être attaqué) et <b>Attaque forcée</b>. Essayons-les.",
+      "lockedMode": "Essaie de passer <b>Gardien Ratouile</b> en mode Attaque : il est verrouillé.",
+      "forcedMode": "Essaie de passer <b>Chevalier Touille</b> en mode Garde : il est en attaque forcée.",
+      "summonTurn": "Certaines cartes ont leurs propres limites. Invoque <b>Commandant Quenouille</b> en défaussant les cartes désignées.",
+      "combatStatuses": "Statuts de combat : <b>Provocation</b>, <b>Contournement</b> (ignore la Provocation), <b>Perçant</b>, <b>Réduction de dégâts</b>, <b>Renvoi</b>, <b>Double attaque</b>, <b>ATK temporaire</b>. Passons aux immunités.",
+      "immune": "Joue ton <b>Protocole de Gel</b> sur <b>Adulte Teros</b>. Il est protégé par l'<b>Anti-support</b>.",
+      "immuneInfo": "Refusé : l'Anti-support rend les malus de Support (gel, verrou, baisse de stats) sans effet.",
+      "notImmune": "Joue maintenant ton Protocole de Gel sur l'<b>Archer</b>, qui n'a aucune immunité.",
+      "immunities": "Immunités : <b>Insensible au combat</b> (aucun dégât de combat), <b>Anti-support</b> et <b>Anti-monstre</b> (malus des Supports ou des monstres adverses sans effet), <b>Blindage</b> (un Support ne le détruit pas), <b>Imperturbable</b> (ignore Provocation, Renvoi et virus Zeta), <b>Increvable</b> (reste à 1 PV en combat). <b>Insensible aux effets adverses</b> réunit Blindage, Anti-support, Anti-monstre et Imperturbable.",
+      "frozenAttack": "Passe en combat : Chevalier, gelé, ne peut pas attaquer. Essaie.",
+      "summonedAttack": "Essaie aussi avec Commandant Quenouille, invoqué ce tour : il ne peut pas attaquer le tour de son invocation.",
+      "done": "Entraves, statuts, immunités : tu sais lire un plateau. Chaque monstre a sa fiche d'effet dans la partie."
     }
   }
 }

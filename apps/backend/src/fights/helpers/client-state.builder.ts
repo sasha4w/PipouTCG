@@ -1,3 +1,4 @@
+import type { TutorialStepView } from '@pipou/shared';
 import type { FightServer } from '../fight-socket.types';
 import { GameState, ClientGameState } from '../interfaces/game-state.interface';
 import {
@@ -10,6 +11,8 @@ import {
 export function buildClientState(
   game: GameState,
   userId: number,
+  /** Étape de leçon montrée à ce joueur (tutoriel seulement). */
+  tutorial?: TutorialStepView,
 ): ClientGameState {
   const me = getPlayerState(game, userId);
   const opp = getOpponentState(game, userId);
@@ -89,13 +92,19 @@ export function buildClientState(
     endReason: game.endReason,
     pendingChoice,
     opponentChoosing: !!choice && choice.forUserId !== userId,
+    ...(tutorial && { tutorial }),
   };
 }
 
-export function emitGameState(game: GameState, server: FightServer): void {
+export function emitGameState(
+  game: GameState,
+  server: FightServer,
+  /** Étape de leçon du joueur 1, seul humain d'une leçon. */
+  tutorial?: TutorialStepView,
+): void {
   server
     .to(game.player1.socketId)
-    .emit('fight:state', buildClientState(game, game.player1.userId));
+    .emit('fight:state', buildClientState(game, game.player1.userId, tutorial));
   server
     .to(game.player2.socketId)
     .emit('fight:state', buildClientState(game, game.player2.userId));

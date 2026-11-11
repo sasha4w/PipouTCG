@@ -5,6 +5,8 @@ import { AchievementStatsService } from './achievement-stats.service';
 
 function setup() {
   const query = jest.fn((sql: string) => {
+    if (sql.includes('user_tutorial_lesson'))
+      return Promise.resolve([{ total: 4 }]);
     if (sql.includes('adventure_match'))
       return Promise.resolve([{ played: 3, won: 1, worldsCompleted: 0 }]);
     return Promise.resolve([]);
@@ -18,6 +20,18 @@ function setup() {
   } as unknown as UsersService;
   return { service: new AchievementStatsService(dataSource, users), query };
 }
+
+describe('AchievementStatsService — leçons du tutoriel', () => {
+  it('compte les leçons terminées par le joueur', async () => {
+    const { service, query } = setup();
+    const { values } = await service.getValues(7);
+    expect(values[AchievementFamily.TUTORIAL_LESSONS]).toBe(4);
+    expect(query).toHaveBeenCalledWith(
+      expect.stringContaining('user_tutorial_lesson'),
+      [7],
+    );
+  });
+});
 
 describe('AchievementStatsService — combats PvE joués', () => {
   it('ne compte que les victoires ou les combats d’au moins 2 tours', async () => {

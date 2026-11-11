@@ -12,4 +12,5 @@ export * from "./events";
 export * from "./achievements";
 export * from "./adventure";
 export * from "./forge";
+export * from "./tutorial";
 export * from "./immunity";

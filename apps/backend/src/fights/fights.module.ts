@@ -8,6 +8,7 @@ import { PlayerStats } from './entities/player-stats.entity';
 import { Card } from '../cards/card.entity';
 import { DecksModule } from '../decks/decks.module';
 import { AdventureModule } from '../adventure/adventure.module';
+import { TutorialModule } from '../tutorial/tutorial.module';
 import { AiReviewModule } from '../ai-review/ai-review.module';
 import { GameRecordsModule } from '../game-records/game-records.module';
 
@@ -42,6 +43,7 @@ import { BuffsCalculatorService } from './buffs-calculator.service';
     TypeOrmModule.forFeature([Match, PlayerStats, Card]),
     DecksModule,
     AdventureModule,
+    TutorialModule,
     AiReviewModule,
     GameRecordsModule,
     JwtModule.registerAsync({

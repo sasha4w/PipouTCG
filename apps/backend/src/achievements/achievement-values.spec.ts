@@ -20,6 +20,7 @@ const base: AchievementSources = {
   uniqueCards: 40,
   highRarity: 2,
   adventure: { worldsCompleted: 2, won: 5, played: 8 },
+  tutorialLessons: 3,
   sets: [
     { total: 10, owned: 10 },
     { total: 8, owned: 7 },
@@ -47,6 +48,7 @@ describe('toAchievementValues', () => {
       [AchievementFamily.ADVENTURE_WORLDS]: 2,
       [AchievementFamily.PVE_WON]: 5,
       [AchievementFamily.PVE_PLAYED]: 8,
+      [AchievementFamily.TUTORIAL_LESSONS]: 3,
     });
   });
 

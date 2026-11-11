@@ -1,5 +1,6 @@
 import { AchievementFamily, AchievementTier } from "../enums/achievement";
 import { QuestRewardType } from "../enums/quest";
+import { TUTORIAL_LESSONS } from "./tutorial";
 import type { AchievementProgress, AchievementTierProgress } from "../api/achievements";
 
 /** Seuil égal au nombre de sets existants, résolu par le back. */
@@ -65,6 +66,7 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   { family: AchievementFamily.ADVENTURE_WORLDS, tiers: tiers(1, 3, ALL_WORLDS) },
   { family: AchievementFamily.PVE_WON, tiers: tiers(5, 50, 200) },
   { family: AchievementFamily.PVE_PLAYED, tiers: tiers(10, 100, 300) },
+  { family: AchievementFamily.TUTORIAL_LESSONS, tiers: tiers(1, 4, TUTORIAL_LESSONS.length) },
 ];
 
 export const ACHIEVEMENT_TOTAL = ACHIEVEMENTS.length * 3;

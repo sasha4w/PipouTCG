@@ -22,6 +22,7 @@ import type {
   TransformPayload,
   SubmitDeckPayload,
   SummonPayload,
+  TutorialStartPayload,
 } from '@pipou/shared';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -71,6 +72,9 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         opponentName: resumed.opponentName,
         ...(resumed.adventureOpponentId !== undefined && {
           adventureOpponentId: resumed.adventureOpponentId,
+        }),
+        ...(resumed.tutorialLessonId !== undefined && {
+          tutorialLessonId: resumed.tutorialLessonId,
         }),
       });
       this.fightsService.emitState(resumed.matchId, this.server);
@@ -134,6 +138,40 @@ export class FightsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         data,
         this.server,
         client.data.isAdmin === true,
+      ),
+    );
+  }
+
+  // ── Tutoriel ───────────────────────────────────────────────────────────────
+
+  @SubscribeMessage('tutorial:start')
+  async startTutorial(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: TutorialStartPayload,
+  ): Promise<void> {
+    this.reply(
+      client,
+      await this.fightsService.startTutorial(
+        client.data.userId,
+        client.data.username,
+        client.id,
+        data,
+        this.server,
+      ),
+    );
+  }
+
+  @SubscribeMessage('tutorial:ack')
+  async tutorialAck(
+    @ConnectedSocket() client: FightSocket,
+    @MessageBody() data: MatchPayload,
+  ): Promise<void> {
+    this.reply(
+      client,
+      await this.fightsService.tutorialAck(
+        data.matchId,
+        client.data.userId,
+        this.server,
       ),
     );
   }

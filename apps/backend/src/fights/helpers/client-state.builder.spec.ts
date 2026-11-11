@@ -187,3 +187,28 @@ describe('buildClientState — Zeta implanté', () => {
     }
   });
 });
+
+describe('buildClientState — étape de leçon', () => {
+  const step = {
+    lessonId: 'first-turn',
+    index: 1,
+    total: 5,
+    kind: 'player',
+    textKey: 'tutorial.first-turn.recycle',
+  } as const;
+
+  it("joint l'étape au joueur de la leçon seulement", () => {
+    const game = scenario();
+    expect(buildClientState(game, P1_ID, step).tutorial).toEqual(step);
+    expect(buildClientState(game, P1_ID)).not.toHaveProperty('tutorial');
+  });
+
+  it("emitGameState envoie l'étape au joueur 1 et rien à l'adversaire", () => {
+    const game = scenario();
+    const { server, emitted } = fakeServer();
+    emitGameState(game, server, step);
+    const sent = emitted.filter((e) => e.event === 'fight:state');
+    expect((sent[0].payload as ClientGameState).tutorial).toEqual(step);
+    expect(sent[1].payload).not.toHaveProperty('tutorial');
+  });
+});
