@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import type { TutorialHint } from "@pipou/shared";
 import { IconHourglass } from "../../components/Icons";
 import { useHideAppChrome } from "./useHideAppChrome";
 import FightBoard from "./FightBoard";
@@ -9,9 +10,12 @@ import type { useBoardControls } from "./useBoardControls";
 
 interface FightArenaProps {
   gameState: GameState;
-  timeLeft: number;
+  /** null : pas de minuteur (leçon du tutoriel). */
+  timeLeft: number | null;
   controls: ReturnType<typeof useBoardControls>;
   onSurrender: () => void;
+  /** Tutoriel : ce que la bulle de la leçon désigne. */
+  coach?: TutorialHint;
 }
 
 /** Plateau d'une partie en cours : mulligan, plateau, choix de cartes. */
@@ -20,6 +24,7 @@ export default function FightArena({
   timeLeft,
   controls,
   onSurrender,
+  coach,
 }: FightArenaProps) {
   const { t } = useTranslation();
   useHideAppChrome();
@@ -50,6 +55,7 @@ export default function FightArena({
         {...controls.board}
         timeLeft={timeLeft}
         onSurrender={onSurrender}
+        coach={coach}
       />
 
       {gameState.pendingChoice && (

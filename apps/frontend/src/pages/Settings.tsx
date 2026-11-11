@@ -9,9 +9,9 @@ import i18n from "../i18n";
 import "./Settings.css";
 
 const LANGS = [
-  { code: "fr", label: "🇫🇷 Français" },
-  { code: "en", label: "🇬🇧 English" },
-  { code: "ko", label: "🇰🇷 한국어" },
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "ko", label: "한국어" },
 ];
 
 interface SectionProps {
@@ -24,33 +24,20 @@ function Section({ label, children, defaultOpen = false }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="settings-section">
-      <div className="settings-section__header" onClick={() => setOpen(!open)}>
+      <button
+        type="button"
+        className="settings-section__header"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+      >
         <span className="settings-section__label">{label}</span>
         <span
           className={`settings-section__toggle${open ? " settings-section__toggle--open" : ""}`}
         >
           +
         </span>
-      </div>
+      </button>
       {open && <div className="settings-section__body">{children}</div>}
-    </div>
-  );
-}
-
-function NotifItem({ label }: { label: string }) {
-  const [enabled, setEnabled] = useState(true);
-  return (
-    <div className="settings-notif-item">
-      <span>{label}</span>
-      <label className="settings-toggle">
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={() => setEnabled(!enabled)}
-        />
-        <span className="settings-toggle__track" />
-        <span className="settings-toggle__thumb" />
-      </label>
     </div>
   );
 }
@@ -83,12 +70,6 @@ const Settings = () => {
 
       <Section label={t("settings.animations")}>
         <AnimationSettings />
-      </Section>
-
-      <Section label={t("settings.notifications")}>
-        <NotifItem label={t("settings.notif_trades")} />
-        <NotifItem label={t("settings.notif_boosters")} />
-        <NotifItem label={t("settings.notif_news")} />
       </Section>
 
       <div className="settings-section">

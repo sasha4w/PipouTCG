@@ -18,6 +18,16 @@
   font-size: 32px;
   color: #7a1c3b;
   margin: 0;
+  text-wrap: balance;
+}
+
+@media (max-width: 480px) {
+  .lobby-center {
+    padding: 24px 16px;
+  }
+  .lobby-hero-title {
+    font-size: 26px;
+  }
 }
 
 .lobby-hero-title--win  { color: #27ae60; }
@@ -56,6 +66,45 @@
   color: #e74c3c;
   font-size: 13px;
   margin: 0;
+}
+
+.lobby-elo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 18px;
+  border-radius: 99px;
+  background: #f8edf2;
+  color: #7a1c3b;
+  font-variant-numeric: tabular-nums;
+}
+.lobby-elo__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+.lobby-elo__value {
+  font-family: "Lilita One", sans-serif;
+  font-size: 24px;
+}
+.lobby-elo__delta {
+  font-weight: 700;
+  font-size: 15px;
+  color: #888;
+}
+.lobby-elo__delta--up {
+  color: #27ae60;
+}
+.lobby-elo__delta--down {
+  color: #e74c3c;
+}
+
+.lobby-ai-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Queue animation */

@@ -1,5 +1,11 @@
 import { MatchEndReason } from "@pipou/shared";
 import { useTranslation } from "react-i18next";
+import {
+  IconHand,
+  IconScroll,
+  IconSkull,
+  IconTrophy,
+} from "../../components/Icons";
 import "./MatchHistory.css";
 import type {
   PaginatedMatches,
@@ -17,7 +23,9 @@ export default function MatchHistory({ history, myStats, myUserId }: Props) {
   const { t, i18n } = useTranslation();
   return (
     <div className="mh-section">
-      <h2 className="mh-title">📜 {t("fight.history.title")}</h2>
+      <h2 className="mh-title">
+        <IconScroll size={22} /> {t("fight.history.title")}
+      </h2>
 
       {myStats && (
         <div className="mh-stats-row">
@@ -51,7 +59,13 @@ export default function MatchHistory({ history, myStats, myUserId }: Props) {
                 className={`mh-row ${won ? "mh-row--win" : "mh-row--loss"}`}
               >
                 <div className="mh-row-icon">
-                  {draw ? "🤝" : won ? "🏆" : "💀"}
+                  {draw ? (
+                    <IconHand size={22} />
+                  ) : won ? (
+                    <IconTrophy size={22} />
+                  ) : (
+                    <IconSkull size={22} />
+                  )}
                 </div>
                 <div>
                   <div className="mh-row-players">

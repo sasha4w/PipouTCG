@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import type { RankedResultPayload } from "@pipou/shared";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import {
   fightService,
   type PaginatedMatches,
   type PlayerStats,
 } from "../../services/fight.service";
+import { deckService } from "../../services/deck.service";
 import Leaderboard from "./Leaderboard";
 import type { Tab } from "./fight.types";
 
@@ -16,6 +17,7 @@ import FightLobby from "./FightLobby";
 import MatchHistory from "./MatchHistory";
 import FightRules from "./FightRules";
 import FightArena from "./FightArena";
+import ConfirmActionSheet from "./ConfirmActionSheet";
 import { useBoardControls } from "./useBoardControls";
 import { useFightConnection } from "./useFightConnection";
 import { pvpResumeTarget } from "../adventure/adventureView";
@@ -29,9 +31,14 @@ export default function FightPage({
   username: string;
 }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [tab, setTab] = useState<Tab>("fight");
+  // `?tab=rules` : retour d'une leçon du tutoriel vers l'onglet Règles
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(
+    searchParams.get("tab") === "rules" ? "rules" : "fight",
+  );
   const [selectedDeck, setSelectedDeck] = useState<number | null>(null);
+  const [confirmingSurrender, setConfirmingSurrender] = useState(false);
+  const [ranked, setRanked] = useState<RankedResultPayload | null>(null);
   // Le plateau a besoin de `send` (connexion) et la connexion de `clearSelection`
   // (plateau) : on relie les deux par une ref.
   const clearSelectionRef = useRef<() => void>(() => {});
@@ -46,6 +53,14 @@ export default function FightPage({
       enabled: tab === "history",
     },
   );
+
+  // Même clé que le sélecteur de decks : lu dans le cache, pas de requête en plus.
+  const { data: decks } = useQuery({
+    queryKey: QUERY_KEYS.decks,
+    queryFn: () => deckService.getMyDecks(),
+    enabled: selectedDeck !== null,
+  });
+  const deckName = decks?.find((d) => d.id === selectedDeck)?.name;
 
   const myStats = useQuery<PlayerStats>({
     queryKey: QUERY_KEYS.fightStats,
@@ -72,7 +87,8 @@ export default function FightPage({
       const target = pvpResumeTarget(payload);
       if (target) navigate(target, { replace: true });
     },
-    onGameOver: () => {
+    onGameOver: (payload) => {
+      setRanked(payload.ranked ?? null);
       setTimeout(() => refetchHistory(), 2000);
     },
   });
@@ -96,8 +112,8 @@ export default function FightPage({
   };
 
   const surrender = () => {
-    if (!matchId || !window.confirm(t("fight.bar.confirmSurrender"))) return;
-    emit("fight:surrender", { matchId });
+    setConfirmingSurrender(false);
+    if (matchId) emit("fight:surrender", { matchId });
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -143,6 +159,7 @@ export default function FightPage({
             <FightLobby
               status={status}
               selectedDeck={selectedDeck}
+              deckName={deckName}
               opponentName={opponentName}
               userId={userId}
               winner={gameState?.winner}
@@ -150,7 +167,15 @@ export default function FightPage({
               onJoinQueue={joinQueue}
               onLeaveQueue={leaveQueue}
               onSubmitDeck={submitDeck}
-              onReplay={reset}
+              ranked={ranked}
+              onReplay={() => {
+                setRanked(null);
+                reset();
+              }}
+              onPlayAi={() => {
+                leaveQueue();
+                navigate("/adventure");
+              }}
             />
           )}
 
@@ -159,10 +184,18 @@ export default function FightPage({
               gameState={gameState}
               timeLeft={timeLeft}
               controls={controls}
-              onSurrender={surrender}
+              onSurrender={() => setConfirmingSurrender(true)}
             />
           )}
         </div>
+      )}
+
+      {confirmingSurrender && status === "playing" && (
+        <ConfirmActionSheet
+          text={{ key: "fight.bar.confirmSurrender", params: {} }}
+          onConfirm={surrender}
+          onCancel={() => setConfirmingSurrender(false)}
+        />
       )}
     </div>
   );

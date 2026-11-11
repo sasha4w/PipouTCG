@@ -2,6 +2,8 @@ import type React from "react";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./FightBoard.css";
+import "./coach.css";
+import type { TutorialHint } from "@pipou/shared";
 import {
   RARITY_COLOR,
   type GameState,
@@ -89,6 +91,8 @@ interface Props {
   onEndPhase: () => void;
   /** Absent : pas de bouton d'abandon. */
   onSurrender?: () => void;
+  /** Tutoriel : ce que la bulle de la leçon désigne (rien sans cette prop). */
+  coach?: TutorialHint;
 }
 
 export default function FightBoard({
@@ -113,6 +117,7 @@ export default function FightBoard({
   onDiscardCard,
   onEndPhase,
   onSurrender,
+  coach,
 }: Props) {
   const { t, i18n } = useTranslation();
   // Choix de cartes en attente : le plateau se consulte (i) mais ne joue plus
@@ -127,6 +132,16 @@ export default function FightBoard({
     [gs.events, gs.me.userId],
   );
   useFightSfx(gs);
+  const coachIds = useMemo(
+    () => new Set(coach?.cards ?? []),
+    [coach?.cards],
+  );
+  const coachZones = (side: "me" | "opponent", kind: "monster" | "support") =>
+    new Set(
+      (coach?.zones ?? [])
+        .filter((z) => z.side === side && z.kind === kind)
+        .map((z) => z.index),
+    );
   const myTerrain = pickActiveTerrain(gs.me.supportZones);
   const oppTerrain = pickActiveTerrain(gs.opponent.supportZones);
 
@@ -891,6 +906,7 @@ export default function FightBoard({
         onOpenLog={() => setLogOpen(true)}
         onOpenGraveyard={setGraveyardSide}
         onSurrender={onSurrender}
+        coach={coach}
       />
       <EnergyCounter value={gs.me.recycleEnergy} />
       <TurnBanner isMyTurn={gsProp.isMyTurn} turnNumber={gs.turnNumber} />
@@ -915,6 +931,7 @@ export default function FightBoard({
             isSupport
             dim
             warnInstances={oppUnmetCharges}
+            coachInstanceIds={coachIds}
           />
           <ZoneRow
             label={t("fight.zone.oppMonsters")}
@@ -923,6 +940,8 @@ export default function FightBoard({
             isOpponent
             damagedZones={damagedOppZones}
             highlightOpponentEmpty={isMyMain && isZeta && canImplant}
+            coachInstanceIds={coachIds}
+            coachEmptyZones={coachZones("opponent", "monster")}
             dimInstanceIds={blockedEquipIds}
             highlightInstanceIds={
               isEquipment && isMyBoard ? plantedByMeIds : undefined
@@ -987,6 +1006,8 @@ export default function FightBoard({
             attackTargetIds={disinfectableIds}
             lockedInstances={lockedZetas}
             noModeChangeIds={implantedIds}
+            coachInstanceIds={coachIds}
+            coachEmptyZones={coachZones("me", "monster")}
           />
 
           <ZoneRow
@@ -995,6 +1016,8 @@ export default function FightBoard({
             fx={fx.me.supports}
             isSupport
             warnInstances={myUnmetCharges}
+            coachInstanceIds={coachIds}
+            coachEmptyZones={coachZones("me", "support")}
             recycleEnergy={gs.me.recycleEnergy}
             onZoneClick={
               isMyBoard && isZoneSupport
@@ -1030,6 +1053,7 @@ export default function FightBoard({
         unplayableReasons={unplayableReasons}
         canPayWithHand={canPayWithHand}
         onCardClick={handleCardClick}
+        coach={coach}
       />
 
       <FightActionBar
@@ -1041,6 +1065,7 @@ export default function FightBoard({
         playBlockedReason={playBlockedReason}
         onRecycle={handleBarRecycle}
         onMain={handleBarMain}
+        coach={coach}
       />
 
       {showSummonModal &&

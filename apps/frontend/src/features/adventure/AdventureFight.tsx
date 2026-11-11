@@ -9,6 +9,7 @@ import { IconArrowLeft, IconRobot } from "../../components/Icons";
 import { userService } from "../../services/user.service";
 import { QUERY_KEYS } from "../../utils/querykeys";
 import FightArena from "../fight/FightArena";
+import ConfirmActionSheet from "../fight/ConfirmActionSheet";
 import { useBoardControls } from "../fight/useBoardControls";
 import { useFightConnection } from "../fight/useFightConnection";
 import AdventureResult from "./AdventureResult";
@@ -144,9 +145,10 @@ function AdventureFight({ userId, opponentId, deckId: deckFromUrl }: Props) {
     start();
   };
 
+  const [confirmingSurrender, setConfirmingSurrender] = useState(false);
   const surrender = () => {
-    if (!matchId || !window.confirm(t("adventure.fight.surrender_confirm"))) return;
-    emit("fight:surrender", { matchId });
+    setConfirmingSurrender(false);
+    if (matchId) emit("fight:surrender", { matchId });
   };
 
   const renderWaiting = () => {
@@ -192,11 +194,19 @@ function AdventureFight({ userId, opponentId, deckId: deckFromUrl }: Props) {
             gameState={gameState}
             timeLeft={timeLeft}
             controls={controls}
-            onSurrender={surrender}
+            onSurrender={() => setConfirmingSurrender(true)}
           />
         </div>
       ) : (
         renderWaiting()
+      )}
+
+      {confirmingSurrender && status === "playing" && !gameOver && (
+        <ConfirmActionSheet
+          text={{ key: "adventure.fight.surrender_confirm", params: {} }}
+          onConfirm={surrender}
+          onCancel={() => setConfirmingSurrender(false)}
+        />
       )}
     </div>
   );

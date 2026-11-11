@@ -1,5 +1,7 @@
 import type { CombatMode } from "../game/instance";
 import type { AdventureResultPayload } from "../api/adventure";
+import type { TutorialResultPayload } from "../api/tutorial";
+import type { TutorialLessonId } from "../game/tutorial";
 import type { ClientGameState, GameEndReason } from "../game/state";
 
 /** Namespace Socket.io du combat (FightsGateway). */
@@ -89,10 +91,17 @@ export interface AdventureStartPayload {
   deckId: number;
 }
 
+export interface TutorialStartPayload {
+  lessonId: TutorialLessonId;
+}
+
 export interface ClientToServerEvents {
   "fight:queue": (payload?: EmptyPayload) => void;
   "fight:dequeue": (payload?: EmptyPayload) => void;
   "adventure:start": (payload: AdventureStartPayload) => void;
+  "tutorial:start": (payload: TutorialStartPayload) => void;
+  /** Passe une étape d'explication (`info`) de la leçon en cours. */
+  "tutorial:ack": (payload: MatchPayload) => void;
   "fight:submit_deck": (payload: SubmitDeckPayload) => void;
   "fight:mulligan": (payload: MulliganPayload) => void;
   "fight:end_phase": (payload: MatchPayload) => void;
@@ -119,6 +128,16 @@ export interface MatchFoundPayload {
   opponentName: string;
   /** Présent pour un combat d'aventure (PvE). */
   adventureOpponentId?: number;
+  /** Présent pour une leçon du tutoriel. */
+  tutorialLessonId?: TutorialLessonId;
+}
+
+/** Classement d'un joueur après une partie JcJ. */
+export interface RankedResultPayload {
+  /** ELO après la partie. */
+  elo: number;
+  /** Variation due à cette partie (négative après une défaite). */
+  delta: number;
 }
 
 export interface GameOverPayload {
@@ -127,6 +146,10 @@ export interface GameOverPayload {
   endReason: GameEndReason;
   /** Résultat d'aventure (combat PvE uniquement). */
   adventure?: AdventureResultPayload;
+  /** Classement du destinataire (JcJ uniquement ; absent si l'enregistrement a échoué). */
+  ranked?: RankedResultPayload;
+  /** Résultat de leçon (tutoriel uniquement). */
+  tutorial?: TutorialResultPayload;
 }
 
 export interface ServerToClientEvents {

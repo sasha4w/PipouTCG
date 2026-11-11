@@ -1,4 +1,5 @@
 import type { AchievementFamily } from "../enums/achievement";
+import type { TutorialStepView } from "./tutorial";
 import type { FightEvent } from "./events";
 import type { MatchEndReason } from "../enums/match";
 import type { ClientCard } from "./card";
@@ -129,4 +130,6 @@ export interface ClientGameState {
   pendingChoice?: ClientPendingChoice;
   /** L'adversaire doit résoudre un choix avant que la partie continue. */
   opponentChoosing: boolean;
+  /** Étape courante, présente seulement dans une leçon du tutoriel. */
+  tutorial?: TutorialStepView;
 }

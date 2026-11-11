@@ -58,8 +58,12 @@ describe('GameEndService.persistResult', () => {
     game.winner = P1_ID;
     game.endReason = 'surrender';
 
-    await service.persistResult(game);
+    const ranked = await service.persistResult(game);
 
+    expect(ranked).toEqual({
+      [P1_ID]: { elo: 1016, delta: 16 },
+      [P2_ID]: { elo: 984, delta: -16 },
+    });
     expect(stats.get(P1_ID)).toMatchObject({ wins: 1, elo: 1016 });
     expect(stats.get(P2_ID)).toMatchObject({ losses: 1, elo: 984 });
     expect(emitter.emit).toHaveBeenCalledWith('fight.finished', {

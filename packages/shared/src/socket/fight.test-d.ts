@@ -7,6 +7,8 @@ import type {
   ClientGameState,
   ClientToServerEvents,
   ServerToClientEvents,
+  TutorialLessonId,
+  TutorialResultPayload,
 } from "../index";
 
 describe("fight socket events", () => {
@@ -50,6 +52,26 @@ describe("fight socket events", () => {
     >();
     expectTypeOf<GameOverPayload["adventure"]>().toEqualTypeOf<
       AdventureResultPayload | undefined
+    >();
+  });
+});
+
+describe("tutorial socket events", () => {
+  it("starts a lesson by id and acks an info step", () => {
+    expectTypeOf<
+      Parameters<ClientToServerEvents["tutorial:start"]>[0]
+    >().toEqualTypeOf<{ lessonId: TutorialLessonId }>();
+    expectTypeOf<
+      Parameters<ClientToServerEvents["tutorial:ack"]>[0]
+    >().toEqualTypeOf<{ matchId: number }>();
+  });
+
+  it("joins the lesson result to game over", () => {
+    expectTypeOf<GameOverPayload["tutorial"]>().toEqualTypeOf<
+      TutorialResultPayload | undefined
+    >();
+    expectTypeOf<MatchFoundPayload["tutorialLessonId"]>().toEqualTypeOf<
+      TutorialLessonId | undefined
     >();
   });
 });

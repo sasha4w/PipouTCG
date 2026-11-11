@@ -222,3 +222,14 @@
   color: rgba(255, 255, 255, 0.8);
   white-space: pre-wrap;
 }
+
+/* Mobile : le bouton n'est plus au bord droit, le panneau s'ancre à l'écran. */
+@media (max-width: 480px) {
+  .inbox__dropdown {
+    position: fixed;
+    top: 74px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
+}

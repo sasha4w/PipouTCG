@@ -60,6 +60,9 @@ export const QUERY_KEYS = {
   adventure: ["adventure"] as const,
   adminAdventure: ["admin", "adventure"] as const,
 
+  // ── Tutoriel ──────────────────────────────────────────────────────────────
+  tutorial: ["tutorial"] as const,
+
   // ── Catalogue (listes d'options des formulaires) ──────────────────────────
   cardSetOptions: ["card-sets", "options"] as const,
   boosterOptions: ["boosters", "options"] as const,

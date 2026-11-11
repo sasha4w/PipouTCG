@@ -1,8 +1,10 @@
 import { useState } from "react";
 import {
+  COUNTER_OFFENSIVE_PER_TURN,
   DECK_RULES,
   EQUIP_SLOT_CAPACITY,
   EquipmentSlot,
+  GUARD_MAX_TURNS,
   HAND_LIMIT,
   STARTING_HAND,
   STARTING_PRIMES,
@@ -13,28 +15,88 @@ import Button from "../../components/Button";
 import {
   IconArrowLeft,
   IconArrowRight,
+  IconBolt,
   IconCards,
+  IconCheck,
+  IconEvolve,
+  IconGem,
+  IconHourglass,
+  IconMap,
+  IconSparkles,
+  IconSwords,
+  IconTrophy,
+  IconUndo,
 } from "../../components/Icons";
+import TutorialHome from "../tutorial/TutorialHome";
 import { STARTER_ORDER, starterTextKey } from "../starter/starterTexts";
-import { KEYWORD_IDS } from "./effectText";
+import type { KeywordId } from "./effectText";
 import KeywordIcon from "./KeywordIcon";
 import "./FightRules.css";
 
-/** Statuts des monstres : le même glossaire que la fiche d'effet des cartes. */
+/** Statuts classés : ce qu'on subit, le combat, les immunités, l'invocation. */
+const STATUS_GROUPS: { id: string; keywords: readonly KeywordId[] }[] = [
+  {
+    id: "restraint",
+    keywords: ["freeze", "guardLock", "forcedAttack", "countdown"],
+  },
+  {
+    id: "combat",
+    keywords: [
+      "taunt",
+      "ignoreTaunt",
+      "piercing",
+      "damageReduction",
+      "reflect",
+      "doubleAttack",
+      "multiAttack",
+      "tempAtk",
+    ],
+  },
+  {
+    id: "immunity",
+    keywords: [
+      "combatImmunity",
+      "combatEndure",
+      "supportShield",
+      "supportDebuffImmunity",
+      "monsterDebuffImmunity",
+      "monsterStatusImmunity",
+      "debuffImmunity",
+    ],
+  },
+  {
+    id: "summon",
+    keywords: ["hatch", "evolutionJoker", "instantEvolution", "releve"],
+  },
+];
+
 function StatusGrid() {
   const { t } = useTranslation();
   return (
-    <div className="fr-status-grid">
-      {KEYWORD_IDS.map((id) => (
-        <div key={id} className="fr-status-card">
-          <div className="fr-status-icon">
-            <KeywordIcon id={id} />
+    <div className="fr-status-groups">
+      {STATUS_GROUPS.map((g) => (
+        <section key={g.id} data-testid={`status-group-${g.id}`}>
+          <h3 className="fr-status-group-title">
+            {t(`fight.rules.statusGroup.${g.id}`)}
+          </h3>
+          <div className="fr-status-grid">
+            {g.keywords.map((id) => (
+              <div key={id} className="fr-status-card">
+                <div className="fr-status-icon">
+                  <KeywordIcon id={id} />
+                </div>
+                <div>
+                  <div className="fr-status-name">
+                    {t(`keywords.${id}.name`)}
+                  </div>
+                  <div className="fr-status-desc">
+                    {t(`keywords.${id}.desc`)}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <div className="fr-status-name">{t(`keywords.${id}.name`)}</div>
-            <div className="fr-status-desc">{t(`keywords.${id}.desc`)}</div>
-          </div>
-        </div>
+        </section>
       ))}
     </div>
   );
@@ -79,12 +141,14 @@ type Step = { icon: React.ReactNode; label: string; content: React.ReactNode };
 function buildSteps(t: TFunction): Step[] {
   return [
     {
-      icon: "🏆",
+      icon: <IconTrophy size={20} />,
       label: t("fight.rules.step.goal"),
       content: (
         <>
           <div className="fr-win-banner">
-            <span className="fr-win-icon">🏆</span>
+            <span className="fr-win-icon">
+              <IconTrophy size={28} />
+            </span>
             <div>
               <div className="fr-win-sub">{t("fight.rules.winLabel")}</div>
               <div className="fr-win-val">
@@ -101,7 +165,7 @@ function buildSteps(t: TFunction): Step[] {
       ),
     },
     {
-      icon: "🃏",
+      icon: <IconCards size={20} />,
       label: t("fight.rules.step.setup"),
       content: (
         <div className="fr-rule-list">
@@ -120,7 +184,7 @@ function buildSteps(t: TFunction): Step[] {
       ),
     },
     {
-      icon: "🗺️",
+      icon: <IconMap size={20} />,
       label: t("fight.rules.step.board"),
       content: (
         <div className="fr-rule-list">
@@ -131,7 +195,7 @@ function buildSteps(t: TFunction): Step[] {
       ),
     },
     {
-      icon: "🎴",
+      icon: <IconGem size={20} />,
       label: t("fight.rules.step.cards"),
       content: (
         <div className="fr-rule-list">
@@ -176,18 +240,21 @@ function buildSteps(t: TFunction): Step[] {
                   </div>
                 </div>
               </div>
+              <div className="fr-rule-text" data-testid="support-limits">
+                {t("fight.rules.supportLimits")}
+              </div>
             </div>
           </div>
         </div>
       ),
     },
     {
-      icon: "✨",
+      icon: <IconSparkles size={20} />,
       label: t("fight.rules.step.status"),
       content: <StatusGrid />,
     },
     {
-      icon: "⚡",
+      icon: <IconBolt size={20} />,
       label: t("fight.rules.step.energy"),
       content: (
         <div className="fr-rule-list">
@@ -198,7 +265,7 @@ function buildSteps(t: TFunction): Step[] {
       ),
     },
     {
-      icon: "⚔️",
+      icon: <IconSwords size={20} />,
       label: t("fight.rules.step.combat"),
       content: (
         <div className="fr-rule-list">
@@ -227,6 +294,15 @@ function buildSteps(t: TFunction): Step[] {
                 <div className="fr-rule-text">
                   <RuleText k="guard2" />
                 </div>
+                <div className="fr-rule-text" data-testid="guard-rules">
+                  <RuleText
+                    k="guard3"
+                    values={{
+                      turns: GUARD_MAX_TURNS,
+                      atk: COUNTER_OFFENSIVE_PER_TURN,
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -235,18 +311,38 @@ function buildSteps(t: TFunction): Step[] {
       ),
     },
     {
-      icon: "🔄",
+      icon: <IconUndo size={20} />,
       label: t("fight.rules.step.primes"),
       content: (
         <div className="fr-rule-list">
           <Rule k="primes1" />
           <Rule k="primes2" />
           <Rule k="primes3" />
+          <Rule k="primes4" />
+          <Rule k="primes5" />
         </div>
       ),
     },
     {
-      icon: "⏱️",
+      icon: <IconEvolve size={20} />,
+      label: t("fight.rules.step.special"),
+      content: (
+        <div className="fr-rule-list">
+          {(
+            ["evolution", "transform", "releve", "zeta", "origins"] as const
+          ).map((k) => (
+            <div key={k} className="fr-rule" data-testid={`special-${k}`}>
+              <div className="fr-dot" />
+              <div className="fr-rule-text">
+                <RuleText k={`special.${k}`} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      icon: <IconHourglass size={20} />,
       label: t("fight.rules.step.turn"),
       content: (
         <div className="fr-phase-list">
@@ -255,7 +351,7 @@ function buildSteps(t: TFunction): Step[] {
               ["phaseStart", "phaseStartDesc"],
               ["phaseMain", "phaseMainDesc"],
               ["phaseBattle", "phaseBattleDesc"],
-              ["phaseEnd", "phaseEndDesc"],
+              ["phaseControl", "phaseControlDesc"],
             ] as const
           ).map(([label, desc], i) => (
             <div key={label} className="fr-phase">
@@ -266,7 +362,7 @@ function buildSteps(t: TFunction): Step[] {
               </div>
             </div>
           ))}
-          <p className="fr-rule-text">⏱ {t("fight.rules.timer")}</p>
+          <p className="fr-rule-text">{t("fight.rules.timer")}</p>
         </div>
       ),
     },
@@ -302,7 +398,8 @@ function buildSteps(t: TFunction): Step[] {
   ];
 }
 
-export default function FightRules() {
+/** Référence des règles, étape par étape. */
+export function RulesReference() {
   const { t } = useTranslation();
   const [cur, setCur] = useState(0);
   const steps = buildSteps(t);
@@ -319,7 +416,7 @@ export default function FightRules() {
               onClick={() => setCur(i)}
             >
               <span className="fr-bc-dot">
-                {i < cur ? "✓" : i === cur ? s.icon : i + 1}
+                {i < cur ? <IconCheck size={14} /> : i === cur ? s.icon : i + 1}
               </span>
               <span className="fr-bc-label">{s.label}</span>
             </button>
@@ -363,6 +460,33 @@ export default function FightRules() {
           <IconArrowRight size={16} />
         </Button>
       </div>
+    </div>
+  );
+}
+
+type RulesTab = "tutorial" | "reference";
+
+/** Onglet Règles : leçons jouables (par défaut) et référence. */
+export default function FightRules() {
+  const { t } = useTranslation();
+  const [tab, setTab] = useState<RulesTab>("tutorial");
+  return (
+    <div className="fr-tabs-root">
+      <div className="fr-tabs" role="tablist">
+        {(["tutorial", "reference"] as const).map((id) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            className={`fr-tab${tab === id ? " fr-tab--active" : ""}`}
+            onClick={() => setTab(id)}
+          >
+            {t(id === "tutorial" ? "tutorial.ui.tab" : "tutorial.ui.reference")}
+          </button>
+        ))}
+      </div>
+      {tab === "tutorial" ? <TutorialHome /> : <RulesReference />}
     </div>
   );
 }

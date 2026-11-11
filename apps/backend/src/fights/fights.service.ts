@@ -11,7 +11,12 @@ import type {
   GameAction,
   GamePhase,
   Seat,
+  TutorialLessonId,
+  TutorialResultPayload,
+  TutorialStartPayload,
+  TutorialStepView,
 } from '@pipou/shared';
+import { isTutorialLessonId, type RankedResultPayload } from '@pipou/shared';
 import type { FightServer } from './fight-socket.types';
 import { GameState } from './interfaces/game-state.interface';
 import { PlayerStats } from './entities/player-stats.entity';
@@ -54,11 +59,24 @@ import {
   type PveInfo,
   type PveStart,
 } from './pve';
+import {
+  TUTORIAL_ACTION_DELAY_MS,
+  TUTORIAL_HOOKS,
+  type TutorialHooks,
+} from './tutorial';
+import type { LessonRunner } from '../tutorial/lesson-runner';
 
 const NOT_IN_MATCH = 'Tu ne participes pas à ce match';
 
 /** Délai laissé à un joueur déconnecté pour revenir avant de perdre. */
 export const RECONNECT_GRACE_MS = 60_000;
+
+/** Refus d'une action hors consigne dans une leçon. */
+const TUTORIAL_READ_FIRST = "Lis l'explication, puis clique sur Suivant";
+const TUTORIAL_WAIT = "L'adversaire joue, patiente un instant";
+const TUTORIAL_WRONG_ACTION = "Ce n'est pas l'action demandée par la leçon";
+const TUTORIAL_NEEDS_ACTION =
+  'Cette étape demande une action, pas un clic sur Suivant';
 
 const isPositiveInt = (v: unknown): v is number =>
   typeof v === 'number' && Number.isInteger(v) && v > 0;
@@ -74,6 +92,15 @@ interface PveSession {
   ai: AiPlayer;
 }
 
+/** Leçon du tutoriel en cours : le joueur est toujours `player1`. */
+interface TutorialSession {
+  lessonId: TutorialLessonId;
+  runner: LessonRunner;
+  humanId: number;
+  /** Prochain coup scripté de l'adversaire programmé. */
+  timer?: NodeJS.Timeout;
+}
+
 @Injectable()
 export class FightsService {
   private readonly logger = new Logger(FightsService.name);
@@ -82,6 +109,7 @@ export class FightsService {
   private locks = new Map<number, Promise<unknown>>();
   private disconnectTimers = new Map<number, NodeJS.Timeout>();
   private pve = new Map<number, PveSession>();
+  private tutorials = new Map<number, TutorialSession>();
   /** Joueurs dont le combat d'aventure est en cours de création. */
   private startingAdventure = new Set<number>();
 
@@ -98,6 +126,9 @@ export class FightsService {
     @Optional()
     @Inject(GAME_RECORDER)
     private gameRecorder?: GameRecorderPort,
+    @Optional()
+    @Inject(TUTORIAL_HOOKS)
+    private tutorialHooks?: TutorialHooks,
   ) {}
 
   // ── Matchmaking ──────────────────────────────────────────────────────────
@@ -251,6 +282,189 @@ export class FightsService {
     }
   }
 
+  // ── Tutoriel ─────────────────────────────────────────────────────────────
+
+  /** Lance une leçon : plateau préparé, adversaire scripté, aucun deck à soumettre. */
+  async startTutorial(
+    userId: number,
+    username: string,
+    socketId: string,
+    payload: TutorialStartPayload,
+    server: FightServer,
+  ): Promise<{ error?: string }> {
+    const hooks = this.tutorialHooks;
+    if (!hooks) return { error: 'Tutoriel indisponible' };
+    const lessonId = (payload as Partial<TutorialStartPayload> | undefined)
+      ?.lessonId;
+    if (!isTutorialLessonId(lessonId)) return { error: 'Leçon introuvable' };
+    if (
+      this.userToMatch.has(userId) ||
+      this.startingAdventure.has(userId) ||
+      this.matchmaking.isQueued(userId)
+    )
+      return { error: 'Tu as déjà une partie en cours' };
+
+    this.startingAdventure.add(userId);
+    try {
+      let start;
+      try {
+        start = await hooks.prepare(userId, username, lessonId);
+      } catch (err) {
+        if (err instanceof HttpException) return { error: err.message };
+        this.logger.error(
+          `Préparation de la leçon ${lessonId} en échec`,
+          err instanceof Error ? err.stack : String(err),
+        );
+        return { error: 'Impossible de lancer cette leçon' };
+      }
+      const { game } = start;
+      game.player1.socketId = socketId;
+      this.adopt(game);
+      this.tutorials.set(game.matchId, {
+        lessonId,
+        runner: start.runner,
+        humanId: userId,
+      });
+      server.to(socketId).emit('fight:matched', {
+        matchId: game.matchId,
+        opponentName: game.player2.username,
+        tutorialLessonId: lessonId,
+      });
+      await this.withLock(game.matchId, () => this.afterChange(game, server));
+      return {};
+    } finally {
+      this.startingAdventure.delete(userId);
+    }
+  }
+
+  /** « Suivant » : passe l'étape d'explication de la leçon en cours. */
+  tutorialAck(
+    matchId: number,
+    userId: number,
+    server: FightServer,
+  ): Promise<{ error?: string }> {
+    return this.withLock(matchId, async () => {
+      const game = this.games.get(matchId);
+      const tut = this.tutorials.get(matchId);
+      if (!game || !tut) return { error: 'Match introuvable' };
+      if (!seatOf(game, userId)) return { error: NOT_IN_MATCH };
+      const kind = tut.runner.step?.kind;
+      if (kind !== 'info')
+        return {
+          error: kind === 'player' ? TUTORIAL_NEEDS_ACTION : TUTORIAL_WAIT,
+        };
+      tut.runner.advance();
+      await this.afterChange(game, server);
+      return {};
+    });
+  }
+
+  /** Action du joueur dans une leçon : seule celle de l'étape est jouée. */
+  private async tutorialAct(
+    game: GameState,
+    tut: TutorialSession,
+    seat: Seat,
+    action: GameAction,
+    server: FightServer,
+  ): Promise<{ error?: string }> {
+    const step = tut.runner.step;
+    if (step?.kind !== 'player')
+      return {
+        error: step?.kind === 'opponent' ? TUTORIAL_WAIT : TUTORIAL_READ_FIRST,
+      };
+    if (!tut.runner.matches(game, seat, action))
+      return { error: TUTORIAL_WRONG_ACTION };
+    const result = this.engine.dispatch(game, seat, action);
+    if (result.error) return result;
+    // « Finir le tour » envoie plusieurs end_phase : l'étape dure jusqu'au passage de main
+    if (
+      step.expect.type !== 'end_turn' ||
+      game.currentTurnUserId !== tut.humanId
+    )
+      tut.runner.advance();
+    await this.afterChange(game, server);
+    return result;
+  }
+
+  private scheduleTutorialStep(
+    matchId: number,
+    tut: TutorialSession,
+    server: FightServer,
+  ): void {
+    if (tut.timer) return;
+    tut.timer = setTimeout(() => {
+      tut.timer = undefined;
+      this.tutorialStep(matchId, server).catch((err: unknown) =>
+        this.logger.error(
+          `Coup scripté de la leçon du match ${matchId} en échec`,
+          err instanceof Error ? err.stack : String(err),
+        ),
+      );
+    }, TUTORIAL_ACTION_DELAY_MS);
+  }
+
+  /** Un coup scripté de l'adversaire ; refusé, la leçon s'arrête sans récompense. */
+  private tutorialStep(matchId: number, server: FightServer): Promise<void> {
+    return this.withLock(matchId, async () => {
+      const game = this.games.get(matchId);
+      const tut = this.tutorials.get(matchId);
+      if (!game || !tut || tut.runner.step?.kind !== 'opponent') return;
+      const seat = seatOf(game, game.player2.userId)!;
+      const action = tut.runner.scripted(game, seat);
+      let error = action
+        ? this.engine.dispatch(game, seat, action).error
+        : 'coup introuvable';
+      // Finir son tour : end_phase jusqu'à rendre la main au joueur
+      const step = tut.runner.step;
+      if (!error && step?.kind === 'opponent' && step.do.type === 'end_turn')
+        for (
+          let i = 0;
+          !error && i < 4 && game.currentTurnUserId !== tut.humanId;
+          i++
+        )
+          error = this.engine.dispatch(game, seat, { type: 'end_phase' }).error;
+      if (error) {
+        this.logger.error(
+          `Leçon ${tut.lessonId} : coup scripté ${JSON.stringify(action)} refusé — ${error}`,
+        );
+        finishGame(game, game.player2.userId, 'disconnect');
+      } else tut.runner.advance();
+      await this.afterChange(game, server);
+    });
+  }
+
+  /** Étape de leçon montrée au joueur, ou rien hors tutoriel. */
+  private tutorialView(game: GameState): TutorialStepView | undefined {
+    return this.tutorials.get(game.matchId)?.runner.view(game, 'p1');
+  }
+
+  private async finishTutorial(
+    game: GameState,
+    tut: TutorialSession,
+    server: FightServer,
+  ): Promise<void> {
+    const completed = tut.runner.done && game.winner === tut.humanId;
+    let tutorial: TutorialResultPayload | undefined;
+    try {
+      tutorial = await this.tutorialHooks?.recordResult(
+        tut.humanId,
+        tut.lessonId,
+        completed,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Enregistrement de la leçon ${tut.lessonId} en échec`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+    emitGameState(game, server);
+    server.to(game.player1.socketId).emit('fight:game_over', {
+      winner: game.winner ?? null,
+      endReason: game.endReason!,
+      ...(tutorial && { tutorial }),
+    });
+  }
+
   // ── Partie ───────────────────────────────────────────────────────────────
 
   submitDeck(
@@ -289,6 +503,9 @@ export class FightsService {
       if (!game) return { error: 'Match introuvable' };
       const seat = seatOf(game, userId);
       if (!seat) return { error: NOT_IN_MATCH };
+
+      const tut = this.tutorials.get(matchId);
+      if (tut) return this.tutorialAct(game, tut, seat, action, server);
 
       const session0 = this.pve.get(matchId);
       // Diagnostic local : coup de l'humain, décrit sur l'état d'avant
@@ -384,6 +601,7 @@ export class FightsService {
     opponentName: string;
     phase: GamePhase;
     adventureOpponentId?: number;
+    tutorialLessonId?: TutorialLessonId;
   } | null {
     const matchId = this.userToMatch.get(userId);
     const game = matchId === undefined ? undefined : this.games.get(matchId);
@@ -398,18 +616,21 @@ export class FightsService {
     }
     player.socketId = socketId;
     const session = this.pve.get(game.matchId);
+    const tutorial = this.tutorials.get(game.matchId);
     return {
       matchId: game.matchId,
       opponentName: getOpponentState(game, userId).username,
       phase: game.phase,
       ...(session && { adventureOpponentId: session.info.opponentId }),
+      ...(tutorial && { tutorialLessonId: tutorial.lessonId }),
     };
   }
 
   /** Renvoie l'état d'une partie commencée à ses deux joueurs. */
   emitState(matchId: number, server: FightServer): void {
     const game = this.games.get(matchId);
-    if (game && game.phase !== 'waiting') emitGameState(game, server);
+    if (game && game.phase !== 'waiting')
+      emitGameState(game, server, this.tutorialView(game));
   }
 
   private forfeit(
@@ -462,11 +683,22 @@ export class FightsService {
     game: GameState,
     server: FightServer,
   ): Promise<void> {
+    const tut = this.tutorials.get(game.matchId);
+    // Toutes les étapes jouées : le joueur remporte la leçon
+    if (tut?.runner.done && game.phase !== 'finished')
+      finishGame(game, tut.humanId, 'surrender');
     if (game.phase === 'finished') {
       await this.finish(game, server);
       return;
     }
-    emitGameState(game, server);
+    emitGameState(game, server, this.tutorialView(game));
+    if (tut) {
+      // Ni minuteur de tour, ni IA : seul l'adversaire scripté joue
+      this.turnTimeout.clear(game.matchId);
+      if (tut.runner.step?.kind === 'opponent')
+        this.scheduleTutorialStep(game.matchId, tut, server);
+      return;
+    }
     const session = this.pve.get(game.matchId);
     if (session && aiMustAct(game, session.info.aiUserId)) {
       // L'IA n'a pas de minuteur : seul le joueur humain en a un
@@ -629,13 +861,19 @@ export class FightsService {
     this.turnTimeout.clear(game.matchId);
     this.gameRecorder?.finish(game);
     const session = this.pve.get(game.matchId);
+    const tut = this.tutorials.get(game.matchId);
     this.cleanupGame(game);
+    if (tut) {
+      await this.finishTutorial(game, tut, server);
+      return;
+    }
     if (session) {
       await this.finishPve(game, session.info, server);
       return;
     }
+    let ranked: Record<number, RankedResultPayload> | undefined;
     try {
-      await this.gameEnd.persistResult(game);
+      ranked = await this.gameEnd.persistResult(game);
     } catch (err) {
       this.logger.error(
         `Enregistrement du match ${game.matchId} en échec`,
@@ -647,8 +885,12 @@ export class FightsService {
       winner: game.winner ?? null,
       endReason: game.endReason!,
     };
-    server.to(game.player1.socketId).emit('fight:game_over', payload);
-    server.to(game.player2.socketId).emit('fight:game_over', payload);
+    for (const player of [game.player1, game.player2]) {
+      server.to(player.socketId).emit('fight:game_over', {
+        ...payload,
+        ranked: ranked?.[player.userId],
+      });
+    }
   }
 
   /** Le journal de diagnostic ne doit jamais gêner la partie. */
@@ -702,6 +944,11 @@ export class FightsService {
     if (session) {
       clearTimeout(session.aiTimer);
       this.pve.delete(game.matchId);
+    }
+    const tutorial = this.tutorials.get(game.matchId);
+    if (tutorial) {
+      clearTimeout(tutorial.timer);
+      this.tutorials.delete(game.matchId);
     }
     for (const p of [game.player1, game.player2]) {
       clearTimeout(this.disconnectTimers.get(p.userId));

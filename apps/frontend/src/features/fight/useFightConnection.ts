@@ -121,7 +121,7 @@ export function useFightConnection({
       setStatus("selecting");
       if (!callbacksRef.current.silentMatch)
         showToast(
-          `⚔️ ${i18n.t("fight.toast.matched", { name: payload.opponentName })}`,
+          i18n.t("fight.toast.matched", { name: payload.opponentName }),
           "ok",
         );
       callbacksRef.current.onMatched?.(payload);
@@ -132,7 +132,7 @@ export function useFightConnection({
       // fight:state suit si la partie a commencé ; sinon on revient au choix du deck
       setStatus((s) => (s === "playing" ? s : "selecting"));
       if (!callbacksRef.current.silentMatch)
-        showToast(`🔌 ${i18n.t("fight.toast.resumed")}`, "ok");
+        showToast(i18n.t("fight.toast.resumed"), "ok");
       callbacksRef.current.onResumed?.(payload);
     });
     socket.on("fight:deck_accepted", () =>
@@ -154,12 +154,12 @@ export function useFightConnection({
       callbacksRef.current.onGameOver?.(payload);
       if (callbacksRef.current.silentMatch) return;
       if (winner === null) {
-        showToast(`🤝 ${i18n.t("fight.toast.draw", { reason })}`, "ok");
+        showToast(i18n.t("fight.toast.draw", { reason }), "ok");
       } else {
         showToast(
           winner === userId
-            ? `🎉 ${i18n.t("fight.toast.win", { reason })}`
-            : `💀 ${i18n.t("fight.toast.loss", { reason })}`,
+            ? i18n.t("fight.toast.win", { reason })
+            : i18n.t("fight.toast.loss", { reason }),
           winner === userId ? "ok" : "err",
         );
       }

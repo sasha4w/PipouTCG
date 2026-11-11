@@ -22,7 +22,7 @@ export class AchievementStatsService {
     totalSets: number;
     totalWorlds: number;
   }> {
-    const [user, fights, streak, cards, sets, adventure, worlds] =
+    const [user, fights, streak, cards, sets, adventure, worlds, tutorial] =
       await Promise.all([
         this.dataSource.getRepository(User).findOne({
           where: { id: userId },
@@ -91,6 +91,10 @@ export class AchievementStatsService {
         this.dataSource.query<{ total: string | number }[]>(
           'SELECT COUNT(*) AS total FROM adventure_world WHERE is_active = 1',
         ),
+        this.dataSource.query<{ total: string | number }[]>(
+          'SELECT COUNT(*) AS total FROM user_tutorial_lesson WHERE user_id = ?',
+          [userId],
+        ),
       ]);
 
     const setRows = sets.map((s) => ({
@@ -118,6 +122,7 @@ export class AchievementStatsService {
         won: Number(adventure[0]?.won ?? 0),
         played: Number(adventure[0]?.played ?? 0),
       },
+      tutorialLessons: Number(tutorial[0]?.total ?? 0),
     });
     return {
       values,

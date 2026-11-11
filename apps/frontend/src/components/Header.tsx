@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { userService } from "../services/user.service";
 import { QUERY_KEYS } from "../utils/querykeys";
 import InboxWidget from "../features/inbox/InboxWidget";
-import { IconCrown } from "./Icons";
+import { IconCrown, IconSettings } from "./Icons";
 
 function StarYellow({ width, height }: { width: number; height: number }) {
   return (
@@ -260,15 +260,15 @@ export default function Header() {
 
   return (
     <header className="cc-header">
-      {/* Ajout du onClick et du cursor: pointer ici 👇 */}
-      <div
+      <button
+        type="button"
         className="cc-header__title-row"
+        aria-label={t("nav.home")}
         onClick={() => navigate("/")}
-        style={{ cursor: "pointer" }}
       >
         <h1 className="cc-header__title">PipouTCG</h1>
         <TitleStars />
-      </div>
+      </button>
 
       <div className="cc-header__actions">
         {isAdminUser && (
@@ -283,6 +283,14 @@ export default function Header() {
         )}
         <InboxWidget />
         <SoundButton />
+        <Button
+          variant="ghost-bordeaux"
+          size="icon"
+          aria-label={t("nav.settings")}
+          onClick={() => navigate("/settings")}
+        >
+          <IconSettings size={18} />
+        </Button>
       </div>
     </header>
   );

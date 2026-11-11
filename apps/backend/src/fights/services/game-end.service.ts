@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Match } from '../entities/match.entity';
-import { MatchStatus } from '@pipou/shared';
+import { MatchStatus, type RankedResultPayload } from '@pipou/shared';
 import { PlayerStats } from '../entities/player-stats.entity';
 import { GameState } from '../interfaces/game-state.interface';
 
@@ -17,8 +17,13 @@ export class GameEndService {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  /** Enregistre le résultat d'une partie terminée (statut, gagnant, stats, ELO). */
-  async persistResult(game: GameState): Promise<void> {
+  /**
+   * Enregistre le résultat d'une partie terminée (statut, gagnant, stats, ELO).
+   * Renvoie le classement de chaque joueur, indexé par son id.
+   */
+  async persistResult(
+    game: GameState,
+  ): Promise<Record<number, RankedResultPayload>> {
     const winnerId = game.winner ?? null;
     await this.matchRepo.update(game.matchId, {
       status: MatchStatus.FINISHED,
@@ -43,6 +48,7 @@ export class GameEndService {
       s1.draws += 1;
       s2.draws += 1;
     }
+    const before = [s1.elo, s2.elo];
     [s1.elo, s2.elo] = calcElo(s1.elo, s2.elo, score1);
     await this.statsRepo.save([s1, s2]);
     this.eventEmitter.emit('fight.finished', {
@@ -50,6 +56,10 @@ export class GameEndService {
       player2Id: game.player2.userId,
       winnerId,
     });
+    return {
+      [game.player1.userId]: { elo: s1.elo, delta: s1.elo - before[0] },
+      [game.player2.userId]: { elo: s2.elo, delta: s2.elo - before[1] },
+    };
   }
 
   // ── REST endpoints ──────────────────────────────────────────────────────────

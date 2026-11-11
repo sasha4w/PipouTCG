@@ -27,52 +27,27 @@ const NAV_ITEMS = [
     ),
   },
   {
-    id: "profile",
-    labelKey: "nav.profile",
-    path: "/profile",
+    id: "collection",
+    labelKey: "nav.collection",
+    path: "/collection",
     icon: (active: boolean) => (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-        <circle
-          cx="12"
-          cy="8"
-          r="4"
+        <rect
+          x="8"
+          y="3"
+          width="12"
+          height="16"
+          rx="2"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           fill={active ? "rgba(122,28,59,0.13)" : "none"}
         />
         <path
-          d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6"
+          d="M4 7v12a2 2 0 002 2h9"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           strokeLinecap="round"
         />
-      </svg>
-    ),
-  },
-  {
-    id: "marketplace",
-    labelKey: "nav.marketplace",
-    path: "/marketplace",
-    icon: (active: boolean) => (
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-        {(
-          [
-            [8, 8],
-            [16, 8],
-            [8, 16],
-            [16, 16],
-          ] as [number, number][]
-        ).map(([cx, cy]) => (
-          <circle
-            key={`${cx}-${cy}`}
-            cx={cx}
-            cy={cy}
-            r="2.5"
-            stroke={active ? "#7A1C3B" : "#A08070"}
-            strokeWidth="2"
-            fill={active ? "rgba(122,28,59,0.13)" : "none"}
-          />
-        ))}
       </svg>
     ),
   },
@@ -113,21 +88,48 @@ const NAV_ITEMS = [
     ),
   },
   {
-    id: "settings",
-    labelKey: "nav.settings",
-    path: "/settings",
+    id: "marketplace",
+    labelKey: "nav.marketplace",
+    path: "/marketplace",
+    icon: (active: boolean) => (
+      <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+        {(
+          [
+            [8, 8],
+            [16, 8],
+            [8, 16],
+            [16, 16],
+          ] as [number, number][]
+        ).map(([cx, cy]) => (
+          <circle
+            key={`${cx}-${cy}`}
+            cx={cx}
+            cy={cy}
+            r="2.5"
+            stroke={active ? "#7A1C3B" : "#A08070"}
+            strokeWidth="2"
+            fill={active ? "rgba(122,28,59,0.13)" : "none"}
+          />
+        ))}
+      </svg>
+    ),
+  },
+  {
+    id: "profile",
+    labelKey: "nav.profile",
+    path: "/profile",
     icon: (active: boolean) => (
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
         <circle
           cx="12"
-          cy="12"
-          r="3"
+          cy="8"
+          r="4"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           fill={active ? "rgba(122,28,59,0.13)" : "none"}
         />
         <path
-          d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+          d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6"
           stroke={active ? "#7A1C3B" : "#A08070"}
           strokeWidth="2"
           strokeLinecap="round"
@@ -137,17 +139,20 @@ const NAV_ITEMS = [
   },
 ];
 
+/** Écrans atteints depuis l'Arène : ils gardent son onglet allumé. */
+const ARENA_PATHS = ["/arena", "/fight", "/decks", "/adventure", "/tutorial"];
+
 export default function Footer() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
 
-  const activeId =
-    NAV_ITEMS.find((item) =>
-      item.path === "/"
-        ? location.pathname === "/"
-        : location.pathname.startsWith(item.path),
-    )?.id ?? "home";
+  const { pathname } = location;
+  const activeId = ARENA_PATHS.some((p) => pathname.startsWith(p))
+    ? "arena"
+    : NAV_ITEMS.find((item) =>
+        item.path === "/" ? pathname === "/" : pathname.startsWith(item.path),
+      )?.id;
 
   return (
     <footer className="cc-footer">

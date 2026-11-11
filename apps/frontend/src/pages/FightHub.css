@@ -212,8 +212,13 @@
   );
 }
 
+.fh-card--decks .fh-card__icon,
 .fh-card--adventure .fh-card__icon {
   color: #7a1c3b;
+}
+
+.fh-card--fight .fh-card__icon {
+  color: #fff;
 }
 
 .fh-card--adventure .fh-card__desc,

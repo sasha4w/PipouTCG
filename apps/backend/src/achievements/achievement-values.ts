@@ -25,6 +25,8 @@ export interface AchievementSources {
   highRarity: number;
   sets: { total: number; owned: number }[];
   adventure: { worldsCompleted: number; won: number; played: number };
+  /** Leçons du tutoriel terminées. */
+  tutorialLessons: number;
 }
 
 export function toAchievementValues(
@@ -51,5 +53,6 @@ export function toAchievementValues(
     [AchievementFamily.ADVENTURE_WORLDS]: src.adventure.worldsCompleted,
     [AchievementFamily.PVE_WON]: src.adventure.won,
     [AchievementFamily.PVE_PLAYED]: src.adventure.played,
+    [AchievementFamily.TUTORIAL_LESSONS]: src.tutorialLessons,
   };
 }

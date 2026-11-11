@@ -1,3 +1,4 @@
+import type { TutorialHint } from "@pipou/shared";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { Phase } from "./fight.types";
@@ -12,6 +13,8 @@ interface Props {
   discardCount: number;
   onPick: (option: PhaseOption) => void;
   onClose: () => void;
+  /** Tutoriel : l'étape suivante du tour est mise en avant. */
+  coach?: TutorialHint;
 }
 
 /** Ordre du tour, présenté en entier : on ne peut qu'avancer. */
@@ -29,6 +32,7 @@ export default function PhaseMenu({
   discardCount,
   onPick,
   onClose,
+  coach,
 }: Props) {
   const { t } = useTranslation();
 
@@ -48,12 +52,17 @@ export default function PhaseMenu({
           const option = options.find((o) => o.target === id);
           const current = id === phase;
           const blocked = option?.disabledReason === "discard";
+          const hl =
+            !!option &&
+            !blocked &&
+            ((coach?.button === "end_phase" && id === options[0]?.target) ||
+              (coach?.button === "end_turn" && id === "endTurn"));
           return (
             <button
               key={id}
               type="button"
               role="menuitem"
-              className={`phm-item${current ? " phm-item--current" : ""}`}
+              className={`phm-item${current ? " phm-item--current" : ""}${hl ? " coach-hl" : ""}`}
               aria-current={current ? "true" : undefined}
               disabled={!option || blocked}
               onClick={() => option && onPick(option)}

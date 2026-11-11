@@ -12,7 +12,7 @@ import type { AchievementProgress } from "../api/achievements";
 import { Rarity, rarityAtLeast } from "../enums/card";
 
 describe("catalogue des succès", () => {
-  it("couvre les 17 familles, 3 paliers chacune", () => {
+  it("couvre les 18 familles, 3 paliers chacune", () => {
     expect(ACHIEVEMENTS.map((a) => a.family).sort()).toEqual(
       Object.values(AchievementFamily).sort(),
     );
@@ -23,7 +23,7 @@ describe("catalogue des succès", () => {
         AchievementTier.GOLD,
       ]);
     }
-    expect(ACHIEVEMENT_TOTAL).toBe(51);
+    expect(ACHIEVEMENT_TOTAL).toBe(54);
   });
 
   it("a des seuils numériques strictement croissants", () => {

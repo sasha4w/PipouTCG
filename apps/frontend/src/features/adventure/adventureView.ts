@@ -49,6 +49,8 @@ export function resumeTarget(
   resumed: MatchFoundPayload,
   opponentId: number,
 ): string | null {
+  if (resumed.tutorialLessonId !== undefined)
+    return `/tutorial/${resumed.tutorialLessonId}`;
   if (resumed.adventureOpponentId === undefined) return "/fight";
   if (resumed.adventureOpponentId === opponentId) return null;
   return `/adventure/fight/${resumed.adventureOpponentId}`;
@@ -56,9 +58,12 @@ export function resumeTarget(
 
 /**
  * Où aller quand l'écran de duel JcJ retrouve une partie (`fight:resumed`) :
- * une partie contre une IA s'affiche sur son écran d'aventure (null = rester).
+ * une partie contre une IA s'affiche sur son écran d'aventure, une leçon sur
+ * son écran de tutoriel (null = rester).
  */
 export function pvpResumeTarget(resumed: MatchFoundPayload): string | null {
+  if (resumed.tutorialLessonId !== undefined)
+    return `/tutorial/${resumed.tutorialLessonId}`;
   if (resumed.adventureOpponentId === undefined) return null;
   return `/adventure/fight/${resumed.adventureOpponentId}`;
 }

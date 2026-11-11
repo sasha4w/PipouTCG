@@ -1,6 +1,7 @@
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import { logError, AppError } from "../utils/errors";
 import Button from "./Button";
+import { IconAlert } from "./Icons";
 import "./ErrorBoundary.css";
 
 interface Props {
@@ -80,7 +81,9 @@ export class ErrorBoundary extends Component<Props, State> {
         this.props.fallback || (
           <div className="error-boundary-container">
             <div className="error-boundary-content">
-              <div className="error-boundary-icon">⚠️</div>
+              <div className="error-boundary-icon">
+                <IconAlert size={48} />
+              </div>
               <h1 className="error-boundary-title">
                 Oups! Une erreur s'est produite
               </h1>

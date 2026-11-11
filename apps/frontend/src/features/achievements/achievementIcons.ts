@@ -13,6 +13,7 @@ import {
   IconGold,
   IconMap,
   IconQuest,
+  IconScroll,
   IconRobot,
   IconSwords,
   IconTag,
@@ -39,4 +40,5 @@ export const FAMILY_ICON: Record<AchievementFamily, FamilyIcon> = {
   [AchievementFamily.ADVENTURE_WORLDS]: IconMap,
   [AchievementFamily.PVE_WON]: IconSwords,
   [AchievementFamily.PVE_PLAYED]: IconRobot,
+  [AchievementFamily.TUTORIAL_LESSONS]: IconScroll,
 };
