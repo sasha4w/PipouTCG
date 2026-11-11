@@ -10,7 +10,8 @@ import type { useBoardControls } from "./useBoardControls";
 
 interface FightArenaProps {
   gameState: GameState;
-  timeLeft: number;
+  /** null : pas de minuteur (leçon du tutoriel). */
+  timeLeft: number | null;
   controls: ReturnType<typeof useBoardControls>;
   onSurrender: () => void;
   /** Tutoriel : ce que la bulle de la leçon désigne. */

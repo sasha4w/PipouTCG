@@ -87,6 +87,8 @@ export class TutorialService implements TutorialHooks {
         .into(UserTutorialLesson)
         .values({ userId, lessonId })
         .orIgnore()
+        // Insertion ignorée = aucun id généré à recopier : sans cela TypeORM lève
+        .updateEntity(false)
         .execute();
       const inserted =
         (res.raw as { affectedRows?: number } | undefined)?.affectedRows === 1;

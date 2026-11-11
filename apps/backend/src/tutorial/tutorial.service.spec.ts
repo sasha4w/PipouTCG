@@ -12,6 +12,7 @@ function setup(completed: string[] = []) {
     insert: () => builder,
     into: () => builder,
     orIgnore: () => builder,
+    updateEntity: () => builder,
     values: (v: { userId: number; lessonId: string }) => {
       builder.row = v;
       return builder;

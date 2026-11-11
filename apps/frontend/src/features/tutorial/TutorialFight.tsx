@@ -142,7 +142,7 @@ function TutorialFight({ userId, lessonId }: Props) {
           )}
           <FightArena
             gameState={gameState}
-            timeLeft={0}
+            timeLeft={null}
             controls={controls}
             onSurrender={quit}
             coach={step?.hint}
