@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { soundService } from "../services/sound.service";
+import { IconUser } from "./Icons";
 import "./Footer.css";
 
 const NAV_ITEMS = [
@@ -119,22 +120,7 @@ const NAV_ITEMS = [
     labelKey: "nav.profile",
     path: "/profile",
     icon: (active: boolean) => (
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-        <circle
-          cx="12"
-          cy="8"
-          r="4"
-          stroke={active ? "#7A1C3B" : "#A08070"}
-          strokeWidth="2"
-          fill={active ? "rgba(122,28,59,0.13)" : "none"}
-        />
-        <path
-          d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6"
-          stroke={active ? "#7A1C3B" : "#A08070"}
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
+      <IconUser size={23} color={active ? "#7A1C3B" : "#A08070"} />
     ),
   },
 ];

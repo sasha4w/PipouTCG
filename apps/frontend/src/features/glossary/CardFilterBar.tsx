@@ -14,45 +14,8 @@ import {
   type CardFilters,
   type SortKey,
 } from "./cardCatalog";
+import { IconFilter, IconSearch } from "../../components/Icons";
 import "./CardGlossary.css";
-
-function IconSearch() {
-  return (
-    <svg
-      width={16}
-      height={16}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.35-4.35" />
-    </svg>
-  );
-}
-
-function IconSliders() {
-  return (
-    <svg
-      width={15}
-      height={15}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12" />
-      <circle cx="16" cy="6" r="2" />
-      <circle cx="10" cy="12" r="2" />
-      <circle cx="18" cy="18" r="2" />
-    </svg>
-  );
-}
 
 function IconSortDir({ desc }: { desc: boolean }) {
   return (
@@ -142,7 +105,7 @@ export default function CardFilterBar({ filters, cards, onChange }: Props) {
             setOpen((o) => !o);
           }}
         >
-          <IconSliders />
+          <IconFilter size={15} />
           {active > 0 && <span className="cg__badge">{active}</span>}
         </button>
       </div>

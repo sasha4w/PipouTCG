@@ -25,13 +25,7 @@ import {
 } from "../../components/Icons";
 
 const ICONS = {
-  IconPencil,
-  IconTrash,
-  IconClose,
-  IconPlus,
   IconMinus,
-  IconPause,
-  IconPlay,
   IconSwords,
   IconGem,
   IconTaunt,
@@ -57,6 +51,29 @@ describe("nouvelles icônes", () => {
       expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
       const stroked = container.querySelector("[stroke]")!;
       expect(stroked).toHaveAttribute("stroke", "currentColor");
+    },
+  );
+});
+
+const PAPICONS = {
+  IconPencil,
+  IconTrash,
+  IconClose,
+  IconPlus,
+  IconPause,
+  IconPlay,
+};
+
+describe("icônes Papicons", () => {
+  it.each(Object.entries(PAPICONS))(
+    "%s rend un svg plein en currentColor à la taille demandée",
+    (_name, Icon) => {
+      const { container } = render(<Icon size={16} />);
+      const svg = container.querySelector("svg")!;
+      expect(svg).toHaveAttribute("width", "16");
+      expect(svg).toHaveAttribute("height", "16");
+      expect(svg).toHaveAttribute("fill", "currentColor");
+      expect(container.querySelector("[stroke]")).toBeNull();
     },
   );
 });
