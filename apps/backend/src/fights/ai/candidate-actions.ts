@@ -203,15 +203,18 @@ function mainCandidates(
         );
         const needed = free ? 0 : Math.max(0, card.cost - me.recycleEnergy);
         const payment = cheapestPayment(me.hand, handIndex, needed);
+        // Un virus (Zeta) ne se pose que chez l'adversaire
+        const enemySideOnly = canSummonOnEnemySide(card.effects);
         if (payment) {
-          for (const zoneIndex of freeZones(me.monsterZones))
-            out.push({
-              type: 'summon',
-              handIndex,
-              zoneIndex,
-              paymentHandIndices: payment,
-            });
-          if (canSummonOnEnemySide(card.effects) && canPlant)
+          if (!enemySideOnly)
+            for (const zoneIndex of freeZones(me.monsterZones))
+              out.push({
+                type: 'summon',
+                handIndex,
+                zoneIndex,
+                paymentHandIndices: payment,
+              });
+          if (enemySideOnly && canPlant)
             for (const zoneIndex of freeZones(opp.monsterZones))
               out.push({
                 type: 'summon',

@@ -462,7 +462,8 @@
           "OPPONENT_HAS_NO_MONSTERS": "l'adversaire n'a aucun monstre",
           "SPECIFIC_CARD_ON_BOARD": "une carte précise est en jeu",
           "EQUIPPED_ON": "équipée sur un monstre précis",
-          "DRAKON_ON_BOARD": "un Drakon est en jeu"
+          "DRAKON_ON_BOARD": "un Drakon est en jeu",
+          "FIRST_COPY_ON_BOARD": "premier exemplaire en jeu"
         },
         "action": {
           "DEAL_DAMAGE": "inflige des dégâts",
@@ -594,6 +595,7 @@
       "EQUIPPED_ON": "'{{name}}'에 장착되어 있으면",
       "EQUIPPED_ON_contains": "이름에 '{{name}}'(이)가 포함된 몬스터에 장착되어 있으면",
       "DRAKON_ON_BOARD": "내 필드에 드라콘({{detail}})이 있으면",
+      "FIRST_COPY_ON_BOARD": "내 필드의 같은 카드 중 첫 번째라면",
       "EQUIPPED_ON_drakon": "몬스터({{detail}})에 장착되어 있으면",
       "unknown": "조건부 ({{type}})"
     },
@@ -921,6 +923,8 @@
       "releve": "교대 가능"
     },
     "pick": {
+      "prevPage": "이전 페이지",
+      "nextPage": "다음 페이지",
       "collapse": "접어서 보드 보기",
       "expand": "선택 다시 열기",
       "skip": "효과 적용 안 함",

@@ -625,7 +625,8 @@ export function applyActions(
 /**
  * Copie un monstre (PV, bonus, mode, équipements) dans la première zone libre
  * de son propriétaire. La copie et ses équipements sont des tokens, bloqués
- * en attaque pendant `blockTurns` tours. Retourne null s'il n'y a pas de place.
+ * en attaque pendant `blockTurns` tours, et la copie reste liée à son original
+ * (`cloneOf`) : elle disparaît s'il est détruit. Retourne null s'il n'y a pas de place.
  */
 function duplicateMonster(
   source: MonsterOnBoard,
@@ -655,6 +656,7 @@ function duplicateMonster(
     token: true,
   }));
   copy.blockAttackTurns = blockTurns;
+  copy.cloneOf = source.instanceId;
   owner.monsterZones[zone] = copy;
 
   ctx.game.pendingEvents.push({

@@ -43,7 +43,7 @@ describe('cartes retravaillées', () => {
     expect(avec.pendingChoices[0].count).toBe(3);
   });
 
-  it('Module Bluetooth .v2 sur Beta : 600 à tous les ennemis à l’équipement', () => {
+  it('Module Bluetooth .v2 sur Beta : 300 à tous les ennemis à l’équipement', () => {
     const game = scenario({
       p1: {
         hand: [realCard('Module Bluetooth .v2')],
@@ -56,7 +56,7 @@ describe('cartes retravaillées', () => {
       handIndex: 0,
       targetInstanceId: monsterNamed(game, 'p1', 'Noyau Beta').instanceId,
     });
-    expect(monsterNamed(game, 'p2', 'Lutin').currentHp).toBe(400);
+    expect(monsterNamed(game, 'p2', 'Lutin').currentHp).toBe(700);
   });
 
   it('Module Bluetooth .v2 sur Alpha : 2 attaques par tour', () => {

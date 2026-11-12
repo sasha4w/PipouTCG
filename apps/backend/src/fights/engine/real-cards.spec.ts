@@ -84,6 +84,82 @@ describe('vraies cartes — combos', () => {
     expect(graveyardNames(game, 'p1')).toContain('Noyau Zeta');
   });
 
+  it('Noyau Zeta : refusé sur son propre terrain, il reste en main', () => {
+    const game = scenario({
+      p1: { hand: [realCard('Noyau Zeta')], recycleEnergy: 2 },
+    });
+
+    const res = engine.dispatch(game, 'p1', {
+      type: 'summon',
+      handIndex: 0,
+      zoneIndex: 0,
+      paymentHandIndices: [],
+    });
+
+    expect(res.error).toBe('Noyau Zeta ne se pose que sur le terrain adverse');
+    expect(handNames(game, 'p1')).toEqual(['Noyau Zeta']);
+    expect(game.player1.monsterZones[0]).toBeNull();
+    expect(game.player1.recycleEnergy).toBe(2);
+  });
+
+  it('Noyau Beta : cumul dégressif, 300 pour le premier puis 100 par exemplaire', () => {
+    const game = scenario({
+      turn: 'p2',
+      p1: {
+        monsters: [
+          realCard('Noyau Beta'),
+          realCard('Noyau Beta'),
+          realCard('Noyau Beta'),
+        ],
+      },
+      p2: { monsters: [monsterCard('Cible', { hp: 2000 })] },
+    });
+
+    passTurn(engine, game);
+
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(1500);
+  });
+
+  it('Noyau Beta : la brûlure ne part qu’au début du tour de son poseur', () => {
+    const game = scenario({
+      turn: 'p2',
+      p1: { monsters: [realCard('Noyau Beta')] },
+      p2: { monsters: [monsterCard('Cible', { hp: 2000 })] },
+    });
+
+    passTurn(engine, game); // début du tour de p1 : brûlure
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(1700);
+    passTurn(engine, game); // début du tour de p2 : rien
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(1700);
+    passTurn(engine, game); // de nouveau p1
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(1400);
+  });
+
+  it('Noyau Beta seul : 300 comme avant', () => {
+    const game = scenario({
+      turn: 'p2',
+      p1: { monsters: [realCard('Noyau Beta')] },
+      p2: { monsters: [monsterCard('Cible', { hp: 2000 })] },
+    });
+
+    passTurn(engine, game);
+
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(1700);
+  });
+
+  it('Noyau Beta : le second repasse à 300 quand le premier quitte le terrain', () => {
+    const game = scenario({
+      turn: 'p2',
+      p1: { monsters: [realCard('Noyau Beta'), realCard('Noyau Beta')] },
+      p2: { monsters: [monsterCard('Cible', { hp: 2000 })] },
+    });
+    game.player1.monsterZones[0] = null;
+
+    passTurn(engine, game);
+
+    expect(monsterNamed(game, 'p2', 'Cible').currentHp).toBe(1700);
+  });
+
   it("Clairon de l'Union : +2 énergie en jeu, une pioche s'il est recyclé", () => {
     const game = scenario({
       p1: {
