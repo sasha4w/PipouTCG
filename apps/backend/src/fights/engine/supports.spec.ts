@@ -409,6 +409,56 @@ describe('GameEngine — DuplicateX (DUPLICATE_MONSTER)', () => {
     expect(handNames(game, 'p1')).toEqual(['DuplicateX']);
   });
 
+  it("l'original détruit : la copie disparaît avec lui, sans Prime de plus", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [monsterCard('Drakon', { hp: 300 })],
+      },
+      p2: { monsters: [monsterCard('Ogre', { atk: 900 })] },
+    });
+    const original = monsterNamed(game, 'p1', 'Drakon');
+    play(game, original);
+    expect(game.player1.monsterZones[1]!.cloneOf).toBe(original.instanceId);
+    passTurn(engine, game);
+    game.phase = 'battle';
+
+    const res = engine.dispatch(game, 'p2', {
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Ogre').instanceId,
+      targetInstanceId: original.instanceId,
+    });
+
+    expect(res.error).toBeUndefined();
+    expect(game.player1.monsterZones).toEqual([null, null, null]);
+    expect(game.player2.primes).toBe(5);
+    expect(graveyardNames(game, 'p1')).toEqual(['DuplicateX', 'Drakon']);
+    expect(game.pendingEvents).toContainEqual(
+      expect.objectContaining({ kind: 'monster_destroyed', zoneIndex: 1 }),
+    );
+  });
+
+  it("la copie détruite : l'original reste en jeu", () => {
+    const game = scenario({
+      p1: {
+        hand: [duplicateX()],
+        monsters: [monsterCard('Drakon', { hp: 300 })],
+      },
+      p2: { monsters: [monsterCard('Ogre', { atk: 900 })] },
+    });
+    play(game, monsterNamed(game, 'p1', 'Drakon'));
+    passTurn(engine, game);
+    game.phase = 'battle';
+
+    engine.dispatch(game, 'p2', {
+      type: 'attack',
+      attackerInstanceId: monsterNamed(game, 'p2', 'Ogre').instanceId,
+      targetInstanceId: game.player1.monsterZones[1]!.instanceId,
+    });
+
+    expect(game.player1.monsterZones[0]).not.toBeNull();
+  });
+
   it("détruire la copie rapporte une Prime à l'adversaire, cimetière inchangé", () => {
     const game = scenario({
       p1: {

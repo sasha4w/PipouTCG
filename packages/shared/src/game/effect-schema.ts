@@ -155,6 +155,7 @@ export const CONDITION_FIELDS: Record<
   [C.SPECIFIC_CARD_ON_BOARD]: ["value", "match"],
   [C.EQUIPPED_ON]: ["value", "element", "stage"],
   [C.DRAKON_ON_BOARD]: ["element", "stage"],
+  [C.FIRST_COPY_ON_BOARD]: [],
 };
 
 export interface EffectIssue {

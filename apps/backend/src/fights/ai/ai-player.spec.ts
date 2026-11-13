@@ -393,6 +393,23 @@ describe('IA et Zeta implanté', () => {
   const attacks = (actions: GameAction[]) =>
     actions.filter((a) => a.type === 'attack');
 
+  it('ne propose jamais de poser son Zeta sur son propre terrain', () => {
+    const game = scenario({
+      turn: 'p2',
+      phase: 'main',
+      p2: { hand: [zeta()], recycleEnergy: 2 },
+    });
+
+    const summons = listCandidates(game, 'p2').filter(
+      (a) => a.type === 'summon',
+    );
+
+    expect(summons).toHaveLength(3);
+    expect(summons.every((a) => a.type === 'summon' && a.onOpponentSide)).toBe(
+      true,
+    );
+  });
+
   it('hôte : désinfecte le Zeta, sans jamais jouer avec', () => {
     const game = scenario({
       turn: 'p2',

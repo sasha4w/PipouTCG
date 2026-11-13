@@ -40,3 +40,6 @@ reports
 
 # Worktrees git locales
 .claude/worktrees/
+
+# graphify (graphe généré, reconstruit par `graphify update .`)
+graphify-out

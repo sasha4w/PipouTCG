@@ -43,9 +43,14 @@ export class SummonService {
     onOpponentSide: boolean,
     releveInstanceIds?: string[],
   ): { error?: string } {
+    const card = getPlayerState(game, userId).hand[handIndex];
+    if (!card) return { error: 'Index main invalide' };
+    // Un virus (Zeta) n'a de sens que chez l'adversaire : jamais sur son propre terrain
+    if (!onOpponentSide && canSummonOnEnemySide(card.baseCard.effects))
+      return {
+        error: `${card.baseCard.name} ne se pose que sur le terrain adverse`,
+      };
     if (onOpponentSide) {
-      const card = getPlayerState(game, userId).hand[handIndex];
-      if (!card) return { error: 'Index main invalide' };
       if (!canSummonOnEnemySide(card.baseCard.effects))
         return {
           error: `${card.baseCard.name} ne peut pas être invoqué sur le terrain adverse`,

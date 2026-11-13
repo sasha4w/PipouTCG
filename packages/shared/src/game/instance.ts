@@ -61,6 +61,8 @@ export interface MonsterOnBoard<C = ClientCard> {
   reductionTurns?: number;
   turnCounter?: number;
   ownerUserId?: number;
+  /** Copie (DuplicateX) : instanceId de l'original, dont la destruction emporte la copie. */
+  cloneOf?: string;
   blockAttackTurns?: number;
   guardLocked?: boolean;
   /** Tours adverses tenus d'affilée en Garde (repasse en Attaque à GUARD_MAX_TURNS). */

@@ -1,15 +1,22 @@
 import { SupportType, validateEffects } from '@pipou/shared';
-import { realCard } from '../fights/testing/real-cards';
+import {
+  allRealCardsBeforePixelmanNerf,
+  realCard,
+} from '../fights/testing/real-cards';
 import { CHARGE_NEW_CARDS, NOVEMBER_PATCHES } from './cartes-2026-11-patches';
 
+/** Carte telle que la laisse ce patch, avant le nerf Pixelman qui le suit. */
+const patched = (name: string) =>
+  allRealCardsBeforePixelmanNerf().find((c) => c.name === name)!;
+
 describe('patch de textes 2026-11', () => {
-  it('chaque `before` décrit les effets de la carte actuelle', () => {
+  it('chaque `before` décrit les effets de la carte à ce patch', () => {
     for (const p of NOVEMBER_PATCHES)
-      expect(realCard(p.after.name).effects).toEqual(p.before.effects);
+      expect(patched(p.after.name).effects).toEqual(p.before.effects);
   });
 
   it('Bluetooth : le texte précise « une seule fois » sur Beta', () => {
-    expect(realCard('Module Bluetooth .v2').description).toContain(
+    expect(patched('Module Bluetooth .v2').description).toContain(
       "Sur Beta : à l'équipement, inflige une seule fois 600 dégâts à tous les monstres adverses",
     );
   });
