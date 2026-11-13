@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import type { DataSource, Repository } from 'typeorm';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -14,6 +14,16 @@ import { DailyPuzzleSchedule } from './daily-puzzle-schedule.entity';
 import { UserPuzzleSolve } from './user-puzzle-solve.entity';
 import { PuzzlesService } from './puzzles.service';
 import { puzzleDay } from './puzzle-schedule';
+import {
+  collectCardIds,
+  deserializeGame,
+} from '../sandbox/scenario-serializer';
+import type { GameState } from '../fights/interfaces/game-state.interface';
+
+jest.mock('../sandbox/scenario-serializer', () => ({
+  collectCardIds: jest.fn(),
+  deserializeGame: jest.fn(),
+}));
 
 const NOW = new Date();
 const TODAY = puzzleDay(NOW);
@@ -40,6 +50,7 @@ function setup(
     planned?: DailyPuzzle | null;
     solvedDays?: string[];
     fresh?: boolean;
+    stored?: DailyPuzzle | null;
   } = {},
 ) {
   const planned = opts.planned ?? null;
@@ -92,16 +103,30 @@ function setup(
     addBoosterToUser: jest.fn().mockResolvedValue(undefined),
   };
   const events = { emit: jest.fn() };
+  const puzzlesRepo = {
+    findOneBy: jest.fn().mockResolvedValue(opts.stored ?? null),
+  };
+  const cardsRepo = { findBy: jest.fn().mockResolvedValue([]) };
   const service = new PuzzlesService(
-    {} as Repository<DailyPuzzle>,
+    puzzlesRepo as unknown as Repository<DailyPuzzle>,
     schedule as unknown as Repository<DailyPuzzleSchedule>,
     solves as unknown as Repository<UserPuzzleSolve>,
-    {} as Repository<Card>,
+    cardsRepo as unknown as Repository<Card>,
     users as unknown as UsersService,
     dataSource as unknown as DataSource,
     events as unknown as EventEmitter2,
   );
-  return { service, schedule, insertSchedule, dataSource, users, events, m };
+  return {
+    service,
+    schedule,
+    insertSchedule,
+    dataSource,
+    users,
+    events,
+    m,
+    puzzlesRepo,
+    cardsRepo,
+  };
 }
 
 describe('PuzzlesService', () => {
@@ -213,5 +238,92 @@ describe('PuzzlesService', () => {
       BadRequestException,
     );
     expect(users.addGold).not.toHaveBeenCalled();
+  });
+
+  it('today : défi programmé non publié ou non vérifié → ignoré, rien d’écrit', async () => {
+    for (const over of [
+      { status: PuzzleStatus.DRAFT },
+      { verifiedAt: null },
+    ] as Partial<DailyPuzzle>[]) {
+      const { service, insertSchedule } = setup({
+        planned: fakePuzzle(over),
+      });
+      const r = await service.today(NOW);
+      expect(r.puzzle).toBeNull();
+      expect(insertSchedule).not.toHaveBeenCalled();
+    }
+  });
+
+  describe('objectiveView', () => {
+    const withTarget = fakePuzzle({
+      objectiveParams: { targetInstanceId: 'x1' },
+    });
+    const gameWith = (zone: unknown[]) =>
+      ({ player2: { monsterZones: zone } }) as unknown as GameState;
+
+    it('renseigne targetName quand le monstre est sur le terrain adverse', () => {
+      const { service } = setup();
+      const game = gameWith([
+        null,
+        { instanceId: 'x1', card: { baseCard: { name: 'Gobelin' } } },
+      ]);
+      expect(service.objectiveView(withTarget, game).targetName).toBe(
+        'Gobelin',
+      );
+    });
+
+    it('laisse targetName absent sans correspondance, zone vide ou sans game', () => {
+      const { service } = setup();
+      const other = gameWith([
+        { instanceId: 'zz', card: { baseCard: { name: 'Autre' } } },
+      ]);
+      expect(service.objectiveView(withTarget, other).targetName).toBe(
+        undefined,
+      );
+      expect(
+        service.objectiveView(withTarget, gameWith([null, null])).targetName,
+      ).toBe(undefined);
+      expect(service.objectiveView(withTarget).targetName).toBe(undefined);
+    });
+  });
+
+  describe('load', () => {
+    it('lève NotFound si le défi n’existe pas', async () => {
+      const { service } = setup();
+      await expect(
+        service.load(9, { userId: 7, username: 'a' }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('sièges : userId pour p1, -userId pour p2 (matchId -userId)', async () => {
+      const stored = fakePuzzle();
+      const { service } = setup({ stored });
+      (collectCardIds as jest.Mock).mockReturnValue([]);
+      const game = { marker: true };
+      (deserializeGame as jest.Mock).mockReturnValue(game);
+      const r = await service.load(3, { userId: 7, username: 'a' });
+      expect(r.game).toBe(game);
+      expect(deserializeGame).toHaveBeenCalledWith(
+        stored.state,
+        expect.any(Map),
+        {
+          matchId: -7,
+          p1: { userId: 7, username: 'a', socketId: '' },
+          p2: { userId: -7, username: 'Défi', socketId: '' },
+        },
+      );
+    });
+  });
+
+  it('getToday : survit à une carte supprimée (load lève), targetName absent', async () => {
+    const stored = fakePuzzle({ objectiveParams: { targetInstanceId: 'x1' } });
+    const { service } = setup({ planned: stored, stored });
+    (collectCardIds as jest.Mock).mockReturnValue([]);
+    (deserializeGame as jest.Mock).mockImplementation(() => {
+      throw new Error('carte 12 introuvable');
+    });
+    const info = await service.getToday(7);
+    expect(info.puzzle?.id).toBe(3);
+    expect(info.puzzle?.objective.targetName).toBeUndefined();
   });
 });

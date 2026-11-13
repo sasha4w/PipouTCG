@@ -62,7 +62,14 @@ export class PuzzlesService {
       where: { date },
       relations: { puzzle: true },
     });
-    if (planned) return { date, puzzle: planned.puzzle };
+    if (planned) {
+      // Un défi programmé mais dépublié ou non vérifié n'est pas jouable ; la ligne du
+      // jour existe déjà (unicité par date), le repli ne peut donc pas la remplacer.
+      const playable =
+        planned.puzzle.status === PuzzleStatus.PUBLISHED &&
+        planned.puzzle.verifiedAt != null;
+      return { date, puzzle: playable ? planned.puzzle : null };
+    }
 
     const rows = await this.dataSource.query<
       { id: number; lastPlayed: string | null }[]
@@ -125,9 +132,15 @@ export class PuzzlesService {
       this.streakOf(userId, date),
     ]);
     // Le nom de la cible n'est pas dans l'état sérialisé : on recharge les cartes
-    const game = puzzle?.objectiveParams.targetInstanceId
-      ? (await this.load(puzzle.id, { userId, username: '' })).game
-      : undefined;
+    let game: GameState | undefined;
+    if (puzzle?.objectiveParams.targetInstanceId) {
+      try {
+        game = (await this.load(puzzle.id, { userId, username: '' })).game;
+      } catch {
+        // Carte supprimée depuis l'enregistrement : le défi reste affiché sans nom de cible.
+        game = undefined;
+      }
+    }
     return {
       date,
       puzzle: puzzle && {
