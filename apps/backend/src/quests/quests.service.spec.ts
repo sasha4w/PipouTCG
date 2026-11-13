@@ -23,6 +23,7 @@ const mockQuestRepo = {
   create: jest.fn(),
   save: jest.fn(),
   remove: jest.fn(),
+  manager: { query: jest.fn() },
 };
 
 const mockUserQuestRepo = {
@@ -101,6 +102,10 @@ describe('QuestService', () => {
     }).compile();
 
     service = module.get<QuestService>(QuestService);
+    // Par défaut : aucun défi du jour, rien de résolu.
+    mockQuestRepo.manager.query.mockResolvedValue([
+      { planned: 0, fallback: 0, solved: 0 },
+    ]);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -935,6 +940,170 @@ describe('QuestService', () => {
         1,
       );
       expect(weekly.progress.conditions[0].current).toBe(1);
+    });
+  });
+
+  describe('défi du jour', () => {
+    const puzzleQuest = (id: number) => ({
+      ...fakeQuest,
+      id,
+      title: 'quests.pool.d_puzzle',
+      conditionGroup: {
+        operator: ConditionOperator.AND,
+        conditions: [{ type: ConditionType.SOLVE_DAILY_PUZZLE, amount: 1 }],
+      },
+    });
+    const state = (planned: number, solved: number, fallback = 0) =>
+      mockQuestRepo.manager.query.mockResolvedValue([
+        { planned, fallback, solved },
+      ]);
+    const echoRepos = () => {
+      mockUserQuestRepo.create.mockImplementation((x: object) => ({
+        id: 60,
+        ...x,
+      }));
+      mockUserQuestRepo.save.mockImplementation((x: unknown) =>
+        Promise.resolve(x),
+      );
+    };
+    const heldTarget = () => ({
+      ...fakeUserQuest,
+      id: 1,
+      resetAt: new Date(Date.now() + 3_600_000),
+      quest: { ...fakeQuest, id: 10, resetType: QuestResetType.DAILY },
+    });
+
+    it('puzzle.solved fait avancer SOLVE_DAILY_PUZZLE', async () => {
+      const uq = {
+        ...fakeUserQuest,
+        id: 50,
+        quest: puzzleQuest(7),
+        progress: {
+          operator: ConditionOperator.AND,
+          conditions: [
+            {
+              type: ConditionType.SOLVE_DAILY_PUZZLE,
+              current: 0,
+              target: 1,
+              completed: false,
+            },
+          ],
+          globalCompleted: false,
+        },
+      };
+      mockUserQuestRepo.find.mockResolvedValue([uq]);
+      const sync = jest.spyOn(service, 'syncUserQuests').mockResolvedValue([]);
+
+      await service.handlePuzzleSolved({ userId: 1 });
+
+      expect(sync).toHaveBeenCalledWith(1);
+      expect(uq.isCompleted).toBe(true);
+      expect(mockUserRepo.increment).toHaveBeenCalledWith(
+        { id: 1 },
+        'questsCompleted',
+        1,
+      );
+    });
+
+    it('tirage du jour : la quête de défi n’est pas tirée un jour sans défi', async () => {
+      state(0, 0);
+      mockUserQuestRepo.find.mockResolvedValue([]);
+      mockQuestRepo.find.mockResolvedValue([
+        puzzleQuest(7),
+        { ...fakeQuest, id: 1 },
+      ]);
+      echoRepos();
+
+      await service['redrawPool'](1, QuestResetType.DAILY);
+
+      const saved = (
+        mockUserQuestRepo.save.mock.calls as [{ quest: { id: number } }[]][]
+      )[0][0];
+      expect(saved.map((s) => s.quest.id)).toEqual([1]);
+    });
+
+    it('tirage du jour : défi déjà résolu → la quête de défi naît terminée', async () => {
+      state(1, 1);
+      mockUserQuestRepo.find.mockResolvedValue([]);
+      mockQuestRepo.find.mockResolvedValue([puzzleQuest(7)]);
+      echoRepos();
+
+      await service['redrawPool'](1, QuestResetType.DAILY);
+
+      const credited = (
+        mockUserQuestRepo.save.mock.calls as unknown[][]
+      )[1][0] as {
+        isCompleted: boolean;
+        completedAt: Date | null;
+      };
+      expect(credited.isCompleted).toBe(true);
+      expect(credited.completedAt).toBeInstanceOf(Date);
+      expect(mockUserRepo.increment).toHaveBeenCalledWith(
+        { id: 1 },
+        'questsCompleted',
+        1,
+      );
+      expect(mockEmitter.emit).toHaveBeenCalledWith(
+        'quest.completed',
+        expect.objectContaining({ userId: 1, title: 'quests.pool.d_puzzle' }),
+      );
+    });
+
+    it('tirage du jour : défi non résolu → la quête naît en cours', async () => {
+      state(1, 0);
+      mockUserQuestRepo.find.mockResolvedValue([]);
+      mockQuestRepo.find.mockResolvedValue([puzzleQuest(7)]);
+      echoRepos();
+
+      await service['redrawPool'](1, QuestResetType.DAILY);
+
+      expect(mockUserQuestRepo.save).toHaveBeenCalledTimes(1);
+      expect(mockUserRepo.increment).not.toHaveBeenCalled();
+    });
+
+    it('relance : tomber sur la quête de défi après l’avoir résolu la termine aussitôt', async () => {
+      state(1, 1);
+      const target = heldTarget();
+      mockUserQuestRepo.findOne.mockResolvedValue(target);
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 1,
+        lastQuestRerollAt: null,
+      });
+      mockUserQuestRepo.find.mockResolvedValue([target]);
+      mockQuestRepo.find.mockResolvedValue([
+        { ...fakeQuest, id: 10 },
+        puzzleQuest(7),
+      ]);
+      echoRepos();
+
+      const res = await service.rerollQuest(1, 1);
+
+      expect(res.quest.id).toBe(7);
+      expect(res.isCompleted).toBe(true);
+      expect(mockUserRepo.increment).toHaveBeenCalledWith(
+        { id: 1 },
+        'questsCompleted',
+        1,
+      );
+    });
+
+    it('relance : la quête de défi n’est pas proposée un jour sans défi', async () => {
+      state(0, 0);
+      const target = heldTarget();
+      mockUserQuestRepo.findOne.mockResolvedValue(target);
+      mockUserRepo.findOne.mockResolvedValue({
+        id: 1,
+        lastQuestRerollAt: null,
+      });
+      mockUserQuestRepo.find.mockResolvedValue([target]);
+      mockQuestRepo.find.mockResolvedValue([
+        { ...fakeQuest, id: 10 },
+        puzzleQuest(7),
+      ]);
+
+      await expect(service.rerollQuest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

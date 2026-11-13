@@ -21,6 +21,7 @@ const base: AchievementSources = {
   highRarity: 2,
   adventure: { worldsCompleted: 2, won: 5, played: 8 },
   tutorialLessons: 3,
+  puzzles: { solved: 11, longestStreak: 4 },
   sets: [
     { total: 10, owned: 10 },
     { total: 8, owned: 7 },
@@ -49,8 +50,8 @@ describe('toAchievementValues', () => {
       [AchievementFamily.PVE_WON]: 5,
       [AchievementFamily.PVE_PLAYED]: 8,
       [AchievementFamily.TUTORIAL_LESSONS]: 3,
-      [AchievementFamily.PUZZLES_SOLVED]: 0,
-      [AchievementFamily.PUZZLE_STREAK]: 0,
+      [AchievementFamily.PUZZLES_SOLVED]: 11,
+      [AchievementFamily.PUZZLE_STREAK]: 4,
     });
   });
 

@@ -8,7 +8,7 @@ import ko from "../../i18n/locales/ko.json";
 const POOL_KEYS = [
   "d_open_1", "d_open_2", "d_open_3", "d_play_1", "d_play_2", "d_play_3", "d_win_1", "d_win_2",
   "d_buy_card_1", "d_sell_card_1", "d_list_card_1", "d_buy_booster_1", "d_obtain_10",
-  "d_obtain_rare", "d_daily_reward", "w_open_15", "w_play_15", "w_win_10", "w_buy_card_10",
+  "d_obtain_rare", "d_daily_reward", "d_puzzle", "w_open_15", "w_play_15", "w_win_10", "w_buy_card_10",
   "w_sell_card_10", "w_earn_1000", "w_obtain_100", "w_obtain_epic_3", "w_daily_reward_5", "w_quests_10",
   "d_destroy_card_5", "w_forge_card_3",
 ];

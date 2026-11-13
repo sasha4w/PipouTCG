@@ -32,6 +32,12 @@ import {
   nextDailyReset,
   nextWeeklyReset,
 } from './quest-schedule';
+import { puzzleDay } from '../puzzles/puzzle-schedule';
+
+const isPuzzleQuest = (q: Quest) =>
+  q.conditionGroup.conditions.some(
+    (c) => c.type === ConditionType.SOLVE_DAILY_PUZZLE,
+  );
 
 export interface AutoClaimedReward {
   title: string;
@@ -153,9 +159,14 @@ export class QuestService {
     const pool = await this.questRepository.find({
       where: { resetType: type, isActive: true },
     });
-    const drawn = drawDistinct(pool, POOL_DRAW_SIZE);
+    // La quête de défi n'a de sens que les jours où un défi existe.
+    const state =
+      type === QuestResetType.DAILY ? await this.puzzleState(userId) : null;
+    const drawable =
+      state && !state.available ? pool.filter((q) => !isPuzzleQuest(q)) : pool;
+    const drawn = drawDistinct(drawable, POOL_DRAW_SIZE);
     if (drawn.length > 0) {
-      await this.userQuestRepository.save(
+      const saved = await this.userQuestRepository.save(
         drawn.map((quest) =>
           this.userQuestRepository.create({
             user: { id: userId },
@@ -167,8 +178,54 @@ export class QuestService {
           }),
         ),
       );
+      if (state?.solved)
+        for (const uq of saved)
+          if (isPuzzleQuest(uq.quest))
+            await this.creditSolvedPuzzle(userId, uq);
     }
     return claimed;
+  }
+
+  /** Le défi du jour existe-t-il, et ce joueur l'a-t-il déjà résolu ? */
+  private async puzzleState(
+    userId: number,
+  ): Promise<{ available: boolean; solved: boolean }> {
+    const date = puzzleDay(new Date());
+    const [row] = await this.questRepository.manager.query<
+      {
+        planned: string | number;
+        fallback: string | number;
+        solved: string | number;
+      }[]
+    >(
+      `SELECT
+         (SELECT COUNT(*) FROM daily_puzzle_schedule WHERE date = ?) AS planned,
+         (SELECT COUNT(*) FROM daily_puzzle WHERE status = 'published' AND verified_at IS NOT NULL) AS fallback,
+         (SELECT COUNT(*) FROM user_puzzle_solve WHERE user_id = ? AND date = ?) AS solved`,
+      [date, userId, date],
+    );
+    return {
+      available: Number(row?.planned ?? 0) + Number(row?.fallback ?? 0) > 0,
+      solved: Number(row?.solved ?? 0) > 0,
+    };
+  }
+
+  /** Quête de défi attribuée après la résolution : elle compte tout de suite. */
+  private async creditSolvedPuzzle(
+    userId: number,
+    uq: UserQuest,
+  ): Promise<void> {
+    if (!this.updateProgress(uq, ConditionType.SOLVE_DAILY_PUZZLE, {})) return;
+    await this.userQuestRepository.save(uq);
+    if (!uq.isCompleted) return;
+    await this.userRepository.increment({ id: userId }, 'questsCompleted', 1);
+    this.eventEmitter.emit('quest.completed', {
+      userId,
+      userQuestId: uq.id,
+      title: uq.quest.title,
+      rewardType: uq.quest.rewardType,
+      rewardAmount: Number(uq.quest.rewardAmount),
+    });
   }
 
   /** Distribue les récompenses terminées mais non réclamées (avant reset ou suppression). */
@@ -394,11 +451,18 @@ export class QuestService {
       relations: { quest: true },
     });
     const heldIds = new Set(held.map((h) => h.quest.id));
+    const state =
+      uq.quest.resetType === QuestResetType.DAILY
+        ? await this.puzzleState(userId)
+        : null;
     const candidates = (
       await this.questRepository.find({
         where: { resetType: uq.quest.resetType, isActive: true },
       })
-    ).filter((q) => !heldIds.has(q.id));
+    ).filter(
+      (q) =>
+        !heldIds.has(q.id) && !(state && !state.available && isPuzzleQuest(q)),
+    );
     const [replacement] = drawDistinct(candidates, 1);
     if (!replacement)
       throw new BadRequestException('Aucune autre quête disponible.');
@@ -408,6 +472,8 @@ export class QuestService {
     uq.rewardClaimed = false;
     uq.completedAt = null;
     const saved = await this.userQuestRepository.save(uq);
+    if (state?.solved && isPuzzleQuest(replacement))
+      await this.creditSolvedPuzzle(userId, saved);
     await this.userRepository.update(userId, {
       lastQuestRerollAt: new Date(),
     });
@@ -607,6 +673,13 @@ export class QuestService {
     // (aucun GET /quests avant) ou sont périmées, la progression serait perdue.
     await this.syncUserQuests(payload.userId);
     await this.track(payload.userId, ConditionType.CLAIM_DAILY_REWARD);
+  }
+
+  @OnEvent('puzzle.solved')
+  async handlePuzzleSolved(payload: { userId: number }) {
+    // Comme pour la récompense quotidienne : les quêtes du jour n'existent peut-être pas encore.
+    await this.syncUserQuests(payload.userId);
+    await this.track(payload.userId, ConditionType.SOLVE_DAILY_PUZZLE);
   }
 
   /* ===================== HELPERS PUBLICS ===================== */
