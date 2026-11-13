@@ -32,10 +32,13 @@ export default function PuzzlePage() {
   // Horloge d'une seconde ; à l'échéance, le défi du jour est rechargé
   useEffect(() => {
     if (!nextResetAt) return;
+    let refreshed = false;
     const id = setInterval(() => {
       const current = Date.now();
       setNow(current);
-      if (current >= new Date(nextResetAt).getTime()) {
+      // Un seul rechargement par échéance, même si le serveur tarde à répondre
+      if (!refreshed && current >= new Date(nextResetAt).getTime()) {
+        refreshed = true;
         void queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.puzzleToday,
         });
