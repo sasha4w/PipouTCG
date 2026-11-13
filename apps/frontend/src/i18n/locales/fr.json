@@ -1685,9 +1685,7 @@
       "end_turn": "Fin du tour",
       "end_confirm": "Finir le tour sans avoir atteint l'objectif ? Le défi sera raté.",
       "loading": "Préparation du défi…",
-      "back_label": "Retour à la fiche du défi",
-      "test_badge": "Test",
-      "target": "Cible : {{name}}"
+      "test_badge": "Test"
     },
     "result": {
       "solved_first": "Défi résolu !",

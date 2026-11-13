@@ -93,6 +93,8 @@ function PuzzleRow({ puzzle }: { puzzle: AdminPuzzle }) {
     onSuccess: async () => {
       setEditing(false);
       setOverride(false);
+      // Le contenu a changé : l'ancien résultat de vérification n'est plus valable.
+      verify.reset();
       await onSuccess();
     },
   });

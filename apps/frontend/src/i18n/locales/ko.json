@@ -1602,9 +1602,7 @@
       "end_turn": "턴 종료",
       "end_confirm": "목표를 달성하지 않고 턴을 끝낼까요? 퍼즐은 실패 처리돼요.",
       "loading": "퍼즐 준비 중…",
-      "back_label": "퍼즐 화면으로 돌아가기",
-      "test_badge": "테스트",
-      "target": "목표물: {{name}}"
+      "test_badge": "테스트"
     },
     "result": {
       "solved_first": "퍼즐 해결!",

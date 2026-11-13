@@ -111,6 +111,10 @@ export default function SandboxPage() {
       setLoadingScenario(false);
       clearSelection();
     });
+    // Connexion perdue : plus de réponse à attendre, on débloque le bouton.
+    socket.on("disconnect", () => {
+      setSavePuzzlePending(false);
+    });
     socket.on("sandbox:closed", () => {
       setState(null);
       setForcedSeat(null);

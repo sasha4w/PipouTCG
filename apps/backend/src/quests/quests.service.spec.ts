@@ -1022,6 +1022,21 @@ describe('QuestService', () => {
       expect(saved.map((s) => s.quest.id)).toEqual([1]);
     });
 
+    it('disponibilité : le défi programmé doit être publié et vérifié (comme PuzzlesService.today)', async () => {
+      state(1, 0);
+      mockUserQuestRepo.find.mockResolvedValue([]);
+      mockQuestRepo.find.mockResolvedValue([]);
+      echoRepos();
+
+      await service['redrawPool'](1, QuestResetType.DAILY);
+
+      const sql = (mockQuestRepo.manager.query.mock.calls as [string][])[0][0];
+      const planned = sql.slice(0, sql.indexOf('AS planned'));
+      expect(planned).toContain('JOIN daily_puzzle');
+      expect(planned).toContain("status = 'published'");
+      expect(planned).toContain('verified_at IS NOT NULL');
+    });
+
     it('tirage du jour : défi déjà résolu → la quête de défi naît terminée', async () => {
       state(1, 1);
       mockUserQuestRepo.find.mockResolvedValue([]);

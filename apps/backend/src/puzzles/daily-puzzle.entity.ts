@@ -51,12 +51,12 @@ export class DailyPuzzle {
   @Column({ type: 'datetime', nullable: true })
   verifiedAt!: Date | null;
 
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({
     name: 'created_by_id',
     foreignKeyConstraintName: 'fk_daily_puzzle_user',
   })
-  createdBy!: User;
+  createdBy!: User | null;
 
   @CreateDateColumn({
     type: 'datetime',

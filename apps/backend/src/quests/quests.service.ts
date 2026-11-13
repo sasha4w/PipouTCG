@@ -199,7 +199,9 @@ export class QuestService {
       }[]
     >(
       `SELECT
-         (SELECT COUNT(*) FROM daily_puzzle_schedule WHERE date = ?) AS planned,
+         (SELECT COUNT(*) FROM daily_puzzle_schedule s
+            JOIN daily_puzzle p ON p.id = s.puzzle_id
+            WHERE s.date = ? AND p.status = 'published' AND p.verified_at IS NOT NULL) AS planned,
          (SELECT COUNT(*) FROM daily_puzzle WHERE status = 'published' AND verified_at IS NOT NULL) AS fallback,
          (SELECT COUNT(*) FROM user_puzzle_solve WHERE user_id = ? AND date = ?) AS solved`,
       [date, userId, date],

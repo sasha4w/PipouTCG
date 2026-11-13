@@ -1684,9 +1684,7 @@
       "end_turn": "End turn",
       "end_confirm": "End the turn without reaching the objective? The puzzle will be failed.",
       "loading": "Preparing the puzzle…",
-      "back_label": "Back to the puzzle page",
-      "test_badge": "Test",
-      "target": "Target: {{name}}"
+      "test_badge": "Test"
     },
     "result": {
       "solved_first": "Puzzle solved!",
