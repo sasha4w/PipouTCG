@@ -175,6 +175,35 @@ describe('PuzzlesAdminService', () => {
   });
 
   describe('verify', () => {
+    it('refuse de démarrer pendant une modification (pas de verifiedAt périmé)', async () => {
+      const { service, repo } = setup({ stored: published() });
+      let unblock = () => {};
+      repo.findOneBy.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            unblock = () => resolve(published());
+          }),
+      );
+      jest.mocked(solvePuzzle).mockClear();
+      const editing = service.update(4, BODY);
+      await new Promise((r) => setImmediate(r));
+      await expect(service.verify(4, ADMIN)).rejects.toThrow(ConflictException);
+      expect(jest.mocked(solvePuzzle)).not.toHaveBeenCalled();
+      unblock();
+      await editing;
+      expect(repo.update).toHaveBeenCalledTimes(1);
+    });
+
+    it('refuse une vérification sur un autre défi tant qu’une est en cours', async () => {
+      const release = hangingSolver();
+      const { service } = setup();
+      const first = service.verify(4, ADMIN);
+      await new Promise((r) => setImmediate(r));
+      await expect(service.verify(5, ADMIN)).rejects.toThrow(ConflictException);
+      release();
+      await first;
+    });
+
     it('pose verifiedAt et décrit les coups quand une solution existe', async () => {
       jest.mocked(solvePuzzle).mockResolvedValue({
         status: 'solved',
@@ -408,6 +437,21 @@ describe('PuzzlesAdminService', () => {
         service.createFromSandbox(ADMIN, { a: 1 }, BODY),
       ).rejects.toThrow('Objectif KO');
       expect(repo.delete).toHaveBeenCalledWith(77);
+    });
+
+    it('refuse un titre ou une description non textuels', async () => {
+      const { service, repo } = setup();
+      const bad = (over: object) => ({ ...BODY, ...over });
+      await expect(
+        service.createFromSandbox(ADMIN, {}, bad({ title: 42 })),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createFromSandbox(ADMIN, {}, bad({ description: {} })),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createFromSandbox(ADMIN, {}, bad({ objective: null })),
+      ).rejects.toThrow(BadRequestException);
+      expect(repo.save).not.toHaveBeenCalled();
     });
 
     it('refuse un titre vide ou des récompenses hors bornes', async () => {

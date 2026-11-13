@@ -48,8 +48,16 @@ const NO_USER: Admin = { userId: 0, username: '' };
  */
 @Injectable()
 export class PuzzlesAdminService {
-  /** Défis en cours de vérification : une seule recherche à la fois par défi. */
+  /** Défis en cours de vérification : une seule recherche à la fois, tous défis confondus. */
   private readonly verifying = new Set<number>();
+  /**
+   * Défis en cours de modification. Le verrou est pris de façon synchrone au
+   * début de update(), avant tout await : une vérification ne peut donc pas
+   * démarrer, charger l'ancien objectif puis poser verifiedAt après la
+   * modification. Un garde sur updatedAt serait moins sûr (précision à la
+   * seconde : deux écritures dans la même seconde restent indiscernables).
+   */
+  private readonly editing = new Set<number>();
 
   constructor(
     @InjectRepository(DailyPuzzle)
@@ -118,27 +126,40 @@ export class PuzzlesAdminService {
   async update(id: number, body: PuzzleSaveBody): Promise<void> {
     if (this.verifying.has(id))
       throw new ConflictException('Vérification en cours : réessaie après.');
-    const puzzle = await this.find(id);
-    const fields = this.fieldsOf(body);
-    const { game } = await this.puzzles.load(id, NO_USER);
-    const problem = validateObjective(
-      { type: fields.objectiveType, ...fields.objectiveParams },
-      game,
-    );
-    if (problem) throw new BadRequestException(problem);
-    await this.leaveSchedule(puzzle.id);
-    await this.repo.update(id, {
-      ...fields,
-      rewardGold: fields.rewardGold ?? puzzle.rewardGold,
-      rewardXp: fields.rewardXp ?? puzzle.rewardXp,
-      status: PuzzleStatus.DRAFT,
-      verifiedAt: null,
-    });
+    if (this.editing.has(id))
+      throw new ConflictException('Modification déjà en cours.');
+    this.editing.add(id);
+    try {
+      const puzzle = await this.find(id);
+      const fields = this.fieldsOf(body);
+      const { game } = await this.puzzles.load(id, NO_USER);
+      const problem = validateObjective(
+        { type: fields.objectiveType, ...fields.objectiveParams },
+        game,
+      );
+      if (problem) throw new BadRequestException(problem);
+      await this.leaveSchedule(puzzle.id);
+      await this.repo.update(id, {
+        ...fields,
+        rewardGold: fields.rewardGold ?? puzzle.rewardGold,
+        rewardXp: fields.rewardXp ?? puzzle.rewardXp,
+        status: PuzzleStatus.DRAFT,
+        verifiedAt: null,
+      });
+    } finally {
+      this.editing.delete(id);
+    }
   }
 
   async verify(id: number, admin: Admin): Promise<PuzzleVerifyResult> {
     if (this.verifying.has(id))
       throw new ConflictException('Vérification déjà en cours.');
+    if (this.verifying.size >= 1)
+      throw new ConflictException(
+        'Une autre vérification est en cours : réessaie après.',
+      );
+    if (this.editing.has(id))
+      throw new ConflictException('Modification en cours : réessaie après.');
     this.verifying.add(id);
     try {
       const { puzzle, objective, game } = await this.puzzles.load(id, admin);
@@ -298,16 +319,28 @@ export class PuzzlesAdminService {
 
   /** Valide le corps (le socket du sandbox n'a pas de pipe de validation) et le met en colonnes. */
   private fieldsOf(body: PuzzleSaveBody) {
-    const title = body.title?.trim() ?? '';
+    // Le payload socket n'est pas typé à l'exécution : on vérifie chaque type.
+    if (typeof body !== 'object' || body === null)
+      throw new BadRequestException('Corps invalide.');
+    if (typeof body.title !== 'string')
+      throw new BadRequestException('Le titre doit être un texte.');
+    const title = body.title.trim();
     if (title.length < 1 || title.length > 80)
       throw new BadRequestException('Le titre doit faire 1 à 80 caractères.');
+    if (body.description != null && typeof body.description !== 'string')
+      throw new BadRequestException('La description doit être un texte.');
     const description = body.description?.trim() || null;
     if (description && description.length > 255)
       throw new BadRequestException('Description trop longue (255 max).');
-    if (!Object.values(PuzzleObjectiveType).includes(body.objective?.type))
+    if (
+      typeof body.objective !== 'object' ||
+      body.objective === null ||
+      !Object.values(PuzzleObjectiveType).includes(body.objective.type)
+    )
       throw new BadRequestException('Objectif inconnu.');
-    const inRange = (v: number | undefined, max: number) =>
-      v === undefined || (Number.isInteger(v) && v >= 0 && v <= max);
+    const inRange = (v: unknown, max: number) =>
+      v === undefined ||
+      (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max);
     if (!inRange(body.rewardGold, 10_000))
       throw new BadRequestException('Or : entier de 0 à 10 000.');
     if (!inRange(body.rewardXp, 5_000))

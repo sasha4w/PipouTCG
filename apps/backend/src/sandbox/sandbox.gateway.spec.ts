@@ -135,6 +135,21 @@ describe('SandboxGateway', () => {
       });
     });
 
+    it('renvoie une erreur générique pour une erreur inattendue', async () => {
+      const { gateway, sandbox, puzzlesAdmin, client } = setup();
+      const c = socketOf(client());
+      sandbox.snapshot.mockReturnValue({ a: 1 });
+      puzzlesAdmin.createFromSandbox.mockRejectedValue(new TypeError('boom'));
+
+      await expect(
+        gateway.savePuzzle(c.socket, payload),
+      ).resolves.toBeUndefined();
+
+      expect(c.emit).toHaveBeenCalledWith('sandbox:error', {
+        message: 'Erreur interne.',
+      });
+    });
+
     it('refuse sans sandbox ouvert', async () => {
       const { gateway, sandbox, puzzlesAdmin, client } = setup();
       const c = socketOf(client());

@@ -139,8 +139,10 @@ export class SandboxGateway
       );
       client.emit('sandbox:puzzle_saved', { puzzleId });
     } catch (e) {
-      if (!(e instanceof HttpException)) throw e;
-      this.reply(client, { error: e.message });
+      // Toute erreur est renvoyée au client (jamais relancée vers le socket).
+      // Message technique (BDD, etc.) non exposé : texte générique hors HttpException.
+      const error = e instanceof HttpException ? e.message : 'Erreur interne.';
+      this.reply(client, { error });
     }
   }
 
