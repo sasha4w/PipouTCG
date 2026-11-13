@@ -47,10 +47,10 @@ export class DailyPuzzle1791000000031 implements MigrationInterface {
 
     const from = addDays(puzzleDay(new Date()), 1);
     for (const [i, def] of PUZZLES.entries()) {
-      const rows: { id: number }[] = await queryRunner.query(
+      const rows = (await queryRunner.query(
         'SELECT `id` FROM `daily_puzzle` WHERE `title` = ?',
         [def.title],
-      );
+      )) as { id: number }[];
       if (rows.length > 0) continue;
       let built: ReturnType<typeof buildPuzzle>;
       try {
@@ -62,7 +62,7 @@ export class DailyPuzzle1791000000031 implements MigrationInterface {
         continue;
       }
       const { type, ...params } = built.objective;
-      const result: { insertId: number } = await queryRunner.query(
+      const result = (await queryRunner.query(
         'INSERT INTO `daily_puzzle` (`title`, `description`, `state`, `objective_type`, `objective_params`, `seed`, `status`, `verified_at`) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
         [
           def.title,
@@ -73,7 +73,7 @@ export class DailyPuzzle1791000000031 implements MigrationInterface {
           def.seed,
           PuzzleStatus.PUBLISHED,
         ],
-      );
+      )) as { insertId: number };
       await queryRunner.query(
         'INSERT IGNORE INTO `daily_puzzle_schedule` (`date`, `puzzle_id`, `origin`) VALUES (?, ?, ?)',
         [addDays(from, i), result.insertId, PuzzleScheduleOrigin.MANUAL],
