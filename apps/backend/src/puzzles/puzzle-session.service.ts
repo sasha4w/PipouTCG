@@ -35,6 +35,8 @@ interface Session {
   outcome: PuzzleOutcome;
   test: boolean;
   cleanup?: NodeJS.Timeout;
+  /** Une action (ou la récompense qui suit) est en cours : on refuse la suivante. */
+  busy: boolean;
 }
 
 const CLEANUP_DELAY_MS = 10 * 60_000;
@@ -59,6 +61,8 @@ export class PuzzleSessionService {
     socketId: string,
     payload: PuzzleStartPayload,
   ): Promise<void> {
+    if (payload.puzzleId !== undefined && !Number.isInteger(payload.puzzleId))
+      throw new Error('Défi invalide.');
     const test = payload.puzzleId !== undefined;
     if (test && !user.isAdmin) throw new Error('Réservé aux administrateurs.');
     const puzzleId =
@@ -79,49 +83,64 @@ export class PuzzleSessionService {
       track: startTrack(game),
       outcome: 'ongoing',
       test,
+      busy: false,
     };
     this.sessions.set(user.userId, session);
     this.publish(user.userId, session);
   }
 
-  async act(userId: number, action: GameAction): Promise<void> {
-    const s = this.require(userId);
+  async act(
+    userId: number,
+    action: GameAction,
+    socketId: string,
+  ): Promise<void> {
+    const s = this.attach(userId, socketId);
     if (s.outcome !== 'ongoing')
       throw new Error('Le défi est terminé : recommence pour rejouer.');
-    const before = structuredClone(s.game);
-    const trackBefore: PuzzleTrack = {
-      ...s.track,
-      destroyed: [...s.track.destroyed],
-    };
-    // Même graine à chaque coup : le résultat ne dépend que de l'état et de l'action.
-    const { error } = playPuzzleAction(
-      this.engine,
-      s.game,
-      action,
-      s.seed,
-      s.track,
-    );
-    if (error) {
-      s.game = before;
-      s.track = trackBefore;
-      throw new Error(error);
-    }
-    s.outcome = puzzleOutcome(s.objective, s.game, s.track);
-    let reward: PuzzleReward | undefined;
-    if (s.outcome === 'solved' && !s.test) {
+    s.busy = true;
+    try {
+      const before = structuredClone(s.game);
+      const trackBefore: PuzzleTrack = {
+        ...s.track,
+        destroyed: [...s.track.destroyed],
+      };
+      let error: string | undefined;
       try {
-        reward = await this.puzzles.completeToday(userId, s.puzzleId);
-      } catch (e) {
-        // Le défi du jour a changé pendant la partie : résolu, mais rien à verser.
-        this.publish(userId, s);
-        throw e;
+        // Même graine à chaque coup : le résultat ne dépend que de l'état et de l'action.
+        ({ error } = playPuzzleAction(
+          this.engine,
+          s.game,
+          action,
+          s.seed,
+          s.track,
+        ));
+      } catch {
+        error = 'Action impossible.';
       }
+      if (error) {
+        s.game = before;
+        s.track = trackBefore;
+        throw new Error(error);
+      }
+      s.outcome = puzzleOutcome(s.objective, s.game, s.track);
+      let reward: PuzzleReward | undefined;
+      if (s.outcome === 'solved' && !s.test) {
+        try {
+          reward = await this.puzzles.completeToday(userId, s.puzzleId);
+        } catch (e) {
+          // Le défi du jour a changé pendant la partie : résolu, mais rien à verser.
+          this.publish(userId, s);
+          throw e;
+        }
+      }
+      this.publish(userId, s, reward);
+    } finally {
+      s.busy = false;
     }
-    this.publish(userId, s, reward);
   }
 
-  restart(userId: number): void {
-    const s = this.require(userId);
+  restart(userId: number, socketId: string): void {
+    const s = this.attach(userId, socketId);
     s.game = structuredClone(s.initial);
     s.track = startTrack(s.initial);
     s.outcome = 'ongoing';
@@ -134,10 +153,13 @@ export class PuzzleSessionService {
     if (s) this.server.to(s.socketId).emit('puzzle:closed');
   }
 
-  /** Coupure réseau : la partie attend dix minutes, puis disparaît (rien à perdre). */
-  disconnect(userId: number): void {
+  /**
+   * Coupure réseau : la partie attend dix minutes, puis disparaît (rien à perdre).
+   * Un ancien socket qui se coupe ne compte pas si la partie a été reprise ailleurs.
+   */
+  disconnect(userId: number, socketId: string): void {
     const s = this.sessions.get(userId);
-    if (!s) return;
+    if (!s || s.socketId !== socketId) return;
     if (s.cleanup) clearTimeout(s.cleanup);
     s.cleanup = setTimeout(
       () => this.sessions.delete(userId),
@@ -152,9 +174,14 @@ export class PuzzleSessionService {
     this.sessions.delete(userId);
   }
 
-  private require(userId: number): Session {
+  /** Session libre, rattachée au socket appelant (reprise après reconnexion). */
+  private attach(userId: number, socketId: string): Session {
     const s = this.sessions.get(userId);
     if (!s) throw new Error('Aucun défi en cours.');
+    if (s.busy) throw new Error('Une action est déjà en cours.');
+    if (s.cleanup) clearTimeout(s.cleanup);
+    s.cleanup = undefined;
+    s.socketId = socketId;
     return s;
   }
 

@@ -1,5 +1,6 @@
 import { PuzzleObjectiveType } from '@pipou/shared';
 import type { PuzzleObjective, PuzzleState } from '@pipou/shared';
+import * as step from './puzzle-step';
 import { createEngine } from '../fights/testing/engine';
 import { P1_ID } from '../fights/testing/scenario';
 import type { GameState } from '../fights/interfaces/game-state.interface';
@@ -14,8 +15,8 @@ async function attackTurn(
   userId: number,
   game: GameState,
 ) {
-  await service.act(userId, { type: 'end_phase' });
-  await service.act(userId, attackWall(game));
+  await service.act(userId, { type: 'end_phase' }, 's');
+  await service.act(userId, attackWall(game), 's');
 }
 
 const USER = { userId: P1_ID, username: 'Alice', isAdmin: false };
@@ -104,7 +105,7 @@ describe('PuzzleSessionService', () => {
     const { game, service, states } = setup();
     await service.start(USER, 's', {});
     const bad = { type: 'discard', handIndex: 99 } as const;
-    await expect(service.act(USER.userId, bad)).rejects.toThrow();
+    await expect(service.act(USER.userId, bad, 's')).rejects.toThrow();
     expect(states()).toHaveLength(1);
     // la partie reste jouable
     await attackTurn(service, USER.userId, game);
@@ -139,10 +140,10 @@ describe('PuzzleSessionService', () => {
     await service.start(USER, 's', {});
     // on passe les phases jusqu'à la fin du tour
     for (let i = 0; i < 4 && states().at(-1)?.outcome === 'ongoing'; i++)
-      await service.act(USER.userId, { type: 'end_phase' });
+      await service.act(USER.userId, { type: 'end_phase' }, 's');
     expect(states().at(-1)?.outcome).toBe('failed');
     await expect(
-      service.act(USER.userId, { type: 'end_phase' }),
+      service.act(USER.userId, { type: 'end_phase' }, 's'),
     ).rejects.toThrow('Le défi est terminé');
   });
 
@@ -150,7 +151,7 @@ describe('PuzzleSessionService', () => {
     const { game, service, states } = setup();
     await service.start(USER, 's', {});
     await attackTurn(service, USER.userId, game);
-    service.restart(USER.userId);
+    service.restart(USER.userId, 's');
     const first = states()[0];
     const again = states().at(-1)!;
     expect(again.outcome).toBe('ongoing');
@@ -167,7 +168,7 @@ describe('PuzzleSessionService', () => {
       .mockResolvedValueOnce({ firstSolve: false, gold: 0, xp: 0 });
     await service.start(USER, 's', {});
     await attackTurn(service, USER.userId, game);
-    service.restart(USER.userId);
+    service.restart(USER.userId, 's');
     await attackTurn(service, USER.userId, game);
     expect(states().at(-1)?.reward?.firstSolve).toBe(false);
     expect(puzzles.completeToday).toHaveBeenCalledTimes(2);
@@ -182,11 +183,11 @@ describe('PuzzleSessionService', () => {
     await attackTurn(service, USER.userId, game);
     const attackEvents = states().at(-1)!.view.events;
     expect(attackEvents.length).toBeGreaterThan(0);
-    await service.act(USER.userId, { type: 'end_phase' });
+    await service.act(USER.userId, { type: 'end_phase' }, 's');
     const next = states().at(-1)!.view.events;
     expect(attackEvents.some((e) => e.kind === 'monster_destroyed')).toBe(true);
     expect(next.some((e) => e.kind === 'monster_destroyed')).toBe(false);
-    service.restart(USER.userId);
+    service.restart(USER.userId, 's');
     expect(states().at(-1)?.view.events).toEqual([]);
   });
 
@@ -210,7 +211,7 @@ describe('PuzzleSessionService', () => {
     service.close(USER.userId);
     expect(emit).toHaveBeenCalledWith('puzzle:closed');
     await expect(
-      service.act(USER.userId, { type: 'end_phase' }),
+      service.act(USER.userId, { type: 'end_phase' }, 's'),
     ).rejects.toThrow('Aucun défi en cours.');
   });
 
@@ -219,13 +220,122 @@ describe('PuzzleSessionService', () => {
     try {
       const { service } = setup();
       await service.start(USER, 's', {});
-      service.disconnect(USER.userId);
+      service.disconnect(USER.userId, 's');
       jest.advanceTimersByTime(10 * 60_000 + 1);
       await expect(
-        service.act(USER.userId, { type: 'end_phase' }),
+        service.act(USER.userId, { type: 'end_phase' }, 's'),
       ).rejects.toThrow('Aucun défi en cours.');
     } finally {
       jest.useRealTimers();
     }
+  });
+
+  it('disconnect d’un ancien socket : la partie reprise ailleurs survit', async () => {
+    jest.useFakeTimers();
+    try {
+      const { service, states } = setup();
+      await service.start(USER, 'vieux', {});
+      // reconnexion : un nouveau socket reprend la partie
+      service.restart(USER.userId, 'neuf');
+      service.disconnect(USER.userId, 'vieux');
+      jest.advanceTimersByTime(10 * 60_000 + 1);
+      await service.act(USER.userId, { type: 'end_phase' }, 'neuf');
+      expect(states().length).toBeGreaterThan(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('act après coupure : annule le nettoyage et rattache le socket', async () => {
+    jest.useFakeTimers();
+    try {
+      const { service, server } = setup();
+      await service.start(USER, 'a', {});
+      service.disconnect(USER.userId, 'a');
+      await service.act(USER.userId, { type: 'end_phase' }, 'b');
+      jest.advanceTimersByTime(10 * 60_000 + 1);
+      expect(server.to).toHaveBeenLastCalledWith('b');
+      await service.act(USER.userId, { type: 'end_phase' }, 'b');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('restart après coupure : annule le nettoyage', async () => {
+    jest.useFakeTimers();
+    try {
+      const { service, server } = setup();
+      await service.start(USER, 'a', {});
+      service.disconnect(USER.userId, 'a');
+      service.restart(USER.userId, 'b');
+      jest.advanceTimersByTime(10 * 60_000 + 1);
+      expect(server.to).toHaveBeenLastCalledWith('b');
+      service.restart(USER.userId, 'b');
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('restart pendant l’attente de la récompense : refusé, pas d’état remis à zéro', async () => {
+    const { game, service, puzzles, states } = setup();
+    let release!: (r: unknown) => void;
+    puzzles.completeToday.mockReturnValue(
+      new Promise((resolve) => (release = resolve)),
+    );
+    await service.start(USER, 's', {});
+    await service.act(USER.userId, { type: 'end_phase' }, 's');
+    const pending = service.act(USER.userId, attackWall(game), 's');
+    expect(() => service.restart(USER.userId, 's')).toThrow(
+      'Une action est déjà en cours.',
+    );
+    release({ firstSolve: true, gold: 1, xp: 1 });
+    await pending;
+    const last = states().at(-1)!;
+    expect(last.outcome).toBe('solved');
+    expect(last.reward?.firstSolve).toBe(true);
+  });
+
+  it('deux actions simultanées : la seconde est refusée', async () => {
+    const { game, service, puzzles } = setup();
+    let release!: (r: unknown) => void;
+    puzzles.completeToday.mockReturnValue(
+      new Promise((resolve) => (release = resolve)),
+    );
+    await service.start(USER, 's', {});
+    await service.act(USER.userId, { type: 'end_phase' }, 's');
+    const first = service.act(USER.userId, attackWall(game), 's');
+    await expect(
+      service.act(USER.userId, { type: 'end_phase' }, 's'),
+    ).rejects.toThrow('Une action est déjà en cours.');
+    release({ firstSolve: true, gold: 1, xp: 1 });
+    await first;
+    expect(puzzles.completeToday).toHaveBeenCalledTimes(1);
+  });
+
+  it('playPuzzleAction qui lève : état restauré, erreur propre, partie jouable', async () => {
+    const { game, service, states } = setup();
+    await service.start(USER, 's', {});
+    const spy = jest
+      .spyOn(step, 'playPuzzleAction')
+      .mockImplementationOnce((_e, g) => {
+        g.turnNumber = 999;
+        throw new Error('boum interne');
+      });
+    await expect(
+      service.act(USER.userId, { type: 'end_phase' }, 's'),
+    ).rejects.toThrow('Action impossible.');
+    spy.mockRestore();
+    expect(states()).toHaveLength(1);
+    await attackTurn(service, USER.userId, game);
+    expect(states().at(-1)?.outcome).toBe('solved');
+  });
+
+  it('start avec puzzleId non entier : refus', async () => {
+    const { service, puzzles } = setup();
+    for (const bad of [1.5, NaN, '5' as unknown as number])
+      await expect(
+        service.start(ADMIN, 's', { puzzleId: bad }),
+      ).rejects.toThrow('Défi invalide.');
+    expect(puzzles.load).not.toHaveBeenCalled();
   });
 });

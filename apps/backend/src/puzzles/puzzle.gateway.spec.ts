@@ -105,6 +105,6 @@ describe('PuzzleGateway', () => {
     const { socket } = client({ sub: 4, username: 'Bob' });
     gateway.handleConnection(socket);
     gateway.handleDisconnect(socket);
-    expect(sessions.disconnect).toHaveBeenCalledWith(4);
+    expect(sessions.disconnect).toHaveBeenCalledWith(4, 'sock');
   });
 });

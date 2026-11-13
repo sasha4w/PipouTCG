@@ -52,7 +52,8 @@ export class PuzzleGateway
   }
 
   handleDisconnect(client: PuzzleSocket): void {
-    if (client.data.userId) this.sessions.disconnect(client.data.userId);
+    if (client.data.userId)
+      this.sessions.disconnect(client.data.userId, client.id);
   }
 
   @SubscribeMessage('puzzle:start')
@@ -79,13 +80,15 @@ export class PuzzleGateway
     @MessageBody() action: GameAction,
   ): Promise<void> {
     return this.guard(client, () =>
-      this.sessions.act(client.data.userId, action),
+      this.sessions.act(client.data.userId, action, client.id),
     );
   }
 
   @SubscribeMessage('puzzle:restart')
   restart(@ConnectedSocket() client: PuzzleSocket): Promise<void> {
-    return this.guard(client, () => this.sessions.restart(client.data.userId));
+    return this.guard(client, () =>
+      this.sessions.restart(client.data.userId, client.id),
+    );
   }
 
   @SubscribeMessage('puzzle:close')
