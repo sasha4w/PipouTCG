@@ -970,6 +970,14 @@ export function IconFlask(props: IconProps) {
   );
 }
 
+export function IconBulb(props: IconProps) {
+  return (
+    <StrokeIcon {...props}>
+      <path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z" />
+    </StrokeIcon>
+  );
+}
+
 // ── Icône retour (flèche en U, comme dans la liste de cartes) ────────────────
 export function IconUndo({
   size = 16,

@@ -541,7 +541,8 @@
       "sandbox": "Sandbox",
       "adventure": "Adventure",
       "aiReview": "AI review",
-      "starterDecks": "Starter Decks"
+      "starterDecks": "Starter Decks",
+    "puzzles": "Puzzles"
     },
     "sandbox_back": "Back to admin",
     "patchnote": {
@@ -1589,6 +1590,45 @@
     "fightF2": "Live ELO leaderboard",
     "fightF3": "Match history",
     "fightCta": "Enter the arena"
+  },
+  "puzzle": {
+    "hub": {
+      "title": "Daily puzzle",
+      "desc": "A combat brain-teaser: find the right sequence in a single turn.",
+      "cta": "Take the challenge",
+      "streak_one": "Streak: {{count}} day",
+      "streak_other": "Streak: {{count}} days",
+      "todo": "To do",
+      "done": "Solved",
+      "none": "No puzzle today"
+    },
+    "title": "Daily puzzle",
+    "back": "Arena",
+    "back_label": "Back to the arena",
+    "loading": "Loading the puzzle…",
+    "objective": {
+      "WIN_GAME": "Win the game this turn",
+      "DESTROY_MONSTER": "Destroy {{name}} this turn",
+      "CLEAR_ENEMY_BOARD": "Destroy all enemy monsters this turn",
+      "TAKE_PRIMES_one": "Take {{count}} prime this turn",
+      "TAKE_PRIMES_other": "Take {{count}} primes this turn"
+    },
+    "reward": {
+      "title": "Reward",
+      "xp": "XP"
+    },
+    "streak": {
+      "label_one": "Streak: {{count}} day, booster in {{left}} d",
+      "label_other": "Streak: {{count}} days, booster in {{left}} d"
+    },
+    "play": "Play",
+    "replay": "Replay",
+    "already_solved": "Already solved: replaying earns nothing",
+    "unlimited": "Unlimited attempts. Next puzzle in {{time}}",
+    "none_today": "No puzzle today. Come back tomorrow!",
+    "errors": {
+      "load": "Could not load the daily puzzle"
+    }
   },
   "starter_admin": {
     "title": "Starter deck compositions",

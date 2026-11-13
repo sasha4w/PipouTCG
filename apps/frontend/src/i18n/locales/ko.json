@@ -536,7 +536,8 @@
       "sandbox": "샌드박스",
       "adventure": "모험",
       "aiReview": "AI 검토",
-      "starterDecks": "스타터 덱"
+      "starterDecks": "스타터 덱",
+    "puzzles": "퍼즐"
     },
     "sandbox_back": "관리자로 돌아가기",
     "patchnote": {
@@ -1511,6 +1512,42 @@
     "fightF2": "실시간 ELO 랭킹",
     "fightF3": "매치 기록",
     "fightCta": "아레나 입장"
+  },
+  "puzzle": {
+    "hub": {
+      "title": "오늘의 퍼즐",
+      "desc": "전투 퍼즐: 한 턴 안에 올바른 순서를 찾아보세요.",
+      "cta": "도전하기",
+      "streak_other": "연속: {{count}}일",
+      "todo": "도전 가능",
+      "done": "해결함",
+      "none": "오늘은 퍼즐이 없어요"
+    },
+    "title": "오늘의 퍼즐",
+    "back": "아레나",
+    "back_label": "아레나로 돌아가기",
+    "loading": "퍼즐을 불러오는 중…",
+    "objective": {
+      "WIN_GAME": "이번 턴에 게임에서 승리하세요",
+      "DESTROY_MONSTER": "이번 턴에 {{name}}을(를) 파괴하세요",
+      "CLEAR_ENEMY_BOARD": "이번 턴에 상대 몬스터를 모두 파괴하세요",
+      "TAKE_PRIMES_other": "이번 턴에 프라임 {{count}}개를 가져가세요"
+    },
+    "reward": {
+      "title": "보상",
+      "xp": "XP"
+    },
+    "streak": {
+      "label_other": "연속: {{count}}일, 부스터까지 {{left}}일"
+    },
+    "play": "플레이",
+    "replay": "다시 하기",
+    "already_solved": "이미 해결함: 다시 해도 보상은 없어요",
+    "unlimited": "횟수 제한 없음. 다음 퍼즐까지 {{time}}",
+    "none_today": "오늘은 퍼즐이 없어요. 내일 다시 오세요!",
+    "errors": {
+      "load": "오늘의 퍼즐을 불러올 수 없어요"
+    }
   },
   "starter_admin": {
     "title": "스타터 덱 구성",

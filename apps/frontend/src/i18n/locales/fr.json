@@ -541,7 +541,8 @@
       "sandbox": "Sandbox",
       "adventure": "Aventure",
       "aiReview": "Revue IA",
-      "starterDecks": "Starter Decks"
+      "starterDecks": "Starter Decks",
+    "puzzles": "Défis"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
@@ -1590,6 +1591,45 @@
     "fightF2": "Classement ELO en direct",
     "fightF3": "Historique des matchs",
     "fightCta": "Rejoindre l'arène"
+  },
+  "puzzle": {
+    "hub": {
+      "title": "Défi du jour",
+      "desc": "Un casse-tête de combat : trouve le bon enchaînement en un tour.",
+      "cta": "Relever le défi",
+      "streak_one": "Série : {{count}} jour",
+      "streak_other": "Série : {{count}} jours",
+      "todo": "À faire",
+      "done": "Résolu",
+      "none": "Pas de défi aujourd'hui"
+    },
+    "title": "Défi du jour",
+    "back": "Arène",
+    "back_label": "Retour à l'arène",
+    "loading": "Chargement du défi…",
+    "objective": {
+      "WIN_GAME": "Gagne la partie ce tour",
+      "DESTROY_MONSTER": "Détruis {{name}} ce tour",
+      "CLEAR_ENEMY_BOARD": "Détruis tous les monstres adverses ce tour",
+      "TAKE_PRIMES_one": "Prends {{count}} prime ce tour",
+      "TAKE_PRIMES_other": "Prends {{count}} primes ce tour"
+    },
+    "reward": {
+      "title": "Récompense",
+      "xp": "XP"
+    },
+    "streak": {
+      "label_one": "Série : {{count}} jour, booster dans {{left}} j",
+      "label_other": "Série : {{count}} jours, booster dans {{left}} j"
+    },
+    "play": "Jouer",
+    "replay": "Rejouer",
+    "already_solved": "Déjà résolu : rejouer ne rapporte rien",
+    "unlimited": "Essais illimités. Prochain défi dans {{time}}",
+    "none_today": "Pas de défi aujourd'hui. Reviens demain !",
+    "errors": {
+      "load": "Impossible de charger le défi du jour"
+    }
   },
   "starter_admin": {
     "title": "Compositions des starter decks",
