@@ -29,6 +29,7 @@ import {
   collectCardIds,
   deserializeGame,
   serializeGame,
+  type SerializedGame,
 } from './scenario-serializer';
 import { ScenariosService } from './scenarios.service';
 import type { SandboxServer } from './sandbox-socket.types';
@@ -166,6 +167,12 @@ export class SandboxService {
     clearTimeout(sb.cleanup);
     this.turnTimeout.clear(sb.game.matchId);
     this.sandboxes.delete(adminUserId);
+  }
+
+  /** État sérialisé du sandbox de l'admin (null si aucun sandbox ouvert). */
+  snapshot(adminUserId: number): SerializedGame | null {
+    const sb = this.sandboxes.get(adminUserId);
+    return sb ? serializeGame(sb.game) : null;
   }
 
   async save(

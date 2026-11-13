@@ -189,6 +189,14 @@ describe('SandboxService', () => {
     expect(last().views.p1.me.hand.map((c) => c.baseCard.name)).toEqual(hand);
   });
 
+  it('snapshot : état sérialisé du sandbox, null sans sandbox', async () => {
+    const { service } = await inGame();
+    expect(service.snapshot(ADMIN.userId)).toEqual(
+      expect.objectContaining({ player1: expect.anything() as unknown }),
+    );
+    expect(service.snapshot(999)).toBeNull();
+  });
+
   it('refuse une sauvegarde sans nom', async () => {
     const { service } = await inGame();
 

@@ -9,7 +9,9 @@ import {
 } from '@nestjs/websockets';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { HttpException } from '@nestjs/common';
 import type {
+  PuzzleSaveBody,
   SandboxActionPayload,
   SandboxCreatePayload,
   SandboxLoadPayload,
@@ -17,6 +19,7 @@ import type {
   SandboxSetupCommand,
 } from '@pipou/shared';
 import { readSocketUser } from '../fights/socket-auth';
+import { PuzzlesAdminService } from '../puzzles/puzzles-admin.service';
 import { SandboxService, type SandboxAdmin } from './sandbox.service';
 import type { SandboxServer, SandboxSocket } from './sandbox-socket.types';
 
@@ -36,6 +39,7 @@ export class SandboxGateway
     private readonly sandbox: SandboxService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly puzzlesAdmin: PuzzlesAdminService,
   ) {}
 
   handleConnection(client: SandboxSocket): void {
@@ -118,6 +122,26 @@ export class SandboxGateway
     if (result.scenarioId !== undefined)
       client.emit('sandbox:saved', { scenarioId: result.scenarioId });
     else this.reply(client, result);
+  }
+
+  @SubscribeMessage('sandbox:save_puzzle')
+  async savePuzzle(
+    @ConnectedSocket() client: SandboxSocket,
+    @MessageBody() payload: PuzzleSaveBody,
+  ): Promise<void> {
+    const state = this.sandbox.snapshot(client.data.userId);
+    if (!state) return this.reply(client, { error: 'Aucun sandbox ouvert' });
+    try {
+      const puzzleId = await this.puzzlesAdmin.createFromSandbox(
+        { userId: client.data.userId, username: client.data.username },
+        state,
+        payload,
+      );
+      client.emit('sandbox:puzzle_saved', { puzzleId });
+    } catch (e) {
+      if (!(e instanceof HttpException)) throw e;
+      this.reply(client, { error: e.message });
+    }
   }
 
   @SubscribeMessage('sandbox:load')

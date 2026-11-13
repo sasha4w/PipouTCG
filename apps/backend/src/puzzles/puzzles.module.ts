@@ -8,7 +8,10 @@ import { UsersModule } from '../users/users.module';
 import { DailyPuzzle } from './daily-puzzle.entity';
 import { DailyPuzzleSchedule } from './daily-puzzle-schedule.entity';
 import { UserPuzzleSolve } from './user-puzzle-solve.entity';
+import { SandboxScenario } from '../sandbox/sandbox-scenario.entity';
 import { PuzzlesController } from './puzzles.controller';
+import { PuzzlesAdminController } from './puzzles-admin.controller';
+import { PuzzlesAdminService } from './puzzles-admin.service';
 import { PuzzlesService } from './puzzles.service';
 import { PuzzleSessionService } from './puzzle-session.service';
 import { PuzzleGateway } from './puzzle.gateway';
@@ -20,6 +23,7 @@ import { PuzzleGateway } from './puzzle.gateway';
       DailyPuzzleSchedule,
       UserPuzzleSolve,
       Card,
+      SandboxScenario,
     ]),
     FightsModule,
     UsersModule,
@@ -31,8 +35,13 @@ import { PuzzleGateway } from './puzzle.gateway';
       }),
     }),
   ],
-  providers: [PuzzlesService, PuzzleSessionService, PuzzleGateway],
-  controllers: [PuzzlesController],
-  exports: [PuzzlesService],
+  providers: [
+    PuzzlesService,
+    PuzzlesAdminService,
+    PuzzleSessionService,
+    PuzzleGateway,
+  ],
+  controllers: [PuzzlesController, PuzzlesAdminController],
+  exports: [PuzzlesService, PuzzlesAdminService],
 })
 export class PuzzlesModule {}
