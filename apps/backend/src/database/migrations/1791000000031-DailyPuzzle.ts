@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /** Défi du jour : défis, calendrier (un défi par jour) et résolutions par joueur. */
-export class DailyPuzzle1791000000030 implements MigrationInterface {
-  name = 'DailyPuzzle1791000000030';
+export class DailyPuzzle1791000000031 implements MigrationInterface {
+  name = 'DailyPuzzle1791000000031';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
