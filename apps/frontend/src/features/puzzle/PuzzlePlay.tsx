@@ -131,13 +131,23 @@ export function PuzzlePlay({ puzzleId }: Props) {
       </div>
 
       <div className="pz-bar">
-        <button type="button" className="pz-bar__btn" onClick={back}>
-          <IconArrowLeft size={16} />
-          {t("puzzle.session.quit")}
+        <button
+          type="button"
+          className="pz-bar__btn pz-bar__btn--icon"
+          aria-label={t("puzzle.session.quit")}
+          title={t("puzzle.session.quit")}
+          onClick={back}
+        >
+          <IconArrowLeft size={18} />
         </button>
-        <button type="button" className="pz-bar__btn" onClick={restart}>
-          <IconUndo size={16} />
-          {t("puzzle.session.restart")}
+        <button
+          type="button"
+          className="pz-bar__btn pz-bar__btn--icon"
+          aria-label={t("puzzle.session.restart")}
+          title={t("puzzle.session.restart")}
+          onClick={restart}
+        >
+          <IconUndo size={18} />
         </button>
         <button
           type="button"

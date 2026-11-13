@@ -223,11 +223,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 5px 12px;
   background: var(--color-bordeaux);
   color: var(--color-cream);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.25;
   font-weight: 700;
 }
 
@@ -251,9 +252,9 @@
 
 .pz-bar {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.3fr;
+  grid-template-columns: 44px 44px 1fr;
   gap: 8px;
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  padding: 5px 12px calc(5px + env(safe-area-inset-bottom));
   background: #fff;
   border-top: 1px solid #eadfce;
 }
@@ -263,7 +264,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 10px;
   border: 1.5px solid var(--color-bordeaux);
   border-radius: 12px;
@@ -273,6 +274,10 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.pz-bar__btn--icon {
+  padding: 0;
 }
 
 .pz-bar__btn--primary {
