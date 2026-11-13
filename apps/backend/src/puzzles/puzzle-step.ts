@@ -2,7 +2,7 @@ import type { GameAction } from '@pipou/shared';
 import type { GameEngine } from '../fights/engine/game-engine';
 import type { GameState } from '../fights/interfaces/game-state.interface';
 import { activeChoice, listCandidates } from '../fights/ai/candidate-actions';
-import { withRandom } from '../fights/ai/rollout';
+import { withRandom } from '../fights/helpers/seeded-random';
 import { seatOf } from '../fights/helpers/game-state.helper';
 import { recordEvents, type PuzzleTrack } from './puzzle-objective';
 

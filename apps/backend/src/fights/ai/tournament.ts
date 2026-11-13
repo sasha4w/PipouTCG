@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { AdventureArchetype, Seat } from '@pipou/shared';
 import type { Card } from '../../cards/card.entity';
 import { createGameState } from '../helpers/game-factory';
+import { seeded } from '../helpers/seeded-random';
 import type {
   CardInstance,
   GameState,
@@ -92,16 +93,7 @@ export interface PlannedGame {
 
 const ARCHETYPES: AdventureArchetype[] = ['pipou', 'pixelman', 'dragon'];
 
-/** mulberry32 : générateur déterministe. */
-export function seeded(seed: number): () => number {
-  let t = seed;
-  return () => {
-    t = (t + 0x6d2b79f5) | 0;
-    let r = Math.imul(t ^ (t >>> 15), 1 | t);
-    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
-    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
-  };
-}
+export { seeded };
 
 /** Instancie et mélange le deck (le moteur ne mélange pas : fixedRng). */
 export function instances(
