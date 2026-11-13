@@ -10,6 +10,8 @@ import { DailyPuzzleSchedule } from './daily-puzzle-schedule.entity';
 import { UserPuzzleSolve } from './user-puzzle-solve.entity';
 import { PuzzlesController } from './puzzles.controller';
 import { PuzzlesService } from './puzzles.service';
+import { PuzzleSessionService } from './puzzle-session.service';
+import { PuzzleGateway } from './puzzle.gateway';
 
 @Module({
   imports: [
@@ -29,7 +31,7 @@ import { PuzzlesService } from './puzzles.service';
       }),
     }),
   ],
-  providers: [PuzzlesService],
+  providers: [PuzzlesService, PuzzleSessionService, PuzzleGateway],
   controllers: [PuzzlesController],
   exports: [PuzzlesService],
 })
