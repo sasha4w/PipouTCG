@@ -26,6 +26,7 @@ import { QUERY_KEYS } from "../../utils/querykeys";
 import SandboxSetup from "./SandboxSetup";
 import SandboxToolbar from "./SandboxToolbar";
 import SandboxTools from "./SandboxTools";
+import SavePuzzleDialog from "../puzzle/admin/SavePuzzleDialog";
 import { autoViewSeat } from "./viewSeat";
 import "../fight/FightPage.css";
 import "./Sandbox.css";
@@ -53,6 +54,8 @@ export default function SandboxPage() {
   const [loadingScenario, setLoadingScenario] = useState(scenarioId !== null);
   const [forcedSeat, setForcedSeat] = useState<Seat | null>(null);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [savePuzzleOpen, setSavePuzzleOpen] = useState(false);
+  const [savePuzzlePending, setSavePuzzlePending] = useState(false);
   const [toast, setToast] = useState<{
     msg: string;
     type: "ok" | "err";
@@ -112,6 +115,13 @@ export default function SandboxPage() {
       setState(null);
       setForcedSeat(null);
       setToolsOpen(false);
+      setSavePuzzleOpen(false);
+    });
+    socket.on("sandbox:puzzle_saved", () => {
+      setSavePuzzleOpen(false);
+      setSavePuzzlePending(false);
+      showToast(t("puzzle.admin.saved"));
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.puzzles });
     });
     socket.on("sandbox:saved", () => {
       showToast("💾 Scénario sauvegardé");
@@ -119,13 +129,14 @@ export default function SandboxPage() {
     });
     socket.on("sandbox:error", ({ message }) => {
       setLoadingScenario(false);
+      setSavePuzzlePending(false);
       showToast(message, "err");
     });
 
     return () => {
       socket.disconnect();
     };
-  }, [scenarioId, clearSelection, showToast, queryClient]);
+  }, [scenarioId, clearSelection, showToast, queryClient, t]);
 
   const toastNode = toast && (
     <div className={`sb-toast${toast.type === "err" ? " sb-toast--err" : ""}`}>
@@ -197,6 +208,10 @@ export default function SandboxPage() {
         onSave={(name, description) =>
           socketRef.current?.emit("sandbox:save", { name, description })
         }
+        onSavePuzzle={() => setSavePuzzleOpen(true)}
+        canSavePuzzle={
+          state.views.p1.phase === "main" && state.views.p1.isMyTurn
+        }
         onClose={() => socketRef.current?.emit("sandbox:close")}
       />
       {view.phase === "finished" && (
@@ -218,6 +233,17 @@ export default function SandboxPage() {
         <CardPickModal
           choice={view.pendingChoice}
           onConfirm={controls.pickCards}
+        />
+      )}
+      {savePuzzleOpen && (
+        <SavePuzzleDialog
+          state={state}
+          pending={savePuzzlePending}
+          onSubmit={(body) => {
+            setSavePuzzlePending(true);
+            socketRef.current?.emit("sandbox:save_puzzle", body);
+          }}
+          onClose={() => setSavePuzzleOpen(false)}
         />
       )}
       {toolsOpen && (

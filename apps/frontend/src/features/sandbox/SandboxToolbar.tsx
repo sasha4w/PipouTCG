@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next";
 import type { Seat } from "@pipou/shared";
 import Button from "../../components/Button";
+import { IconBulb } from "../../components/Icons";
 
 interface Props {
   /** Siège affiché. */
@@ -14,6 +16,10 @@ interface Props {
   onUndo: () => void;
   onRedo: () => void;
   onSave: (name: string, description?: string) => void;
+  /** Ouvre l'enregistrement de la position comme défi du jour. */
+  onSavePuzzle: () => void;
+  /** false : la position n'est pas enregistrable (phase ou tour). */
+  canSavePuzzle?: boolean;
   onClose: () => void;
 }
 
@@ -31,8 +37,11 @@ export default function SandboxToolbar({
   onUndo,
   onRedo,
   onSave,
+  onSavePuzzle,
+  canSavePuzzle = true,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="sb-toolbar" role="toolbar" aria-label="Outils du sandbox">
       <div className="sb-toolbar__group">
@@ -104,6 +113,20 @@ export default function SandboxToolbar({
           }}
         >
           💾
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost-bordeaux"
+          aria-label={t("puzzle.admin.save_puzzle")}
+          title={
+            canSavePuzzle
+              ? t("puzzle.admin.save_puzzle")
+              : t("puzzle.admin.save_need_main")
+          }
+          disabled={!canSavePuzzle}
+          onClick={onSavePuzzle}
+        >
+          <IconBulb size={18} />
         </Button>
         <Button
           size="icon"
