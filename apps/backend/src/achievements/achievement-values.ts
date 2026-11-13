@@ -54,5 +54,7 @@ export function toAchievementValues(
     [AchievementFamily.PVE_WON]: src.adventure.won,
     [AchievementFamily.PVE_PLAYED]: src.adventure.played,
     [AchievementFamily.TUTORIAL_LESSONS]: src.tutorialLessons,
+    [AchievementFamily.PUZZLES_SOLVED]: 0,
+    [AchievementFamily.PUZZLE_STREAK]: 0,
   };
 }

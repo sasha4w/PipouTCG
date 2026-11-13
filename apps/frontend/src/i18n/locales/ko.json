@@ -1181,7 +1181,9 @@
       "ADVENTURE_WORLDS": "모험 월드",
       "PVE_WON": "PvE 승리",
       "PVE_PLAYED": "PvE 전투",
-      "TUTORIAL_LESSONS": "수련생"
+      "TUTORIAL_LESSONS": "수련생",
+      "PUZZLES_SOLVED": "해결한 일일 퍼즐",
+      "PUZZLE_STREAK": "퍼즐 연속 해결"
     },
     "goals": {
       "BOOSTERS_OPENED": "부스터 {{n}}개 개봉",
@@ -1201,7 +1203,9 @@
       "ADVENTURE_WORLDS": "모험 월드 {{n}}개 완료",
       "PVE_WON": "모험 전투 {{n}}회 승리",
       "PVE_PLAYED": "모험 전투 {{n}}회 플레이",
-      "TUTORIAL_LESSONS": "튜토리얼 레슨 {{n}}개 완료"
+      "TUTORIAL_LESSONS": "튜토리얼 레슨 {{n}}개 완료",
+      "PUZZLES_SOLVED": "일일 퍼즐 {{n}}개 해결",
+      "PUZZLE_STREAK": "일일 퍼즐 {{n}}일 연속 해결"
     },
     "titles": {
       "BOOSTERS_OPENED": "개봉의 달인",
@@ -1221,7 +1225,9 @@
       "ADVENTURE_WORLDS": "탐험가",
       "PVE_WON": "AI 사냥꾼",
       "PVE_PLAYED": "지치지 않는 자",
-      "TUTORIAL_LESSONS": "학자"
+      "TUTORIAL_LESSONS": "학자",
+      "PUZZLES_SOLVED": "퍼즐 해결사",
+      "PUZZLE_STREAK": "연속 해결사"
     }
   },
   "adventure": {

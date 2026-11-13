@@ -17,6 +17,8 @@ export const AchievementFamily = {
   ADVENTURE_WORLDS: "ADVENTURE_WORLDS",
   PVE_WON: "PVE_WON",
   PVE_PLAYED: "PVE_PLAYED",
+  PUZZLES_SOLVED: "PUZZLES_SOLVED",
+  PUZZLE_STREAK: "PUZZLE_STREAK",
   TUTORIAL_LESSONS: "TUTORIAL_LESSONS",
 } as const;
 export type AchievementFamily =

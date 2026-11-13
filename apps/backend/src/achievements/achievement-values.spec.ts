@@ -49,6 +49,8 @@ describe('toAchievementValues', () => {
       [AchievementFamily.PVE_WON]: 5,
       [AchievementFamily.PVE_PLAYED]: 8,
       [AchievementFamily.TUTORIAL_LESSONS]: 3,
+      [AchievementFamily.PUZZLES_SOLVED]: 0,
+      [AchievementFamily.PUZZLE_STREAK]: 0,
     });
   });
 

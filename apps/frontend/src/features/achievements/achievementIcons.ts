@@ -8,6 +8,7 @@ import {
   IconCrown,
   IconDust,
   IconFire,
+  IconFlask,
   IconForge,
   IconGem,
   IconGold,
@@ -41,4 +42,6 @@ export const FAMILY_ICON: Record<AchievementFamily, FamilyIcon> = {
   [AchievementFamily.PVE_WON]: IconSwords,
   [AchievementFamily.PVE_PLAYED]: IconRobot,
   [AchievementFamily.TUTORIAL_LESSONS]: IconScroll,
+  [AchievementFamily.PUZZLES_SOLVED]: IconFlask,
+  [AchievementFamily.PUZZLE_STREAK]: IconFire,
 };

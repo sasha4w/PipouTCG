@@ -1254,7 +1254,9 @@
       "ADVENTURE_WORLDS": "Mondes d'aventure",
       "PVE_WON": "Victoires PvE",
       "PVE_PLAYED": "Combats PvE",
-      "TUTORIAL_LESSONS": "Élève"
+      "TUTORIAL_LESSONS": "Élève",
+      "PUZZLES_SOLVED": "Défis résolus",
+      "PUZZLE_STREAK": "Série de défis"
     },
     "goals": {
       "BOOSTERS_OPENED": "Ouvre {{n}} boosters",
@@ -1274,7 +1276,9 @@
       "ADVENTURE_WORLDS": "Termine {{n}} mondes d'aventure",
       "PVE_WON": "Gagne {{n}} combats d'aventure",
       "PVE_PLAYED": "Joue {{n}} combats d'aventure",
-      "TUTORIAL_LESSONS": "Termine {{n}} leçons du tutoriel"
+      "TUTORIAL_LESSONS": "Termine {{n}} leçons du tutoriel",
+      "PUZZLES_SOLVED": "Résous {{n}} défis du jour",
+      "PUZZLE_STREAK": "Résous le défi du jour {{n}} jours de suite"
     },
     "titles": {
       "BOOSTERS_OPENED": "Maître Ouvreur",
@@ -1294,7 +1298,9 @@
       "ADVENTURE_WORLDS": "Explorateur",
       "PVE_WON": "Chasseur d'IA",
       "PVE_PLAYED": "Infatigable",
-      "TUTORIAL_LESSONS": "Érudit"
+      "TUTORIAL_LESSONS": "Érudit",
+      "PUZZLES_SOLVED": "Casse-tête",
+      "PUZZLE_STREAK": "Infaillible"
     }
   },
   "adventure": {

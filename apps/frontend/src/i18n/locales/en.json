@@ -1252,7 +1252,9 @@
       "ADVENTURE_WORLDS": "Adventure worlds",
       "PVE_WON": "PvE wins",
       "PVE_PLAYED": "PvE fights",
-      "TUTORIAL_LESSONS": "Student"
+      "TUTORIAL_LESSONS": "Student",
+      "PUZZLES_SOLVED": "Puzzles solved",
+      "PUZZLE_STREAK": "Puzzle streak"
     },
     "goals": {
       "BOOSTERS_OPENED": "Open {{n}} boosters",
@@ -1272,7 +1274,9 @@
       "ADVENTURE_WORLDS": "Complete {{n}} adventure worlds",
       "PVE_WON": "Win {{n}} adventure fights",
       "PVE_PLAYED": "Play {{n}} adventure fights",
-      "TUTORIAL_LESSONS": "Finish {{n}} tutorial lessons"
+      "TUTORIAL_LESSONS": "Finish {{n}} tutorial lessons",
+      "PUZZLES_SOLVED": "Solve {{n}} daily puzzles",
+      "PUZZLE_STREAK": "Solve the daily puzzle {{n}} days in a row"
     },
     "titles": {
       "BOOSTERS_OPENED": "Master Opener",
@@ -1292,7 +1296,9 @@
       "ADVENTURE_WORLDS": "Explorer",
       "PVE_WON": "AI Hunter",
       "PVE_PLAYED": "Tireless",
-      "TUTORIAL_LESSONS": "Scholar"
+      "TUTORIAL_LESSONS": "Scholar",
+      "PUZZLES_SOLVED": "Puzzler",
+      "PUZZLE_STREAK": "On a roll"
     }
   },
   "adventure": {
