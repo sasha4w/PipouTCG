@@ -41,6 +41,8 @@ interface Props {
   lockedInstances?: ReadonlyMap<string, string>;
   /** Monstres dont le mode de combat ne se change pas (Zeta implanté). */
   noModeChangeIds?: ReadonlySet<string>;
+  /** Défi du jour : monstre cible de l'objectif, entouré en rouge. */
+  targetInstanceId?: string;
   /** Cartes actives mais sans effet possible : instanceId -> avertissement. */
   warnInstances?: ReadonlyMap<string, string>;
   onSupportRecycle?: (idx: number) => void;
@@ -74,6 +76,7 @@ export default function ZoneRow({
   lockedInstances,
   noModeChangeIds,
   warnInstances,
+  targetInstanceId,
   onZoneClick,
   onMonsterClick,
   onModeChange,
@@ -152,6 +155,9 @@ export default function ZoneRow({
               : "",
             isZetaTarget ? "zr-zone--pulse-target zr-zone--zeta-target" : "",
             isAttackTarget ? "zr-zone--attack-target" : "",
+            !!zone && zone.instanceId === targetInstanceId
+              ? "zr-zone--puzzle-target"
+              : "",
             lockedReason ? "zr-zone--locked" : "",
             summonTier ? `zr-zone--summon-in zr-zone--summon-t${summonTier}` : "",
             dying ? `zr-zone--destroy-${dying.cause.replace(/_/g, "-")}` : "",

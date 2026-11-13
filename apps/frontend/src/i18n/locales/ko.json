@@ -1543,6 +1543,30 @@
     "play": "플레이",
     "replay": "다시 하기",
     "already_solved": "이미 해결함: 다시 해도 보상은 없어요",
+    "session": {
+      "quit": "나가기",
+      "restart": "다시 시작",
+      "end_turn": "턴 종료",
+      "end_confirm": "목표를 달성하지 않고 턴을 끝낼까요? 퍼즐은 실패 처리돼요.",
+      "loading": "퍼즐 준비 중…",
+      "back_label": "퍼즐 화면으로 돌아가기",
+      "test_badge": "테스트",
+      "target": "목표물: {{name}}"
+    },
+    "result": {
+      "solved_first": "퍼즐 해결!",
+      "solved": "해결!",
+      "failed": "실패…",
+      "failed_text": "목표를 달성하지 못했어요.",
+      "no_reward": "보상 없음 (오늘 이미 해결함)",
+      "test": "테스트 게임",
+      "xp": "XP",
+      "booster_one": "{{count}}일 연속: 부스터 증정",
+      "booster_other": "{{count}}일 연속: 부스터 증정",
+      "back": "돌아가기",
+      "replay": "다시 하기",
+      "retry": "다시 시작"
+    },
     "unlimited": "횟수 제한 없음. 다음 퍼즐까지 {{time}}",
     "none_today": "오늘은 퍼즐이 없어요. 내일 다시 오세요!",
     "errors": {

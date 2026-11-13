@@ -194,3 +194,199 @@
 .pz-unlimited {
   font-variant-numeric: tabular-nums;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Partie de défi : bandeau d'objectif, barre d'actions, écran de fin
+───────────────────────────────────────────────────────────────────────────── */
+
+.pz-session {
+  position: relative;
+  /* Plein écran : le plateau occupe la hauteur, la barre reste en bas */
+  height: 100%;
+}
+
+/* Pas de tour adverse à attendre dans un défi */
+.pz-session .fp-waiting-choice {
+  display: none;
+}
+
+.pz-session__wait {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+.pz-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-bordeaux);
+  color: var(--color-cream);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.pz-banner__text {
+  text-align: center;
+}
+
+.pz-banner__test {
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: var(--color-gold);
+  color: #491021;
+  font-size: 11px;
+}
+
+/* Monstre cible : cerclé de rouge */
+.zr-zone--puzzle-target {
+  border: 2.5px solid #ff5a5a !important;
+  box-shadow: 0 0 10px #ff5a5a;
+}
+
+.pz-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  gap: 8px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 1px solid #eadfce;
+}
+
+.pz-bar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1.5px solid var(--color-bordeaux);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-bordeaux);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pz-bar__btn--primary {
+  background: var(--color-bordeaux);
+  color: var(--color-cream);
+}
+
+.pz-bar__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pz-result {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(73, 16, 33, 0.72);
+}
+
+.pz-result__card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 16px;
+  border-radius: 18px;
+  background: var(--color-cream);
+  color: #491021;
+  text-align: center;
+}
+
+.pz-result__title {
+  margin: 0;
+  font-family: "Lilita One", sans-serif;
+  font-size: 28px;
+  font-weight: normal;
+}
+
+.pz-result__title--win {
+  color: var(--color-bordeaux);
+}
+
+.pz-result__hint {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pz-loot {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pz-loot__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 12px;
+  font-size: 20px;
+}
+
+.pz-loot__tile--gold {
+  background: #fff1d6;
+  color: #8a5a10;
+}
+
+.pz-loot__tile--xp {
+  background: #fde8ef;
+  color: var(--color-bordeaux);
+}
+
+.pz-loot__tile span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pz-result__booster {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a5a10;
+}
+
+.pz-result__streak {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a6a60;
+}
+
+.pz-result .pz-dots {
+  width: 100%;
+}
+
+.pz-result__actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}

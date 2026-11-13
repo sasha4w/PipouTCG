@@ -1625,6 +1625,30 @@
     "play": "Jouer",
     "replay": "Rejouer",
     "already_solved": "Déjà résolu : rejouer ne rapporte rien",
+    "session": {
+      "quit": "Quitter",
+      "restart": "Recommencer",
+      "end_turn": "Fin du tour",
+      "end_confirm": "Finir le tour sans avoir atteint l'objectif ? Le défi sera raté.",
+      "loading": "Préparation du défi…",
+      "back_label": "Retour à la fiche du défi",
+      "test_badge": "Test",
+      "target": "Cible : {{name}}"
+    },
+    "result": {
+      "solved_first": "Défi résolu !",
+      "solved": "Résolu !",
+      "failed": "Raté…",
+      "failed_text": "L'objectif n'est pas atteint.",
+      "no_reward": "Aucune récompense (déjà résolu aujourd'hui)",
+      "test": "Partie de test",
+      "xp": "XP",
+      "booster_one": "Série de {{count}} jour : booster offert",
+      "booster_other": "Série de {{count}} jours : booster offert",
+      "back": "Retour",
+      "replay": "Rejouer",
+      "retry": "Recommencer"
+    },
     "unlimited": "Essais illimités. Prochain défi dans {{time}}",
     "none_today": "Pas de défi aujourd'hui. Reviens demain !",
     "errors": {

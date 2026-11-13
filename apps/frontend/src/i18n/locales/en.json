@@ -1624,6 +1624,30 @@
     "play": "Play",
     "replay": "Replay",
     "already_solved": "Already solved: replaying earns nothing",
+    "session": {
+      "quit": "Quit",
+      "restart": "Restart",
+      "end_turn": "End turn",
+      "end_confirm": "End the turn without reaching the objective? The puzzle will be failed.",
+      "loading": "Preparing the puzzle…",
+      "back_label": "Back to the puzzle page",
+      "test_badge": "Test",
+      "target": "Target: {{name}}"
+    },
+    "result": {
+      "solved_first": "Puzzle solved!",
+      "solved": "Solved!",
+      "failed": "Failed…",
+      "failed_text": "The objective was not reached.",
+      "no_reward": "No reward (already solved today)",
+      "test": "Test game",
+      "xp": "XP",
+      "booster_one": "{{count}}-day streak: free booster",
+      "booster_other": "{{count}}-day streak: free booster",
+      "back": "Back",
+      "replay": "Replay",
+      "retry": "Restart"
+    },
     "unlimited": "Unlimited attempts. Next puzzle in {{time}}",
     "none_today": "No puzzle today. Come back tomorrow!",
     "errors": {

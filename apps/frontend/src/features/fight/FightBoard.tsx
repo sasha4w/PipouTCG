@@ -93,6 +93,8 @@ interface Props {
   onSurrender?: () => void;
   /** Tutoriel : ce que la bulle de la leçon désigne (rien sans cette prop). */
   coach?: TutorialHint;
+  /** Défi du jour : monstre adverse à détruire, entouré en rouge. */
+  highlightInstanceId?: string;
 }
 
 export default function FightBoard({
@@ -118,6 +120,7 @@ export default function FightBoard({
   onEndPhase,
   onSurrender,
   coach,
+  highlightInstanceId,
 }: Props) {
   const { t, i18n } = useTranslation();
   // Choix de cartes en attente : le plateau se consulte (i) mais ne joue plus
@@ -938,6 +941,7 @@ export default function FightBoard({
             zones={gs.opponent.monsterZones}
             fx={fx.opponent.monsters}
             isOpponent
+            targetInstanceId={highlightInstanceId}
             damagedZones={damagedOppZones}
             highlightOpponentEmpty={isMyMain && isZeta && canImplant}
             coachInstanceIds={coachIds}
