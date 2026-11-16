@@ -1,4 +1,4 @@
-import { HAND_LIMIT } from '@pipou/shared';
+import { HAND_LIMIT, Rarity } from '@pipou/shared';
 import { fillerCard, monsterCard, persistentCard } from '../testing/cards';
 import { realCard } from '../testing/real-cards';
 import { scenario } from '../testing/scenario';
@@ -95,5 +95,54 @@ describe('listCandidates : phase de contrôle', () => {
     expect(t).toContain('discard');
     expect(t).toContain('play_support');
     expect(t).not.toContain('end_phase');
+  });
+});
+
+describe('listCandidates : cartes secrètes des boss', () => {
+  const pipouHigh = (n: number) =>
+    Array.from({ length: n }, (_, i) =>
+      monsterCard(`Haut ${i}`, { archetype: 'pipou', rarity: Rarity.EPIC }),
+    );
+  const summonsOf = (game: ReturnType<typeof scenario>) =>
+    listCandidates(game, 'p1').filter((a) => a.type === 'summon');
+
+  it('ne propose pas Magouille sans 4 Pipou épiques/légendaires au cimetière', () => {
+    const game = scenario({
+      phase: 'main',
+      p1: {
+        hand: [realCard('Maître Magouille')],
+        recycleEnergy: 10,
+        graveyard: pipouHigh(3),
+      },
+    });
+    expect(summonsOf(game)).toHaveLength(0);
+  });
+
+  it('propose Magouille avec 4 Pipou épiques/légendaires au cimetière', () => {
+    const game = scenario({
+      phase: 'main',
+      p1: {
+        hand: [realCard('Maître Magouille')],
+        recycleEnergy: 10,
+        graveyard: pipouHigh(4),
+      },
+    });
+    expect(summonsOf(game).length).toBeGreaterThan(0);
+  });
+
+  it('ne propose jamais Noyau Delta depuis la main', () => {
+    const game = scenario({
+      phase: 'main',
+      p1: { hand: [realCard('Noyau Delta')], recycleEnergy: 10 },
+    });
+    expect(summonsOf(game)).toHaveLength(0);
+  });
+
+  it('propose de poser Protocole Delta .core', () => {
+    const game = scenario({
+      phase: 'main',
+      p1: { hand: [realCard('Protocole Delta .core')], recycleEnergy: 10 },
+    });
+    expect(types(listCandidates(game, 'p1'))).toContain('play_support');
   });
 });

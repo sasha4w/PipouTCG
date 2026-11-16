@@ -166,7 +166,8 @@ describe('identité de chaque monde', () => {
       }
   });
 
-  it('Pixelman : un seul noyau dans le deck', () => {
+  // Au niveau 5, Noyau Delta (secret, invocable par Protocole Delta) ne compte pas
+  it('Pixelman : un seul noyau invocable dans le deck', () => {
     const set = setOf('pixelman');
     const cards = byId(set);
     for (const level of LEVELS) {
@@ -177,7 +178,12 @@ describe('identité de chaque monde', () => {
         rng(3),
       );
       const noyaux = deck.filter((e) =>
-        cards.get(e.cardId)!.name.startsWith('Noyau'),
+        (() => {
+          const name = cards.get(e.cardId)!.name;
+          return (
+            name.startsWith('Noyau') && (level < 5 || name !== 'Noyau Delta')
+          );
+        })(),
       );
       expect(noyaux).toHaveLength(1);
     }
@@ -297,6 +303,45 @@ describe('cartes clés du rééquilibrage', () => {
         if (level === 5)
           expect(qty(set, deck, 'DuplicateX')).toBeGreaterThanOrEqual(1);
       }
+  });
+
+  it('Pixelman boss (niveau 5) : Noyau Delta et 2 Protocole Delta .core', () => {
+    const set = setOf('pixelman');
+    for (const seed of SEEDS) {
+      const deck = deckOf('pixelman', 5, seed);
+      expect(qty(set, deck, 'Noyau Delta')).toBeGreaterThanOrEqual(1);
+      expect(qty(set, deck, 'Protocole Delta .core')).toBeGreaterThanOrEqual(2);
+      expect(total(deck)).toBeLessThanOrEqual(40);
+    }
+  });
+
+  it('Pixelman niveau 4 : Protocole Delta .core non forcé', () => {
+    const set = setOf('pixelman');
+    const decks = SEEDS.map((seed) => deckOf('pixelman', 4, seed));
+    expect(decks.some((d) => qty(set, d, 'Protocole Delta .core') < 2)).toBe(
+      true,
+    );
+  });
+
+  it('Pipou boss (niveau 5) : Maître Magouille et 6 Pipou épiques/légendaires', () => {
+    const set = setOf('pipou');
+    const cards = byId(set);
+    for (const seed of SEEDS) {
+      const deck = deckOf('pipou', 5, seed);
+      expect(qty(set, deck, 'Maître Magouille')).toBeGreaterThanOrEqual(1);
+      const high = deck
+        .filter((e) => {
+          const c = cards.get(e.cardId)!;
+          return (
+            c.type === CardType.MONSTER &&
+            c.name !== 'Maître Magouille' &&
+            (c.rarity === Rarity.EPIC || c.rarity === Rarity.LEGENDARY)
+          );
+        })
+        .reduce((s, e) => s + e.quantity, 0);
+      expect(high).toBeGreaterThanOrEqual(6);
+      expect(total(deck)).toBeLessThanOrEqual(40);
+    }
   });
 });
 
