@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BoostersService } from './boosters.service';
+import { BoostersService, RARITY_WEIGHTS } from './boosters.service';
 import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
@@ -459,5 +459,50 @@ describe('BoostersService : cartes hors boosters', () => {
       expect(result.cards.length).toBeGreaterThan(0);
     }
     random.mockRestore();
+  });
+
+  it('ne donne jamais de secrète, même si le set en contient', async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        BoostersService,
+        { provide: getRepositoryToken(Booster), useValue: mockBoosterRepo },
+        {
+          provide: getRepositoryToken(BoosterOpenHistory),
+          useValue: mockOpenHistoryRepo,
+        },
+        {
+          provide: getRepositoryToken(BoosterOpenCard),
+          useValue: mockOpenCardRepo,
+        },
+        { provide: getRepositoryToken(Card), useValue: mockCardRepo },
+        { provide: UsersService, useValue: mockUsersService },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
+      ],
+    }).compile();
+    const service = module.get(BoostersService);
+    const cards = [
+      { id: 1, name: 'Commune', rarity: Rarity.COMMON, effects: [] },
+      { id: 2, name: 'Secrète', rarity: Rarity.SECRET, effects: [] },
+    ] as unknown as Card[];
+    mockBoosterRepo.findOne.mockResolvedValue({
+      ...fakeBooster,
+      cardNumber: CardNumber.TEN,
+    });
+    mockCardRepo.find.mockResolvedValue(cards);
+    mockUsersService.removeBoosterFromUser.mockResolvedValue(null);
+    mockUsersService.addCardToUser.mockResolvedValue(undefined);
+    mockUsersService.updatePostOpeningStats.mockResolvedValue(undefined);
+    mockUsersService.findOwnedCardIds.mockResolvedValue(new Set<number>());
+
+    for (let i = 0; i < 20; i++) {
+      const result = await service.openBooster(1, 1, 10);
+      expect(result.cards.length).toBeGreaterThan(0);
+      expect(result.cards.every((c) => c.rarity !== Rarity.SECRET)).toBe(true);
+    }
+  });
+
+  it('la légendaire pèse 1 %', () => {
+    expect(RARITY_WEIGHTS[Rarity.LEGENDARY]).toBe(1);
+    expect(RARITY_WEIGHTS[Rarity.SECRET]).toBe(0);
   });
 });
