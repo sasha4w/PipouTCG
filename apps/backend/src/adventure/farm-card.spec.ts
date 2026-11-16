@@ -1,9 +1,12 @@
 import { allRealCards } from '../fights/testing/real-cards';
-import { farmCardFor } from './farm-card';
+import type { Card } from '../cards/card.entity';
+import { farmCardFor, ORIGINES_FARM_PCT } from './farm-card';
 import { planOpponents } from './world-factory';
 import { LAUNCH_SIGNATURES } from './signatures';
 
 const CARDS = allRealCards();
+const card = (o: Partial<Card>) =>
+  ({ effects: [], stage: null, element: null, ...o }) as unknown as Card;
 const id = (name: string) => CARDS.find((c) => c.name === name)!.id;
 
 describe('farmCardFor', () => {
@@ -37,5 +40,37 @@ describe('farmCardFor', () => {
       id('Ancestral Tempestu'),
       id('Drakon des Origines'),
     ]);
+  });
+
+  it('boss niveau 5 à signature secrète sans condition d’éléments : sa carte à 1 %', () => {
+    const magouille = card({
+      id: 10,
+      name: 'Maître Magouille',
+      rarity: 'secret',
+      archetype: 'pipou',
+    });
+    expect(
+      farmCardFor(
+        [magouille],
+        { archetype: 'pipou', cardName: 'Maître Magouille' } as never,
+        5,
+      ),
+    ).toEqual({ farmCardId: 10, farmCardPct: ORIGINES_FARM_PCT });
+  });
+
+  it('niveau 4 à signature secrète : pas de butin de boss', () => {
+    const delta = card({
+      id: 7,
+      name: 'Noyau Delta',
+      rarity: 'secret',
+      archetype: 'pixelman',
+    });
+    expect(
+      farmCardFor(
+        [delta],
+        { archetype: 'pixelman', cardName: 'Noyau Delta' } as never,
+        4,
+      ).farmCardPct,
+    ).not.toBe(ORIGINES_FARM_PCT);
   });
 });
