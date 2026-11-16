@@ -56,6 +56,7 @@ export class PickService {
     if (picked.some((id) => !candidates.some((c) => c.instanceId === id)))
       return { error: 'Carte introuvable dans les choix disponibles' };
 
+    let fizzled = false;
     if (choice.resolution === 'discard') {
       for (const id of picked) {
         const idx = player.hand.findIndex((c) => c.instanceId === id);
@@ -107,7 +108,11 @@ export class PickService {
       const idx = pile.findIndex(
         (c) => c.instanceId === choice.summonInstanceId,
       );
-      if (zone !== -1 && idx !== -1) {
+      if (idx === -1) {
+        // La carte a quitté la main et le deck avant le choix
+        addLog(game, `💨 Plus de carte à invoquer : l'effet se dissipe`);
+        fizzled = true;
+      } else if (zone !== -1) {
         const log: string[] = [];
         this.effectsResolver.destroyMonster(game, player, picked[0], log, {
           draw: false,
@@ -115,7 +120,15 @@ export class PickService {
         });
         log.forEach((l) => addLog(game, l));
         const [card] = pile.splice(idx, 1);
-        this.summon.summonFromDeck(game, player, card, zone);
+        // Un effet de destruction a pu reprendre la zone libérée
+        if (!this.summon.summonFromDeck(game, player, card, zone)) {
+          pile.push(card);
+          addLog(
+            game,
+            `💨 Aucune zone libre : ${card.baseCard.name} reste en place`,
+          );
+          fizzled = true;
+        }
         if (pile === player.deck) shuffle(player.deck);
       }
     } else if (choice.resolution === 'transfer_atk_source') {
@@ -218,7 +231,9 @@ export class PickService {
       this.endCharge(
         game,
         choice,
-        choice.resolution === 'transfer_atk_source' ? 'fizzled' : 'resolved',
+        fizzled || choice.resolution === 'transfer_atk_source'
+          ? 'fizzled'
+          : 'resolved',
       );
     return {};
   }

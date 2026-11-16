@@ -1,4 +1,6 @@
 import { createEngine } from '../testing/engine';
+import { EffectsResolverService } from '../effects-resolver.service';
+import { buildMonster } from '../helpers/board-builder';
 import { monsterCard } from '../testing/cards';
 import { realCard } from '../testing/real-cards';
 import { passTurn, scenario } from '../testing/scenario';
@@ -177,5 +179,54 @@ describe('Protocole Delta .core', () => {
     equip(g, 'Firewall .sys', 'Noyau Alpha');
     expect(g.pendingChoices).toHaveLength(0);
     expect(graveyardNames(g)).toContain('Protocole Delta .core');
+  });
+});
+
+describe('Protocole Delta .core : sacrifice qui tourne mal', () => {
+  const fullBoard = () =>
+    setupWithCharge('Protocole Delta .core', {
+      counters: 3,
+      hand: ['Firewall .sys'],
+      deck: ['Noyau Delta'],
+      board: ['Noyau Alpha', 'Noyau Beta', 'Noyau Zeta'],
+    });
+  const outcome = (g: Game) =>
+    g.pendingEvents.find((e) => e.kind === 'charge_triggered') as
+      { outcome: string } | undefined;
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it('zone libérée reprise par un effet de destruction : Delta reste dans le deck, la Charge se dissipe', () => {
+    const g = fullBoard();
+    equip(g, 'Firewall .sys', 'Noyau Alpha');
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- rappelé avec apply(this)
+    const original = EffectsResolverService.prototype.destroyMonster;
+    jest
+      .spyOn(EffectsResolverService.prototype, 'destroyMonster')
+      .mockImplementation(function (this: EffectsResolverService, ...args) {
+        const res = original.apply(this, args);
+        const [, host] = args;
+        const free = host.monsterZones.findIndex((z) => z === null);
+        if (free !== -1)
+          host.monsterZones[free] = buildMonster(realCard('Noyau Alpha'), 1);
+        return res;
+      });
+    g.pendingEvents = [];
+    pickByName(g, 'Noyau Beta');
+    expect(boardNames(g)).not.toContain('Noyau Delta');
+    expect(deckNames(g)).toContain('Noyau Delta');
+    expect(graveyardNames(g)).toContain('Protocole Delta .core');
+    expect(outcome(g)?.outcome).toBe('fizzled');
+  });
+
+  it('Delta a quitté le deck avant le choix : aucun sacrifice, la Charge se dissipe', () => {
+    const g = fullBoard();
+    equip(g, 'Firewall .sys', 'Noyau Alpha');
+    g.player1.graveyard.push(...g.player1.deck.splice(0));
+    g.pendingEvents = [];
+    pickByName(g, 'Noyau Beta');
+    expect(boardNames(g)).toEqual(['Noyau Alpha', 'Noyau Beta', 'Noyau Zeta']);
+    expect(graveyardNames(g)).toContain('Protocole Delta .core');
+    expect(outcome(g)?.outcome).toBe('fizzled');
   });
 });
