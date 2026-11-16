@@ -22,6 +22,10 @@ import {
 } from '../../database/drakon-set-patches';
 import { PIXELMAN_RECHERCHE_PATCHES } from '../../database/pixelman-recherche-patches';
 import { PIXELMAN_NERF_PATCHES } from '../../database/pixelman-2026-11-nerf-patches';
+import {
+  PROTOCOLE_DELTA,
+  SECRETES_PATCHES,
+} from '../../database/secretes-2026-11-patches';
 import { SLOTS } from '../../database/migrations/1791000000022-SupportRework';
 import { normalizeCardName } from '../effects/card-name';
 
@@ -155,7 +159,53 @@ export function realCard(name: string): Card {
 
 /** Cartes avec les effets attendus après toutes les migrations de cartes. */
 export function allRealCards(): Card[] {
+  return withSecretes(allRealCardsBeforeSecretes());
+}
+
+/** Cartes avant le patch des secrètes 2026-11 (Magouille, Delta, Protocole Delta). */
+export function allRealCardsBeforeSecretes(): Card[] {
   return withPixelmanNerf(allRealCardsBeforePixelmanNerf());
+}
+
+/** Magouille et Delta renforcés, puis la Charge Protocole Delta .core. */
+function withSecretes(cards: Card[]): Card[] {
+  const patched = cards.map((c) => {
+    const patch = SECRETES_PATCHES.find((p) => p.before.name === c.name);
+    return patch
+      ? ({
+          ...c,
+          description: patch.after.description,
+          atk: patch.after.atk,
+          hp: patch.after.hp,
+          cost: patch.after.cost,
+          effects: patch.after.effects,
+        } as Card)
+      : c;
+  });
+  const c = PROTOCOLE_DELTA;
+  const created = {
+    id: 94_001,
+    name: c.name,
+    rarity: c.rarity,
+    type: 'support',
+    atk: 0,
+    hp: 0,
+    cost: 0,
+    supportType: SupportType.CHARGE,
+    equipmentSlot: null,
+    isTerrain: false,
+    chargeMax: c.chargeMax,
+    chargeMode: c.chargeMode,
+    archetype: c.archetype,
+    effects: c.effects,
+    description: c.description,
+    element: null,
+    lineage: null,
+    stage: null,
+    image: null,
+    cardSet: patched.find((x) => x.name === c.setOf)?.cardSet,
+  } as Card;
+  return [...patched, created];
 }
 
 /** Cartes avant le nerf Pixelman 2026-11 (Beta, Module Bluetooth, DuplicateX). */

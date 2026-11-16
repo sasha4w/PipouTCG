@@ -47,7 +47,7 @@ describe('LAUNCH_SIGNATURES', () => {
 describe('snapshot', () => {
   it('a la taille attendue des sets', () => {
     expect(setOf('pipou')).toHaveLength(28); // + Alerte générale
-    expect(setOf('pixelman')).toHaveLength(27); // + Extraction de données
+    expect(setOf('pixelman')).toHaveLength(28); // + Extraction de données, Protocole Delta .core
     // + 4 Ancestraux, le Drakon des Origines et Méditation céleste
     expect(setOf('dragon')).toHaveLength(29);
   });
