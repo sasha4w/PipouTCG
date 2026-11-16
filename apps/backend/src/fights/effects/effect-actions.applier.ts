@@ -381,6 +381,54 @@ export function applyActions(
         }
         break;
 
+      // Protocole Delta .core : invoque la carte nommée, main d'abord puis deck ;
+      // terrain plein : un monstre allié choisi part d'abord au cimetière
+      case ActionType.SUMMON_NAMED:
+        for (const p of targets.players) {
+          const inHand = p.hand.find((c) => matchesFilter(c, action.filter));
+          const inDeck = p.deck.find((c) => matchesFilter(c, action.filter));
+          const found = inHand ?? inDeck;
+          if (!found) {
+            ctx.log.push(`💨 ${card.baseCard.name} — aucune carte à invoquer`);
+            fizzle();
+            continue;
+          }
+          const source = inHand ? ('hand' as const) : ('deck' as const);
+          const full = p.monsterZones.every((z) => z !== null);
+          const sacrifices = p.monsterZones.filter(
+            (m): m is MonsterOnBoard => !!m && !isImplanted(m, p.userId),
+          );
+          if (full && sacrifices.length === 0) {
+            fizzle();
+            continue;
+          }
+          queueChoice(ctx.game, {
+            ...chargeChoice,
+            forUserId: p.userId,
+            candidates: full
+              ? sacrifices.map((m) => ({
+                  instanceId: m.instanceId,
+                  baseCard: m.card.baseCard,
+                  source: 'board' as const,
+                }))
+              : [
+                  {
+                    instanceId: found.instanceId,
+                    baseCard: found.baseCard,
+                    source,
+                  },
+                ],
+            count: 1,
+            prompt: full
+              ? 'Choisis le monstre à envoyer au cimetière'
+              : 'Invoque la carte',
+            promptKey: full ? 'delta_sacrifice' : 'delta_summon',
+            resolution: full ? 'sacrifice_for_summon' : 'summon_to_zone',
+            summonInstanceId: full ? found.instanceId : undefined,
+          });
+        }
+        break;
+
       case ActionType.GAIN_RECYCLE_ENERGY:
         for (const p of targets.players) {
           p.recycleEnergy += action.value ?? 0;

@@ -8,6 +8,7 @@ import {
   HAND_LIMIT,
   isImplanted,
   isPlantedBy,
+  chargesOnEquipment,
 } from '@pipou/shared';
 import {
   GameState,
@@ -137,7 +138,10 @@ export class PhaseService {
       m.hatchCounter -= 1;
       if (m.hatchCounter <= 0) hatchEgg(game, player, m, log);
     }
-    for (const charge of chargesOf(player))
+    // Les Charges qui se chargent par équipement ne gagnent rien au début du tour
+    for (const charge of chargesOf(player).filter(
+      (c) => !chargesOnEquipment(c.baseCard.effects),
+    ))
       addChargeCounters(
         game,
         player,

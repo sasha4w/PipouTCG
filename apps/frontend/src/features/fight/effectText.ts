@@ -285,6 +285,10 @@ const ACTIONS: Record<string, ActionSpec> = {
   TRANSFER_HALF_ATK: { tone: "buff", subject: "player" },
   FORCE_EVOLVE: { tone: "buff", subject: "player" },
   REQUIRES_CARD_ON_BOARD: { tone: "neutral", subject: "card" },
+  SUMMON_IF_GRAVEYARD_COUNT: { tone: "neutral", subject: "card" },
+  SUMMON_ONLY_BY_EFFECT: { tone: "neutral", subject: "card" },
+  CHARGE_ON_EQUIPMENT: { tone: "neutral", subject: "card" },
+  SUMMON_NAMED: { tone: "buff", subject: "player" },
 };
 
 /** Cibles qui désignent plusieurs monstres (accord du verbe). */
@@ -341,6 +345,19 @@ function describeFilter(t: TFunction, filter?: EffectFilter): string {
   if (filter.excludeName)
     parts.push(t("effects.filter.excludeName", { name: filter.excludeName }));
   return parts.length ? ` (${parts.join(" · ")})` : "";
+}
+
+/** « monstres Pipou Épiques ou Légendaires » : l'ordre des mots dépend de la langue. */
+function describeGraveyardCards(t: TFunction, filter?: EffectFilter): string {
+  return t("effects.graveyardCards", {
+    noun: t(`effects.cardNoun.${filter?.type ?? "any"}`),
+    archetype: filter?.archetype ? archetypeLabel(t, filter.archetype) : "",
+    rarities: (filter?.rarities ?? [])
+      .map((r) => t(`effects.rarityAdj.${r}`))
+      .join(t("effects.or")),
+  })
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function drakonDetail(t: TFunction, c: EffectCondition): string {
@@ -456,6 +473,11 @@ function describeAction(
     signed: `${value >= 0 ? "+" : ""}${value}`,
     kw: spec.keyword ? t(`keywords.${spec.keyword}.name`) : "",
     filter: describeFilter(t, action.filter),
+    name: action.filter?.name ?? "",
+    cards:
+      action.type === "SUMMON_IF_GRAVEYARD_COUNT"
+        ? describeGraveyardCards(t, action.filter)
+        : "",
     ...(spec.plural ? { count: value } : {}),
   });
 

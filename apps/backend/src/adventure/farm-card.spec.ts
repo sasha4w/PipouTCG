@@ -1,9 +1,12 @@
 import { allRealCards } from '../fights/testing/real-cards';
-import { farmCardFor } from './farm-card';
+import type { Card } from '../cards/card.entity';
+import { farmCardFor, ORIGINES_FARM_PCT } from './farm-card';
 import { planOpponents } from './world-factory';
 import { LAUNCH_SIGNATURES } from './signatures';
 
 const CARDS = allRealCards();
+const card = (o: Partial<Card>) =>
+  ({ effects: [], stage: null, element: null, ...o }) as unknown as Card;
 const id = (name: string) => CARDS.find((c) => c.name === name)!.id;
 
 describe('farmCardFor', () => {
@@ -37,5 +40,38 @@ describe('farmCardFor', () => {
       id('Ancestral Tempestu'),
       id('Drakon des Origines'),
     ]);
+  });
+
+  it('boss pipou niveau 5 : Maître Magouille à 1 %', () => {
+    expect(farmCardFor(CARDS, LAUNCH_SIGNATURES.pipou[4], 5)).toEqual({
+      farmCardId: id('Maître Magouille'),
+      farmCardPct: ORIGINES_FARM_PCT,
+    });
+  });
+
+  it('boss pixelman niveau 5 : Noyau Delta à 1 %', () => {
+    expect(farmCardFor(CARDS, LAUNCH_SIGNATURES.pixelman[4], 5)).toEqual({
+      farmCardId: id('Noyau Delta'),
+      farmCardPct: ORIGINES_FARM_PCT,
+    });
+  });
+
+  it('niveau 4 pixelman (signature Noyau Delta) : pas de butin de boss', () => {
+    expect(farmCardFor(CARDS, LAUNCH_SIGNATURES.pixelman[3], 4)).toEqual({
+      farmCardId: null,
+      farmCardPct: 0,
+    });
+  });
+
+  it('carte secrète absente du set : aucun butin de boss', () => {
+    const chatouille = card({
+      id: 7,
+      name: 'Général Chatouille',
+      rarity: 'legendary',
+      archetype: 'pipou',
+    });
+    expect(
+      farmCardFor([chatouille], LAUNCH_SIGNATURES.pipou[4], 5).farmCardPct,
+    ).toBe(0);
   });
 });

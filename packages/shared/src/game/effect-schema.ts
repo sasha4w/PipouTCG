@@ -117,6 +117,10 @@ export const ACTION_SCHEMA: Record<ActionType, ActionSchema> = {
   [A.TRANSFER_HALF_ATK]: s(PLAYER_ONLY, "filter"),
   [A.FORCE_EVOLVE]: s(PLAYER_ONLY, "filter"),
   [A.REQUIRES_CARD_ON_BOARD]: s(SELF_ONLY, "filter"),
+  [A.SUMMON_IF_GRAVEYARD_COUNT]: s(SELF_ONLY, "value", "filter"),
+  [A.SUMMON_ONLY_BY_EFFECT]: s(SELF_ONLY),
+  [A.CHARGE_ON_EQUIPMENT]: s(SELF_ONLY),
+  [A.SUMMON_NAMED]: s(PLAYER_ONLY, "filter"),
 };
 
 /** Monstre, ou sous-type de support. */

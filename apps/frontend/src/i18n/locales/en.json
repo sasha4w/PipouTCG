@@ -525,7 +525,11 @@
           "GRANT_EXTRA_ATTACK": "grants an extra attack this turn",
           "TRANSFER_HALF_ATK": "moves half of a monster's ATK to a Core",
           "FORCE_EVOLVE": "evolves a Drakon without a card",
-          "REQUIRES_CARD_ON_BOARD": "requires a specific card on the board"
+          "REQUIRES_CARD_ON_BOARD": "requires a specific card on the board",
+          "SUMMON_IF_GRAVEYARD_COUNT": "summons if the graveyard holds enough cards",
+          "SUMMON_ONLY_BY_EFFECT": "can only be summoned by an effect",
+          "CHARGE_ON_EQUIPMENT": "counts equipment played",
+          "SUMMON_NAMED": "summons a specific card"
         }
       },
     "title": "Admin Dashboard",
@@ -734,6 +738,10 @@
       "REFLECT_DAMAGE_many": "{{target}} gain **{{kw}}**: {{value}}% of the combat damage taken is sent back to the attacker.",
       "RELEVE": "**{{kw}}** ({{value}}): can be summoned by sending {{value}} Pipou allies from your field to the graveyard instead of paying its cost.",
       "SUMMON_IF_ALL_ELEMENTS": "Can only be summoned with an Adult or an Ancestral of each element (Earth, Fire, Water, Wind) in your graveyard.",
+      "SUMMON_IF_GRAVEYARD_COUNT": "Can only be summoned with {{value}} {{cards}} in your graveyard.",
+      "SUMMON_ONLY_BY_EFFECT": "Can only be summoned by an effect, never from the hand.",
+      "CHARGE_ON_EQUIPMENT": "+1 counter for each Equipment played.",
+      "SUMMON_NAMED": "This card summons {{name}} from your hand or deck; if your field is full, one of your monsters is sent to the graveyard first.",
       "COPY_GRAVEYARD_EFFECTS": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
       "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
       "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gains **{{kw}}**.",
@@ -749,6 +757,10 @@
       "name": "name containing “{{name}}”",
       "excludeName": "except “{{name}}”"
     },
+    "graveyardCards": "{{rarities}} {{archetype}} {{noun}}",
+    "or": " or ",
+    "cardNoun": {"monster": "monsters", "support": "supports", "any": "cards"},
+    "rarityAdj": {"common": "Common", "uncommon": "Uncommon", "rare": "Rare", "epic": "Epic", "legendary": "Legendary", "secret": "Secret"},
     "stage": {
       "egg": "Egg",
       "baby": "Baby",
@@ -1006,7 +1018,8 @@
         "copy_effects": "Copy this power",
         "transfer_atk_source": "Drain",
         "transfer_atk_target": "Transfer",
-        "force_evolve": "Evolve"
+        "force_evolve": "Evolve",
+        "sacrifice_for_summon": "Sacrifice"
       },
       "hintTarget": "Select the target monster",
       "hint_one": "Select {{count}} card",
@@ -1025,7 +1038,9 @@
         "baby_lineage": "Choose the Baby {{lineage}} to retrieve (graveyard or deck)",
         "extract_source": "Choose the monster to drain half its ATK",
         "extract_target": "Choose the Core that gains {{amount}} ATK",
-        "meditate": "Choose the Drakon that evolves"
+        "meditate": "Choose the Drakon that evolves",
+        "delta_summon": "Choose the card to summon",
+        "delta_sacrifice": "Choose the monster to send to the graveyard"
       }
     },
     "summon": {
@@ -1217,7 +1232,9 @@
       "supportZonesFull": "Support zones full",
       "alreadyInPlay": "Already in play",
       "needsCard": "Needs {{name}} in play",
-      "noEquipTarget": "No summoned monster can carry this equipment"
+      "noEquipTarget": "No summoned monster can carry this equipment",
+      "onlyByEffect": "Can only be summoned by an effect",
+      "graveyardCount": "Needs {{count}} cards in the graveyard"
     },
     "yourTurn": "Your turn!"
   },
@@ -1370,6 +1387,7 @@
       "xp": "+{{n}} XP",
       "booster": "{{name}} ×{{qty}}",
       "legendary": "Legendary: {{name}}",
+      "secret": "Secret: {{name}}",
       "capped": "No more rewards today",
       "achievement": "Achievement to claim",
       "unlocked": "{{name}} unlocked!",

@@ -99,21 +99,26 @@ export default function AdventureResult({
               </Link>
             </li>
           )}
-          {loot?.cards.map((c) => (
-            <li
-              key={`c${c.cardId}`}
-              className={`adv-loot__tile${c.rarity === Rarity.LEGENDARY ? " adv-loot__tile--legend" : ""}`}
-            >
-              {c.imageUrl ? (
-                <img className="adv-loot__card" src={c.imageUrl} alt="" />
-              ) : (
-                <IconStar size={26} />
-              )}
-              {c.rarity === Rarity.LEGENDARY
-                ? t("adventure.result.legendary", { name: c.name })
-                : c.name}
-            </li>
-          ))}
+          {loot?.cards.map((c) => {
+            const precious = c.rarity === Rarity.LEGENDARY || c.rarity === Rarity.SECRET;
+            return (
+              <li
+                key={`c${c.cardId}`}
+                className={`adv-loot__tile${precious ? " adv-loot__tile--legend" : ""}`}
+              >
+                {c.imageUrl ? (
+                  <img className="adv-loot__card" src={c.imageUrl} alt="" />
+                ) : (
+                  <IconStar size={26} />
+                )}
+                {c.rarity === Rarity.SECRET
+                  ? t("adventure.result.secret", { name: c.name })
+                  : c.rarity === Rarity.LEGENDARY
+                    ? t("adventure.result.legendary", { name: c.name })
+                    : c.name}
+              </li>
+            );
+          })}
         </ul>
       )}
 

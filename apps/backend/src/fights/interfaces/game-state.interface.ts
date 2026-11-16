@@ -88,6 +88,8 @@ export interface PendingChoice {
   chargeInstanceId?: string;
   /** Le joueur peut refuser l'effet en ne choisissant rien. */
   skippable?: boolean;
+  /** sacrifice_for_summon : la carte à invoquer (main ou deck). */
+  summonInstanceId?: string;
 }
 
 // ─── Game state ──────────────────────────────────────────────────────────────

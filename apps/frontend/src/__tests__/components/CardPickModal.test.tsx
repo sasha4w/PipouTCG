@@ -84,6 +84,28 @@ describe("CardPickModal", () => {
     ).toBeInTheDocument();
   });
 
+  it("sacrifice pour invocation : consigne traduite et bouton « Sacrifier »", async () => {
+    const onConfirm = vi.fn();
+    await i18n.changeLanguage("fr");
+    render(
+      <CardPickModal
+        choice={{
+          ...choice,
+          prompt: "fallback",
+          promptKey: "delta_sacrifice",
+          resolution: "sacrifice_for_summon",
+        }}
+        onConfirm={onConfirm}
+      />,
+    );
+    expect(
+      screen.getByText("Choisis le monstre à envoyer au cimetière"),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Ogre/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Sacrifier \(1\/1\)$/ }));
+    expect(onConfirm).toHaveBeenCalledWith(["c1"]);
+  });
+
   it("traduit la consigne du serveur à partir de sa clé", async () => {
     const discard: PendingChoice = {
       ...choice,
