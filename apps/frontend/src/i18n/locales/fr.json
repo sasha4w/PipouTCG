@@ -1388,6 +1388,7 @@
       "xp": "+{{n}} XP",
       "booster": "{{name}} ×{{qty}}",
       "legendary": "Légendaire : {{name}}",
+      "secret": "Secrète : {{name}}",
       "capped": "Plus de récompenses aujourd'hui",
       "achievement": "Succès à réclamer",
       "unlocked": "{{name}} débloqué !",

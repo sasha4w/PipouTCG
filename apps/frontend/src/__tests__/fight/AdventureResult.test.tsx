@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { Rarity } from "@pipou/shared";
 import AdventureResult from "../../features/adventure/AdventureResult";
 import i18n from "../../i18n";
 
@@ -65,5 +66,23 @@ describe("AdventureResult", () => {
     );
     expect(top).toBe(0);
     main.remove();
+  });
+
+  it("une secrète obtenue a le cadre doré et le libellé Secrète", () => {
+    renderResult({
+      won: true,
+      result: {
+        worldCompleted: false,
+        loot: {
+          gold: 0,
+          xp: 0,
+          boosters: [],
+          capped: false,
+          cards: [{ cardId: 1, name: "Noyau Delta", rarity: Rarity.SECRET, imageUrl: "/d.png" }],
+        },
+      } as never,
+    });
+    const tile = screen.getByText("Secrète : Noyau Delta").closest("li")!;
+    expect(tile).toHaveClass("adv-loot__tile--legend");
   });
 });

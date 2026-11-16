@@ -1315,6 +1315,7 @@
       "xp": "+{{n}} XP",
       "booster": "{{name}} ×{{qty}}",
       "legendary": "전설: {{name}}",
+      "secret": "시크릿: {{name}}",
       "capped": "오늘은 더 이상 보상이 없습니다",
       "achievement": "수령 가능한 업적",
       "unlocked": "{{name}} 잠금 해제!",

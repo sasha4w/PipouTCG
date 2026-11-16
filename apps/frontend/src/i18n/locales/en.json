@@ -1387,6 +1387,7 @@
       "xp": "+{{n}} XP",
       "booster": "{{name}} ×{{qty}}",
       "legendary": "Legendary: {{name}}",
+      "secret": "Secret: {{name}}",
       "capped": "No more rewards today",
       "achievement": "Achievement to claim",
       "unlocked": "{{name}} unlocked!",
