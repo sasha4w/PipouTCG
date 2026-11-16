@@ -21,6 +21,8 @@ export type GameEndReason = MatchEndReason;
  * - 'transfer_atk_source' : monstre dont la moitié de l'ATK est prise
  * - 'transfer_atk_target' : Noyau allié qui la reçoit
  * - 'force_evolve'        : Drakon allié qui évolue sans carte
+ * - 'sacrifice_for_summon': monstre allié envoyé au cimetière pour libérer la zone
+ *                           de la carte à invoquer (`summonInstanceId`)
  */
 export type PendingChoiceResolution =
   | "pick_to_hand"
@@ -29,7 +31,8 @@ export type PendingChoiceResolution =
   | "copy_effects"
   | "transfer_atk_source"
   | "transfer_atk_target"
-  | "force_evolve";
+  | "force_evolve"
+  | "sacrifice_for_summon";
 
 export type ChoiceSource = "graveyard" | "deck" | "board" | "hand";
 
@@ -45,7 +48,9 @@ export type ChoicePromptKey =
   | "baby_lineage"
   | "extract_source"
   | "extract_target"
-  | "meditate";
+  | "meditate"
+  | "delta_summon"
+  | "delta_sacrifice";
 
 export interface ClientChoiceCandidate {
   instanceId: string;

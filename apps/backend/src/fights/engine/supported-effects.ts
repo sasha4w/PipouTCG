@@ -92,6 +92,8 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.REQUIRES_CARD_ON_BOARD,
   ActionType.SUMMON_IF_GRAVEYARD_COUNT,
   ActionType.SUMMON_ONLY_BY_EFFECT,
+  ActionType.CHARGE_ON_EQUIPMENT,
+  ActionType.SUMMON_NAMED,
 ]);
 
 export const SUPPORTED_TARGETS: ReadonlySet<EffectTarget> = new Set(
