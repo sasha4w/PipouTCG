@@ -244,6 +244,14 @@ describe("FightBoard — invocation conditionnée par les effets", () => {
     filter: { archetype: "pipou", type: "monster", rarities: ["epic", "legendary"] },
   });
 
+  it.each([undefined, []])(
+    "carte sans effets (%j) : reste invocable depuis la main",
+    (effects) => {
+      const { zones } = renderBoard(handWith("Gobelin", effects));
+      expect(zones[2]).toHaveClass("zr-zone--pulse-target");
+    },
+  );
+
   it("Noyau Delta en main ne peut pas être posé sur une zone monstre", () => {
     const { zones, props } = renderBoard(
       handWith("Noyau Delta", passive("SUMMON_ONLY_BY_EFFECT")),
@@ -738,6 +746,68 @@ describe("FightBoard — phase de contrôle", () => {
     fireEvent.click(zones[2]);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(props.onSummon).not.toHaveBeenCalled();
+  });
+
+  describe("Magouille : invocation spéciale", () => {
+    const epicPipou = (i: number): CardInstance => ({
+      instanceId: `g${i}`,
+      ownerId: 1,
+      baseCard: {
+        ...monster().card.baseCard,
+        archetype: "pipou",
+        rarity: "epic",
+      } as CardInstance["baseCard"],
+    });
+    const magouilleState = (graveCount: number): GameState => {
+      const gs = endState(5);
+      gs.me.hand = [
+        {
+          instanceId: "magouille",
+          ownerId: 1,
+          baseCard: {
+            ...monster().card.baseCard,
+            name: "Magouille",
+            effects: [
+              {
+                trigger: "PASSIVE",
+                condition: null,
+                actions: [
+                  {
+                    type: "SUMMON_IF_GRAVEYARD_COUNT",
+                    target: "SELF",
+                    value: 4,
+                    filter: {
+                      archetype: "pipou",
+                      type: "monster",
+                      rarities: ["epic", "legendary"],
+                    },
+                  },
+                ],
+              },
+            ],
+          } as CardInstance["baseCard"],
+        },
+      ];
+      gs.me.graveyard = Array.from({ length: graveCount }, (_, i) =>
+        epicPipou(i),
+      );
+      return gs;
+    };
+
+    it("4 monstres Pipou Épiques au cimetière : zone ciblable et invocation", () => {
+      const { zones, props } = renderBoard(magouilleState(4));
+      expect(zones[2]).toHaveClass("zr-zone--pulse-target");
+      fireEvent.click(zones[2]);
+      fireEvent.click(screen.getByRole("button", { name: "Confirmer" }));
+      expect(props.onSummon).toHaveBeenCalledTimes(1);
+    });
+
+    it("3 monstres seulement : aucune invocation en phase de contrôle", () => {
+      const { zones, props } = renderBoard(magouilleState(3));
+      expect(zones[2]).not.toHaveClass("zr-zone--pulse-target");
+      fireEvent.click(zones[2]);
+      expect(props.onSummon).not.toHaveBeenCalled();
+    });
   });
 
   it("carte non jouable puis une autre : la sélection change", () => {
