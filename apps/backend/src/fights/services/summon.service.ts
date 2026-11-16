@@ -18,6 +18,8 @@ import {
   isImplanted,
   isSpecialSummon,
   graveyardHasAllElements,
+  meetsGraveyardCount,
+  summonOnlyByEffect,
   releveCount,
   requiresAllElements,
 } from '@pipou/shared';
@@ -161,7 +163,9 @@ export class SummonService {
       return { error: 'Pas un Monstre' };
     if (!canSummonFromHand(card.baseCard))
       return {
-        error: `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
+        error: summonOnlyByEffect(card.baseCard.effects)
+          ? `${card.baseCard.name} ne peut arriver en jeu que par un effet`
+          : `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
       };
 
     // Phase de contrôle : seules les invocations spéciales (Relève, Origines)
@@ -178,6 +182,16 @@ export class SummonService {
       return {
         error:
           'Il faut un Adulte ou un Ancestral de chaque élément au cimetière',
+      };
+
+    if (
+      !meetsGraveyardCount(
+        card.baseCard.effects,
+        player.graveyard.map((c) => c.baseCard),
+      )
+    )
+      return {
+        error: 'Il faut 4 monstres Pipou Épiques ou Légendaires au cimetière',
       };
 
     if (releveInstanceIds) {

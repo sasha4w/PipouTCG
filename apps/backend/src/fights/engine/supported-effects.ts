@@ -90,6 +90,8 @@ export const SUPPORTED_ACTIONS: ReadonlySet<ActionType> = new Set([
   ActionType.TRANSFER_HALF_ATK,
   ActionType.FORCE_EVOLVE,
   ActionType.REQUIRES_CARD_ON_BOARD,
+  ActionType.SUMMON_IF_GRAVEYARD_COUNT,
+  ActionType.SUMMON_ONLY_BY_EFFECT,
 ]);
 
 export const SUPPORTED_TARGETS: ReadonlySet<EffectTarget> = new Set(
