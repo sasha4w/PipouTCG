@@ -42,35 +42,36 @@ describe('farmCardFor', () => {
     ]);
   });
 
-  it('boss niveau 5 à signature secrète sans condition d’éléments : sa carte à 1 %', () => {
-    const magouille = card({
-      id: 10,
-      name: 'Maître Magouille',
-      rarity: 'secret',
+  it('boss pipou niveau 5 : Maître Magouille à 1 %', () => {
+    expect(farmCardFor(CARDS, LAUNCH_SIGNATURES.pipou[4], 5)).toEqual({
+      farmCardId: id('Maître Magouille'),
+      farmCardPct: ORIGINES_FARM_PCT,
+    });
+  });
+
+  it('boss pixelman niveau 5 : Noyau Delta à 1 %', () => {
+    expect(farmCardFor(CARDS, LAUNCH_SIGNATURES.pixelman[4], 5)).toEqual({
+      farmCardId: id('Noyau Delta'),
+      farmCardPct: ORIGINES_FARM_PCT,
+    });
+  });
+
+  it('niveau 4 pixelman (signature Noyau Delta) : pas de butin de boss', () => {
+    expect(farmCardFor(CARDS, LAUNCH_SIGNATURES.pixelman[3], 4)).toEqual({
+      farmCardId: null,
+      farmCardPct: 0,
+    });
+  });
+
+  it('carte secrète absente du set : aucun butin de boss', () => {
+    const chatouille = card({
+      id: 7,
+      name: 'Général Chatouille',
+      rarity: 'legendary',
       archetype: 'pipou',
     });
     expect(
-      farmCardFor(
-        [magouille],
-        { archetype: 'pipou', cardName: 'Maître Magouille' } as never,
-        5,
-      ),
-    ).toEqual({ farmCardId: 10, farmCardPct: ORIGINES_FARM_PCT });
-  });
-
-  it('niveau 4 à signature secrète : pas de butin de boss', () => {
-    const delta = card({
-      id: 7,
-      name: 'Noyau Delta',
-      rarity: 'secret',
-      archetype: 'pixelman',
-    });
-    expect(
-      farmCardFor(
-        [delta],
-        { archetype: 'pixelman', cardName: 'Noyau Delta' } as never,
-        4,
-      ).farmCardPct,
-    ).not.toBe(ORIGINES_FARM_PCT);
+      farmCardFor([chatouille], LAUNCH_SIGNATURES.pipou[4], 5).farmCardPct,
+    ).toBe(0);
   });
 });

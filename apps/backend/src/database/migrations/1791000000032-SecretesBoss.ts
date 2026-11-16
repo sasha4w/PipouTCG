@@ -1,14 +1,21 @@
 import { Logger } from '@nestjs/common';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { applyBalancePatches } from '../apply-balance-patches';
+import { BOSS_SECRET_CARD } from '../../adventure/signatures';
 import { PROTOCOLE_DELTA, SECRETES_PATCHES } from '../secretes-2026-11-patches';
 
-/** Carte signature d'un adversaire (nom dans le JSON `signature`). */
-const SIGNATURE_JOIN =
-  "JOIN `card` `c` ON `c`.`name` = JSON_UNQUOTE(JSON_EXTRACT(`o`.`signature`, '$.cardName'))";
-/** Le Drakon des Origines avait déjà son butin avant ce patch : on n'y touche pas. */
-const ALREADY_FARMED = 'Drakon des Origines';
-const PROTOCOLE_COPIES = 2;
+/** Archétype du boss (JSON `signature`). */
+const ARCHETYPE = "JSON_UNQUOTE(JSON_EXTRACT(`o`.`signature`, '$.archetype'))";
+/** Le boss de niveau 5 est à la position 5 de son monde. */
+const BOSS_POSITION = 5;
+/** Cartes ajoutées au deck du boss de niveau 5, par archétype. */
+const BOSS_DECK_CARDS: { archetype: string; card: string; quantity: number }[] =
+  [
+    { archetype: 'pipou', card: 'Maître Magouille', quantity: 1 },
+    { archetype: 'pixelman', card: 'Noyau Delta', quantity: 1 },
+    { archetype: 'pixelman', card: PROTOCOLE_DELTA.name, quantity: 2 },
+  ];
+const SECRETS = Object.entries(BOSS_SECRET_CARD);
 
 /** Magouille et Delta renforcés, Protocole Delta .core, butin secret des boss de niveau 5. */
 export class SecretesBoss1791000000032 implements MigrationInterface {
@@ -47,31 +54,40 @@ export class SecretesBoss1791000000032 implements MigrationInterface {
         );
     }
 
-    // Boss de niveau 5 à signature secrète : sa carte tombe à 1 %.
-    await queryRunner.query(
-      `UPDATE \`adventure_opponent\` \`o\` ${SIGNATURE_JOIN} SET \`o\`.\`farm_card_id\` = \`c\`.\`id\`, \`o\`.\`farm_card_pct\` = 1 WHERE \`o\`.\`position\` = 5 AND \`c\`.\`rarity\` = 'secret' AND \`o\`.\`farm_card_id\` IS NULL`,
-    );
+    // Boss de niveau 5 : la carte secrète de son archétype tombe à 1 %.
+    for (const [archetype, name] of SECRETS)
+      await queryRunner.query(
+        `UPDATE \`adventure_opponent\` \`o\` JOIN \`card\` \`c\` ON \`c\`.\`name\` = ? SET \`o\`.\`farm_card_id\` = \`c\`.\`id\`, \`o\`.\`farm_card_pct\` = 1 WHERE \`o\`.\`position\` = ? AND ${ARCHETYPE} = ? AND \`c\`.\`rarity\` = 'secret' AND \`o\`.\`farm_card_id\` IS NULL`,
+        [name, BOSS_POSITION, archetype],
+      );
 
-    // Boss à signature Noyau Delta : Protocole Delta .core ×2 dans son deck.
-    await queryRunner.query(
-      `INSERT INTO \`adventure_opponent_card\` (\`opponent_id\`, \`card_id\`, \`quantity\`) SELECT \`o\`.\`id\`, \`p\`.\`id\`, ? FROM \`adventure_opponent\` \`o\` ${SIGNATURE_JOIN} JOIN \`card\` \`p\` ON \`p\`.\`name\` = ? WHERE \`c\`.\`name\` = 'Noyau Delta' AND NOT EXISTS (SELECT 1 FROM \`adventure_opponent_card\` \`x\` WHERE \`x\`.\`opponent_id\` = \`o\`.\`id\` AND \`x\`.\`card_id\` = \`p\`.\`id\`)`,
-      [PROTOCOLE_COPIES, c.name],
-    );
+    // Deck du boss de niveau 5 : sa secrète (et Protocole Delta .core ×2 côté Pixelman).
+    for (const d of BOSS_DECK_CARDS)
+      await queryRunner.query(
+        `INSERT INTO \`adventure_opponent_card\` (\`opponent_id\`, \`card_id\`, \`quantity\`) SELECT \`o\`.\`id\`, \`p\`.\`id\`, ? FROM \`adventure_opponent\` \`o\` JOIN \`card\` \`p\` ON \`p\`.\`name\` = ? WHERE \`o\`.\`position\` = ? AND ${ARCHETYPE} = ? AND NOT EXISTS (SELECT 1 FROM \`adventure_opponent_card\` \`x\` WHERE \`x\`.\`opponent_id\` = \`o\`.\`id\` AND \`x\`.\`card_id\` = \`p\`.\`id\`)`,
+        [d.quantity, d.card, BOSS_POSITION, d.archetype],
+      );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     const logger = new Logger('SecretesBoss');
     const c = PROTOCOLE_DELTA;
 
-    await queryRunner.query(
-      `DELETE \`x\` FROM \`adventure_opponent_card\` \`x\` JOIN \`adventure_opponent\` \`o\` ON \`o\`.\`id\` = \`x\`.\`opponent_id\` ${SIGNATURE_JOIN} JOIN \`card\` \`p\` ON \`p\`.\`id\` = \`x\`.\`card_id\` WHERE \`c\`.\`name\` = 'Noyau Delta' AND \`p\`.\`name\` = ?`,
-      [c.name],
-    );
+    // Seules les lignes de Protocole Delta .core sont sûrement de cette migration :
+    // le deck d'un boss pouvait déjà contenir sa secrète (Magouille chez le boss pipou).
+    for (const d of BOSS_DECK_CARDS.filter(
+      (x) => x.card === PROTOCOLE_DELTA.name,
+    ))
+      await queryRunner.query(
+        `DELETE \`x\` FROM \`adventure_opponent_card\` \`x\` JOIN \`adventure_opponent\` \`o\` ON \`o\`.\`id\` = \`x\`.\`opponent_id\` JOIN \`card\` \`p\` ON \`p\`.\`id\` = \`x\`.\`card_id\` WHERE \`o\`.\`position\` = ? AND ${ARCHETYPE} = ? AND \`p\`.\`name\` = ?`,
+        [BOSS_POSITION, d.archetype, d.card],
+      );
 
-    await queryRunner.query(
-      `UPDATE \`adventure_opponent\` \`o\` ${SIGNATURE_JOIN} SET \`o\`.\`farm_card_id\` = NULL, \`o\`.\`farm_card_pct\` = 0 WHERE \`o\`.\`position\` = 5 AND \`c\`.\`rarity\` = 'secret' AND \`o\`.\`farm_card_id\` = \`c\`.\`id\` AND \`c\`.\`name\` <> ?`,
-      [ALREADY_FARMED],
-    );
+    for (const [archetype, name] of SECRETS)
+      await queryRunner.query(
+        `UPDATE \`adventure_opponent\` \`o\` JOIN \`card\` \`c\` ON \`c\`.\`id\` = \`o\`.\`farm_card_id\` SET \`o\`.\`farm_card_id\` = NULL, \`o\`.\`farm_card_pct\` = 0 WHERE \`o\`.\`position\` = ? AND ${ARCHETYPE} = ? AND \`c\`.\`name\` = ?`,
+        [BOSS_POSITION, archetype, name],
+      );
 
     const rows = (await queryRunner.query(
       'SELECT `id` FROM `card` WHERE `name` = ?',
