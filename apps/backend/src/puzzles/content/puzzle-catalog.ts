@@ -218,19 +218,20 @@ export const PUZZLES: PuzzleDef[] = [
   },
   {
     title: 'Blitz Pixelman',
-    description: 'Le Noyau frappe fort, mais la Provocation le gêne.',
+    description:
+      'Magouille se moque de la Provocation, mais il lui manque un peu de punch.',
     objective: { type: T.DESTROY_MONSTER, target: 'Médecin Citrouille' },
-    p1: { monsters: ['Noyau Delta'], hand: ['Firewall de Surcharge .sys'] },
+    p1: { monsters: ['Maître Magouille'], hand: ['Surcharge Overclock'] },
     p2: {
       monsters: [
         'Capitaine Gribouille',
-        { name: 'Médecin Citrouille', hp: 1300 },
+        { name: 'Médecin Citrouille', hp: 1700 },
       ],
     },
     seed: 19,
     minSteps: 3,
     trap: true,
-    mechanic: 'ignorer la provocation',
+    mechanic: 'ignorer la provocation, boost',
   },
   {
     title: 'Frappe préventive',
@@ -335,7 +336,7 @@ export const PUZZLES: PuzzleDef[] = [
     description: 'Gardes et réduction : il faut tout empiler.',
     objective: { type: T.CLEAR_ENEMY_BOARD },
     p1: {
-      monsters: ['Noyau Delta', 'Chevalier Touille'],
+      monsters: ['Maraudeur Friponouille', 'Chevalier Touille'],
       hand: ['Canon à Particules .vxd', 'Surcharge Overclock'],
     },
     p2: {
@@ -403,11 +404,17 @@ export const PUZZLES: PuzzleDef[] = [
     description: 'Gagne la partie maintenant.',
     objective: { type: T.WIN_GAME },
     p1: {
-      primes: 2,
+      primes: 3,
       monsters: ['Noyau Delta', 'Chevalier Touille'],
       hand: ['Force Plasma', 'Canon à Particules .vxd', 'Surcharge Overclock'],
     },
-    p2: { monsters: ['Noyau Alpha', 'Capitaine Gribouille'] },
+    p2: {
+      monsters: [
+        'Noyau Alpha',
+        'Capitaine Gribouille',
+        'Sentinelle Gargouille',
+      ],
+    },
     seed: 28,
     minSteps: 6,
     trap: true,
