@@ -60,6 +60,9 @@ export const QUERY_KEYS = {
   adventure: ["adventure"] as const,
   adminAdventure: ["admin", "adventure"] as const,
 
+  // ── Défi du jour ──────────────────────────────────────────────────────────
+  puzzleToday: ["puzzle", "today"] as const,
+
   // ── Tutoriel ──────────────────────────────────────────────────────────────
   tutorial: ["tutorial"] as const,
 
@@ -82,6 +85,8 @@ export const QUERY_KEYS = {
     cardSets: (page: number) => ["admin", "card-sets", page] as const,
     quests: ["admin", "quests"] as const,
     banners: ["admin", "banners"] as const,
+    puzzles: ["admin", "puzzles"] as const,
+    puzzleSchedule: ["admin", "puzzles", "schedule"] as const,
   },
 
   // ── Revue de l'IA (admin) ─────────────────────────────────────────────────

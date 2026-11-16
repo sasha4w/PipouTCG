@@ -29,6 +29,7 @@ import { DecksModule } from './decks/decks.module';
 import { ForgeModule } from './forge/forge.module';
 import { FightsModule } from './fights/fights.module';
 import { SandboxModule } from './sandbox/sandbox.module';
+import { PuzzlesModule } from './puzzles/puzzles.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ForeignKeyViolationFilter } from './common/filters/foreign-key.filter';
 import { shouldSynchronize } from './database/synchronize';
@@ -89,6 +90,7 @@ import { shouldSynchronize } from './database/synchronize';
     ForgeModule,
     FightsModule,
     SandboxModule,
+    PuzzlesModule,
     NotificationsModule,
     AdventureModule,
   ],

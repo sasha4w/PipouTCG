@@ -6,6 +6,7 @@ import {
   EffectTrigger,
   SupportType,
   canSummonFromHand,
+  summonOnlyByEffect,
   canSummonOnEnemySide,
   ephemeralTargetSide,
   isTargetableByEphemeral,
@@ -63,6 +64,9 @@ describe('couverture des effets', () => {
     const engine = createEngine();
 
     function play(card: Card) {
+      // Noyau Delta : seul un effet le met en jeu, refusé depuis la main
+      // (couvert par secretes.spec)
+      if (summonOnlyByEffect(card.effects)) return {};
       // Jeune / Adulte Drakon : il n'arrive que par évolution, sur le stade
       // précédent de sa lignée
       const evolvesOnly = !canSummonFromHand(card);

@@ -1,6 +1,7 @@
 import type { AdventureArchetype, GameAction, Seat } from '@pipou/shared';
 import type { GameState } from '../interfaces/game-state.interface';
 import { seatPlayer } from '../helpers/game-state.helper';
+import { withRandom } from '../helpers/seeded-random';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 import { AiPlayer, aiMustAct } from './ai-player';
@@ -22,16 +23,7 @@ export interface JudgedRow {
   n: number;
 }
 
-/** `Math.random` figé le temps de `f` : le moteur mélange avec lui. */
-export function withRandom<T>(seed: number, f: () => T): T {
-  const real = Math.random;
-  Math.random = seeded(seed);
-  try {
-    return f();
-  } finally {
-    Math.random = real;
-  }
-}
+export { withRandom };
 
 /** Finit la partie en glouton des deux côtés (note manuelle) ; 1 si `seat` gagne. */
 export function rollout(

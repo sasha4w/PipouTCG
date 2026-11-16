@@ -5,6 +5,8 @@ import { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import { PlayerStats } from '../fights/entities/player-stats.entity';
 import { LoginStreak } from '../daily-reward/login-streak.entity';
+import { computeStreak } from '../puzzles/puzzle-streak';
+import { puzzleDay } from '../puzzles/puzzle-schedule';
 import { HIGH_RARITIES, toAchievementValues } from './achievement-values';
 
 const HIGH_RARITY_SQL = HIGH_RARITIES.map((r) => `'${r}'`).join(', ');
@@ -22,58 +24,63 @@ export class AchievementStatsService {
     totalSets: number;
     totalWorlds: number;
   }> {
-    const [user, fights, streak, cards, sets, adventure, worlds, tutorial] =
-      await Promise.all([
-        this.dataSource.getRepository(User).findOne({
-          where: { id: userId },
-          select: [
-            'id',
-            'boostersOpened',
-            'cardsBought',
-            'cardsSold',
-            'cardsForged',
-            'cardsDestroyed',
-            'moneyEarned',
-            'experience',
-            'questsCompleted',
-          ],
-        }),
-        this.dataSource
-          .getRepository(PlayerStats)
-          .findOne({ where: { userId } }),
-        this.dataSource
-          .getRepository(LoginStreak)
-          .findOne({ where: { userId } }),
-        this.dataSource.query<
-          { uniqueCards: string | number; highRarity: string | number }[]
-        >(
-          `SELECT COUNT(DISTINCT uc.card_id) AS uniqueCards,
+    const [
+      user,
+      fights,
+      streak,
+      cards,
+      sets,
+      adventure,
+      worlds,
+      tutorial,
+      solvedDays,
+    ] = await Promise.all([
+      this.dataSource.getRepository(User).findOne({
+        where: { id: userId },
+        select: [
+          'id',
+          'boostersOpened',
+          'cardsBought',
+          'cardsSold',
+          'cardsForged',
+          'cardsDestroyed',
+          'moneyEarned',
+          'experience',
+          'questsCompleted',
+        ],
+      }),
+      this.dataSource.getRepository(PlayerStats).findOne({ where: { userId } }),
+      this.dataSource.getRepository(LoginStreak).findOne({ where: { userId } }),
+      this.dataSource.query<
+        { uniqueCards: string | number; highRarity: string | number }[]
+      >(
+        `SELECT COUNT(DISTINCT uc.card_id) AS uniqueCards,
                 COALESCE(SUM(CASE WHEN c.rarity IN (${HIGH_RARITY_SQL}) THEN uc.quantity ELSE 0 END), 0) AS highRarity
            FROM user_card uc JOIN card c ON c.id = uc.card_id
           WHERE uc.user_id = ?`,
-          [userId],
-        ),
-        this.dataSource.query<
-          { total: string | number; owned: string | number }[]
-        >(
-          `SELECT COUNT(c.id) AS total, COUNT(owned.card_id) AS owned
+        [userId],
+      ),
+      this.dataSource.query<
+        { total: string | number; owned: string | number }[]
+      >(
+        `SELECT COUNT(c.id) AS total, COUNT(owned.card_id) AS owned
            FROM card_set s
            JOIN card c ON c.card_set_id = s.id
            LEFT JOIN (SELECT DISTINCT card_id FROM user_card WHERE user_id = ?) owned
              ON owned.card_id = c.id
           GROUP BY s.id`,
-          [userId],
-        ),
-        // won IS NULL = combat non terminé : ignoré partout. « Joué » =
-        // gagné ou au moins 2 tours (cf. countsAsPlayed, adventure-rules).
-        this.dataSource.query<
-          {
-            played: string | number;
-            won: string | number;
-            worldsCompleted: string | number;
-          }[]
-        >(
-          `SELECT
+        [userId],
+      ),
+      // won IS NULL = combat non terminé : ignoré partout. « Joué » =
+      // gagné ou au moins 2 tours (cf. countsAsPlayed, adventure-rules).
+      this.dataSource.query<
+        {
+          played: string | number;
+          won: string | number;
+          worldsCompleted: string | number;
+        }[]
+      >(
+        `SELECT
             (SELECT COUNT(*) FROM adventure_match WHERE user_id = ? AND won IS NOT NULL AND (won = 1 OR turns >= 2)) AS played,
             (SELECT COUNT(*) FROM adventure_match WHERE user_id = ? AND won = 1) AS won,
             (SELECT COUNT(*)
@@ -86,16 +93,20 @@ export class AchievementStatsService {
                    WHERE o.world_id = w.id AND o.position = 5
                      AND m.user_id = ? AND m.won = 1
                 )) AS worldsCompleted`,
-          [userId, userId, userId],
-        ),
-        this.dataSource.query<{ total: string | number }[]>(
-          'SELECT COUNT(*) AS total FROM adventure_world WHERE is_active = 1',
-        ),
-        this.dataSource.query<{ total: string | number }[]>(
-          'SELECT COUNT(*) AS total FROM user_tutorial_lesson WHERE user_id = ?',
-          [userId],
-        ),
-      ]);
+        [userId, userId, userId],
+      ),
+      this.dataSource.query<{ total: string | number }[]>(
+        'SELECT COUNT(*) AS total FROM adventure_world WHERE is_active = 1',
+      ),
+      this.dataSource.query<{ total: string | number }[]>(
+        'SELECT COUNT(*) AS total FROM user_tutorial_lesson WHERE user_id = ?',
+        [userId],
+      ),
+      this.dataSource.query<{ date: string }[]>(
+        'SELECT date FROM user_puzzle_solve WHERE user_id = ?',
+        [userId],
+      ),
+    ]);
 
     const setRows = sets.map((s) => ({
       total: Number(s.total),
@@ -123,6 +134,13 @@ export class AchievementStatsService {
         played: Number(adventure[0]?.played ?? 0),
       },
       tutorialLessons: Number(tutorial[0]?.total ?? 0),
+      puzzles: {
+        solved: solvedDays.length,
+        longestStreak: computeStreak(
+          solvedDays.map((d) => d.date),
+          puzzleDay(new Date()),
+        ).longest,
+      },
     });
     return {
       values,

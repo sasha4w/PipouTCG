@@ -198,6 +198,7 @@
       "d_obtain_10": "Get 10 cards",
       "d_obtain_rare": "Get 1 rare card or better",
       "d_daily_reward": "Claim your daily reward",
+      "d_puzzle": "Solve the daily puzzle",
       "w_open_15": "Open 15 boosters",
       "w_play_15": "Play 15 duels",
       "w_win_10": "Win 10 duels",
@@ -524,7 +525,11 @@
           "GRANT_EXTRA_ATTACK": "grants an extra attack this turn",
           "TRANSFER_HALF_ATK": "moves half of a monster's ATK to a Core",
           "FORCE_EVOLVE": "evolves a Drakon without a card",
-          "REQUIRES_CARD_ON_BOARD": "requires a specific card on the board"
+          "REQUIRES_CARD_ON_BOARD": "requires a specific card on the board",
+          "SUMMON_IF_GRAVEYARD_COUNT": "summons if the graveyard holds enough cards",
+          "SUMMON_ONLY_BY_EFFECT": "can only be summoned by an effect",
+          "CHARGE_ON_EQUIPMENT": "counts equipment played",
+          "SUMMON_NAMED": "summons a specific card"
         }
       },
     "title": "Admin Dashboard",
@@ -541,7 +546,8 @@
       "sandbox": "Sandbox",
       "adventure": "Adventure",
       "aiReview": "AI review",
-      "starterDecks": "Starter Decks"
+      "starterDecks": "Starter Decks",
+    "puzzles": "Puzzles"
     },
     "sandbox_back": "Back to admin",
     "patchnote": {
@@ -732,6 +738,10 @@
       "REFLECT_DAMAGE_many": "{{target}} gain **{{kw}}**: {{value}}% of the combat damage taken is sent back to the attacker.",
       "RELEVE": "**{{kw}}** ({{value}}): can be summoned by sending {{value}} Pipou allies from your field to the graveyard instead of paying its cost.",
       "SUMMON_IF_ALL_ELEMENTS": "Can only be summoned with an Adult or an Ancestral of each element (Earth, Fire, Water, Wind) in your graveyard.",
+      "SUMMON_IF_GRAVEYARD_COUNT": "Can only be summoned with {{value}} {{cards}} in your graveyard.",
+      "SUMMON_ONLY_BY_EFFECT": "Can only be summoned by an effect, never from the hand.",
+      "CHARGE_ON_EQUIPMENT": "+1 counter for each Equipment played.",
+      "SUMMON_NAMED": "This card summons {{name}} from your hand or deck; if your field is full, one of your monsters is sent to the graveyard first.",
       "COPY_GRAVEYARD_EFFECTS": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
       "COPY_GRAVEYARD_EFFECTS_you": "Choose an Adult or an Ancestral in your graveyard: this monster copies all of its abilities.",
       "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gains **{{kw}}**.",
@@ -747,6 +757,10 @@
       "name": "name containing “{{name}}”",
       "excludeName": "except “{{name}}”"
     },
+    "graveyardCards": "{{rarities}} {{archetype}} {{noun}}",
+    "or": " or ",
+    "cardNoun": {"monster": "monsters", "support": "supports", "any": "cards"},
+    "rarityAdj": {"common": "Common", "uncommon": "Uncommon", "rare": "Rare", "epic": "Epic", "legendary": "Legendary", "secret": "Secret"},
     "stage": {
       "egg": "Egg",
       "baby": "Baby",
@@ -1004,7 +1018,8 @@
         "copy_effects": "Copy this power",
         "transfer_atk_source": "Drain",
         "transfer_atk_target": "Transfer",
-        "force_evolve": "Evolve"
+        "force_evolve": "Evolve",
+        "sacrifice_for_summon": "Sacrifice"
       },
       "hintTarget": "Select the target monster",
       "hint_one": "Select {{count}} card",
@@ -1023,7 +1038,9 @@
         "baby_lineage": "Choose the Baby {{lineage}} to retrieve (graveyard or deck)",
         "extract_source": "Choose the monster to drain half its ATK",
         "extract_target": "Choose the Core that gains {{amount}} ATK",
-        "meditate": "Choose the Drakon that evolves"
+        "meditate": "Choose the Drakon that evolves",
+        "delta_summon": "Choose the card to summon",
+        "delta_sacrifice": "Choose the monster to send to the graveyard"
       }
     },
     "summon": {
@@ -1215,7 +1232,9 @@
       "supportZonesFull": "Support zones full",
       "alreadyInPlay": "Already in play",
       "needsCard": "Needs {{name}} in play",
-      "noEquipTarget": "No summoned monster can carry this equipment"
+      "noEquipTarget": "No summoned monster can carry this equipment",
+      "onlyByEffect": "Can only be summoned by an effect",
+      "graveyardCount": "Needs {{count}} cards in the graveyard"
     },
     "yourTurn": "Your turn!"
   },
@@ -1256,7 +1275,9 @@
       "ADVENTURE_WORLDS": "Adventure worlds",
       "PVE_WON": "PvE wins",
       "PVE_PLAYED": "PvE fights",
-      "TUTORIAL_LESSONS": "Student"
+      "TUTORIAL_LESSONS": "Student",
+      "PUZZLES_SOLVED": "Puzzles solved",
+      "PUZZLE_STREAK": "Puzzle streak"
     },
     "goals": {
       "BOOSTERS_OPENED": "Open {{n}} boosters",
@@ -1276,7 +1297,9 @@
       "ADVENTURE_WORLDS": "Complete {{n}} adventure worlds",
       "PVE_WON": "Win {{n}} adventure fights",
       "PVE_PLAYED": "Play {{n}} adventure fights",
-      "TUTORIAL_LESSONS": "Finish {{n}} tutorial lessons"
+      "TUTORIAL_LESSONS": "Finish {{n}} tutorial lessons",
+      "PUZZLES_SOLVED": "Solve {{n}} daily puzzles",
+      "PUZZLE_STREAK": "Solve the daily puzzle {{n}} days in a row"
     },
     "titles": {
       "BOOSTERS_OPENED": "Master Opener",
@@ -1296,7 +1319,9 @@
       "ADVENTURE_WORLDS": "Explorer",
       "PVE_WON": "AI Hunter",
       "PVE_PLAYED": "Tireless",
-      "TUTORIAL_LESSONS": "Scholar"
+      "TUTORIAL_LESSONS": "Scholar",
+      "PUZZLES_SOLVED": "Puzzler",
+      "PUZZLE_STREAK": "On a roll"
     }
   },
   "adventure": {
@@ -1362,6 +1387,7 @@
       "xp": "+{{n}} XP",
       "booster": "{{name}} ×{{qty}}",
       "legendary": "Legendary: {{name}}",
+      "secret": "Secret: {{name}}",
       "capped": "No more rewards today",
       "achievement": "Achievement to claim",
       "unlocked": "{{name}} unlocked!",
@@ -1586,6 +1612,121 @@
     "fightF2": "Live ELO leaderboard",
     "fightF3": "Match history",
     "fightCta": "Enter the arena"
+  },
+  "puzzle": {
+    "admin": {
+      "loading": "Loading puzzles…",
+      "empty": "No puzzles. Create one from the sandbox (\"Save as puzzle\" button).",
+      "draft": "Draft",
+      "published": "Published",
+      "verified": "Verified on {{date}}",
+      "unverified": "Not verified",
+      "last_played": "Last scheduled: {{date}}",
+      "never_played": "Never scheduled",
+      "verify": "Verify",
+      "verifying": "Verifying…",
+      "verify_hint": "The search can take up to 20 seconds.",
+      "verify_solved": "Solution found in {{ms}} ms ({{nodes}} positions)",
+      "verify_not_found": "No solution found. The solver does not explore every move: this is not a proof.",
+      "verify_timeout": "Search interrupted (limit reached).",
+      "verify_busy": "A verification is already running. Try again in a moment.",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "delete": "Delete",
+      "delete_confirm": "Delete the puzzle \"{{title}}\"?",
+      "manual_override": "I solved it myself",
+      "test": "Test",
+      "open_sandbox": "Open in sandbox",
+      "edit": "Edit",
+      "edit_warning": "Editing a puzzle clears its verification and sets it back to draft.",
+      "f_title": "Title",
+      "f_description": "Description",
+      "f_objective": "Objective",
+      "f_target": "Target",
+      "f_primes": "Primes",
+      "f_gold": "Gold",
+      "f_xp": "XP",
+      "save": "Save",
+      "cancel": "Cancel",
+      "no_target": "Pick a target",
+      "obj_WIN_GAME": "Win the game",
+      "obj_DESTROY_MONSTER": "Destroy a monster",
+      "obj_CLEAR_ENEMY_BOARD": "Clear the enemy board",
+      "obj_TAKE_PRIMES": "Take primes",
+      "calendar_title": "Schedule",
+      "calendar_free": "Free",
+      "origin_manual": "Manual",
+      "origin_auto": "Auto",
+      "origin_free": "Free: automatic fallback",
+      "calendar_select": "Puzzle for {{date}}",
+      "published_count_one": "{{count}} published puzzle",
+      "published_count_other": "{{count}} published puzzles",
+      "low_stock": "Fewer than 7 published puzzles: the automatic fallback will reuse puzzles already played.",
+      "save_puzzle": "Save as puzzle",
+      "save_puzzle_title": "Save as puzzle",
+      "save_need_main": "Available in the main phase, during P1's turn.",
+      "saved": "Puzzle saved as draft",
+      "save_submit": "Save puzzle"
+    },
+    "hub": {
+      "title": "Daily puzzle",
+      "desc": "A combat brain-teaser: find the right sequence in a single turn.",
+      "cta": "Take the challenge",
+      "streak_one": "Streak: {{count}} day",
+      "streak_other": "Streak: {{count}} days",
+      "todo": "To do",
+      "done": "Solved",
+      "none": "No puzzle today"
+    },
+    "title": "Daily puzzle",
+    "back": "Arena",
+    "back_label": "Back to the arena",
+    "loading": "Loading the puzzle…",
+    "objective": {
+      "WIN_GAME": "Win the game this turn",
+      "DESTROY_MONSTER": "Destroy {{name}} this turn",
+      "CLEAR_ENEMY_BOARD": "Destroy all enemy monsters this turn",
+      "TAKE_PRIMES_one": "Take {{count}} prime this turn",
+      "TAKE_PRIMES_other": "Take {{count}} primes this turn"
+    },
+    "reward": {
+      "title": "Reward",
+      "xp": "XP"
+    },
+    "streak": {
+      "label_one": "Streak: {{count}} day, booster in {{left}} d",
+      "label_other": "Streak: {{count}} days, booster in {{left}} d"
+    },
+    "play": "Play",
+    "replay": "Replay",
+    "already_solved": "Already solved: replaying earns nothing",
+    "session": {
+      "quit": "Quit",
+      "restart": "Restart",
+      "end_turn": "End turn",
+      "end_confirm": "End the turn without reaching the objective? The puzzle will be failed.",
+      "loading": "Preparing the puzzle…",
+      "test_badge": "Test"
+    },
+    "result": {
+      "solved_first": "Puzzle solved!",
+      "solved": "Solved!",
+      "failed": "Failed…",
+      "failed_text": "The objective was not reached.",
+      "no_reward": "No reward (already solved today)",
+      "test": "Test game",
+      "xp": "XP",
+      "booster_one": "{{count}}-day streak: free booster",
+      "booster_other": "{{count}}-day streak: free booster",
+      "back": "Back",
+      "replay": "Replay",
+      "retry": "Restart"
+    },
+    "unlimited": "Unlimited attempts. Next puzzle in {{time}}",
+    "none_today": "No puzzle today. Come back tomorrow!",
+    "errors": {
+      "load": "Could not load the daily puzzle"
+    }
   },
   "starter_admin": {
     "title": "Starter deck compositions",

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { isImplanted } from '@pipou/shared';
+import { DestroyCause, isImplanted } from '@pipou/shared';
 import {
   GameState,
   MonsterOnBoard,
@@ -21,10 +21,14 @@ import { nextStageCard } from '../helpers/evolution-catalog';
 import { v4 as uuidv4 } from 'uuid';
 
 import { SummonService } from './summon.service';
+import { EffectsResolverService } from '../effects-resolver.service';
 
 @Injectable()
 export class PickService {
-  constructor(private summon: SummonService) {}
+  constructor(
+    private summon: SummonService,
+    private effectsResolver: EffectsResolverService,
+  ) {}
 
   /** Résout le premier choix en attente avec les cartes choisies. */
   pickCards(
@@ -52,6 +56,7 @@ export class PickService {
     if (picked.some((id) => !candidates.some((c) => c.instanceId === id)))
       return { error: 'Carte introuvable dans les choix disponibles' };
 
+    let fizzled = false;
     if (choice.resolution === 'discard') {
       for (const id of picked) {
         const idx = player.hand.findIndex((c) => c.instanceId === id);
@@ -70,7 +75,11 @@ export class PickService {
       for (const id of picked) {
         const candidate = candidates.find((c) => c.instanceId === id)!;
         const pile =
-          candidate.source === 'graveyard' ? player.graveyard : player.deck;
+          candidate.source === 'graveyard'
+            ? player.graveyard
+            : candidate.source === 'hand'
+              ? player.hand
+              : player.deck;
         const idx = pile.findIndex((c) => c.instanceId === id);
         if (idx === -1) continue;
         const [card] = pile.splice(idx, 1);
@@ -87,6 +96,48 @@ export class PickService {
         }
       }
       shuffle(player.deck);
+    } else if (choice.resolution === 'sacrifice_for_summon') {
+      const zone = player.monsterZones.findIndex(
+        (m) => m?.instanceId === picked[0],
+      );
+      const pile = player.hand.some(
+        (c) => c.instanceId === choice.summonInstanceId,
+      )
+        ? player.hand
+        : player.deck;
+      const idx = pile.findIndex(
+        (c) => c.instanceId === choice.summonInstanceId,
+      );
+      if (idx === -1) {
+        // La carte a quitté la main et le deck avant le choix
+        addLog(game, `💨 Plus de carte à invoquer : l'effet se dissipe`);
+        fizzled = true;
+      } else if (zone === -1) {
+        // Le monstre choisi a quitté le terrain avant la validation
+        addLog(
+          game,
+          `💨 Le monstre à sacrifier a disparu : l'effet se dissipe`,
+        );
+        fizzled = true;
+      } else {
+        const log: string[] = [];
+        this.effectsResolver.destroyMonster(game, player, picked[0], log, {
+          draw: false,
+          cause: DestroyCause.SACRIFICE,
+        });
+        log.forEach((l) => addLog(game, l));
+        const [card] = pile.splice(idx, 1);
+        // Un effet de destruction a pu reprendre la zone libérée
+        if (!this.summon.summonFromDeck(game, player, card, zone)) {
+          pile.push(card);
+          addLog(
+            game,
+            `💨 Aucune zone libre : ${card.baseCard.name} reste en place`,
+          );
+          fizzled = true;
+        }
+        if (pile === player.deck) shuffle(player.deck);
+      }
     } else if (choice.resolution === 'transfer_atk_source') {
       const source = boardMonster(game, picked[0]);
       if (source) {
@@ -187,7 +238,9 @@ export class PickService {
       this.endCharge(
         game,
         choice,
-        choice.resolution === 'transfer_atk_source' ? 'fizzled' : 'resolved',
+        fizzled || choice.resolution === 'transfer_atk_source'
+          ? 'fizzled'
+          : 'resolved',
       );
     return {};
   }

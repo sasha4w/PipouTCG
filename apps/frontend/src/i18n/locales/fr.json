@@ -198,6 +198,7 @@
       "d_obtain_10": "Obtiens 10 cartes",
       "d_obtain_rare": "Obtiens 1 carte rare ou mieux",
       "d_daily_reward": "Réclame ta récompense quotidienne",
+      "d_puzzle": "Résous le défi du jour",
       "w_open_15": "Ouvre 15 boosters",
       "w_play_15": "Joue 15 duels",
       "w_win_10": "Gagne 10 duels",
@@ -524,7 +525,11 @@
           "GRANT_EXTRA_ATTACK": "donne une attaque supplémentaire ce tour",
           "TRANSFER_HALF_ATK": "transfère la moitié de l'ATK d'un monstre à un Noyau",
           "FORCE_EVOLVE": "fait évoluer un Drakon sans carte",
-          "REQUIRES_CARD_ON_BOARD": "exige une carte précise sur le terrain"
+          "REQUIRES_CARD_ON_BOARD": "exige une carte précise sur le terrain",
+          "SUMMON_IF_GRAVEYARD_COUNT": "invoque si le cimetière contient assez de cartes",
+          "SUMMON_ONLY_BY_EFFECT": "s'invoque uniquement par un effet",
+          "CHARGE_ON_EQUIPMENT": "compte les équipements posés",
+          "SUMMON_NAMED": "invoque une carte précise"
         }
       },
     "title": "Dashboard Admin",
@@ -541,7 +546,8 @@
       "sandbox": "Sandbox",
       "adventure": "Aventure",
       "aiReview": "Revue IA",
-      "starterDecks": "Starter Decks"
+      "starterDecks": "Starter Decks",
+    "puzzles": "Défis"
     },
     "sandbox_back": "Retour à l'admin",
     "patchnote": {
@@ -734,6 +740,10 @@
       "REFLECT_DAMAGE_many": "{{target}} gagnent **{{kw}}** : {{value}} % des dégâts de combat reçus sont renvoyés à l'attaquant.",
       "RELEVE": "**{{kw}}** ({{value}}) : peut être invoqué en envoyant {{value}} alliés Pipou de ton terrain au cimetière, à la place du coût.",
       "SUMMON_IF_ALL_ELEMENTS": "Ne peut être invoqué qu'avec un Adulte ou un Ancestral de chaque élément (Terre, Feu, Eau, Vent) dans ton cimetière.",
+      "SUMMON_IF_GRAVEYARD_COUNT": "Invocable seulement avec {{value}} {{cards}} dans ton cimetière.",
+      "SUMMON_ONLY_BY_EFFECT": "Ne s'invoque que par un effet, jamais depuis la main.",
+      "CHARGE_ON_EQUIPMENT": "+1 compteur à chaque équipement posé.",
+      "SUMMON_NAMED": "Cette carte invoque {{name}} depuis ta main ou ton deck ; si ton terrain est plein, un de tes monstres est d'abord envoyé au cimetière.",
       "COPY_GRAVEYARD_EFFECTS": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
       "COPY_GRAVEYARD_EFFECTS_you": "Choisis un Adulte ou un Ancestral de ton cimetière : ce monstre copie tous ses effets.",
       "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}} gagne **{{kw}}**.",
@@ -749,6 +759,10 @@
       "name": "nom contenant « {{name}} »",
       "excludeName": "sauf « {{name}} »"
     },
+    "graveyardCards": "{{noun}} {{archetype}} {{rarities}}",
+    "or": " ou ",
+    "cardNoun": {"monster": "monstres", "support": "supports", "any": "cartes"},
+    "rarityAdj": {"common": "Communs", "uncommon": "Peu communs", "rare": "Rares", "epic": "Épiques", "legendary": "Légendaires", "secret": "Secrets"},
     "stage": {
       "egg": "Œuf",
       "baby": "Bébé",
@@ -1006,7 +1020,8 @@
         "copy_effects": "Copier ce pouvoir",
         "transfer_atk_source": "Extraire",
         "transfer_atk_target": "Transférer",
-        "force_evolve": "Évoluer"
+        "force_evolve": "Évoluer",
+        "sacrifice_for_summon": "Sacrifier"
       },
       "hintTarget": "Sélectionne le monstre cible",
       "hint_one": "Sélectionne {{count}} carte",
@@ -1025,7 +1040,9 @@
         "baby_lineage": "Choisis le Bébé {{lineage}} à récupérer (cimetière ou deck)",
         "extract_source": "Choisis le monstre dont tu extrais la moitié de l'ATK",
         "extract_target": "Choisis le Noyau qui reçoit {{amount}} ATK",
-        "meditate": "Choisis le Drakon qui évolue"
+        "meditate": "Choisis le Drakon qui évolue",
+        "delta_summon": "Choisis la carte à invoquer",
+        "delta_sacrifice": "Choisis le monstre à envoyer au cimetière"
       }
     },
     "summon": {
@@ -1217,7 +1234,9 @@
       "supportZonesFull": "Zones support pleines",
       "alreadyInPlay": "Déjà en jeu",
       "needsCard": "Besoin de {{name}} en jeu",
-      "noEquipTarget": "Aucun monstre invoqué ne peut porter cet équipement"
+      "noEquipTarget": "Aucun monstre invoqué ne peut porter cet équipement",
+      "onlyByEffect": "Invocable seulement par un effet",
+      "graveyardCount": "Il faut {{count}} cartes au cimetière"
     },
     "yourTurn": "À toi de jouer !"
   },
@@ -1258,7 +1277,9 @@
       "ADVENTURE_WORLDS": "Mondes d'aventure",
       "PVE_WON": "Victoires PvE",
       "PVE_PLAYED": "Combats PvE",
-      "TUTORIAL_LESSONS": "Élève"
+      "TUTORIAL_LESSONS": "Élève",
+      "PUZZLES_SOLVED": "Défis résolus",
+      "PUZZLE_STREAK": "Série de défis"
     },
     "goals": {
       "BOOSTERS_OPENED": "Ouvre {{n}} boosters",
@@ -1278,7 +1299,9 @@
       "ADVENTURE_WORLDS": "Termine {{n}} mondes d'aventure",
       "PVE_WON": "Gagne {{n}} combats d'aventure",
       "PVE_PLAYED": "Joue {{n}} combats d'aventure",
-      "TUTORIAL_LESSONS": "Termine {{n}} leçons du tutoriel"
+      "TUTORIAL_LESSONS": "Termine {{n}} leçons du tutoriel",
+      "PUZZLES_SOLVED": "Résous {{n}} défis du jour",
+      "PUZZLE_STREAK": "Résous le défi du jour {{n}} jours de suite"
     },
     "titles": {
       "BOOSTERS_OPENED": "Maître Ouvreur",
@@ -1298,7 +1321,9 @@
       "ADVENTURE_WORLDS": "Explorateur",
       "PVE_WON": "Chasseur d'IA",
       "PVE_PLAYED": "Infatigable",
-      "TUTORIAL_LESSONS": "Érudit"
+      "TUTORIAL_LESSONS": "Érudit",
+      "PUZZLES_SOLVED": "Casse-tête",
+      "PUZZLE_STREAK": "Infaillible"
     }
   },
   "adventure": {
@@ -1363,6 +1388,7 @@
       "xp": "+{{n}} XP",
       "booster": "{{name}} ×{{qty}}",
       "legendary": "Légendaire : {{name}}",
+      "secret": "Secrète : {{name}}",
       "capped": "Plus de récompenses aujourd'hui",
       "achievement": "Succès à réclamer",
       "unlocked": "{{name}} débloqué !",
@@ -1587,6 +1613,121 @@
     "fightF2": "Classement ELO en direct",
     "fightF3": "Historique des matchs",
     "fightCta": "Rejoindre l'arène"
+  },
+  "puzzle": {
+    "admin": {
+      "loading": "Chargement des défis…",
+      "empty": "Aucun défi. Crée-en un depuis le sandbox (bouton « Enregistrer comme défi »).",
+      "draft": "Brouillon",
+      "published": "Publié",
+      "verified": "Vérifié le {{date}}",
+      "unverified": "Non vérifié",
+      "last_played": "Dernière programmation : {{date}}",
+      "never_played": "Jamais programmé",
+      "verify": "Vérifier",
+      "verifying": "Vérification…",
+      "verify_hint": "La recherche peut durer jusqu'à 20 secondes.",
+      "verify_solved": "Solution trouvée en {{ms}} ms ({{nodes}} positions)",
+      "verify_not_found": "Aucune solution trouvée. Le solveur n'explore pas tous les coups : ce n'est pas une preuve.",
+      "verify_timeout": "Recherche interrompue (plafond atteint).",
+      "verify_busy": "Une vérification est déjà en cours. Réessaie dans un instant.",
+      "publish": "Publier",
+      "unpublish": "Dépublier",
+      "delete": "Supprimer",
+      "delete_confirm": "Supprimer le défi « {{title}} » ?",
+      "manual_override": "Je l'ai résolu moi-même",
+      "test": "Tester",
+      "open_sandbox": "Ouvrir dans le sandbox",
+      "edit": "Modifier",
+      "edit_warning": "Modifier un défi efface sa vérification et le repasse en brouillon.",
+      "f_title": "Titre",
+      "f_description": "Description",
+      "f_objective": "Objectif",
+      "f_target": "Cible",
+      "f_primes": "Primes",
+      "f_gold": "Or",
+      "f_xp": "XP",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "no_target": "Choisir une cible",
+      "obj_WIN_GAME": "Gagner la partie",
+      "obj_DESTROY_MONSTER": "Détruire un monstre",
+      "obj_CLEAR_ENEMY_BOARD": "Vider le plateau adverse",
+      "obj_TAKE_PRIMES": "Prendre des primes",
+      "calendar_title": "Calendrier",
+      "calendar_free": "Libre",
+      "origin_manual": "Manuel",
+      "origin_auto": "Auto",
+      "origin_free": "Libre : repli automatique",
+      "calendar_select": "Défi du {{date}}",
+      "published_count_one": "{{count}} défi publié",
+      "published_count_other": "{{count}} défis publiés",
+      "low_stock": "Moins de 7 défis publiés : le repli automatique reviendra sur des défis déjà joués.",
+      "save_puzzle": "Enregistrer comme défi",
+      "save_puzzle_title": "Enregistrer comme défi",
+      "save_need_main": "Disponible en phase principale, pendant le tour de J1.",
+      "saved": "Défi enregistré en brouillon",
+      "save_submit": "Enregistrer le défi"
+    },
+    "hub": {
+      "title": "Défi du jour",
+      "desc": "Un casse-tête de combat : trouve le bon enchaînement en un tour.",
+      "cta": "Relever le défi",
+      "streak_one": "Série : {{count}} jour",
+      "streak_other": "Série : {{count}} jours",
+      "todo": "À faire",
+      "done": "Résolu",
+      "none": "Pas de défi aujourd'hui"
+    },
+    "title": "Défi du jour",
+    "back": "Arène",
+    "back_label": "Retour à l'arène",
+    "loading": "Chargement du défi…",
+    "objective": {
+      "WIN_GAME": "Gagne la partie ce tour",
+      "DESTROY_MONSTER": "Détruis {{name}} ce tour",
+      "CLEAR_ENEMY_BOARD": "Détruis tous les monstres adverses ce tour",
+      "TAKE_PRIMES_one": "Prends {{count}} prime ce tour",
+      "TAKE_PRIMES_other": "Prends {{count}} primes ce tour"
+    },
+    "reward": {
+      "title": "Récompense",
+      "xp": "XP"
+    },
+    "streak": {
+      "label_one": "Série : {{count}} jour, booster dans {{left}} j",
+      "label_other": "Série : {{count}} jours, booster dans {{left}} j"
+    },
+    "play": "Jouer",
+    "replay": "Rejouer",
+    "already_solved": "Déjà résolu : rejouer ne rapporte rien",
+    "session": {
+      "quit": "Quitter",
+      "restart": "Recommencer",
+      "end_turn": "Fin du tour",
+      "end_confirm": "Finir le tour sans avoir atteint l'objectif ? Le défi sera raté.",
+      "loading": "Préparation du défi…",
+      "test_badge": "Test"
+    },
+    "result": {
+      "solved_first": "Défi résolu !",
+      "solved": "Résolu !",
+      "failed": "Raté…",
+      "failed_text": "L'objectif n'est pas atteint.",
+      "no_reward": "Aucune récompense (déjà résolu aujourd'hui)",
+      "test": "Partie de test",
+      "xp": "XP",
+      "booster_one": "Série de {{count}} jour : booster offert",
+      "booster_other": "Série de {{count}} jours : booster offert",
+      "back": "Retour",
+      "replay": "Rejouer",
+      "retry": "Recommencer"
+    },
+    "unlimited": "Essais illimités. Prochain défi dans {{time}}",
+    "none_today": "Pas de défi aujourd'hui. Reviens demain !",
+    "errors": {
+      "load": "Impossible de charger le défi du jour"
+    }
   },
   "starter_admin": {
     "title": "Compositions des starter decks",

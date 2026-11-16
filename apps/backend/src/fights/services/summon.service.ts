@@ -17,7 +17,11 @@ import {
   isBoardPhase,
   isImplanted,
   isSpecialSummon,
+  Rarity,
+  graveyardCountRequirement,
   graveyardHasAllElements,
+  meetsGraveyardCount,
+  summonOnlyByEffect,
   releveCount,
   requiresAllElements,
 } from '@pipou/shared';
@@ -28,6 +32,25 @@ import {
   getOpponentState,
   isCurrentPlayer,
 } from '../helpers/game-state.helper';
+
+const RARITY_LABELS: Record<string, string> = {
+  [Rarity.EPIC]: 'Épiques',
+  [Rarity.LEGENDARY]: 'Légendaires',
+};
+
+/** Message de refus d'une invocation soumise à un nombre de cartes au cimetière. */
+function graveyardCountError(
+  req: ReturnType<typeof graveyardCountRequirement>,
+): string {
+  const count = req?.value ?? 0;
+  const f = req?.filter;
+  const parts = [f?.type === CardType.MONSTER ? 'monstres' : 'cartes'];
+  if (f?.archetype)
+    parts.push(f.archetype[0].toUpperCase() + f.archetype.slice(1));
+  const rarities = (f?.rarities ?? []).map((r) => RARITY_LABELS[r] ?? r);
+  if (rarities.length) parts.push(rarities.join(' ou '));
+  return `Il faut ${count} ${parts.join(' ')} au cimetière`;
+}
 
 @Injectable()
 export class SummonService {
@@ -161,7 +184,9 @@ export class SummonService {
       return { error: 'Pas un Monstre' };
     if (!canSummonFromHand(card.baseCard))
       return {
-        error: `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
+        error: summonOnlyByEffect(card.baseCard.effects)
+          ? `${card.baseCard.name} ne peut arriver en jeu que par un effet`
+          : `${card.baseCard.name} ne peut arriver en jeu que par évolution`,
       };
 
     // Phase de contrôle : seules les invocations spéciales (Relève, Origines)
@@ -178,6 +203,18 @@ export class SummonService {
       return {
         error:
           'Il faut un Adulte ou un Ancestral de chaque élément au cimetière',
+      };
+
+    if (
+      !meetsGraveyardCount(
+        card.baseCard.effects,
+        player.graveyard.map((c) => c.baseCard),
+      )
+    )
+      return {
+        error: graveyardCountError(
+          graveyardCountRequirement(card.baseCard.effects),
+        ),
       };
 
     if (releveInstanceIds) {

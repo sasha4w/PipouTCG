@@ -13,9 +13,12 @@ interface FightArenaProps {
   /** null : pas de minuteur (leçon du tutoriel). */
   timeLeft: number | null;
   controls: ReturnType<typeof useBoardControls>;
-  onSurrender: () => void;
+  /** Absent : pas de bouton d'abandon (défi du jour). */
+  onSurrender?: () => void;
   /** Tutoriel : ce que la bulle de la leçon désigne. */
   coach?: TutorialHint;
+  /** Défi du jour : monstre adverse à détruire, entouré en rouge. */
+  highlightInstanceId?: string;
 }
 
 /** Plateau d'une partie en cours : mulligan, plateau, choix de cartes. */
@@ -25,6 +28,7 @@ export default function FightArena({
   controls,
   onSurrender,
   coach,
+  highlightInstanceId,
 }: FightArenaProps) {
   const { t } = useTranslation();
   useHideAppChrome();
@@ -56,6 +60,7 @@ export default function FightArena({
         timeLeft={timeLeft}
         onSurrender={onSurrender}
         coach={coach}
+        highlightInstanceId={highlightInstanceId}
       />
 
       {gameState.pendingChoice && (

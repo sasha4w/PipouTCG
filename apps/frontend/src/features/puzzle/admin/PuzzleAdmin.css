@@ -1,0 +1,77 @@
+/* Administration des défis : liste, calendrier. */
+.pz-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(238, 188, 119, 0.08);
+  border: 1px solid rgba(61, 16, 32, 0.06);
+  border-radius: 12px;
+}
+.pz-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pz-row__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.pz-override {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #491021;
+}
+.pz-verify {
+  font-size: 0.8rem;
+  color: #491021;
+  background: #fff;
+  border: 1px solid rgba(61, 16, 32, 0.1);
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+}
+.pz-verify__moves {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+.pz-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #b03060;
+}
+.pz-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.pz-calendar__row {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) 6rem;
+  align-items: center;
+  gap: 8px;
+}
+.pz-calendar__date {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #491021;
+}
+.pz-count {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #491021;
+}
+.pz-count--low {
+  color: #b03060;
+}

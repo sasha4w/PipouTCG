@@ -17,9 +17,11 @@ import ScenarioList from "../features/sandbox/ScenarioList";
 import AiReviewManager from "../features/ai-review/AiReviewManager";
 import StarterDeckManager from "../features/starter/StarterDeckManager";
 import PatchnoteManager from "../features/inbox/PatchnoteManager";
+import PuzzleManager from "../features/puzzle/admin/PuzzleManager";
 import {
   IconUndo,
   IconBell,
+  IconBulb,
   IconBooster,
   IconBundle,
   IconCards,
@@ -43,6 +45,7 @@ type AdminTab =
   | "banners"
   | "patchnotes"
   | "sandbox"
+  | "puzzles"
   | "aiReview"
   | "starterDecks";
 
@@ -56,6 +59,7 @@ const TABS: { key: AdminTab; icon: ReactNode }[] = [
   { key: "banners", icon: <IconTag size={22} /> },
   { key: "patchnotes", icon: <IconBell size={22} /> },
   { key: "sandbox", icon: <IconFlask size={22} /> },
+  { key: "puzzles", icon: <IconBulb size={22} /> },
   { key: "aiReview", icon: <IconRobot size={22} /> },
   { key: "starterDecks", icon: <IconStar size={22} /> },
 ];
@@ -111,6 +115,7 @@ export default function Admin() {
       {tab === "banners" && <BannerManager />}
       {tab === "patchnotes" && <PatchnoteManager />}
       {tab === "sandbox" && <ScenarioList />}
+      {tab === "puzzles" && <PuzzleManager />}
       {tab === "aiReview" && <AiReviewManager />}
       {tab === "starterDecks" && <StarterDeckManager />}
     </div>

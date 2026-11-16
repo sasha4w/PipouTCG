@@ -7,6 +7,7 @@ import {
 import type { DrakonElement, DrakonStage } from "../enums/card";
 import type { CardEffect } from "./effect";
 import type { GamePhase } from "./state";
+import { graveyardCountRequirement, summonOnlyByEffect } from "./summon-conditions";
 import { blocksEnemyAction, hasImmunity, type SourceKind } from "./immunity";
 
 /** Règles de construction d'un deck (création et lancement de match). */
@@ -207,8 +208,11 @@ export function evolutionCost(card: EvolvingCard, base: EvolutionBase): number {
  * Un Jeune ou un Adulte Drakon n'arrive en jeu que par évolution (ou par
  * l'effet d'un Œuf) : jamais posé directement depuis la main.
  */
-export function canSummonFromHand(card: { stage: DrakonStage | null }): boolean {
-  return !isEvolutionStage(card.stage);
+export function canSummonFromHand(card: {
+  stage: DrakonStage | null;
+  effects?: CardEffect[] | null;
+}): boolean {
+  return !isEvolutionStage(card.stage) && !summonOnlyByEffect(card.effects);
 }
 
 /**
@@ -283,7 +287,11 @@ export function isSpecialSummon(
   card: { effects: CardEffect[] | null | undefined },
   releveInstanceIds?: string[],
 ): boolean {
-  return (releveInstanceIds?.length ?? 0) > 0 || requiresAllElements(card.effects);
+  return (
+    (releveInstanceIds?.length ?? 0) > 0 ||
+    requiresAllElements(card.effects) ||
+    graveyardCountRequirement(card.effects) !== null
+  );
 }
 
 /** Phases où le joueur agit sur son plateau (principale et contrôle). */

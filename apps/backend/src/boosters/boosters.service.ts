@@ -11,22 +11,17 @@ import { Booster } from './booster.entity';
 import { BoosterOpenHistory } from './booster-open-history.entity';
 import { BoosterOpenCard } from './booster-open-card.entity';
 import { Card } from '../cards/card.entity';
-import {
-  CardNumber,
-  OPEN_BOOSTER_QUANTITIES,
-  Rarity,
-  requiresAllElements,
-} from '@pipou/shared';
+import { CardNumber, OPEN_BOOSTER_QUANTITIES, Rarity } from '@pipou/shared';
 import { UsersService } from '../users/users.service';
 import { PaginationDto } from '../common/dto/pagination.dto';
 
-const RARITY_WEIGHTS: Record<Rarity, number> = {
+export const RARITY_WEIGHTS: Record<Rarity, number> = {
   [Rarity.COMMON]: 60,
   [Rarity.UNCOMMON]: 25,
   [Rarity.RARE]: 10,
   [Rarity.EPIC]: 4,
-  [Rarity.LEGENDARY]: 0.8,
-  [Rarity.SECRET]: 0.2,
+  [Rarity.LEGENDARY]: 1,
+  [Rarity.SECRET]: 0,
 };
 
 const BOOSTER_GUARANTEES: Record<number, Rarity[]> = {
@@ -127,7 +122,6 @@ export class BoostersService {
     cardsByRarity: Record<Rarity, Card[]>,
   ): Card {
     const rarityOrder: Rarity[] = [
-      Rarity.SECRET,
       Rarity.LEGENDARY,
       Rarity.EPIC,
       Rarity.RARE,
@@ -208,13 +202,13 @@ export class BoostersService {
     const totalCards = resolveCardNumber(booster.cardNumber);
     const guarantees = BOOSTER_GUARANTEES[totalCards] ?? [];
 
-    // Le Drakon des Origines (4 éléments au cimetière) ne s'obtient qu'en aventure
+    // Les secrètes (Drakon des Origines, Magouille, Delta) ne tombent que des boss d'aventure
     const cards = (
       await this.cardRepository.find({
         where: { cardSet: { id: booster.cardSet.id } },
         relations: { image: true },
       })
-    ).filter((c) => !requiresAllElements(c.effects));
+    ).filter((c) => c.rarity !== Rarity.SECRET);
     if (!cards.length)
       throw new BadRequestException(`No cards in set ${booster.cardSet.name}`);
 

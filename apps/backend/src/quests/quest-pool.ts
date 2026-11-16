@@ -82,6 +82,7 @@ export const QUEST_POOL: readonly PoolQuest[] = [
     gold(150),
   ),
   daily('d_daily_reward', { type: C.CLAIM_DAILY_REWARD, amount: 1 }, gold(100)),
+  daily('d_puzzle', { type: C.SOLVE_DAILY_PUZZLE, amount: 1 }, gold(100)),
 
   weekly('w_open_15', { type: C.OPEN_BOOSTER, amount: 15 }, booster),
   weekly('w_play_15', { type: C.PLAY_FIGHT, amount: 15 }, gold(500)),

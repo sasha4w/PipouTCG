@@ -313,3 +313,73 @@
 .fh-card:hover .fh-arrow {
   transform: translateX(5px);
 }
+
+/* ── Puzzle (défi du jour) card skin ──────────────────────────────────────── */
+
+.fh-card--puzzle {
+  background: linear-gradient(145deg, #7a1c3b 0%, #4a1526 100%);
+  box-shadow:
+    0 4px 0 #2e0d18,
+    0 8px 32px rgba(122, 28, 59, 0.35);
+  border: 1.5px solid #eebc77;
+}
+
+.fh-card--puzzle:hover:not(:disabled) {
+  box-shadow:
+    0 6px 0 #2e0d18,
+    0 16px 48px rgba(122, 28, 59, 0.5);
+}
+
+.fh-card--puzzle:disabled {
+  cursor: default;
+  filter: grayscale(0.6);
+  opacity: 0.75;
+}
+
+.fh-card--puzzle .fh-card__glow {
+  background: radial-gradient(
+    ellipse at top left,
+    rgba(238, 188, 119, 0.25),
+    transparent 60%
+  );
+}
+
+.fh-card--puzzle .fh-card__icon,
+.fh-card--puzzle .fh-card__title,
+.fh-card--puzzle .fh-card__cta {
+  color: #eebc77;
+}
+
+.fh-card--puzzle .fh-card__desc,
+.fh-card--puzzle .fh-card__features li {
+  color: #f6e3d0;
+}
+
+.fh-card--puzzle .fh-card__cta {
+  border-top-color: rgba(238, 188, 119, 0.3);
+}
+
+.fh-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.fh-badge--todo {
+  background: #eebc77;
+  color: #4a1526;
+}
+
+.fh-badge--done {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fdf6f0;
+}
+
+.fh-badge--none {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f6e3d0;
+}

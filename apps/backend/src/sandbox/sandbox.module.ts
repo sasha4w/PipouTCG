@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Card } from '../cards/card.entity';
 import { FightsModule } from '../fights/fights.module';
 import { TurnTimeoutService } from '../fights/services/turn-timeout.service';
+import { PuzzlesModule } from '../puzzles/puzzles.module';
 import { SandboxScenario } from './sandbox-scenario.entity';
 import { SandboxGateway } from './sandbox.gateway';
 import { SandboxService } from './sandbox.service';
@@ -15,6 +16,7 @@ import { ScenariosController } from './scenarios.controller';
   imports: [
     TypeOrmModule.forFeature([Card, SandboxScenario]),
     FightsModule,
+    PuzzlesModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

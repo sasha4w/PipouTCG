@@ -21,7 +21,9 @@ import {
   isImplanted,
   isPlantedBy,
   isTargetableByEphemeral,
+  chargesOnEquipment,
 } from '@pipou/shared';
+import { addChargeCounters, chargesOf } from '../helpers/charges';
 import { checkCondition } from '../effects/effect-conditions';
 import { canResolveAction } from '../effects/effect-resolvability';
 import { EffectsResolverService } from '../effects-resolver.service';
@@ -172,6 +174,19 @@ export class SupportService {
           sourceMonster: target,
           log,
         });
+        // Protocole Delta .core : +1 compteur par équipement posé
+        for (const charge of chargesOf(player).filter((c) =>
+          chargesOnEquipment(c.baseCard.effects),
+        ))
+          addChargeCounters(
+            game,
+            player,
+            charge,
+            1,
+            (card) =>
+              this.effectsResolver.resolveCharged(card, game, userId, log),
+            log,
+          );
 
         break;
       }

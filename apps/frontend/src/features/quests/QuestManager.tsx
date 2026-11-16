@@ -61,6 +61,7 @@ const CONDITION_LABELS: Record<ConditionType, string> = {
   PLAY_PVE_FIGHT: "Jouer un combat PvE",
   FORGE_CARD: "Forger une carte",
   DESTROY_CARD: "Détruire une carte",
+  SOLVE_DAILY_PUZZLE: "Résoudre le défi du jour",
 };
 
 const STEPS = [

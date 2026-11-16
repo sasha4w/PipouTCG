@@ -37,6 +37,8 @@ import FightPage from "./features/fight/FightPage";
 import AdventureWorlds from "./features/adventure/AdventureWorlds";
 import AdventurePath from "./features/adventure/AdventurePath";
 import AdventureFightRoute from "./features/adventure/AdventureFight";
+import PuzzlePage from "./features/puzzle/PuzzlePage";
+import PuzzlePlayRoute from "./features/puzzle/PuzzlePlay";
 import TutorialFightRoute from "./features/tutorial/TutorialFight";
 import { useQuery } from "@tanstack/react-query";
 import { userService } from "./services/user.service";
@@ -152,6 +154,8 @@ function App() {
                   path="/adventure/fight/:opponentId"
                   element={<AdventureFightRoute />}
                 />
+                <Route path="/puzzle" element={<PuzzlePage />} />
+                <Route path="/puzzle/play" element={<PuzzlePlayRoute />} />
                 <Route
                   path="/tutorial/:lessonId"
                   element={<TutorialFightRoute />}

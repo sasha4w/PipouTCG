@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DECK_RULES } from "@pipou/shared";
 import { IconCards, IconMap, IconSwords } from "../components/Icons";
+import PuzzleCard from "../features/puzzle/PuzzleCard";
 import TutorialEntry from "../features/tutorial/TutorialEntry";
 import "./FightHub.css";
 
@@ -93,6 +94,8 @@ export default function FightHub() {
               {t("adventure.hub.cta")} <span className="fh-arrow">→</span>
             </div>
           </button>
+          {/* ── Défi du jour ─────────────────────────────────────────── */}
+          <PuzzleCard />
         </div>
       </div>
     </div>

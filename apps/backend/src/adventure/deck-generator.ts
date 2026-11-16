@@ -1,4 +1,6 @@
 import {
+  ActionType,
+  graveyardCountRequirement,
   CardType,
   DECK_RULES,
   DrakonElement,
@@ -8,7 +10,7 @@ import {
 } from '@pipou/shared';
 import type { Card } from '../cards/card.entity';
 import { normalizeCardName } from '../fights/effects/card-name';
-import type { Signature } from './signatures';
+import { BOSS_SECRET_CARD, type Signature } from './signatures';
 
 export type DeckEntry = { cardId: number; quantity: number };
 type Level = 1 | 2 | 3 | 4 | 5;
@@ -79,16 +81,28 @@ export function findByName(cards: Card[], name: string): Card | undefined {
   return cards.find((c) => normalizeCardName(c.name) === n);
 }
 
+/** Carte dont un effet invoque une carte précise (Protocole Delta .core). */
+function summonsNamedCard(c: Card): boolean {
+  return (c.effects ?? []).some((e) =>
+    e.actions.some((a) => a.type === ActionType.SUMMON_NAMED),
+  );
+}
+
 /** Pipou, « l'union fait la force » : un maximum de monstres + boosts d'équipe. */
-function pipouPlan(set: Card[], sig: Card): Plan {
+function pipouPlan(set: Card[], sig: Card, level: Level): Plan {
   const forced = [{ card: sig, quantity: isHighRarity(sig) ? 2 : 3 }];
   for (const name of ["Clairon de l'Union", 'Tactique Gang Gang']) {
     const c = findByName(set, name);
     if (c && c.id !== sig.id) forced.push({ card: c, quantity: 2 });
   }
+  if (level === 5) forceBossSecret(forced, set, sig);
   return {
     forced,
-    baseWeight: (c) => (isMonster(c) ? 3 : 1),
+    baseWeight: (c) => {
+      // Maître Magouille n'entre au deck que par le forçage du boss
+      if (graveyardCountRequirement(c.effects)) return 0;
+      return isMonster(c) ? 3 : 1;
+    },
     maxSupports: Math.floor(TARGET_SIZE * 0.4),
   };
 }
@@ -105,6 +119,39 @@ function forceByName(
   const existing = forced.find((f) => f.card.id === c.id);
   if (existing) existing.quantity = Math.max(existing.quantity, quantity);
   else forced.push({ card: c, quantity });
+}
+
+/**
+ * Boss Pipou : Maître Magouille, et assez de monstres Pipou épiques ou
+ * légendaires (2 ex. chacun, 6 cartes ajoutées au plus, id croissant) pour que
+ * sa condition de 4 au cimetière soit atteignable.
+ */
+function forceBossSecret(forced: Plan['forced'], set: Card[], sig: Card): void {
+  const secretName = BOSS_SECRET_CARD.pipou;
+  if (!secretName) return;
+  const secret = findByName(set, secretName);
+  if (!secret) return;
+  forceByName(forced, set, secretName, 1);
+  const high = set
+    .filter(
+      (c) =>
+        isMonster(c) &&
+        c.archetype === 'pipou' &&
+        (c.rarity === Rarity.EPIC || c.rarity === Rarity.LEGENDARY) &&
+        c.id !== secret.id &&
+        c.id !== sig.id,
+    )
+    .sort((a, b) => a.id - b.id);
+  let added = 0;
+  for (const c of high) {
+    if (added >= 6) break;
+    const existing = forced.find((f) => f.card.id === c.id);
+    const extra = Math.min(2 - (existing?.quantity ?? 0), 6 - added);
+    if (extra <= 0) continue;
+    if (existing) existing.quantity += extra;
+    else forced.push({ card: c, quantity: extra });
+    added += extra;
+  }
 }
 
 /**
@@ -134,10 +181,18 @@ function pixelmanPlan(
     forceByName(forced, set, 'Mise à jour .patch', 2);
   if (level >= 4) forceByName(forced, set, 'Restauration .bak', 2);
   if (level === 5) forceByName(forced, set, 'DuplicateX', 1);
+  // Boss : Noyau Delta (secret) et son Protocole, seul moyen de l'invoquer
+  const secret = BOSS_SECRET_CARD.pixelman;
+  if (level === 5 && secret && findByName(set, secret)) {
+    forceByName(forced, set, secret, 1);
+    forceByName(forced, set, 'Protocole Delta .core', 2);
+  }
   return {
     forced,
     baseWeight: (c) => {
       if (isNoyau(c)) return 0; // un seul noyau par deck
+      // Protocole Delta .core : uniquement par le forçage du boss
+      if (summonsNamedCard(c)) return 0;
       if (c.supportType === SupportType.EQUIPMENT) return 3;
       return isSupport(c) ? 2 : 1;
     },
@@ -260,7 +315,7 @@ export function generateDeck(
 
   const plan =
     signature.archetype === 'pipou'
-      ? pipouPlan(setCards, sig)
+      ? pipouPlan(setCards, sig, level)
       : signature.archetype === 'pixelman'
         ? pixelmanPlan(setCards, sig, level, random)
         : dragonPlan(setCards, sig, signature, level, random);

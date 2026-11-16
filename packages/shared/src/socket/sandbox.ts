@@ -1,3 +1,4 @@
+import type { PuzzleSaveBody } from "../api/puzzles";
 import type { Immunity } from "../enums/effect";
 import type { GameAction } from "../game/action";
 import type { CardInstance, CombatMode } from "../game/instance";
@@ -104,6 +105,8 @@ export interface SandboxClientEvents {
   "sandbox:redo": () => void;
   "sandbox:save": (payload: SandboxSavePayload) => void;
   "sandbox:load": (payload: SandboxLoadPayload) => void;
+  /** Enregistre la partie en cours comme défi du jour (brouillon). */
+  "sandbox:save_puzzle": (payload: PuzzleSaveBody) => void;
   "sandbox:close": () => void;
 }
 
@@ -111,6 +114,7 @@ export interface SandboxServerEvents {
   "sandbox:state": (state: SandboxState) => void;
   "sandbox:closed": () => void;
   "sandbox:saved": (payload: { scenarioId: number }) => void;
+  "sandbox:puzzle_saved": (payload: { puzzleId: number }) => void;
   "sandbox:error": (payload: { message: string }) => void;
 }
 

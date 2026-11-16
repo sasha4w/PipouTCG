@@ -615,3 +615,82 @@ describe("déclencheur ON_CHARGED d'une Charge", () => {
     expect(text.rules[0].trigger).toBe(expected[lng]);
   });
 });
+
+describe("secrètes : conditions d'invocation et Protocole Delta", () => {
+  const MAGOUILLE_EFFECTS = [
+    {
+      trigger: "PASSIVE",
+      condition: null,
+      actions: [
+        {
+          type: "SUMMON_IF_GRAVEYARD_COUNT",
+          target: "SELF",
+          value: 4,
+          filter: {
+            archetype: "pipou",
+            type: "monster",
+            rarities: ["epic", "legendary"],
+          },
+        },
+      ],
+    },
+  ] as CardEffect[];
+  const PROTOCOLE_DELTA_EFFECTS = [
+    {
+      trigger: "PASSIVE",
+      condition: null,
+      actions: [{ type: "CHARGE_ON_EQUIPMENT", target: "SELF" }],
+    },
+    {
+      trigger: "ON_CHARGED",
+      condition: null,
+      actions: [
+        {
+          type: "SUMMON_NAMED",
+          target: "PLAYER",
+          filter: { name: "Noyau Delta" },
+        },
+      ],
+    },
+  ] as CardEffect[];
+  const lines = (lng: Lng, card: EffectSourceCard) =>
+    makeT(lng).then((t) =>
+      describeCardEffects(card, t).rules.flatMap((r) =>
+        r.lines.map((l) => l.text),
+      ),
+    );
+
+  it("décrit la condition de Magouille", async () => {
+    expect((await lines("fr", monster(MAGOUILLE_EFFECTS))).join(" ")).toContain(
+      "Invocable seulement avec 4 monstres Pipou Épiques ou Légendaires dans ton cimetière",
+    );
+  });
+
+  it("décrit Protocole Delta", async () => {
+    const text = (
+      await lines("fr", support("CHARGE", PROTOCOLE_DELTA_EFFECTS))
+    ).join(" ");
+    expect(text).toContain("+1 compteur à chaque équipement posé");
+    expect(text).toContain("invoque Noyau Delta");
+  });
+
+  it("Noyau Delta : invocable seulement par un effet", async () => {
+    const card = monster([
+      {
+        trigger: "PASSIVE",
+        condition: null,
+        actions: [{ type: "SUMMON_ONLY_BY_EFFECT", target: "SELF" }],
+      },
+    ] as CardEffect[]);
+    expect((await lines("fr", card)).join(" ")).toContain("que par un effet");
+  });
+
+  it.each(["en", "ko"] as const)("%s : aucune clé manquante", async (lng) => {
+    const all = [
+      ...(await lines(lng, monster(MAGOUILLE_EFFECTS))),
+      ...(await lines(lng, support("CHARGE", PROTOCOLE_DELTA_EFFECTS))),
+    ].join(" ");
+    expect(all).not.toMatch(/effects\./);
+    expect(all).toContain("Noyau Delta");
+  });
+});

@@ -19,6 +19,7 @@ import {
   isPlantedBy,
   isSpecialSummon,
   graveyardHasAllElements,
+  meetsGraveyardCount,
   releveCount,
   requiresAllElements,
 } from '@pipou/shared';
@@ -139,6 +140,9 @@ function pickCandidates(game: GameState, choice: PendingChoice): GameAction[] {
   const byUse = [...fresh].sort(
     (a, b) => cardUsefulness(b.baseCard) - cardUsefulness(a.baseCard),
   );
+  // Sacrifice pour Protocole Delta : le monstre allié le plus faible d'abord
+  if (choice.resolution === 'sacrifice_for_summon')
+    add([...fresh].sort((a, b) => a.baseCard.atk - b.baseCard.atk).slice(0, k));
   add(fresh.slice(0, k));
   add(byUse.slice(0, k));
   add(byUse.slice(-k));
@@ -195,7 +199,14 @@ function mainCandidates(
     const card = me.hand[handIndex].baseCard;
 
     if (card.type === CardType.MONSTER) {
-      const summonable = canSummonFromHand(card) && elementsReady(me, card);
+      // canSummonFromHand écarte aussi Noyau Delta (invocable seulement par effet)
+      const summonable =
+        canSummonFromHand(card) &&
+        elementsReady(me, card) &&
+        meetsGraveyardCount(
+          card.effects,
+          me.graveyard.map((c) => c.baseCard),
+        );
       if (summonable) out.push(...releveCandidates(me, myMonsters, handIndex));
       if (summonable) {
         const free = me.freeSummonInstanceIds.includes(

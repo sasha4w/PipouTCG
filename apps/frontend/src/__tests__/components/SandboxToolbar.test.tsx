@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import "../../i18n";
 import SandboxToolbar from "../../features/sandbox/SandboxToolbar";
 
 function renderToolbar(
@@ -17,6 +18,7 @@ function renderToolbar(
     onUndo: vi.fn(),
     onRedo: vi.fn(),
     onSave: vi.fn(),
+    onSavePuzzle: vi.fn(),
     onClose: vi.fn(),
     ...over,
   };
@@ -51,5 +53,20 @@ describe("SandboxToolbar", () => {
     await userEvent.click(screen.getByRole("button", { name: /Sauver/ }));
 
     expect(props.onSave).toHaveBeenCalledWith("Combo Zeta", undefined);
+  });
+});
+
+describe("SandboxToolbar : enregistrer comme défi", () => {
+  const NAME = /Save as puzzle|Enregistrer comme défi/;
+
+  it("déclenche l'enregistrement quand la position est valide", async () => {
+    const props = renderToolbar();
+    await userEvent.click(screen.getByRole("button", { name: NAME }));
+    expect(props.onSavePuzzle).toHaveBeenCalledTimes(1);
+  });
+
+  it("désactive le bouton hors phase principale", () => {
+    renderToolbar({ canSavePuzzle: false });
+    expect(screen.getByRole("button", { name: NAME })).toBeDisabled();
   });
 });

@@ -15,6 +15,9 @@ import {
   MatchEndReason,
   MatchStatus,
   ProductType,
+  PuzzleObjectiveType,
+  PuzzleScheduleOrigin,
+  PuzzleStatus,
   QuestConditionType,
   QuestResetType,
   QuestRewardType,
@@ -43,8 +46,11 @@ describe("enum values match the backend database values", () => {
     [
       "QuestConditionType",
       QuestConditionType,
-      ["OPEN_BOOSTER", "BUY_CARD", "SELL_CARD", "BUY_BOOSTER", "SELL_BOOSTER", "OWN_CARD", "COMPLETE_SET", "REACH_LEVEL", "WIN_FIGHT", "PLAY_FIGHT", "OBTAIN_CARD", "CLAIM_DAILY_REWARD", "LIST_CARD", "EARN_GOLD", "COMPLETE_QUEST", "WIN_PVP_FIGHT", "WIN_PVE_FIGHT", "PLAY_PVP_FIGHT", "PLAY_PVE_FIGHT", "FORGE_CARD", "DESTROY_CARD"],
+      ["OPEN_BOOSTER", "BUY_CARD", "SELL_CARD", "BUY_BOOSTER", "SELL_BOOSTER", "OWN_CARD", "COMPLETE_SET", "REACH_LEVEL", "WIN_FIGHT", "PLAY_FIGHT", "OBTAIN_CARD", "CLAIM_DAILY_REWARD", "LIST_CARD", "EARN_GOLD", "COMPLETE_QUEST", "WIN_PVP_FIGHT", "WIN_PVE_FIGHT", "PLAY_PVP_FIGHT", "PLAY_PVE_FIGHT", "FORGE_CARD", "DESTROY_CARD", "SOLVE_DAILY_PUZZLE"],
     ],
+    ["PuzzleObjectiveType", PuzzleObjectiveType, ["WIN_GAME", "DESTROY_MONSTER", "CLEAR_ENEMY_BOARD", "TAKE_PRIMES"]],
+    ["PuzzleStatus", PuzzleStatus, ["draft", "published"]],
+    ["PuzzleScheduleOrigin", PuzzleScheduleOrigin, ["manual", "auto"]],
     ["ConditionOperator", ConditionOperator, ["AND", "OR"]],
     ["DailyRewardType", DailyRewardType, ["gold", "card", "booster", "bundle"]],
     ["MatchStatus", MatchStatus, ["in_progress", "finished", "abandoned"]],
@@ -82,6 +88,7 @@ describe("enum values match the backend database values", () => {
       "DUPLICATE_MONSTER", "INSTANT_EVOLUTION", "ALLOW_EVOLUTION_THIS_TURN", "VIRUS_ATK_DEBUFF", "REFLECT_DAMAGE", "RELEVE", "SUMMON_IF_ALL_ELEMENTS", "COPY_GRAVEYARD_EFFECTS",
       "SET_COMBAT_DESTRUCTION_IMMUNITY", "SET_SUPPORT_DEBUFF_IMMUNITY", "SET_MONSTER_DEBUFF_IMMUNITY", "SET_MONSTER_STATUS_IMMUNITY", "ADD_CHARGE_COUNTERS",
       "GRANT_EXTRA_ATTACK", "TRANSFER_HALF_ATK", "FORCE_EVOLVE", "REQUIRES_CARD_ON_BOARD",
+      "SUMMON_IF_GRAVEYARD_COUNT", "SUMMON_ONLY_BY_EFFECT", "CHARGE_ON_EQUIPMENT", "SUMMON_NAMED",
     ]);
   });
 

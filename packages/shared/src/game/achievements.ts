@@ -67,6 +67,8 @@ export const ACHIEVEMENTS: readonly AchievementDefinition[] = [
   { family: AchievementFamily.PVE_WON, tiers: tiers(5, 50, 200) },
   { family: AchievementFamily.PVE_PLAYED, tiers: tiers(10, 100, 300) },
   { family: AchievementFamily.TUTORIAL_LESSONS, tiers: tiers(1, 4, TUTORIAL_LESSONS.length) },
+  { family: AchievementFamily.PUZZLES_SOLVED, tiers: tiers(5, 30, 100) },
+  { family: AchievementFamily.PUZZLE_STREAK, tiers: tiers(3, 7, 30) },
 ];
 
 export const ACHIEVEMENT_TOTAL = ACHIEVEMENTS.length * 3;

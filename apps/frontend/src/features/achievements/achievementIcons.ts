@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { AchievementFamily } from "@pipou/shared";
 import {
   IconBooster,
+  IconBulb,
   IconCards,
   IconCart,
   IconCollection,
@@ -17,6 +18,7 @@ import {
   IconRobot,
   IconSwords,
   IconTag,
+  IconTarget,
   IconTrophy,
 } from "../../components/Icons";
 
@@ -41,4 +43,6 @@ export const FAMILY_ICON: Record<AchievementFamily, FamilyIcon> = {
   [AchievementFamily.PVE_WON]: IconSwords,
   [AchievementFamily.PVE_PLAYED]: IconRobot,
   [AchievementFamily.TUTORIAL_LESSONS]: IconScroll,
+  [AchievementFamily.PUZZLES_SOLVED]: IconBulb,
+  [AchievementFamily.PUZZLE_STREAK]: IconTarget,
 };

@@ -116,3 +116,9 @@ export const LAUNCH_PERSONAS: Record<
     },
   ],
 };
+
+/** Carte secrète que fait tomber le boss de niveau 5, quand ce n'est pas sa signature. */
+export const BOSS_SECRET_CARD: Partial<Record<AdventureArchetype, string>> = {
+  pipou: 'Maître Magouille',
+  pixelman: 'Noyau Delta',
+};
