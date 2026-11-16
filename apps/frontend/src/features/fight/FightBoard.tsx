@@ -47,10 +47,13 @@ import {
   canSummonFromHand,
   canSummonOnEnemySide,
   evolutionCost,
+  graveyardCountRequirement,
   graveyardHasAllElements,
   isBoardPhase,
   isSpecialSummon,
+  meetsGraveyardCount,
   requiresAllElements,
+  summonOnlyByEffect,
   ephemeralTargetSide,
   isImplanted,
   isPlantedBy,
@@ -385,6 +388,14 @@ export default function FightBoard({
     !!selectedInstance &&
     requiresAllElements(selectedInstance.baseCard.effects) &&
     graveyardHasAllElements(gs.me.graveyard.map((c) => c.baseCard));
+  // Carte à condition de cimetière (Maître Magouille) : grisée tant qu'elle manque
+  const graveyardBlocked =
+    !!selectedInstance &&
+    !meetsGraveyardCount(
+      selectedInstance.baseCard.effects,
+      gs.me.graveyard.map((c) => c.baseCard),
+    );
+  const summonBlocked = evolvesOnly || graveyardBlocked;
   // Phase de contrôle : seules l'évolution et les Origines se paient en cartes
   const canPayWithHand =
     phase === "main" || evolvableTargets.length > 0 || originsReady;
@@ -571,7 +582,7 @@ export default function FightBoard({
           setShowSummonModal(true);
           return;
         }
-        if (evolvesOnly) return;
+        if (summonBlocked) return;
         const card = mappedHand[selectedCard];
 
         if (card?.type === "monster") {
@@ -804,6 +815,26 @@ export default function FightBoard({
     ];
     for (const c of gs.me.hand) {
       const base = c.baseCard;
+      if (base.type === "monster") {
+        if (summonOnlyByEffect(base.effects))
+          unplayableReasons.set(
+            c.instanceId,
+            t("fight.unplayable.onlyByEffect"),
+          );
+        else if (
+          !meetsGraveyardCount(
+            base.effects,
+            gs.me.graveyard.map((g) => g.baseCard),
+          )
+        )
+          unplayableReasons.set(
+            c.instanceId,
+            t("fight.unplayable.graveyardCount", {
+              count: graveyardCountRequirement(base.effects)?.value ?? 0,
+            }),
+          );
+        continue;
+      }
       if (base.type !== "support") continue;
       if (base.supportType === "EQUIPMENT") {
         if (equipTargets.every((m) => equipIntent(m, base).kind === "blocked"))
@@ -1003,7 +1034,7 @@ export default function FightBoard({
               (phase === "main" || (phase === "end" && originsReady)) &&
               selectedHandCard?.type === "monster" &&
               !isZeta &&
-              !evolvesOnly
+              !summonBlocked
             }
             highlightInstanceIds={myHighlightIds}
             dimInstanceIds={blockedEquipIds}

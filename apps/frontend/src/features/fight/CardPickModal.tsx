@@ -43,6 +43,7 @@ const RESOLUTION_ICON: Record<PendingChoiceResolution, ReactNode> = {
   transfer_atk_source: null,
   transfer_atk_target: null,
   force_evolve: null,
+  sacrifice_for_summon: null,
 };
 
 const RESOLUTION_CONFIRM_ICON: Record<PendingChoiceResolution, ReactNode> = {
@@ -53,6 +54,7 @@ const RESOLUTION_CONFIRM_ICON: Record<PendingChoiceResolution, ReactNode> = {
   transfer_atk_source: null,
   transfer_atk_target: null,
   force_evolve: null,
+  sacrifice_for_summon: null,
 };
 
 /** Couleur de fond de l'en-tête selon la nature de l'action */
@@ -64,6 +66,7 @@ const RESOLUTION_HEADER_BG: Record<PendingChoiceResolution, string> = {
   transfer_atk_source: "#fdf6f9",
   transfer_atk_target: "#fdf6f9",
   force_evolve: "#fdf6f9",
+  sacrifice_for_summon: "#fdf6f9",
 };
 
 const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
@@ -74,6 +77,7 @@ const RESOLUTION_HEADER_COLOR: Record<PendingChoiceResolution, string> = {
   transfer_atk_source: "#7a1c3b",
   transfer_atk_target: "#7a1c3b",
   force_evolve: "#7a1c3b",
+  sacrifice_for_summon: "#7a1c3b",
 };
 
 const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
@@ -84,6 +88,7 @@ const RESOLUTION_BTN_BG: Record<PendingChoiceResolution, string> = {
   transfer_atk_source: "#7a1c3b",
   transfer_atk_target: "#7a1c3b",
   force_evolve: "#7a1c3b",
+  sacrifice_for_summon: "#7a1c3b",
 };
 
 const SOURCE_ICON: Record<ClientChoiceCandidate["source"], ReactNode> = {

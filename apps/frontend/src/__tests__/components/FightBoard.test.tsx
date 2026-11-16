@@ -202,6 +202,75 @@ describe("FightBoard — évolution", () => {
   });
 });
 
+describe("FightBoard — invocation conditionnée par les effets", () => {
+  const passive = (type: string, extra: object = {}) => [
+    {
+      trigger: "PASSIVE",
+      condition: null,
+      actions: [{ type, target: "SELF", ...extra }],
+    },
+  ];
+  const handWith = (
+    name: string,
+    effects: unknown,
+    graveyard: CardInstance[] = [],
+  ): GameState => {
+    const gs = state(5);
+    gs.me.hand = [
+      {
+        instanceId: "carte",
+        ownerId: 1,
+        baseCard: {
+          ...monster().card.baseCard,
+          name,
+          effects,
+        } as CardInstance["baseCard"],
+      },
+    ];
+    gs.me.graveyard = graveyard;
+    return gs;
+  };
+  const epicPipou = (i: number): CardInstance => ({
+    instanceId: `g${i}`,
+    ownerId: 1,
+    baseCard: {
+      ...monster().card.baseCard,
+      archetype: "pipou",
+      rarity: "epic",
+    } as CardInstance["baseCard"],
+  });
+  const magouille = passive("SUMMON_IF_GRAVEYARD_COUNT", {
+    value: 4,
+    filter: { archetype: "pipou", type: "monster", rarities: ["epic", "legendary"] },
+  });
+
+  it("Noyau Delta en main ne peut pas être posé sur une zone monstre", () => {
+    const { zones, props } = renderBoard(
+      handWith("Noyau Delta", passive("SUMMON_ONLY_BY_EFFECT")),
+    );
+    expect(zones[2]).not.toHaveClass("zr-zone--pulse-target");
+    fireEvent.click(zones[2]);
+    expect(props.onSummon).not.toHaveBeenCalled();
+    expect(props.onSetSelectedZone).not.toHaveBeenCalled();
+  });
+
+  it("Magouille sans la condition de cimetière : zone non ciblable", () => {
+    const { zones, props } = renderBoard(
+      handWith("Magouille", magouille, [epicPipou(1)]),
+    );
+    expect(zones[2]).not.toHaveClass("zr-zone--pulse-target");
+    fireEvent.click(zones[2]);
+    expect(props.onSetSelectedZone).not.toHaveBeenCalled();
+  });
+
+  it("Magouille avec 4 monstres Pipou Épiques : zone ciblable", () => {
+    const { zones } = renderBoard(
+      handWith("Magouille", magouille, [1, 2, 3, 4].map(epicPipou)),
+    );
+    expect(zones[2]).toHaveClass("zr-zone--pulse-target");
+  });
+});
+
 // ─── Noyau Zeta : implantation, désinfection, équipement ─────────────────────
 
 const zetaCard = (): CardInstance["baseCard"] => ({

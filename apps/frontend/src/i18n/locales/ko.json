@@ -520,7 +520,11 @@
           "GRANT_EXTRA_ATTACK": "이번 턴 추가 공격을 부여",
           "TRANSFER_HALF_ATK": "몬스터 공격력의 절반을 코어에 이전",
           "FORCE_EVOLVE": "카드 없이 드라콘을 진화",
-          "REQUIRES_CARD_ON_BOARD": "특정 카드가 필드에 있어야 함"
+          "REQUIRES_CARD_ON_BOARD": "특정 카드가 필드에 있어야 함",
+          "SUMMON_IF_GRAVEYARD_COUNT": "묘지에 카드가 충분하면 소환",
+          "SUMMON_ONLY_BY_EFFECT": "효과로만 소환",
+          "CHARGE_ON_EQUIPMENT": "놓은 장비를 셉니다",
+          "SUMMON_NAMED": "특정 카드를 소환"
         }
       },
     "title": "관리자 대시보드",
@@ -682,6 +686,10 @@
       "REFLECT_DAMAGE_many": "{{target}}에게 **{{kw}}** 부여: 받은 전투 피해의 {{value}}%를 공격자에게 돌려줍니다.",
       "RELEVE": "**{{kw}}** ({{value}}): 비용 대신 내 필드의 Pipou 아군 {{value}}명을 묘지로 보내 소환할 수 있습니다.",
       "SUMMON_IF_ALL_ELEMENTS": "묘지에 각 원소(대지, 불, 물, 바람)의 성체 또는 고대종이 있어야만 소환할 수 있습니다.",
+      "SUMMON_IF_GRAVEYARD_COUNT": "묘지에 {{cards}} {{value}}장 이상이 있어야만 소환할 수 있습니다.",
+      "SUMMON_ONLY_BY_EFFECT": "효과로만 소환할 수 있으며, 손패에서는 낼 수 없습니다.",
+      "CHARGE_ON_EQUIPMENT": "장비를 놓을 때마다 카운터 +1.",
+      "SUMMON_NAMED": "이 카드는 {{name}}을(를) 손패 또는 덱에서 소환합니다. 필드가 가득 차면 먼저 내 몬스터 하나를 묘지로 보냅니다.",
       "COPY_GRAVEYARD_EFFECTS": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
       "COPY_GRAVEYARD_EFFECTS_you": "내 묘지의 성체 또는 고대종 하나를 고르세요: 이 몬스터가 그 효과를 모두 복사합니다.",
       "SET_COMBAT_DESTRUCTION_IMMUNITY": "{{target}}에게 **{{kw}}** 부여.",
@@ -693,6 +701,10 @@
       "name": "이름에 '{{name}}' 포함",
       "excludeName": "'{{name}}' 제외"
     },
+    "graveyardCards": "{{archetype}} {{rarities}} {{noun}}",
+    "or": " 또는 ",
+    "cardNoun": {"monster": "몬스터", "support": "서포트", "any": "카드"},
+    "rarityAdj": {"common": "커먼", "uncommon": "언커먼", "rare": "레어", "epic": "에픽", "legendary": "레전더리", "secret": "시크릿"},
     "stage": {
       "egg": "알",
       "baby": "아기",
@@ -942,7 +954,8 @@
         "copy_effects": "이 능력 복사",
         "transfer_atk_source": "추출",
         "transfer_atk_target": "전송",
-        "force_evolve": "진화"
+        "force_evolve": "진화",
+        "sacrifice_for_summon": "희생"
       },
       "hintTarget": "대상 몬스터를 선택하세요",
       "hint": "카드 {{count}}장을 선택하세요",
@@ -958,7 +971,9 @@
         "baby_lineage": "가져올 베이비 {{lineage}}을(를) 고르세요 (묘지 또는 덱)",
         "extract_source": "공격력 절반을 빼앗을 몬스터를 선택하세요",
         "extract_target": "공격력 {{amount}}을 받을 코어를 선택하세요",
-        "meditate": "진화할 드라콘을 선택하세요"
+        "meditate": "진화할 드라콘을 선택하세요",
+        "delta_summon": "소환할 카드를 선택하세요",
+        "delta_sacrifice": "묘지로 보낼 몬스터를 선택하세요"
       }
     },
     "summon": {
@@ -1146,7 +1161,9 @@
       "supportZonesFull": "서포트 구역이 가득 찼습니다",
       "alreadyInPlay": "이미 필드에 있습니다",
       "needsCard": "필드에 {{name}} 필요",
-      "noEquipTarget": "이 장비를 착용할 수 있는 소환된 몬스터가 없습니다"
+      "noEquipTarget": "이 장비를 착용할 수 있는 소환된 몬스터가 없습니다",
+      "onlyByEffect": "효과로만 소환할 수 있음",
+      "graveyardCount": "묘지에 카드 {{count}}장 필요"
     },
     "yourTurn": "당신의 차례!"
   },
