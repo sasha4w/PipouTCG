@@ -1,7 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { applyBalancePatches } from '../apply-balance-patches';
-import { BOSS_SECRET_CARD } from '../../adventure/signatures';
 import { PROTOCOLE_DELTA, SECRETES_PATCHES } from '../secretes-2026-11-patches';
 
 /** Archétype du boss (JSON `signature`). */
@@ -15,7 +14,14 @@ const BOSS_DECK_CARDS: { archetype: string; card: string; quantity: number }[] =
     { archetype: 'pixelman', card: 'Noyau Delta', quantity: 1 },
     { archetype: 'pixelman', card: PROTOCOLE_DELTA.name, quantity: 2 },
   ];
-const SECRETS = Object.entries(BOSS_SECRET_CARD);
+/**
+ * Butin secret par archétype, figé ici : une migration ne doit pas changer
+ * quand le code applicatif (`BOSS_SECRET_CARD`) évolue.
+ */
+const SECRETS: [string, string][] = [
+  ['pipou', 'Maître Magouille'],
+  ['pixelman', 'Noyau Delta'],
+];
 
 /** Magouille et Delta renforcés, Protocole Delta .core, butin secret des boss de niveau 5. */
 export class SecretesBoss1791000000032 implements MigrationInterface {

@@ -323,6 +323,26 @@ describe('cartes clés du rééquilibrage', () => {
     );
   });
 
+  it('Pixelman niveaux 1-4 : jamais de Protocole Delta .core', () => {
+    const set = setOf('pixelman');
+    for (const seed of SEEDS)
+      for (const level of [1, 2, 3, 4] as const)
+        expect(
+          qty(set, deckOf('pixelman', level, seed), 'Protocole Delta .core'),
+        ).toBe(0);
+  });
+
+  it('Pipou niveaux 1-4 : jamais de Maître Magouille ; niveau 5 : exactement 1', () => {
+    const set = setOf('pipou');
+    for (const seed of SEEDS) {
+      for (const level of [1, 2, 3, 4] as const)
+        expect(qty(set, deckOf('pipou', level, seed), 'Maître Magouille')).toBe(
+          0,
+        );
+      expect(qty(set, deckOf('pipou', 5, seed), 'Maître Magouille')).toBe(1);
+    }
+  });
+
   it('Pipou boss (niveau 5) : Maître Magouille et 6 Pipou épiques/légendaires', () => {
     const set = setOf('pipou');
     const cards = byId(set);

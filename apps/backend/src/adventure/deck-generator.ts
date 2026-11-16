@@ -1,4 +1,6 @@
 import {
+  ActionType,
+  graveyardCountRequirement,
   CardType,
   DECK_RULES,
   DrakonElement,
@@ -79,6 +81,13 @@ export function findByName(cards: Card[], name: string): Card | undefined {
   return cards.find((c) => normalizeCardName(c.name) === n);
 }
 
+/** Carte dont un effet invoque une carte précise (Protocole Delta .core). */
+function summonsNamedCard(c: Card): boolean {
+  return (c.effects ?? []).some((e) =>
+    e.actions.some((a) => a.type === ActionType.SUMMON_NAMED),
+  );
+}
+
 /** Pipou, « l'union fait la force » : un maximum de monstres + boosts d'équipe. */
 function pipouPlan(set: Card[], sig: Card, level: Level): Plan {
   const forced = [{ card: sig, quantity: isHighRarity(sig) ? 2 : 3 }];
@@ -89,7 +98,11 @@ function pipouPlan(set: Card[], sig: Card, level: Level): Plan {
   if (level === 5) forceBossSecret(forced, set, sig);
   return {
     forced,
-    baseWeight: (c) => (isMonster(c) ? 3 : 1),
+    baseWeight: (c) => {
+      // Maître Magouille n'entre au deck que par le forçage du boss
+      if (graveyardCountRequirement(c.effects)) return 0;
+      return isMonster(c) ? 3 : 1;
+    },
     maxSupports: Math.floor(TARGET_SIZE * 0.4),
   };
 }
@@ -178,6 +191,8 @@ function pixelmanPlan(
     forced,
     baseWeight: (c) => {
       if (isNoyau(c)) return 0; // un seul noyau par deck
+      // Protocole Delta .core : uniquement par le forçage du boss
+      if (summonsNamedCard(c)) return 0;
       if (c.supportType === SupportType.EQUIPMENT) return 3;
       return isSupport(c) ? 2 : 1;
     },

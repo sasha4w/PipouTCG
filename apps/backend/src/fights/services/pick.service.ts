@@ -112,7 +112,14 @@ export class PickService {
         // La carte a quitté la main et le deck avant le choix
         addLog(game, `💨 Plus de carte à invoquer : l'effet se dissipe`);
         fizzled = true;
-      } else if (zone !== -1) {
+      } else if (zone === -1) {
+        // Le monstre choisi a quitté le terrain avant la validation
+        addLog(
+          game,
+          `💨 Le monstre à sacrifier a disparu : l'effet se dissipe`,
+        );
+        fizzled = true;
+      } else {
         const log: string[] = [];
         this.effectsResolver.destroyMonster(game, player, picked[0], log, {
           draw: false,
