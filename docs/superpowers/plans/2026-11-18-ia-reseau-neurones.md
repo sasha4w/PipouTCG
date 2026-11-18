@@ -1424,6 +1424,18 @@ export function parseNote(raw: string | undefined, fallback: Note): Note {
    Dans le test « niveau 3 : même coup que le planificateur de son profil », construire la référence avec la même note :
    `new AiPlayer(engine, () => 0, LEVEL_BRAINS[3].thinking, LEVEL_BRAINS[3].temperature, evaluatorOf(defaultNote()))`.
 8. `apps/backend/package.json` : supprimer les lignes `"ai:selfplay-data"` et `"ai:train"`.
+9. `ai-selfplay-log.cli.ts` : option `--note`, pour relire avec `ai:review` les parties jouées par le réseau. `brainOf` (tournoi) applique déjà `e.note` aux cerveaux `level`, `plan` et `greedy`. Ajouter `import { parseNote } from './note';`. Compléter le commentaire d'usage avec `[--note legacy|nn|poids.json]` et la phrase « Note des deux IA : legacy par défaut. ». Remplacer les lignes de `a` et `b` :
+
+```ts
+  // Cerveau du niveau, comme en aventure (sans brain, le tournoi joue glouton)
+  const brain = (f.brain ?? 'level') as Brain;
+  const note = parseNote(f.note, 'legacy');
+  const a = { ...pick(f.a ?? 'pipou niveau 3'), brain, note };
+  const b = { ...pick(f.b ?? 'dragon niveau 3'), brain, note };
+```
+
+   Essai : `pnpm --filter @pipou/backend ai:selfplay-log $env:TEMP/nn.jsonl --games 1 --note src/fights/ai/nn/parity-fixture.json`. Ce fichier n'existe qu'à partir de la tâche 9 ; d'ici là, tester avec `--note nn`, qui se replie sur la note manuelle et affiche un avertissement. Puis `ai:review list $env:TEMP/nn.jsonl`.
+   Expected: une ligne `partie 1 …`, puis la liste des décisions.
 
 - [ ] **Step 5: Vérifier**
 
