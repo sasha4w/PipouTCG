@@ -5,7 +5,7 @@ import type { Card } from '../../cards/card.entity';
 import { allRealCards } from '../testing/real-cards';
 import { buildGeneratedEntries } from './generated-entries';
 import { mergeResults, planGames, playPlanned } from './tournament';
-import type { Note } from './learned-eval';
+import type { Note } from './note';
 import type { ThinkingProfile } from './planner';
 import type {
   Brain,

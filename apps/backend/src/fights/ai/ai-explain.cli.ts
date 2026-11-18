@@ -1,6 +1,6 @@
 import { readDecisions } from './decision-log';
 import { describeAction } from './ai-review';
-import { evaluatorOf, parseNote } from './learned-eval';
+import { evaluatorOf, parseNote } from './note';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
 
@@ -9,7 +9,7 @@ import { fixedRng } from '../testing/fixed-rng';
  * enregistré (vrai moteur) et affiche l'écart de chaque morceau du score avec
  * le coup choisi.
  *
- *   pnpm --filter @pipou/backend ai:explain <journal.jsonl> <id> [--note <legacy|learned|fichier.json>]
+ *   pnpm --filter @pipou/backend ai:explain <journal.jsonl> <id> [--note <legacy|nn|fichier.json>]
  *
  * Le rejeu voit l'état complet, pas la vue déterminisée de l'IA : les scores
  * peuvent différer un peu de ceux du journal quand des cartes cachées comptent.

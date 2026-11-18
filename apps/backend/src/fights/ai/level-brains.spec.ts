@@ -5,6 +5,7 @@ import { AiPlayer } from './ai-player';
 import type { AiProfile } from './ai-player';
 import { listCandidates } from './candidate-actions';
 import { LEVEL_BRAINS, createLevelAi } from './level-brains';
+import { defaultNote, evaluatorOf } from './note';
 import { STRONGEST } from './planner';
 import type { ThinkingProfile } from './planner';
 
@@ -91,16 +92,18 @@ describe('createLevelAi', () => {
     expect(
       createLevelAi(engine, 3, () => 0).chooseAction(game, 'p2', level(3)),
     ).toEqual(
-      new AiPlayer(engine, () => 0, LEVEL_BRAINS[3].thinking).chooseAction(
-        game,
-        'p2',
-        level(3),
-      ),
+      new AiPlayer(
+        engine,
+        () => 0,
+        LEVEL_BRAINS[3].thinking,
+        LEVEL_BRAINS[3].temperature,
+        evaluatorOf(defaultNote()),
+      ).chooseAction(game, 'p2', level(3)),
     );
   });
 
-  it('tant que la note apprise n’est pas adoptée, tous les niveaux gardent la manuelle', () => {
+  it('aucun niveau ne fixe sa note : AI_EVAL décide (réseau par défaut)', () => {
     for (const level of [1, 2, 3, 4, 5] as const)
-      expect(LEVEL_BRAINS[level].note ?? 'legacy').toBe('legacy');
+      expect(LEVEL_BRAINS[level].note).toBeUndefined();
   });
 });

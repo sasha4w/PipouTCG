@@ -90,10 +90,10 @@ describe('mirrorEntries', () => {
   });
 
   it('avec deux notes : même planificateur, notes différentes', () => {
-    const [recent, old] = mirrorEntries(1, 0, undefined, 'learned', 'legacy');
+    const [recent, old] = mirrorEntries(1, 0, undefined, 'nn', 'legacy');
     expect(recent.brain).toBe('plan');
     expect(old.brain).toBe('plan');
-    expect(recent.note).toBe('learned');
+    expect(recent.note).toBe('nn');
     expect(old.note).toBe('legacy');
     expect(recent.deck).toBe(old.deck);
   });

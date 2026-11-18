@@ -4,14 +4,16 @@ import { fileSink } from './decision-log';
 import { buildGeneratedEntries } from './generated-entries';
 import { MAX_ACTIONS, playGame } from './tournament';
 import type { Brain } from './tournament';
+import { parseNote } from './note';
 
 /**
  * Parties IA contre IA avec journal des décisions, à relire avec `ai:review`.
  *
  *   pnpm --filter @pipou/backend ai:selfplay-log <journal.jsonl> \
- *       [--a "pipou niveau 3"] [--b "dragon niveau 3"] [--games 2] [--seed 1] [--brain level|greedy|plan]
+ *       [--a "pipou niveau 3"] [--b "dragon niveau 3"] [--games 2] [--seed 1] [--brain level|greedy|plan] [--note legacy|nn|poids.json]
  *
  * La partie k joue avec la graine `seed + k` et les sièges alternent.
+ * Note des deux IA : legacy par défaut.
  * Le fichier est écrasé.
  */
 function flags(args: string[]): Record<string, string> {
@@ -42,8 +44,9 @@ function main(argv: string[]): void {
   };
   // Cerveau du niveau, comme en aventure (sans brain, le tournoi joue glouton)
   const brain = (f.brain ?? 'level') as Brain;
-  const a = { ...pick(f.a ?? 'pipou niveau 3'), brain };
-  const b = { ...pick(f.b ?? 'dragon niveau 3'), brain };
+  const note = parseNote(f.note, 'legacy');
+  const a = { ...pick(f.a ?? 'pipou niveau 3'), brain, note };
+  const b = { ...pick(f.b ?? 'dragon niveau 3'), brain, note };
 
   writeFileSync(out, '');
   const sink = fileSink(out);

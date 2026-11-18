@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { cpus } from 'node:os';
 import { join } from 'node:path';
-import { parseNote } from './learned-eval';
+import { parseNote } from './note';
 import { formatDetail, formatMirror, formatSummary } from './report';
 import { SCALES, planJobs, planMirrorJobs, runJobs } from './tournament-jobs';
 import type { ThinkingProfile } from './planner';
@@ -26,7 +26,7 @@ function num(name: string, fallback: number): number {
  * `--brain max|niveau|greedy` (max par défaut : le plus fort, sans erreur ;
  * niveau : le cerveau d'aventure de chaque niveau), `--mirror` (nouveau contre ancien),
  * `--thinking <json>` (essai de réglage du planificateur),
- * `--note <legacy|learned|fichier.json>` (note des decks, ou du nouveau cerveau en miroir),
+ * `--note <legacy|nn|fichier.json>` (note des decks, ou du nouveau cerveau en miroir),
  * `--old-note <…>` (miroir : l'ancien planifie avec cette note),
  * `--sans "Carte A,Carte B"` (cartes retirées du tirage des decks).
  */
@@ -60,8 +60,8 @@ async function main(): Promise<void> {
   const noteTag =
     note === 'legacy'
       ? ''
-      : note === 'learned'
-        ? '-apprise'
+      : note === 'nn'
+        ? '-reseau'
         : `-gen${note.generation}`;
   const suffix = { plan: '', level: '-niveau', greedy: '-glouton' }[brain];
   const label = `${mirror ? 'miroir-' : ''}${scaleName ?? `graine-decks-${deckSeeds[0]}`}${mirror ? '' : suffix}${raw('sans') ? '-sans-cartes' : ''}${noteTag}`;

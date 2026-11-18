@@ -11,8 +11,7 @@ import {
   playPlanned,
   runTournament,
 } from './tournament';
-import { FEATURE_NAMES } from './features';
-import type { LearnedWeights } from './learned-eval';
+import { randomWeights } from '../testing/nn-weights';
 import type { Brain, TournamentEntry } from './tournament';
 
 jest.setTimeout(120_000);
@@ -171,18 +170,7 @@ describe('brainOf : note', () => {
     level: 5 as const,
     deck: [],
   };
-  const custom: LearnedWeights = {
-    generation: 9,
-    trainedAt: 'test',
-    positions: 0,
-    holdoutAccuracy: 0,
-    features: [...FEATURE_NAMES],
-    weights: {
-      pipou: FEATURE_NAMES.map(() => 0),
-      pixelman: FEATURE_NAMES.map(() => 0),
-      dragon: FEATURE_NAMES.map(() => 0),
-    },
-  };
+  const custom = randomWeights(9);
 
   it('note manuelle par défaut', () => {
     expect(brainOf({ ...base, brain: 'plan' }).note).toBe('legacy');

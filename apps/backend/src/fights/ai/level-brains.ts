@@ -1,8 +1,8 @@
 import type { GameEngine } from '../engine/game-engine';
 import { AiPlayer } from './ai-player';
 import type { AiLevel } from './ai-player';
-import { evaluatorOf } from './learned-eval';
-import type { Note } from './learned-eval';
+import { defaultNote, evaluatorOf } from './note';
+import type { Note } from './note';
 import { STRONGEST } from './planner';
 import type { ThinkingProfile } from './planner';
 
@@ -63,6 +63,6 @@ export function createLevelAi(
     random,
     thinking,
     temperature,
-    evaluatorOf(note ?? 'legacy'),
+    evaluatorOf(note ?? defaultNote()),
   );
 }

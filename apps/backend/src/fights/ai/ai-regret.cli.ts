@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { createEngine } from '../testing/engine';
 import { fixedRng } from '../testing/fixed-rng';
-import { evaluatorOf, parseNote } from './learned-eval';
+import { evaluatorOf, parseNote } from './note';
 import { regretOf } from './regret';
 import type { BenchPosition } from './regret';
 
 /**
  * Regret d'une note sur le banc de positions (`ai:rollout`).
  *
- *   pnpm --filter @pipou/backend ai:regret <banc.jsonl> [--note legacy|learned|fichier.json]
+ *   pnpm --filter @pipou/backend ai:regret <banc.jsonl> [--note legacy|nn|fichier.json]
  *
  * Regret : taux de victoire du meilleur coup moins celui du coup préféré par
  * la note. Plus bas, mieux c'est.
