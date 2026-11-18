@@ -43,3 +43,10 @@ reports
 
 # graphify (graphe généré, reconstruit par `graphify update .`)
 graphify-out
+
+# entraînement de l'IA
+tools/ai-train/.venv/
+tools/ai-train/data/
+tools/ai-train/runs/
+__pycache__/
+.ipynb_checkpoints/
