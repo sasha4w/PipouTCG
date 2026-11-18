@@ -1,4 +1,11 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { cpus } from 'node:os';
 import { join, resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -16,15 +23,27 @@ import { arg, forkShards, num } from './shards';
  *
  * Écrit part-<k>.jsonl.gz par processus, meta.json, puis done.json en dernier.
  */
+function positive(name: string, value: number): number {
+  if (!Number.isFinite(value) || value <= 0)
+    throw new Error(`--${name} doit être un nombre fini > 0 (reçu ${value})`);
+  return value;
+}
+
 function options() {
   return {
-    games: num('games', 100),
+    games: positive('games', num('games', 100)),
     seed: num('seed', 1),
     note: parseNote(arg('note'), 'legacy'),
-    budget: num('budget', 2000),
+    budget: positive('budget', num('budget', 2000)),
     temperature: num('temperature', 50),
     exploreDecisions: num('explore-decisions', 8),
   };
+}
+
+/** Écriture atomique : un lecteur voit l'ancien fichier ou le nouveau, jamais un demi-fichier. */
+function writeAtomic(path: string, data: string | Buffer): void {
+  writeFileSync(`${path}.tmp`, data);
+  renameSync(`${path}.tmp`, path);
 }
 
 function runShard(dir: string, shard: number, shards: number): void {
@@ -34,14 +53,23 @@ function runShard(dir: string, shard: number, shards: number): void {
   const lines: string[] = [];
   for (const game of games)
     for (const s of collectGame(game)) lines.push(JSON.stringify(s));
-  writeFileSync(
+  // Le .gz d'abord, son .json ensuite : un .json présent garantit un .gz complet
+  writeAtomic(
     join(dir, `part-${shard}.jsonl.gz`),
     gzipSync(lines.length ? `${lines.join('\n')}\n` : ''),
   );
-  writeFileSync(
+  writeAtomic(
     join(dir, `part-${shard}.json`),
     JSON.stringify({ games: games.length, positions: lines.length }),
   );
+}
+
+/** Supprime les part-k.* de k >= workers, restes d'un run précédent plus large. */
+function purgeStaleParts(dir: string, workers: number): void {
+  for (const name of readdirSync(dir)) {
+    const m = /^part-(\d+)\.(?:json|jsonl\.gz)(?:\.tmp)?$/.exec(name);
+    if (m && Number(m[1]) >= workers) rmSync(join(dir, name));
+  }
 }
 
 async function main(): Promise<void> {
@@ -54,12 +82,24 @@ async function main(): Promise<void> {
     runShard(dir, Number(shard), num('shards', 1));
     return;
   }
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, 'meta.json'),
-    JSON.stringify(selfplayMeta(allRealCards())),
+  const opts = options();
+  const workers = positive(
+    'workers',
+    num('workers', Math.max(1, cpus().length - 1)),
   );
-  const workers = num('workers', Math.max(1, cpus().length - 1));
+  mkdirSync(dir, { recursive: true });
+  // Un dossier sans done.json est un run en cours ou interrompu
+  rmSync(join(dir, 'done.json'), { force: true });
+  purgeStaleParts(dir, workers);
+  writeAtomic(
+    join(dir, 'meta.json'),
+    JSON.stringify({
+      ...selfplayMeta(allRealCards()),
+      seed: opts.seed,
+      note: arg('note') ?? 'legacy',
+      budget: opts.budget,
+    }),
+  );
   const started = Date.now();
   await forkShards(__filename, [dir, ...process.argv.slice(3)], workers);
   let games = 0;
@@ -72,7 +112,7 @@ async function main(): Promise<void> {
     positions += part.positions;
   }
   const seconds = Math.round((Date.now() - started) / 1000);
-  writeFileSync(
+  writeAtomic(
     join(dir, 'done.json'),
     JSON.stringify({ games, positions, seconds }),
   );

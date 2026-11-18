@@ -51,6 +51,11 @@ describe('auto-jeu', () => {
     expect(labels.has(1) === labels.has(-1)).toBe(true);
   }, 60_000);
 
+  it('collectGame est déterministe : même graine, même sortie', () => {
+    const [game] = planSelfplay(cards, { ...options, budget: 50 });
+    expect(collectGame(game)).toEqual(collectGame(game));
+  }, 60_000);
+
   it('meta : dimensions et x statique de chaque carte', () => {
     const meta = selfplayMeta(cards);
     expect(meta.globalDim).toBe(GLOBAL_DIM);
