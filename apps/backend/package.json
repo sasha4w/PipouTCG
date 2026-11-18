@@ -47,6 +47,7 @@
     "ai:rollout": "ts-node -T -r tsconfig-paths/register src/fights/ai/ai-rollout.cli.ts",
     "ai:regret": "ts-node -T -r tsconfig-paths/register src/fights/ai/ai-regret.cli.ts",
     "ai:selfplay": "ts-node -T -r tsconfig-paths/register src/fights/ai/nn/selfplay.cli.ts",
+    "ai:arena": "ts-node -T -r tsconfig-paths/register src/fights/ai/nn/arena.cli.ts",
     "e2e:copy-aiven": "node scripts/e2e-copy-aiven.mjs"
   },
   "dependencies": {
