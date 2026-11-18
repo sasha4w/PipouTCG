@@ -67,14 +67,24 @@ export interface WorkerLike {
 
 type DecideRequest = Omit<Extract<ToWorker, { type: 'decide' }>, 'id'>;
 
-/** Un seul worker pour toutes les parties ; relancé s'il dépasse le délai ou meurt. */
+interface Job {
+  id: number;
+  request: DecideRequest;
+  resolve: (reply: FromWorker | null) => void;
+}
+
+/**
+ * Un seul worker pour toutes les parties, une requête à la fois : les autres
+ * attendent leur tour. Le plafond court à partir de l'envoi au worker. Un
+ * dépassement ne tue que le worker occupé ; les requêtes en attente repartent
+ * vers le nouveau.
+ */
 export class AiWorkerPool {
+  private readonly logger = new Logger(AiWorkerPool.name);
   private worker: WorkerLike | null = null;
   private next = 1;
-  private readonly pending = new Map<
-    number,
-    (reply: FromWorker | null) => void
-  >();
+  private readonly queue: Job[] = [];
+  private current: { job: Job; timer: NodeJS.Timeout } | null = null;
 
   constructor(
     private readonly spawn: () => WorkerLike,
@@ -83,22 +93,9 @@ export class AiWorkerPool {
 
   /** Réponse du worker, ou null (délai dépassé, worker mort, état non transmissible). */
   ask(request: DecideRequest): Promise<FromWorker | null> {
-    const id = this.next++;
     return new Promise((resolve) => {
-      const timer = setTimeout(() => {
-        this.pending.delete(id);
-        this.restart();
-        resolve(null);
-      }, this.limitMs);
-      this.pending.set(id, (reply) => {
-        clearTimeout(timer);
-        resolve(reply);
-      });
-      try {
-        this.ensure().postMessage({ ...request, id });
-      } catch {
-        this.settle(id, null);
-      }
+      this.queue.push({ id: this.next++, request, resolve });
+      this.pump();
     });
   }
 
@@ -107,36 +104,69 @@ export class AiWorkerPool {
   }
 
   dispose(): void {
-    this.restart();
+    for (const job of this.queue.splice(0)) job.resolve(null);
+    this.failCurrent();
+    this.kill();
   }
 
-  private settle(id: number, reply: FromWorker | null): void {
-    const done = this.pending.get(id);
-    if (!done) return;
-    this.pending.delete(id);
-    done(reply);
+  private pump(): void {
+    while (!this.current && this.queue.length > 0) {
+      const job = this.queue.shift()!;
+      const timer = setTimeout(() => {
+        this.logger.warn(`Réflexion ${job.id} hors délai, worker relancé`);
+        this.failCurrent();
+        this.kill();
+        this.pump();
+      }, this.limitMs);
+      this.current = { job, timer };
+      try {
+        this.ensure().postMessage({ ...job.request, id: job.id });
+      } catch (err) {
+        this.logger.warn(
+          `Envoi au worker d'IA impossible (état non transmissible ?) — ${String(err)}`,
+        );
+        this.failCurrent();
+      }
+    }
+  }
+
+  /** Termine la requête en cours par un repli. */
+  private failCurrent(): void {
+    this.finishCurrent(null);
+  }
+
+  private finishCurrent(reply: FromWorker | null): void {
+    const cur = this.current;
+    if (!cur) return;
+    clearTimeout(cur.timer);
+    this.current = null;
+    cur.job.resolve(reply);
   }
 
   private ensure(): WorkerLike {
     if (this.worker) return this.worker;
     const w = this.spawn();
-    w.on('message', (reply: FromWorker) => this.settle(reply.id, reply));
-    w.on('error', () => {
-      if (this.worker === w) this.restart();
+    w.on('message', (reply: FromWorker) => {
+      if (this.worker !== w || this.current?.job.id !== reply.id) return;
+      this.finishCurrent(reply);
+      this.pump();
     });
-    w.on('exit', () => {
-      if (this.worker === w) this.restart();
-    });
+    const died = () => {
+      if (this.worker !== w) return;
+      this.failCurrent();
+      this.kill();
+      this.pump();
+    };
+    w.on('error', died);
+    w.on('exit', died);
     this.worker = w;
     return w;
   }
 
-  /** Arrête le worker courant ; toutes les réflexions en cours passent en repli. */
-  private restart(): void {
+  private kill(): void {
     const w = this.worker;
     this.worker = null;
-    for (const id of [...this.pending.keys()]) this.settle(id, null);
-    void w?.terminate();
+    w?.terminate().catch(() => {});
   }
 }
 
