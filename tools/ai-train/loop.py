@@ -12,6 +12,7 @@ from __future__ import annotations  # annotations de type modernes
 import argparse  # arguments de la ligne de commande
 import json  # format JSON
 import os  # remplacement atomique, nombre de cœurs
+import signal  # signaux Unix
 import shutil  # copie de fichiers, recherche de pnpm
 import subprocess  # lancement des commandes Node
 import time  # chronomètre
@@ -56,11 +57,16 @@ def record_of(state: dict, n: int) -> dict:
 
 
 def _pct(v) -> str:
+    """Pourcentage lisible d'un score entre 0 et 1, ou un tiret s'il manque."""
     return "—" if v is None else f"{v * 100:.1f} %"
 
 
 def write_report(run_dir: Path, state: dict) -> None:
-    """report.md (tableau) et progression.png (courbes)."""
+    """report.md (tableau) et progression.png (courbes).
+
+    Écrit le tableau Markdown d'abord (une ligne par génération), puis dessine
+    deux courbes : perte de validation, et scores d'arène / de jauge.
+    """
     import matplotlib  # graphiques (importé ici : inutile au reste de la boucle)
     matplotlib.use("Agg")  # pas de fenêtre : image seulement
     import matplotlib.pyplot as plt
@@ -118,10 +124,62 @@ def find_pnpm() -> str:
     raise SystemExit("pnpm introuvable ou inutilisable dans le PATH")
 
 
+def kill_tree(proc: subprocess.Popen) -> None:
+    """Tue le processus ET tous ses descendants (les workers Node sont des petits-enfants)."""
+    if proc.poll() is not None:  # déjà fini : rien à tuer (ses enfants seraient déjà orphelins)
+        return
+    if os.name == "nt":  # Windows : taskkill /T parcourt l'arbre, /F force
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
+    else:  # Unix : le groupe de processus entier reçoit SIGKILL
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:  # groupe déjà disparu
+            pass
+
+
+def group_flags() -> dict:
+    """Options de Popen qui placent le processus dans son propre groupe (tuable avec ses enfants)."""
+    if os.name == "nt":  # Windows : nouveau groupe de processus
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}  # Unix : nouvelle session, le processus est chef de groupe
+
+
+def run_command(cmd: list, cwd: Path) -> None:
+    """Lance une commande ; sur interruption ou erreur, tue tout l'arbre puis attend la fin."""
+    proc = subprocess.Popen(cmd, cwd=cwd, **group_flags())  # lancement sans attendre
+    try:
+        code = proc.wait()  # attend la fin normale
+    finally:  # KeyboardInterrupt, SIGTERM converti, exception : toujours nettoyer
+        kill_tree(proc)  # sans effet si le processus est fini
+        proc.wait()  # récupère le processus (pas de zombie)
+    if code != 0:  # échec : arrête la boucle, comme check=True
+        raise subprocess.CalledProcessError(code, cmd)
+
+
 def node(script: str, *args) -> None:
     """Lance un script pnpm du backend ; lève si la commande échoue."""
-    subprocess.run([find_pnpm(), "--silent", "--filter", "@pipou/backend", script, *map(str, args)],
-                   cwd=REPO, check=True)  # check : une étape en échec arrête la boucle
+    run_command([find_pnpm(), "--silent", "--filter", "@pipou/backend", script, *map(str, args)], REPO)
+
+
+def read_json(path: Path, keys: tuple = ()) -> dict:
+    """Lit un JSON produit par Node ; erreur claire s'il manque ou s'il n'a pas les clés attendues."""
+    if not path.exists():  # la commande a réussi mais n'a rien écrit
+        raise SystemExit(f"fichier attendu absent : {path}")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))  # contenu
+    except ValueError as e:  # JSON invalide
+        raise SystemExit(f"fichier illisible {path} : {e}")
+    missing = [k for k in keys if not isinstance(data, dict) or k not in data]  # clés absentes
+    if missing:
+        raise SystemExit(f"clés manquantes {missing} dans {path}")
+    return data
+
+
+def copy_atomic(src: Path, dst: Path) -> None:
+    """Copie via un .tmp puis renomme : dst n'est jamais à moitié écrit."""
+    tmp = dst.with_name(dst.name + ".tmp")  # fichier temporaire voisin
+    shutil.copyfile(src, tmp)  # copie complète
+    os.replace(tmp, dst)  # remplacement atomique
 
 
 def say(message: str) -> None:
@@ -130,11 +188,16 @@ def say(message: str) -> None:
 
 
 def gen_name(n: int) -> str:
+    """Nom du dossier d'une génération : gen-001, gen-002, ..."""
     return f"gen-{n:03d}"
 
 
 def run_step(state: dict, args, run_dir: Path, data_root: Path) -> None:
-    """Exécute l'étape courante et passe à la suivante."""
+    """Exécute l'étape courante et passe à la suivante.
+
+    Modifie `state` seulement à la fin de l'étape ; l'appelant le sauve ensuite.
+    Une étape interrompue est donc refaite entièrement à la reprise.
+    """
     from dataset import Meta, load_samples, sample_files, split_by_game  # données
     from export import export_weights  # export JSON
     from train import train  # entraînement
@@ -153,7 +216,7 @@ def run_step(state: dict, args, run_dir: Path, data_root: Path) -> None:
             shutil.rmtree(out)
         node("ai:selfplay", out, "--games", args.games, "--seed", n, "--note", champion,
              "--budget", args.budget, "--workers", args.workers)
-        done = json.loads((out / "done.json").read_text(encoding="utf-8"))
+        done = read_json(out / "done.json", ("games", "positions"))  # bilan de l'auto-jeu
         record["positions"] = done["positions"]
         say(f"gen {n} · auto-jeu : {done['games']} parties, {done['positions']} positions ({minutes()})")
         state["step"] = "train"
@@ -183,12 +246,14 @@ def run_step(state: dict, args, run_dir: Path, data_root: Path) -> None:
         node("ai:arena", "--challenger", gen_dir / "weights.json", "--champion", champion,
              "--games", args.arena_games, "--seed", n, "--budget", args.budget,
              "--workers", args.workers, "--json", out)
-        verdict = json.loads(out.read_text(encoding="utf-8"))
+        verdict = read_json(out, ("score", "lower"))  # verdict de l'arène
         promoted = should_promote(verdict)
         record.update(arena=verdict["score"], promoted=promoted)
         if promoted:
-            shutil.copyfile(gen_dir / "weights.json", run_dir / "champion.json")
-            state["champion"] = str(run_dir / "champion.json")
+            # Le champion est le weights.json de la génération (jamais réécrit), donc une reprise
+            # après interruption compare toujours au vrai champion précédent, pas au challenger.
+            state["champion"] = str(gen_dir / "weights.json")
+            copy_atomic(gen_dir / "weights.json", run_dir / "champion.json")  # copie pratique, atomique
         say(f"gen {n} · arène {verdict['score'] * 100:.1f} % → {'promu' if promoted else 'rejeté'} ({minutes()})")
         state["step"] = "gauge" if promoted else "next"
     elif step == "gauge":
@@ -196,7 +261,7 @@ def run_step(state: dict, args, run_dir: Path, data_root: Path) -> None:
         node("ai:arena", "--challenger", state["champion"], "--champion", "legacy",
              "--games", args.gauge_games, "--seed", 999, "--time-ms", 200,
              "--workers", args.workers, "--json", out)
-        gauge = json.loads(out.read_text(encoding="utf-8"))
+        gauge = read_json(out, ("score",))  # verdict de la jauge
         record["gauge"] = gauge["score"]
         say(f"gen {n} · jauge contre evaluate.ts à temps égal : {gauge['score'] * 100:.1f} % ({minutes()})")
         state["step"] = "next"
@@ -222,6 +287,7 @@ def main() -> None:
     state = load_state(run_dir, args.run)
     deadline = time.time() + args.hours * 3600
     say(f"« {args.run} » : génération {state['generation']}, étape {state['step']}, {args.workers} processus")
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt()))  # SIGTERM = Ctrl+C
     try:  # Ctrl+C : l'état sauvé est celui de la dernière étape finie
         while time.time() < deadline:  # tant qu'il reste du temps
             run_step(state, args, run_dir, data_root)  # une étape
@@ -229,7 +295,8 @@ def main() -> None:
             write_report(run_dir, state)  # rapport à jour
     except KeyboardInterrupt:  # arrêt demandé par l'utilisateur
         say("Interrompu : l'étape en cours sera refaite au prochain lancement.")  # rien n'est perdu
-    say(f"Temps écoulé. Rapport : {run_dir / 'report.md'}. Relancer la même commande pour continuer.")
+    else:
+        say(f"Temps écoulé. Rapport : {run_dir / 'report.md'}. Relancer la même commande pour continuer.")
 
 
 if __name__ == "__main__":
