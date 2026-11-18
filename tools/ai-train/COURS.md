@@ -86,7 +86,7 @@ Dans le code : `encode_cards` dans `model.py:35` ; `SET_SCALE` dans `nn/encode.t
 
 ## 11. La menace cachée
 
-Le réseau ne doit pas tricher : il ne voit pas la main de l'adversaire. Ce qu'il voit, c'est le multiensemble de ce qui peut s'y trouver : les cartes de la liste de l'adversaire, moins celles déjà vues. C'est un ensemble de cartes possibles, pas une main précise, et il se rétrécit au fil de la partie.
+Le réseau ne doit pas tricher : il ne voit pas la main de l'adversaire. Ce qu'il voit, c'est le multiensemble de ce qui peut s'y trouver : la main, le deck et le deck prime de l'adversaire, fondus en un seul multiensemble. C'est un ensemble de cartes possibles, pas une main précise, et il se rétrécit au fil de la partie.
 
 Ainsi la note dépend de ce qu'un joueur pourrait raisonnablement savoir : le réseau résume le danger moyen.
 

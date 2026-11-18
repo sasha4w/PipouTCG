@@ -63,7 +63,7 @@ Copy-Item runs/main/champion.json ../../apps/backend/src/fights/ai/nn/weights/ch
 cd ../..
 pnpm --filter @pipou/backend ai:check-weights src/fights/ai/nn/weights/champion.json
 pnpm --filter @pipou/backend test -- nn/parity.spec level-brains.spec
-pnpm --filter @pipou/backend ai:bench           # niveau 5 sous 2,5 s
+pnpm --filter @pipou/backend ai:bench           # vérifie que le niveau 5 reste sous sa limite de 2,5 s
 git add apps/backend/src/fights/ai/nn/weights/champion.json
 git commit -m "feat(ia): champion génération N"
 ```
