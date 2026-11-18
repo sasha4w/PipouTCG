@@ -128,7 +128,7 @@ describe('brainOf', () => {
   it('max (plan) : profil le plus fort, aucune erreur, même au niveau 1', () => {
     expect(brainOf(entry(1, 'plan'))).toEqual({
       thinking: planner.STRONGEST,
-      mistakeRate: 0,
+      temperature: 0,
       note: 'legacy',
     });
   });
@@ -142,7 +142,7 @@ describe('brainOf', () => {
   it('glouton par défaut, sans erreur', () => {
     expect(brainOf(entry(1))).toEqual({
       thinking: 'greedy',
-      mistakeRate: 0,
+      temperature: 0,
       note: 'legacy',
     });
   });
@@ -150,11 +150,11 @@ describe('brainOf', () => {
   it('niveau : cerveau du niveau, sans plafond de temps', () => {
     expect(brainOf(entry(1, 'level'))).toEqual({
       thinking: 'greedy',
-      mistakeRate: 0.25,
+      temperature: 200,
       note: 'legacy',
     });
     const top = brainOf(entry(5, 'level'));
-    expect(top.mistakeRate).toBe(0);
+    expect(top.temperature).toBe(0);
     expect(top.thinking).toEqual({
       beamWidth: planner.STRONGEST.beamWidth,
       depth: planner.STRONGEST.depth,
@@ -189,14 +189,14 @@ describe('brainOf : note', () => {
     expect(brainOf(base).note).toBe('legacy');
   });
 
-  it('la note et le taux d’erreur de l’entrée priment', () => {
+  it('la note et la température de l’entrée priment', () => {
     const brain = brainOf({
       ...base,
       brain: 'plan',
       note: custom,
-      mistakeRate: 0.1,
+      temperature: 7,
     });
     expect(brain.note).toBe(custom);
-    expect(brain.mistakeRate).toBe(0.1);
+    expect(brain.temperature).toBe(7);
   });
 });

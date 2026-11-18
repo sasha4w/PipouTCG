@@ -132,6 +132,11 @@ export interface Plan {
   score: number;
 }
 
+/** Plan retenu et finalistes du faisceau, du meilleur au moins bon (le premier est le plan). */
+export interface PlanChoice extends Plan {
+  alternatives: Plan[];
+}
+
 interface Node extends Plan {
   state: GameState;
 }
@@ -173,7 +178,7 @@ export function planTurn(
   visited: ReadonlySet<string> = new Set(),
   /** Note des états. */
   evaluate: Evaluator = evaluateLegacy,
-): Plan | null {
+): PlanChoice | null {
   const me = seatPlayer(game, seat).userId;
   const score = (s: GameState) => evaluate(s, seat, profile.archetype, true);
   const root = determinize(game, seat, random);
@@ -278,13 +283,16 @@ export function planTurn(
           }
         : n,
     );
-  const best = finalists.reduce((a, b) => (b.score > a.score ? b : a));
-  return {
-    actions: best.actions,
-    keys: best.keys,
-    expected: best.expected,
-    score: best.score,
-  };
+  // Tri stable : à score égal, l'ordre des finalistes est gardé (comme reduce)
+  const ranked = [...finalists]
+    .sort((a, b) => b.score - a.score)
+    .map((n): Plan => ({
+      actions: n.actions,
+      keys: n.keys,
+      expected: n.expected,
+      score: n.score,
+    }));
+  return { ...ranked[0], alternatives: ranked };
 }
 
 /**

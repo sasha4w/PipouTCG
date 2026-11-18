@@ -9,7 +9,8 @@ import type { ThinkingProfile } from './planner';
 /** Cerveau d'un niveau d'aventure : façon de réfléchir, taux d'erreur, note. */
 export interface LevelBrain {
   thinking: ThinkingProfile | 'greedy';
-  mistakeRate: number;
+  /** Écart de score qui rend un coup e fois moins probable ; 0 : toujours le meilleur. */
+  temperature: number;
   /** Note des états ; absente : la manuelle. */
   note?: Note;
 }
@@ -22,8 +23,8 @@ const AI_TIME_LIMIT_MS = 200;
  * partout : mesurée nuisible lors du réglage de STRONGEST.
  */
 export const LEVEL_BRAINS: Record<AiLevel, LevelBrain> = {
-  1: { thinking: 'greedy', mistakeRate: 0.25 },
-  2: { thinking: 'greedy', mistakeRate: 0.1 },
+  1: { thinking: 'greedy', temperature: 200 },
+  2: { thinking: 'greedy', temperature: 100 },
   3: {
     thinking: {
       beamWidth: 3,
@@ -32,7 +33,7 @@ export const LEVEL_BRAINS: Record<AiLevel, LevelBrain> = {
       budget: 1500,
       timeLimitMs: AI_TIME_LIMIT_MS,
     },
-    mistakeRate: 0,
+    temperature: 30,
   },
   4: {
     thinking: {
@@ -42,11 +43,11 @@ export const LEVEL_BRAINS: Record<AiLevel, LevelBrain> = {
       budget: 4000,
       timeLimitMs: AI_TIME_LIMIT_MS,
     },
-    mistakeRate: 0,
+    temperature: 10,
   },
   5: {
     thinking: { ...STRONGEST, timeLimitMs: AI_TIME_LIMIT_MS },
-    mistakeRate: 0,
+    temperature: 0,
   },
 };
 
@@ -56,12 +57,12 @@ export function createLevelAi(
   level: AiLevel,
   random: () => number = Math.random,
 ): AiPlayer {
-  const { thinking, mistakeRate, note } = LEVEL_BRAINS[level];
+  const { thinking, temperature, note } = LEVEL_BRAINS[level];
   return new AiPlayer(
     engine,
     random,
     thinking,
-    mistakeRate,
+    temperature,
     evaluatorOf(note ?? 'legacy'),
   );
 }

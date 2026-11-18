@@ -25,6 +25,7 @@ import {
   stateSignature,
 } from './planner';
 import type { Plan, ThinkingProfile } from './planner';
+import { pickSoftmax } from './temperature';
 
 export type AiLevel = 1 | 2 | 3 | 4 | 5;
 
@@ -79,6 +80,7 @@ export class AiPlayer {
   private sink: DecisionSink | null = null;
   private run = 'run';
   private decisionCount = 0;
+  private decided = 0;
   private visited: { turn: string; states: Set<string> } = {
     turn: '',
     states: new Set(),
@@ -89,10 +91,15 @@ export class AiPlayer {
     private readonly random: () => number,
     /** 'greedy' : un coup à l'avance (aventure) ; sinon, planifie son tour. */
     private readonly thinking: ThinkingProfile | 'greedy' = 'greedy',
-    /** Probabilité de jouer un coup valide au hasard au lieu du meilleur. */
-    private readonly mistakeRate = 0,
+    /**
+     * Écart de score (points de note) qui rend un coup e fois moins probable
+     * qu'un autre. 0 : toujours le meilleur.
+     */
+    private readonly temperature = 0,
     /** Note des états : la manuelle par défaut. */
     private readonly evaluate: Evaluator = evaluateLegacy,
+    /** Décisions jouées avec la température ; ensuite, le meilleur coup (auto-jeu). */
+    private readonly temperatureDecisions = Infinity,
   ) {}
 
   /** Coup à jouer pour `seat`. Ne modifie pas `game` et ne lève jamais. */
@@ -231,38 +238,43 @@ export class AiPlayer {
       });
     }
     if (valid.length === 0) return null;
+    const temperature =
+      this.decided++ < this.temperatureDecisions ? this.temperature : 0;
     if (trace) trace.candidates = valid;
     const result = (action: GameAction, source: DecisionSource = 'greedy') => {
       if (trace) trace.source = source;
       return { action, valid: valid.map((v) => v.action) };
     };
 
-    if (this.mistakeRate > 0 && this.random() < this.mistakeRate) {
-      this.plan = null;
-      const mistake = plausibleMistake(valid, this.random);
-      if (mistake) return result(mistake, 'mistake');
-    }
-
     if (game.phase === 'mulligan')
       return result(mulliganChoice(game, seat, valid), 'mulligan');
 
     if (this.thinking !== 'greedy') {
-      const planned = this.planned(game, seat, profile, valid);
+      const planned = this.planned(game, seat, profile, valid, temperature);
       if (planned) return result(planned, 'plan');
     }
 
     const endPhase = valid.find((v) => v.action.type === 'end_phase');
     const others = valid.filter((v) => v.action.type !== 'end_phase');
     if (others.length === 0) return result(endPhase!.action);
-    const best = others.reduce((a, b) => (b.score > a.score ? b : a));
-    if (!endPhase) return result(best.action);
-    const current = this.evaluate(known, seat, profile.archetype);
-    if (trace) trace.baseline = current;
-    return result(
-      best.score > current + IMPROVEMENT_EPSILON
-        ? best.action
-        : endPhase.action,
+    // Finir sa phase vaut l'état actuel ; en premier : gagne les égalités
+    const options: Scored[] = [...others];
+    if (endPhase) {
+      const current = this.evaluate(known, seat, profile.archetype);
+      if (trace) trace.baseline = current;
+      options.unshift({
+        action: endPhase.action,
+        score: current + IMPROVEMENT_EPSILON,
+      });
+    }
+    const top = Math.max(...options.map((o) => o.score));
+    const chosen = pickSoftmax(
+      options,
+      (o) => o.score,
+      temperature,
+      this.random,
     );
+    return result(chosen.action, chosen.score < top ? 'mistake' : 'greedy');
   }
 
   /**
@@ -274,6 +286,7 @@ export class AiPlayer {
     seat: Seat,
     profile: AiProfile,
     valid: Scored[],
+    temperature: number,
   ): GameAction | null {
     const thinking = this.thinking as ThinkingProfile;
     // États réels traversés ce tour : un nouveau plan n'y ramène pas
@@ -308,12 +321,22 @@ export class AiPlayer {
       this.visited.states,
       this.evaluate,
     );
-    const first = plan && find(plan.keys[0]);
-    if (!plan || !first) {
+    if (!plan) {
       this.plan = null;
       return null;
     }
-    this.plan = { ...plan, seat, next: 1 };
+    const picked = pickSoftmax(
+      plan.alternatives,
+      (p) => p.score,
+      temperature,
+      this.random,
+    );
+    const first = find(picked.keys[0]);
+    if (!first) {
+      this.plan = null;
+      return null;
+    }
+    this.plan = { ...picked, seat, next: 1 };
     return first;
   }
 
@@ -385,28 +408,6 @@ export class AiPlayer {
     }
     return this.evaluate(clone, seat, profile.archetype);
   }
-}
-
-/**
- * Une erreur volontaire (niveaux faciles) reste un coup qu'un joueur pourrait
- * jouer : au plus ce score de moins que le meilleur (moins qu'une Prime).
- */
-const MISTAKE_MAX_LOSS = 1000;
-
-/**
- * Un coup moins bon que le meilleur, tiré parmi ceux qui ne perdent pas plus
- * de MISTAKE_MAX_LOSS ; null s'il n'y en a pas (le meilleur est alors joué).
- */
-function plausibleMistake(
-  valid: Scored[],
-  random: () => number,
-): GameAction | null {
-  const best = Math.max(...valid.map((v) => v.score));
-  const pool = valid.filter(
-    (v) => v.score < best && v.score >= best - MISTAKE_MAX_LOSS,
-  );
-  if (pool.length === 0) return null;
-  return pool[Math.floor(random() * pool.length)].action;
 }
 
 /** Exception levée par le moteur pendant une simulation (bug moteur). */

@@ -569,3 +569,25 @@ describe('candidats de support : emplacements et remplacements', () => {
     expect(plays(game)).toHaveLength(0);
   });
 });
+
+describe('planTurn : alternatives', () => {
+  it('finalistes triés par score décroissant, le premier est le plan rendu', () => {
+    const plan = planTurn(
+      engine,
+      stuckAdult(),
+      'p1',
+      dragon,
+      STRONGEST,
+      seeded(1),
+      { used: 0 },
+    )!;
+    expect(plan.alternatives.length).toBeGreaterThan(0);
+    expect(plan.alternatives.length).toBeLessThanOrEqual(STRONGEST.beamWidth);
+    expect(plan.alternatives[0].keys).toEqual(plan.keys);
+    expect(plan.alternatives[0].score).toBe(plan.score);
+    for (let k = 1; k < plan.alternatives.length; k++)
+      expect(plan.alternatives[k - 1].score).toBeGreaterThanOrEqual(
+        plan.alternatives[k].score,
+      );
+  });
+});

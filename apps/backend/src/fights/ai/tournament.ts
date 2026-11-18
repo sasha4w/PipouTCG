@@ -31,18 +31,18 @@ export const MAX_ACTIONS = 2000;
 export function brainOf(e: TournamentEntry): LevelBrain {
   const own = (brain: LevelBrain): LevelBrain => ({
     thinking: brain.thinking,
-    mistakeRate: e.mistakeRate ?? brain.mistakeRate,
+    temperature: e.temperature ?? brain.temperature,
     note: e.note ?? brain.note ?? 'legacy',
   });
   if (e.brain === 'plan')
-    return own({ thinking: { ...STRONGEST, ...e.thinking }, mistakeRate: 0 });
+    return own({ thinking: { ...STRONGEST, ...e.thinking }, temperature: 0 });
   if (e.brain === 'level') {
     const level = LEVEL_BRAINS[e.level];
     if (level.thinking === 'greedy') return own(level);
     const { timeLimitMs: _untimed, ...budgetOnly } = level.thinking;
     return own({ ...level, thinking: budgetOnly });
   }
-  return own({ thinking: 'greedy', mistakeRate: 0 });
+  return own({ thinking: 'greedy', temperature: 0 });
 }
 
 /** Glouton sans erreur, le plus fort (`plan`), ou le cerveau d'aventure du niveau. */
@@ -60,8 +60,10 @@ export interface TournamentEntry {
   thinking?: Partial<ThinkingProfile>;
   /** Note des états ; absente : la manuelle (ou celle du niveau avec `brain: 'level'`). */
   note?: Note;
-  /** Taux d'erreur volontaire, à la place de celui du cerveau (exploration). */
-  mistakeRate?: number;
+  /** Température du cerveau (voir AiPlayer) ; celle du cerveau par défaut. */
+  temperature?: number;
+  /** Décisions jouées avec la température (auto-jeu) ; toutes par défaut. */
+  temperatureDecisions?: number;
 }
 
 export interface TournamentResult {
@@ -131,13 +133,14 @@ export function playGame(
   try {
     const engine = createEngine(fixedRng());
     const aiFor = (e: TournamentEntry) => {
-      const { thinking, mistakeRate, note } = brainOf(e);
+      const { thinking, temperature, note } = brainOf(e);
       return new AiPlayer(
         engine,
         random,
         thinking,
-        mistakeRate,
+        temperature,
         evaluatorOf(note ?? 'legacy'),
+        e.temperatureDecisions ?? Infinity,
       );
     };
     const ais: Record<Seat, AiPlayer> = { p1: aiFor(p1), p2: aiFor(p2) };

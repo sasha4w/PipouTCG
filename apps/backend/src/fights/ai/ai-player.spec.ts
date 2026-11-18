@@ -115,33 +115,6 @@ describe('AiPlayer', () => {
     expect(score('play_support')).toBeGreaterThan(score('end_phase') - 1000);
   });
 
-  it('une erreur volontaire reste crédible : jamais une victoire ratée', () => {
-    const game = scenario({
-      turn: 'p2',
-      phase: 'battle',
-      p1: {
-        monsters: [
-          monsterCard('Colosse', { atk: 50, hp: 5000 }),
-          monsterCard('Moucheron', { atk: 0, hp: 100 }),
-        ],
-      },
-      p2: {
-        primes: 1,
-        monsters: [monsterCard('Lame', { atk: 200, hp: 500 })],
-      },
-    });
-    // Erreur à chaque coup, tirage le plus bas : l'ancien choix était le 1er coup valide
-    const clumsy = new AiPlayer(engine, () => 0, 'greedy', 1);
-
-    const action = clumsy.chooseAction(game, 'p2', profile);
-
-    expect(action).toEqual({
-      type: 'attack',
-      attackerInstanceId: monsterNamed(game, 'p2', 'Lame').instanceId,
-      targetInstanceId: monsterNamed(game, 'p1', 'Moucheron').instanceId,
-    });
-  });
-
   it('choix en attente pour l’IA : un pick_cards accepté par le moteur', () => {
     const game = scenario({
       turn: 'p1',
@@ -695,6 +668,48 @@ describe('IA : choisit les nouvelles cartes', () => {
     seatState(game, 'p1').transformUsedThisTurn = true;
     expect(listCandidates(game, 'p1').map((a) => a.type)).not.toContain(
       'transform',
+    );
+  });
+});
+
+describe('AiPlayer : température', () => {
+  const engine = createEngine();
+  /** Lame peut tuer Moucheron, sans gagner la partie : le meilleur coup est fini. */
+  const position = () =>
+    scenario({
+      turn: 'p2',
+      phase: 'battle',
+      p1: {
+        monsters: [
+          monsterCard('Colosse', { atk: 50, hp: 5000 }),
+          monsterCard('Moucheron', { atk: 0, hp: 100 }),
+        ],
+      },
+      p2: {
+        primes: 3,
+        monsters: [monsterCard('Lame', { atk: 200, hp: 500 })],
+      },
+    });
+  const profile = { archetype: 'pipou' as const, level: 1 as const };
+
+  it('température 0 : le meilleur coup, pas la fin de phase', () => {
+    const action = new AiPlayer(engine, () => 0).chooseAction(
+      position(),
+      'p2',
+      profile,
+    );
+    expect(action.type).not.toBe('end_phase');
+  });
+
+  it('très chaud et random 0 : le premier candidat (fin de phase) est tiré', () => {
+    const ai = new AiPlayer(engine, () => 0, 'greedy', 1e9);
+    expect(ai.chooseAction(position(), 'p2', profile).type).toBe('end_phase');
+  });
+
+  it('température limitée aux N premières décisions', () => {
+    const ai = new AiPlayer(engine, () => 0, 'greedy', 1e9, evaluateLegacy, 0);
+    expect(ai.chooseAction(position(), 'p2', profile).type).not.toBe(
+      'end_phase',
     );
   });
 });

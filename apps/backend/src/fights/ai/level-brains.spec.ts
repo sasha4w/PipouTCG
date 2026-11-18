@@ -34,14 +34,16 @@ const level = (n: 1 | 2 | 3 | 4 | 5): AiProfile => ({
 });
 
 describe('LEVEL_BRAINS', () => {
-  it('niveaux 1 et 2 gloutons qui se trompent, 3 à 5 qui planifient', () => {
-    expect(LEVEL_BRAINS[1]).toEqual({ thinking: 'greedy', mistakeRate: 0.25 });
-    expect(LEVEL_BRAINS[2]).toEqual({ thinking: 'greedy', mistakeRate: 0.1 });
+  it('niveaux 1 et 2 gloutons et chauds, 3 à 5 qui planifient de plus en plus froid', () => {
+    expect(LEVEL_BRAINS[1]).toEqual({ thinking: 'greedy', temperature: 200 });
+    expect(LEVEL_BRAINS[2]).toEqual({ thinking: 'greedy', temperature: 100 });
     const planned = ([3, 4, 5] as const).map(
       (n) => LEVEL_BRAINS[n].thinking as ThinkingProfile,
     );
-    for (const n of [3, 4, 5] as const)
-      expect(LEVEL_BRAINS[n].mistakeRate).toBe(0);
+    expect(LEVEL_BRAINS[3].temperature).toBeGreaterThan(
+      LEVEL_BRAINS[4].temperature,
+    );
+    expect(LEVEL_BRAINS[5].temperature).toBe(0);
     for (const p of planned) expect(p.timeLimitMs).toBe(200);
     expect(planned[0].beamWidth).toBeLessThan(planned[1].beamWidth);
     expect(planned[1].beamWidth).toBeLessThan(planned[2].beamWidth);
@@ -56,7 +58,7 @@ describe('LEVEL_BRAINS', () => {
 });
 
 describe('createLevelAi', () => {
-  it('niveau 1 : erreur forcée, mais crédible : la victoire n’est pas ratée', () => {
+  it('niveau 1 : chaud, mais la victoire n’est jamais ratée', () => {
     const game = winningAttack();
     const first = listCandidates(game, 'p2').find(
       (a) => !engine.dispatch(structuredClone(game), 'p2', a).error,

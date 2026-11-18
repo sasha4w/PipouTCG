@@ -46,7 +46,7 @@ function plan(note: Note, explore: number): Planned[] {
       ...e,
       brain: 'plan' as const,
       note,
-      mistakeRate: explore,
+      temperature: explore,
     }));
     const seed = num('seed', 7) + (first + d) * 1_000_003;
     for (const game of planGames(entries, num('games', 2), seed))
