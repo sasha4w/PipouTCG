@@ -12,6 +12,11 @@ export function setEvolutionCatalog(cards: Card[]): void {
   catalog = cards.filter((c) => c.stage && c.lineage);
 }
 
+/** Catalogue courant (copié vers le worker d'IA). */
+export function evolutionCatalog(): Card[] {
+  return catalog;
+}
+
 /** Carte du stade suivant de la lignée du monstre, s'il existe. */
 export function nextStageCard(base: MonsterOnBoard): Card | undefined {
   return catalog.find((c) =>

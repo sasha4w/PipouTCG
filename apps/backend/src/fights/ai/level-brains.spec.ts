@@ -7,6 +7,7 @@ import { listCandidates } from './candidate-actions';
 import { LEVEL_BRAINS, createLevelAi } from './level-brains';
 import { defaultNote, evaluatorOf } from './note';
 import { STRONGEST } from './planner';
+import { seeded } from './tournament';
 import type { ThinkingProfile } from './planner';
 
 const engine = createEngine();
@@ -45,7 +46,7 @@ describe('LEVEL_BRAINS', () => {
       LEVEL_BRAINS[4].temperature,
     );
     expect(LEVEL_BRAINS[5].temperature).toBe(0);
-    for (const p of planned) expect(p.timeLimitMs).toBe(200);
+    expect(planned.map((p) => p.timeLimitMs)).toEqual([800, 1500, 2500]);
     expect(planned[0].beamWidth).toBeLessThan(planned[1].beamWidth);
     expect(planned[1].beamWidth).toBeLessThan(planned[2].beamWidth);
     expect(planned[0].depth).toBeLessThan(planned[1].depth);
@@ -105,5 +106,12 @@ describe('createLevelAi', () => {
   it('aucun niveau ne fixe sa note : AI_EVAL décide (réseau par défaut)', () => {
     for (const level of [1, 2, 3, 4, 5] as const)
       expect(LEVEL_BRAINS[level].note).toBeUndefined();
+  });
+
+  it('niveau 5 : déterministe à graine fixe', () => {
+    const game = winningAttack();
+    const play = () =>
+      createLevelAi(engine, 5, seeded(1)).chooseAction(game, 'p2', level(5));
+    expect(play()).toEqual(play());
   });
 });

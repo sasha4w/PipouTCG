@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  type OnModuleDestroy,
   Optional,
 } from '@nestjs/common';
 import type {
@@ -41,7 +42,14 @@ import { finishGame } from './helpers/game-end.helper';
 import { emitGameState } from './helpers/client-state.builder';
 import { createGameState } from './helpers/game-factory';
 import { aiMustAct } from './ai/ai-player';
-import type { AiPlayer } from './ai/ai-player';
+import {
+  AiWorkerPool,
+  LocalMover,
+  WorkerMover,
+  spawnAiWorker,
+  useAiWorker,
+} from './ai/ai-mover';
+import type { AiMover } from './ai/ai-mover';
 import { AI_DECISION_RECORDER } from '../ai-review/decision-recorder';
 import type { DecisionRecorder } from '../ai-review/decision-recorder';
 import { GAME_RECORDER } from '../game-records/game-recorder.port';
@@ -89,7 +97,7 @@ interface PveSession {
   /** Prochain coup de l'IA programmé. */
   aiTimer?: NodeJS.Timeout;
   /** IA du combat, au cerveau du niveau de l'adversaire (plan propre au combat). */
-  ai: AiPlayer;
+  ai: AiMover;
 }
 
 /** Leçon du tutoriel en cours : le joueur est toujours `player1`. */
@@ -102,8 +110,11 @@ interface TutorialSession {
 }
 
 @Injectable()
-export class FightsService {
+export class FightsService implements OnModuleDestroy {
   private readonly logger = new Logger(FightsService.name);
+  private readonly aiPool = useAiWorker()
+    ? new AiWorkerPool(spawnAiWorker)
+    : null;
   private games = new Map<number, GameState>();
   private userToMatch = new Map<number, number>();
   private locks = new Map<number, Promise<unknown>>();
@@ -130,6 +141,10 @@ export class FightsService {
     @Inject(TUTORIAL_HOOKS)
     private tutorialHooks?: TutorialHooks,
   ) {}
+
+  onModuleDestroy(): void {
+    this.aiPool?.dispose();
+  }
 
   // ── Matchmaking ──────────────────────────────────────────────────────────
 
@@ -243,7 +258,14 @@ export class FightsService {
         return { error: 'Impossible de lancer ce combat' };
       }
 
-      const ai = createLevelAi(this.engine, start.profile.level);
+      const ai: AiMover = this.aiPool
+        ? new WorkerMover(
+            this.aiPool,
+            matchId,
+            start.profile.level,
+            this.engine,
+          )
+        : new LocalMover(createLevelAi(this.engine, start.profile.level));
       // AI_DECISION_LOG (diagnostic local) : journal fichier, sinon base pour les admins
       const logPath = process.env.AI_DECISION_LOG;
       const sink = logPath
@@ -772,7 +794,7 @@ export class FightsService {
         );
       } else {
         info.aiActionsThisTurn += 1;
-        const action = session.ai.chooseAction(game, seat, info.profile);
+        const action = await session.ai.decide(game, seat, info.profile);
         progressed = this.tryAiAction(game, seat, action);
       }
       if (!progressed) this.forceAiProgress(game, seat, info.aiUserId);
@@ -943,6 +965,7 @@ export class FightsService {
     const session = this.pve.get(game.matchId);
     if (session) {
       clearTimeout(session.aiTimer);
+      session.ai.dispose();
       this.pve.delete(game.matchId);
     }
     const tutorial = this.tutorials.get(game.matchId);

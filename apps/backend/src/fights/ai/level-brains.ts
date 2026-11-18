@@ -15,9 +15,6 @@ export interface LevelBrain {
   note?: Note;
 }
 
-/** Plafond de temps d'une décision en aventure. */
-const AI_TIME_LIMIT_MS = 200;
-
 /**
  * Difficulté croissante (étape 3 du design ai-better-brain). Riposte à 0
  * partout : mesurée nuisible lors du réglage de STRONGEST.
@@ -31,7 +28,7 @@ export const LEVEL_BRAINS: Record<AiLevel, LevelBrain> = {
       depth: 6,
       ripostes: 0,
       budget: 1500,
-      timeLimitMs: AI_TIME_LIMIT_MS,
+      timeLimitMs: 800,
     },
     temperature: 30,
   },
@@ -41,12 +38,12 @@ export const LEVEL_BRAINS: Record<AiLevel, LevelBrain> = {
       depth: 9,
       ripostes: 0,
       budget: 4000,
-      timeLimitMs: AI_TIME_LIMIT_MS,
+      timeLimitMs: 1500,
     },
     temperature: 10,
   },
   5: {
-    thinking: { ...STRONGEST, timeLimitMs: AI_TIME_LIMIT_MS },
+    thinking: { ...STRONGEST, timeLimitMs: 2500 },
     temperature: 0,
   },
 };

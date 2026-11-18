@@ -1,31 +1,12 @@
-import { GameEngine } from '../engine/game-engine';
+import type { GameEngine } from '../engine/game-engine';
 import type { Rng } from '../engine/rng';
-import { EffectsResolverService } from '../effects-resolver.service';
-import { BuffsCalculatorService } from '../buffs-calculator.service';
-import { PhaseService } from '../services/phase.service';
-import { SummonService } from '../services/summon.service';
-import { EvolutionService } from '../services/evolution.service';
-import { SupportService } from '../services/support.service';
-import { BattleService } from '../services/battle.service';
-import { PickService } from '../services/pick.service';
+import { createAiEngine } from '../ai/ai-engine';
+import { setEvolutionCatalog } from '../helpers/evolution-catalog';
 import { fixedRng } from './fixed-rng';
 import { allRealCards } from './real-cards';
-import { setEvolutionCatalog } from '../helpers/evolution-catalog';
 
 /** Moteur câblé à la main, comme le ferait Nest, pour les tests. */
 export function createEngine(rng: Rng = fixedRng()): GameEngine {
   setEvolutionCatalog(allRealCards());
-  const effects = new EffectsResolverService();
-  const summon = new SummonService(effects);
-  return new GameEngine(
-    new PhaseService(effects),
-    summon,
-    new EvolutionService(effects),
-    new SupportService(effects),
-    new BattleService(effects),
-    new PickService(summon, effects),
-    effects,
-    new BuffsCalculatorService(),
-    rng,
-  );
+  return createAiEngine(rng);
 }
