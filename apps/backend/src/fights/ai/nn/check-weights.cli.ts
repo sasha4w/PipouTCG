@@ -16,7 +16,9 @@ try {
   const w = readWeights(path);
   const error = parityError(w);
   const ok = error <= PARITY_TOLERANCE;
-  console.log(`Parité génération ${w.generation} : écart max ${error.toExponential(2)} (${ok ? 'OK' : 'REFUSÉ'})`);
+  console.log(
+    `Parité génération ${w.generation} : écart max ${error.toExponential(2)} (${ok ? 'OK' : 'REFUSÉ'})`,
+  );
   process.exit(ok ? 0 : 1);
 } catch (err) {
   console.error(err instanceof Error ? err.message : err);
