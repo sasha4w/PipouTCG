@@ -123,3 +123,16 @@ describe('encodePosition', () => {
       });
   });
 });
+
+describe('staticCardFeatures', () => {
+  it('stats nulles ou absentes : uniquement des nombres finis', () => {
+    const card = monsterCard('Sans stats', {
+      atk: null,
+      hp: undefined,
+      cost: null,
+    } as never);
+    const x = staticCardFeatures(card);
+    expect(x).toHaveLength(CARD_DIM);
+    expect(x.every(Number.isFinite)).toBe(true);
+  });
+});

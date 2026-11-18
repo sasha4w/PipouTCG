@@ -86,9 +86,9 @@ export function staticCardFeatures(card: Card): number[] {
   const x = new Array<number>(CARD_DIM).fill(0);
   x[0] = card.type === 'monster' ? 1 : 0;
   x[1] = card.type === 'support' ? 1 : 0;
-  x[2] = card.atk / 1000;
-  x[3] = card.hp / 1000;
-  x[4] = card.cost / 10;
+  x[2] = (card.atk ?? 0) / 1000;
+  x[3] = (card.hp ?? 0) / 1000;
+  x[4] = (card.cost ?? 0) / 10;
   oneHot(x, 5, ELEMENTS, card.element);
   oneHot(x, 9, STAGES, card.stage);
   oneHot(x, 14, SUPPORT_TYPES, card.supportType);

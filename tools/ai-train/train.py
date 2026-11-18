@@ -89,5 +89,8 @@ def train(
         save_atomic({"model": model.state_dict(), "optimizer": optimizer.state_dict(),
                      "progress": progress}, checkpoint)  # point de reprise
         log(f"époque {epoch + 1} : perte entraînement {train_loss:.4f}, validation {val_loss:.4f}")
-    model.load_state_dict(torch.load(best_path, weights_only=True))  # revient aux meilleurs poids
+    if best_path.exists():  # au moins une époque a amélioré la validation
+        model.load_state_dict(torch.load(best_path, weights_only=True))  # revient aux meilleurs poids
+    else:  # aucune amélioration : pas de meilleur point, on garde l'état courant
+        save_atomic(model.state_dict(), best_path)  # le dernier état devient le point de référence
     return model, {"valLoss": progress["best"], "epochs": progress["epoch"]}

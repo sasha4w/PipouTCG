@@ -95,4 +95,5 @@ Autres options : `--games` (400), `--seed`, `--budget`, `--workers`, `--json sor
 - **`pnpm introuvable ou inutilisable dans le PATH`** : ouvrir le terminal à la racine du dépôt (ou vérifier que `pnpm --version` répond), puis relancer.
 - **`position encodée en version X, attendu Y`** : l'encodage des positions a changé depuis la génération des données. Les anciennes données et poids sont inutilisables : repartir avec un nouveau `--run`.
 - **parité refusée** (`ai:check-weights` échoue, écart > 1e-5 entre TypeScript et PyTorch) : ne pas promouvoir, ouvrir un ticket.
+- **un nouveau `champion.json` n'est pas pris en compte** : le backend le met en cache une fois par processus, il faut le redémarrer après le remplacement.
 - **PC trop lent** : baisser `--games` ou `--budget`, ou réduire `--workers`.
